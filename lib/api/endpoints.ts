@@ -1,0 +1,20 @@
+export const AUTH_ENDPOINTS = {
+  LOGIN: '/api/login',
+  REGISTER: '/api/register',
+  LOGOUT: '/api/logout',
+  FORGOT_PASSWORD: '/api/forgot-password',
+  RESET_PASSWORD: '/api/reset-password',
+  RESEND_VERIFICATION: '/email/verification-notification',
+  USER: '/api/user',
+} as const; 
+
+export const API_ENDPOINTS = {
+  USERS: '/api/users',
+  CREATE_USER: '/api/users',
+  DELETE_USER: '/api/users',
+  UPDATE_USER: '/api/users',
+  CAMPUSES: '/api/campuses',
+  CREATE_CAMPUS: '/api/campuses',
+  DELETE_CAMPUS: '/api/campuses',
+  UPDATE_CAMPUS: '/api/campuses',
+} as const; 

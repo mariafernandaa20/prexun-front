@@ -1,33 +1,17 @@
 "use client";
 
-import axios from 'axios';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-// Configure axios defaults
-axios.defaults.headers.common['Accept'] = 'application/json';
-
-// Add an interceptor to include the token in all requests
-axios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import axiosInstance from './api/axiosConfig';
+import { AUTH_ENDPOINTS } from './api/endpoints';
 
 export const auth = {
   login: async (email: string, password: string) => {
     try {
-      const response = await axios.post(`${API_URL}/api/login`, {
+      const response = await axiosInstance.post(AUTH_ENDPOINTS.LOGIN, {
         email,
         password,
       });
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+        Cookies.set('auth-token', response.data.token, { expires: 7 });
       }
       return response.data;
     } catch (error) {
@@ -37,14 +21,14 @@ export const auth = {
 
   register: async (name: string, email: string, password: string, password_confirmation: string) => {
     try {
-      const response = await axios.post(`${API_URL}/api/register`, {
+      const response = await axiosInstance.post(AUTH_ENDPOINTS.REGISTER, {
         name,
         email,
         password,
         password_confirmation,
       });
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+        Cookies.set('auth-token', response.data.token, { expires: 7 });
       }
       return response.data;
     } catch (error) {
@@ -54,7 +38,7 @@ export const auth = {
 
   logout: async () => {
     try {
-      await axios.post(`${API_URL}/api/logout`);
+      await axiosInstance.post(AUTH_ENDPOINTS.LOGOUT);
       localStorage.removeItem('token');
     } catch (error) {
       console.error('Logout error:', error);
@@ -63,7 +47,7 @@ export const auth = {
 
   forgotPassword: async (email: string) => {
     try {
-      const response = await axios.post(`${API_URL}/api/forgot-password`, { email });
+      const response = await axiosInstance.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, { email });
       return response.data;
     } catch (error) {
       throw error;
@@ -72,7 +56,7 @@ export const auth = {
 
   resetPassword: async (email: string, password: string, password_confirmation: string, token: string) => {
     try {
-      const response = await axios.post(`${API_URL}/api/reset-password`, {
+      const response = await axiosInstance.post(AUTH_ENDPOINTS.RESET_PASSWORD, {
         email,
         password,
         password_confirmation,
@@ -86,7 +70,7 @@ export const auth = {
 
   resendVerification: async () => {
     try {
-      await axios.post(`${API_URL}/email/verification-notification`);
+      await axiosInstance.post(AUTH_ENDPOINTS.RESEND_VERIFICATION);
     } catch (error) {
       throw error;
     }
@@ -94,7 +78,7 @@ export const auth = {
 
   getUser: async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/user`);
+      const response = await axiosInstance.get(AUTH_ENDPOINTS.USER);
       return response.data;
     } catch (error) {
       localStorage.removeItem('token');

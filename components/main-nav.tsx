@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ThemeToggle } from "./layout/theme-toggle";
 
 export function MainNav() {
   const { user, logout } = useAuthStore();
@@ -19,12 +20,12 @@ export function MainNav() {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
+    router.push("/login");
   };
 
   return (
-    <header className="border-b">
-      <div className="container flex h-16 items-center px-4">
+    <header className="w-full">
+      <div className="flex h-16 items-center px-4">
         <Link href="/" className="font-bold">
           Prexun
         </Link>
@@ -32,7 +33,10 @@ export function MainNav() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
                     <AvatarFallback>
                       {user.name
@@ -64,6 +68,7 @@ export function MainNav() {
             </Link>
           )}
         </div>
+        <ThemeToggle />
       </div>
     </header>
   );
