@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { MainNav } from "@/components/main-nav";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -54,8 +55,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center mx-auto">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+    <div>
+      <MainNav />
+      <div className="container px-4 flex h-[calc(100vh-80px)] w-screen flex-col items-center justify-center mx-auto">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">
             ¿Olvidaste tu contraseña?
@@ -98,6 +101,7 @@ export default function ForgotPasswordPage() {
           </Link>
         </p>
       </div>
+    </div>
     </div>
   );
 }

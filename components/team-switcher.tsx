@@ -19,6 +19,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { siteConfig } from "@/lib/site";
+import { useAuthStore } from "@/lib/store/auth-store";
 
 export function TeamSwitcher({
   teams,
@@ -31,7 +32,8 @@ export function TeamSwitcher({
 }) {
   const { isMobile } = useSidebar();
   const [activeTeam, setActiveTeam] = React.useState(teams[0]);
-
+  const { user, logout } = useAuthStore();
+  console.log(user);
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -52,7 +54,7 @@ export function TeamSwitcher({
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
+          {/* <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             align="start"
             side={isMobile ? "bottom" : "right"}
@@ -81,7 +83,7 @@ export function TeamSwitcher({
               </div>
               <div className="font-medium text-muted-foreground">Add team</div>
             </DropdownMenuItem>
-          </DropdownMenuContent>
+          </DropdownMenuContent> */}
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>

@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "./layout/theme-toggle";
+import Image from "next/image";
 
 export function MainNav() {
   const { user, logout } = useAuthStore();
@@ -24,52 +25,52 @@ export function MainNav() {
   };
 
   return (
-    <header className="w-full">
-      <div className="flex h-16 items-center px-4">
-        <Link href="/" className="font-bold">
-          Prexun
+<nav className="bg-[#131f46] py-4">
+      <div className="container mx-auto px-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/logo-horizontal-7-2048x665.png"
+            alt="Prexun"
+            width={150}
+            height={50}
+            className="h-12 w-auto"
+          />
         </Link>
-        <div className="ml-auto flex items-center space-x-4">
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
-                      {user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuItem className="flex items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>{user.name}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="flex items-center text-red-600 focus:text-red-600"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Link href="/login">
-              <Button>Sign In</Button>
-            </Link>
-          )}
+        <div className="hidden md:flex items-center gap-6">
+          <Link href="/" className="text-white hover:text-gray-200">
+            Inicio
+          </Link>
+          <Link href="/quienes-somos" className="text-white hover:text-gray-200">
+            ¿Quienes somos?
+          </Link>
+          <Link href="/cursos" className="text-white hover:text-gray-200">
+            Cursos
+          </Link>
+          <Link href="/planteles" className="text-white hover:text-gray-200">
+            Planteles
+          </Link>
+          <Link href="/bolsa-de-trabajo" className="text-white hover:text-gray-200">
+            Bolsa de trabajo
+          </Link>
+          <Link href="/plataforma" className="text-white hover:text-gray-200">
+            Plataforma
+          </Link>
+          <Link
+            href="/login"
+            className="bg-white text-[#1a237e] px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors"
+          >
+            Iniciar sesión
+          </Link>
         </div>
-        <ThemeToggle />
+        <div className="md:hidden">
+          <Link
+            href="/login"
+            className="bg-white text-[#1a237e] px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition-colors"
+          >
+            Iniciar sesión
+          </Link>
+        </div>
       </div>
-    </header>
+    </nav>
   );
 }

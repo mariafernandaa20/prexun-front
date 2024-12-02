@@ -27,12 +27,14 @@ interface MultiSelectProps {
   options: Option[]
   selectedValues: string[]
   onSelectedChange: (selected: string[]) => void
+  title: string
 }
 
 export function MultiSelect({ 
   options, 
   selectedValues, 
-  onSelectedChange 
+  onSelectedChange,
+  title
 }: MultiSelectProps) {
   const [open, setOpen] = useState(false)
 
@@ -74,7 +76,7 @@ export function MultiSelect({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            Seleccionar Planteles
+            {title}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>

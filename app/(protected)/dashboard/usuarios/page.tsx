@@ -299,9 +299,10 @@ export default function page() {
                 options={campuses.map((campus) => ({
                   value: campus.id,
                   label: campus.name,
-                }))}
+                }))} 
                 selectedValues={formData.campuses || []}
                 onSelectedChange={handleCampusChange}
+                title="Seleccionar Planteles"
               />
             </div>
             <div>

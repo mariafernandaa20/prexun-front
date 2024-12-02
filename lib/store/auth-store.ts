@@ -6,11 +6,14 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import axiosInstance from "../api/axiosConfig";
 import { AUTH_ENDPOINTS } from "../api/endpoints";
+import { Campus } from "../types";
 
 interface User {
   id: number;
   name: string;
   email: string;
+  role: string;
+  campuses?: Campus[];
   email_verified_at: string | null;
 }
 
@@ -62,7 +65,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     const user = response.data.user;
     const token = response.data.token;
 
-    // Configuración más robusta de cookies
+    console.log(user);
+
     Cookies.set("auth-token", token, {
       expires: 7, // 7 días
       path: "/",
@@ -84,7 +88,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    // Limpiar cookies al cerrar sesión
     Cookies.remove("auth-token");
     Cookies.remove("user-role");
     set({ user: null });

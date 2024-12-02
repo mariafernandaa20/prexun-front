@@ -327,6 +327,7 @@ export default function page() {
                 }))}
                 selectedValues={formData.admin_ids || []}
                 onSelectedChange={handleAdministratorChange}
+                title="Seleccionar Administradores"
               />
             </div>
 

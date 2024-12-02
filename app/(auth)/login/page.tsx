@@ -74,7 +74,7 @@ export default function LoginPage() {
   return (
     <div className="flex-1">
       <MainNav />
-      <div className="container grid grid-cols-1 justify-center mx-auto">
+      <div className="container px-4 flex h-[calc(100vh-80px)] w-screen flex-col items-center justify-center mx-auto">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
