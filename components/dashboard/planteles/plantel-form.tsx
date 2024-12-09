@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { School } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Campus } from "@/lib/types";
 
 type PlantelFormProps = {
-  school: School;
-  onSave: (school: School) => void;
+  campus: Campus;
+  onSave: (campus: Campus) => void;
   onCancel: () => void;
 };
 
-export function PlantelForm({ school, onSave, onCancel }: PlantelFormProps) {
-  const [formData, setFormData] = useState(school);
+export function PlantelForm({ campus, onSave, onCancel }: PlantelFormProps) {
+  const [formData, setFormData] = useState(campus);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -53,18 +53,7 @@ export function PlantelForm({ school, onSave, onCancel }: PlantelFormProps) {
         <Input
           id="location"
           name="location"
-          value={formData.location}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="studentCount">Número de Estudiantes</Label>
-        <Input
-          id="studentCount"
-          name="studentCount"
-          type="number"
-          value={formData.studentCount}
+          value={formData.address}
           onChange={handleChange}
           required
         />
