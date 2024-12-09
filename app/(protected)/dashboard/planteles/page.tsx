@@ -47,12 +47,11 @@ interface Campus {
   }>;
 }
 
-interface CampusFormData {
-  name: string;
-  code: string;
-  description: string;
-  address: string;
-  is_active: boolean;
+interface CampusFormData extends Omit<Campus, 'id' | 'users'> {
+  admin_ids?: string[];
+}
+
+interface CampusRequest extends Omit<Campus, 'users'> {
   admin_ids?: string[];
 }
 
@@ -137,20 +136,30 @@ export default function Page() {
     e.preventDefault();
     try {
       if (selectedCampus) {
-        const response = await updateCampus({
+        const campusRequest: CampusRequest = {
           id: selectedCampus.id,
-          ...formData,
+          name: formData.name,
+          code: formData.code,
+          description: formData.description,
+          address: formData.address,
+          is_active: formData.is_active,
           admin_ids: formData.admin_ids || [],
-        });
+        };
+        const response = await updateCampus(campusRequest);
         setCampuses(
           campuses.map((c) => (c.id === selectedCampus.id ? response : c))
         );
         toast({ title: "Plantel actualizado correctamente" });
       } else {
-        const response = await createCampus({
-          ...formData,
+        const campusRequest: Omit<CampusRequest, 'id'> = {
+          name: formData.name,
+          code: formData.code,
+          description: formData.description,
+          address: formData.address,
+          is_active: formData.is_active,
           admin_ids: formData.admin_ids || [],
-        });
+        };
+        const response = await createCampus(campusRequest);
         setCampuses([...campuses, response]);
         toast({ title: "Plantel creado correctamente" });
       }

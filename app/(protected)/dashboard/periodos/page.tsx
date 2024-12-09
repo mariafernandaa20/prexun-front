@@ -22,7 +22,7 @@ import { Plus } from 'lucide-react'
 import { createPeriod, deletePeriod, getPeriods, updatePeriod } from '@/lib/api'
 
 interface Period {
-  id: number
+  id: string
   name: string
   start_date: string
   end_date: string
@@ -32,7 +32,7 @@ export default function PeriodsPage() {
   const [periods, setPeriods] = useState<Period[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [currentPeriod, setCurrentPeriod] = useState<Period | null>(null)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Omit<Period, 'id'>>({
     name: '',
     start_date: '',
     end_date: ''
@@ -58,7 +58,7 @@ export default function PeriodsPage() {
         id: currentPeriod.id
       })
     } else {
-      await createPeriod(formData)
+      await createPeriod(formData as Period)
     }
 
     setIsOpen(false)
@@ -68,9 +68,9 @@ export default function PeriodsPage() {
   }
 
   // Eliminar período
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm('¿Está seguro de eliminar este período?')) {
-      await deletePeriod(id.toString())
+      await deletePeriod(id)
       fetchPeriods()
     }
   }

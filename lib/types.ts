@@ -12,7 +12,7 @@ export interface User {
   name: string
   email: string
   role: 'user' | 'admin' | 'super-admin'
-  campuses?: string[]
+  campuses?: Campus[]
 }
 
 export interface UserFormData {

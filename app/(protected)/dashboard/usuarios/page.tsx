@@ -47,6 +47,11 @@ import { useToast } from "@/hooks/use-toast";
 import axiosInstance from "@/lib/api/axiosConfig";
 import { useActiveCampusStore } from "@/lib/store/plantel-store";
 
+interface Campus {
+  id: string;
+  name: string;
+}
+
 export default function page() {
   const { toast } = useToast();
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
@@ -117,7 +122,7 @@ export default function page() {
       name: user.name,
       email: user.email,
       role: user.role,
-      campuses: user.campuses?.map(campus => campus.id.toString()) || [],
+      campuses: user.campuses ? user.campuses.map(campus => campus.id.toString()) : [],
     });
     setIsModalOpen(true);
   };
@@ -201,7 +206,7 @@ export default function page() {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
-                  {user.campuses?.map(campus => campus.name).join(", ") || "Sin planteles"}
+                  {user.campuses ? user.campuses.map(campus => campus.name).join(", ") : "Sin planteles"}
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
