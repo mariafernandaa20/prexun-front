@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ThemeToggle } from "./layout/theme-toggle";
+import { ThemeToggle, ThemeToggleSidebar } from "./layout/theme-toggle";
 import Image from "next/image";
 
 export function MainNav() {
@@ -70,6 +70,9 @@ export function MainNav() {
             Iniciar sesión
           </Link>
         </div>
+
+        <ThemeToggle/>
+
       </div>
     </nav>
   );

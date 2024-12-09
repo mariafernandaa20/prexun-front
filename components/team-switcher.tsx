@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -20,20 +21,25 @@ import {
 } from "@/components/ui/sidebar";
 import { siteConfig } from "@/lib/site";
 import { useAuthStore } from "@/lib/store/auth-store";
+import { Campus } from "@/lib/types";
+import { useActiveCampusStore } from "@/lib/store/plantel-store";
 
-export function TeamSwitcher({
-  teams,
-}: {
-  teams: {
-    name: string;
-    logo: React.ElementType;
-    plan: string;
-  }[];
-}) {
+export function TeamSwitcher() {
+  const { user } = useAuthStore();
   const { isMobile } = useSidebar();
-  const [activeTeam, setActiveTeam] = React.useState(teams[0]);
-  const { user, logout } = useAuthStore();
-  console.log(user);
+  const router = useRouter();
+  const { activeCampus, setActiveCampus } = useActiveCampusStore();
+
+  React.useEffect(() => {
+    if (!activeCampus && user?.campuses && user.campuses.length > 0) {
+      setActiveCampus(user.campuses[0]);
+    }
+  }, [user?.campuses, activeCampus, setActiveCampus]);
+
+  const handleCampusChange = (campus: Campus) => {
+    setActiveCampus(campus);
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -43,47 +49,40 @@ export function TeamSwitcher({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <activeTeam.logo className="size-4" />
-              </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {siteConfig.name}
+                  {activeCampus?.name || siteConfig.name}
                 </span>
+                {activeCampus && (
+                  <span className="truncate text-xs text-muted-foreground">
+                    {activeCampus.code}
+                  </span>
+                )}
               </div>
-              <ChevronsUpDown className="ml-auto" />
+              <ChevronsUpDown className="ml-auto size-4 opacity-50" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          {/* <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+          <DropdownMenuContent
+            className="min-w-56 rounded-lg"
             align="start"
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Teams
+              Planteles
             </DropdownMenuLabel>
-            {teams.map((team, index) => (
+            {user?.campuses?.map((campus, index) => (
               <DropdownMenuItem
-                key={team.name}
-                onClick={() => setActiveTeam(team)}
+                key={campus.id}
+                onClick={() => handleCampusChange(campus)}
                 className="gap-2 p-2"
               >
-                <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <team.logo className="size-4 shrink-0" />
-                </div>
-                {team.name}
+                {campus.name}
                 <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <Plus className="size-4" />
-              </div>
-              <div className="font-medium text-muted-foreground">Add team</div>
-            </DropdownMenuItem>
-          </DropdownMenuContent> */}
+          </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>

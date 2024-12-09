@@ -9,6 +9,7 @@ export const AUTH_ENDPOINTS = {
 } as const; 
 
 export const API_ENDPOINTS = {
+  DASHBOARD: '/api/dashboard',
   USERS: '/api/users',
   CREATE_USER: '/api/users',
   DELETE_USER: '/api/users',
@@ -17,4 +18,15 @@ export const API_ENDPOINTS = {
   CREATE_CAMPUS: '/api/campuses',
   DELETE_CAMPUS: '/api/campuses',
   UPDATE_CAMPUS: '/api/campuses',
+  STUDENTS: '/api/students',
+  CREATE_STUDENT: '/api/students',
+  UPDATE_STUDENT: '/api/students',
+  DELETE_STUDENT: '/api/students',
+  STUDENTS_BY_COHORT: '/api/cohorts/:cohortId/students',
+  ACTIVE_STUDENTS: '/api/students/status/active',
+  IMPORT_STUDENTS: '/api/students/import',
+  PERIODS: '/api/periods',
+  CREATE_PERIOD: '/api/periods',
+  UPDATE_PERIOD: '/api/periods',
+  DELETE_PERIOD: '/api/periods',
 } as const; 

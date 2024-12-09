@@ -42,12 +42,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { MultiSelect } from "@/components/multi-select";
-import { createUser, deleteUser, getUsers, updateUser } from "@/lib/api";
+import { createUser, deleteUser, getCampuses, getUsers, updateUser } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import axiosInstance from "@/lib/api/axiosConfig";
+import { useActiveCampusStore } from "@/lib/store/plantel-store";
 
 export default function page() {
   const { toast } = useToast();
+  const activeCampus = useActiveCampusStore((state) => state.activeCampus);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -58,7 +60,7 @@ export default function page() {
     id: undefined,
     name: "",
     email: "",
-    role: "user",
+    role: "admin",
     password: "",
     campuses: [],
   });
@@ -84,9 +86,9 @@ export default function page() {
 
   const fetchCampuses = async () => {
     try {
-      const response = await axiosInstance.get("/api/campuses");
+      const response = await getCampuses();
       setCampuses(
-        response.data.map((campus: any) => ({
+        response.map((campus: any) => ({
           id: campus.id.toString(),
           name: campus.name,
         }))
@@ -115,7 +117,7 @@ export default function page() {
       name: user.name,
       email: user.email,
       role: user.role,
-      campuses: user.campuses || [],
+      campuses: user.campuses?.map(campus => campus.id.toString()) || [],
     });
     setIsModalOpen(true);
   };
@@ -187,6 +189,7 @@ export default function page() {
             <TableHead>Nombre</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Rol</TableHead>
+            <TableHead>Planteles</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -197,6 +200,9 @@ export default function page() {
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
+                <TableCell>
+                  {user.campuses?.map(campus => campus.name).join(", ") || "Sin planteles"}
+                </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button
@@ -222,7 +228,7 @@ export default function page() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center">
+              <TableCell colSpan={5} className="text-center">
                 No se encontraron usuarios.
               </TableCell>
             </TableRow>
@@ -284,7 +290,6 @@ export default function page() {
                   <SelectValue placeholder="Selecciona un rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">Usuario</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
                   <SelectItem value="super_admin">
                     Super Administrador
@@ -297,12 +302,15 @@ export default function page() {
               <Label>Planteles</Label>
               <MultiSelect
                 options={campuses.map((campus) => ({
-                  value: campus.id,
+                  value: campus.id.toString(),
                   label: campus.name,
-                }))} 
-                selectedValues={formData.campuses || []}
+                }))}
+                selectedValues={formData.campuses}
                 onSelectedChange={handleCampusChange}
-                title="Seleccionar Planteles"
+                title="Planteles"
+                placeholder="Seleccionar planteles"
+                searchPlaceholder="Buscar plantel..."
+                emptyMessage="No se encontraron planteles"
               />
             </div>
             <div>

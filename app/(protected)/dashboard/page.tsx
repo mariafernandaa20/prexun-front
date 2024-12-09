@@ -1,10 +1,53 @@
-import React from "react";
+'use client'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getDashboardData } from "@/lib/api";
+import React, { useEffect, useState } from "react";
 
-export default function Page() {
+export default function Dashboard() {
+  const [data, setData] = useState({
+    campuses: 0,
+    users: 0,
+    students: 0,
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  async function fetchData() {
+    try {
+      const response = await getDashboardData();
+      setData(response);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
+  }
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-      <p>Contenido del dashboard aquí...</p>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Planteles</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-2xl font-bold">{data.campuses}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Usuarios</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-2xl font-bold">{data.users}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Estudiantes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-2xl font-bold">{data.students}</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

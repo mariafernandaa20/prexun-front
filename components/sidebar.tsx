@@ -6,6 +6,7 @@ import {
   BookOpen,
   Bot,
   Building,
+  CalendarClock,
   Command,
   Frame,
   GalleryVerticalEnd,
@@ -174,6 +175,34 @@ const data = {
       url: "/dashboard/usuarios",
       icon: Users,
     },
+    {
+      name: "Periodos",
+      url: "/dashboard/periodos",
+      icon: CalendarClock,
+    },
+  ],
+  plantel_navigation: [
+    {
+      name: "Dashboard",
+      url: "/planteles",
+      icon: PieChart,
+    },
+    {
+      name: "Cobros",
+      url: "/planteles/cobros",
+      icon: PieChart,
+    },
+    {
+      name: "Estudiantes",
+      url: "/planteles/estudiantes",
+      icon: Users,
+    },
+    {
+      name: "Coherts",
+      url: "/planteles/coherts",
+      icon: BookOpen,
+    },
+
   ],
 };
 
@@ -183,7 +212,7 @@ export function TemplateSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
@@ -223,11 +252,10 @@ export function PlantelSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher/>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.admin_navigation} />
+        <NavProjects projects={data.plantel_navigation} />
       </SidebarContent>
       <SidebarFooter>
         <ThemeToggleSidebar />

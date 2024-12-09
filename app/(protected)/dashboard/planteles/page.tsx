@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +39,12 @@ interface Campus {
   description: string;
   address: string;
   is_active: boolean;
+  users?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  }>;
 }
 
 interface CampusFormData {
@@ -48,9 +53,10 @@ interface CampusFormData {
   description: string;
   address: string;
   is_active: boolean;
+  admin_ids?: string[];
 }
 
-export default function page() {
+export default function Page() {
   const { toast } = useToast();
 
   const [campuses, setCampuses] = useState<Campus[]>([]);
@@ -67,6 +73,7 @@ export default function page() {
     description: "",
     address: "",
     is_active: true,
+    admin_ids: [],
   });
 
   useEffect(() => {
@@ -108,6 +115,7 @@ export default function page() {
       description: "",
       address: "",
       is_active: true,
+      admin_ids: [],
     });
     setIsModalOpen(true);
   };
@@ -120,6 +128,7 @@ export default function page() {
       description: campus.description,
       address: campus.address,
       is_active: campus.is_active,
+      admin_ids: campus.users?.map(user => user.id.toString()) || [],
     });
     setIsModalOpen(true);
   };
@@ -131,13 +140,17 @@ export default function page() {
         const response = await updateCampus({
           id: selectedCampus.id,
           ...formData,
+          admin_ids: formData.admin_ids || [],
         });
         setCampuses(
           campuses.map((c) => (c.id === selectedCampus.id ? response : c))
         );
         toast({ title: "Plantel actualizado correctamente" });
       } else {
-        const response = await createCampus(formData);
+        const response = await createCampus({
+          ...formData,
+          admin_ids: formData.admin_ids || [],
+        });
         setCampuses([...campuses, response]);
         toast({ title: "Plantel creado correctamente" });
       }
@@ -195,6 +208,7 @@ export default function page() {
             <TableHead>Código</TableHead>
             <TableHead>Dirección</TableHead>
             <TableHead>Estado</TableHead>
+            <TableHead>Usuarios Asignados</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -213,6 +227,22 @@ export default function page() {
                   >
                     {campus.is_active ? "Activo" : "Inactivo"}
                   </span>
+                </TableCell>
+                <TableCell>
+                  {campus.users && campus.users.length > 0 ? (
+                    <div className="max-h-20 overflow-y-auto">
+                      {campus.users.map((user) => (
+                        <div key={user.id} className="text-sm">
+                          <span className="font-medium">{user.name}</span>
+                          <span className="text-muted-foreground ml-2">
+                            ({user.role})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Sin usuarios</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
@@ -239,7 +269,7 @@ export default function page() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center">
+              <TableCell colSpan={6} className="text-center">
                 No hay planteles disponibles
               </TableCell>
             </TableRow>
@@ -322,12 +352,15 @@ export default function page() {
               <Label>Administradores</Label>
               <MultiSelect
                 options={administrators.map((admin) => ({
-                  value: admin.id,
+                  value: admin.id.toString(),
                   label: admin.name,
                 }))}
                 selectedValues={formData.admin_ids || []}
                 onSelectedChange={handleAdministratorChange}
-                title="Seleccionar Administradores"
+                title="Administradores"
+                placeholder="Seleccionar administradores"
+                searchPlaceholder="Buscar administrador..."
+                emptyMessage="No se encontraron administradores"
               />
             </div>
 

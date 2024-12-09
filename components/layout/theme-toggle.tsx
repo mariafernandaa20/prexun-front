@@ -57,7 +57,7 @@ export function ThemeToggleSidebar() {
       <button onClick={() => setTheme("dark")} className={`p-2 rounded-md ${theme === "dark" ? "bg-primary text-white" : ""}`}>
         <Moon className="w-4 h-4"/>
       </button>
-      <button onClick={() => setTheme("system")} className={`p-2 rounded-md ${theme === "system" ? "bg-primary text-white" : ""}`}>
+      <button onClick={() => setTheme("system")} className={`p-2 rounded-md ${theme === "system" ? "bg-primary text-black dark:text-white" : ""}`}>
         <Monitor className="w-4 h-4"/>
       </button>
     </div>

@@ -28,13 +28,19 @@ interface MultiSelectProps {
   selectedValues: string[]
   onSelectedChange: (selected: string[]) => void
   title: string
+  placeholder?: string
+  emptyMessage?: string
+  searchPlaceholder?: string
 }
 
 export function MultiSelect({ 
   options, 
   selectedValues, 
   onSelectedChange,
-  title
+  title,
+  placeholder = "Seleccionar...",
+  emptyMessage = "No se encontraron elementos",
+  searchPlaceholder = "Buscar..."
 }: MultiSelectProps) {
   const [open, setOpen] = useState(false)
 
@@ -76,15 +82,15 @@ export function MultiSelect({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {title}
+            {selectedValues.length > 0 ? `${selectedValues.length} seleccionados` : placeholder}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0">
           <Command>
-            <CommandInput placeholder="Buscar plantel..." />
+            <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
-              <CommandEmpty>No se encontraron planteles</CommandEmpty>
+              <CommandEmpty>{emptyMessage}</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => (
                   <CommandItem
