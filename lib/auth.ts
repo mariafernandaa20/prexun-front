@@ -2,6 +2,7 @@
 
 import axiosInstance from './api/axiosConfig';
 import { AUTH_ENDPOINTS } from './api/endpoints';
+import Cookies from 'js-cookie';
 
 export const auth = {
   login: async (email: string, password: string) => {
