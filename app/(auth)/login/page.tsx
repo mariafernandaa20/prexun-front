@@ -64,7 +64,7 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Los datos ingresados no coinciden.",
+        description: error.response.data.message,
       });
     } finally {
       setIsLoading(false);
