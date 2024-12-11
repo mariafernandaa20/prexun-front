@@ -58,12 +58,21 @@ export default function Page() {
     { value: 'actions', label: 'Acciones', defaultVisible: true }
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState(
-    columnOptions.filter(col => col.defaultVisible).map(col => col.value)
-  );
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedColumns = localStorage.getItem('studentTableColumns');
+      if (savedColumns) {
+        return JSON.parse(savedColumns);
+      }
+    }
+    return columnOptions.filter(col => col.defaultVisible).map(col => col.value);
+  });
 
   const handleColumnSelect = (selectedColumns: string[]) => {
     setVisibleColumns(selectedColumns);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('studentTableColumns', JSON.stringify(selectedColumns));
+    }
   };
 
   const fetchStudents = async () => {
