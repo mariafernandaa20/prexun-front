@@ -31,6 +31,7 @@ import {
 import { ImportStudent } from "./impoort-student";
 import ChargesForm from "@/components/dashboard/estudiantes/charges-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -39,6 +40,9 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [periods, setPeriods] = useState<Period[]>([]);
   const [typeFilter, setTypeFilter] = useState<'all' | 'preparatoria' | 'facultad'>('all');
+  const [searchName, setSearchName] = useState('');
+  const [searchDate, setSearchDate] = useState('');
+  const [searchPhone, setSearchPhone] = useState('');
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
 
@@ -116,8 +120,14 @@ export default function Page() {
   };
 
   const filteredStudents = students.filter(student => {
-    if (typeFilter === 'all') return true;
-    return student.type === typeFilter;
+    const matchesType = typeFilter === 'all' || student.type === typeFilter;
+    const matchesName = student.username.toLowerCase().includes(searchName.toLowerCase()) || 
+                       student.firstname.toLowerCase().includes(searchName.toLowerCase()) ||
+                       student.lastname.toLowerCase().includes(searchName.toLowerCase());
+    const matchesDate = !searchDate || new Date(student.created_at).toLocaleDateString().includes(searchDate);
+    const matchesPhone = !searchPhone || student.phone.includes(searchPhone);
+    
+    return matchesType && matchesName && matchesDate && matchesPhone;
   });
 
   return (
@@ -125,6 +135,24 @@ export default function Page() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Estudiantes</h1>
         <div className="flex gap-4">
+          <Input
+            placeholder="Buscar por nombre..."
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            className="w-[200px]"
+          />
+          <Input
+            type="date"
+            value={searchDate}
+            onChange={(e) => setSearchDate(e.target.value)}
+            className="w-[200px]"
+          />
+          <Input
+            placeholder="Buscar por teléfono..."
+            value={searchPhone}
+            onChange={(e) => setSearchPhone(e.target.value)}
+            className="w-[200px]"
+          />
           <Select value={typeFilter} onValueChange={(value: 'all' | 'preparatoria' | 'facultad') => setTypeFilter(value)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filtrar por tipo" />
@@ -165,7 +193,7 @@ export default function Page() {
           <TableBody>
             {filteredStudents.map((student) => (
               <TableRow key={student.id}>
-                <TableCell>{student.username}</TableCell>
+                <TableCell>{student.firstname} {student.lastname}</TableCell>
                 <TableCell>{new Date(student.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.phone}</TableCell>
