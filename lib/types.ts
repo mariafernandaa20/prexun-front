@@ -34,6 +34,7 @@ export interface Student {
   email: string;
   phone: string;
   campus_id: string;
+  created_at?: string;
   current_debt?: number;
   type: 'preparatoria' | 'facultad';
   status: 'active' | 'inactive';

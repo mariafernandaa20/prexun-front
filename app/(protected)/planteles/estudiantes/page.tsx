@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/table";
 import { ImportStudent } from "./impoort-student";
 import ChargesForm from "@/components/dashboard/estudiantes/charges-form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -37,6 +38,7 @@ export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [periods, setPeriods] = useState<Period[]>([]);
+  const [typeFilter, setTypeFilter] = useState<'all' | 'preparatoria' | 'facultad'>('all');
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
 
@@ -112,12 +114,27 @@ export default function Page() {
       });
     }
   };
-  console.log(students);
+
+  const filteredStudents = students.filter(student => {
+    if (typeFilter === 'all') return true;
+    return student.type === typeFilter;
+  });
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Estudiantes</h1>
         <div className="flex gap-4">
+          <Select value={typeFilter} onValueChange={(value: 'all' | 'preparatoria' | 'facultad') => setTypeFilter(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filtrar por tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="preparatoria">Preparatoria</SelectItem>
+              <SelectItem value="facultad">Facultad</SelectItem>
+            </SelectContent>
+          </Select>
           <ImportStudent
             fetchStudents={fetchStudents}
             campusId={activeCampus?.id || ""}
@@ -136,6 +153,7 @@ export default function Page() {
           <TableHeader>
             <TableRow>
               <TableHead>Usuario</TableHead>
+              <TableHead>Fecha de Inscripción</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Teléfono</TableHead>
               <TableHead>Curso</TableHead>
@@ -145,9 +163,10 @@ export default function Page() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students.map((student) => (
+            {filteredStudents.map((student) => (
               <TableRow key={student.id}>
                 <TableCell>{student.username}</TableCell>
+                <TableCell>{new Date(student.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.phone}</TableCell>
                 <TableCell>{student.type}</TableCell>
