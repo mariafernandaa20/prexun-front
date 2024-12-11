@@ -48,17 +48,19 @@ export default function Page() {
   const { toast } = useToast();
 
   const columnOptions = [
-    { value: 'username', label: 'Usuario' },
-    { value: 'created_at', label: 'Fecha de Inscripción' },
-    { value: 'email', label: 'Email' },
-    { value: 'phone', label: 'Teléfono' },
-    { value: 'type', label: 'Curso' },
-    { value: 'period', label: 'Periodo' },
-    { value: 'debt', label: 'Debe' },
-    { value: 'actions', label: 'Acciones' }
+    { value: 'username', label: 'Usuario', defaultVisible: true },
+    { value: 'created_at', label: 'Fecha de Inscripción', defaultVisible: true },
+    { value: 'email', label: 'Email', defaultVisible: true },
+    { value: 'phone', label: 'Teléfono', defaultVisible: true },
+    { value: 'type', label: 'Curso', defaultVisible: false },
+    { value: 'period', label: 'Periodo', defaultVisible: false },
+    { value: 'debt', label: 'Debe', defaultVisible: true },
+    { value: 'actions', label: 'Acciones', defaultVisible: true }
   ];
 
-  const [visibleColumns, setVisibleColumns] = useState(columnOptions.map(col => col.value));
+  const [visibleColumns, setVisibleColumns] = useState(
+    columnOptions.filter(col => col.defaultVisible).map(col => col.value)
+  );
 
   const handleColumnSelect = (selectedColumns: string[]) => {
     setVisibleColumns(selectedColumns);
