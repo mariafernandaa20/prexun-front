@@ -29,20 +29,13 @@ import { Label } from '@/components/ui/label';
 import { createCharge, getCharges } from '@/lib/api';
 import { Student, Transaction } from '@/lib/types';
 import { MultiSelect } from '@/components/multi-select';
-import { Eye, EyeOff } from 'lucide-react';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
-  const [visibleColumns, setVisibleColumns] = useState({
-    student: true,
-    amount: true,
-    paymentMethod: true,
-    date: true,
-    notes: true
-  });
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes']);
 
   useEffect(() => {
     fetchTransactions();
@@ -74,11 +67,8 @@ export default function CobrosPage() {
     setSelectedStudents(values);
   };
 
-  const toggleColumn = (column: keyof typeof visibleColumns) => {
-    setVisibleColumns(prev => ({
-      ...prev,
-      [column]: !prev[column]
-    }));
+  const handleColumnSelect = (values: string[]) => {
+    setVisibleColumns(values);
   };
 
   const filteredTransactions = transactions.filter((transaction) => {
@@ -108,6 +98,14 @@ export default function CobrosPage() {
     .filter((student, index, self) => 
       index === self.findIndex(s => s.value === student.value)
     );
+
+  const columnOptions = [
+    { value: 'student', label: 'Estudiante' },
+    { value: 'amount', label: 'Monto' },
+    { value: 'paymentMethod', label: 'Método' },
+    { value: 'date', label: 'Fecha' },
+    { value: 'notes', label: 'Notas' }
+  ];
 
   return (
     <div className="p-6">
@@ -147,6 +145,7 @@ export default function CobrosPage() {
           </div>
           <MultiSelect
             options={[{value: 'all', label: 'Todos los estudiantes'}, ...uniqueStudents]}
+            hiddeBadages={true}
             selectedValues={selectedStudents}
             onSelectedChange={handleStudentSelect}
             title="Estudiantes"
@@ -154,81 +153,54 @@ export default function CobrosPage() {
             searchPlaceholder="Buscar estudiante..."
             emptyMessage="No se encontraron estudiantes"
           />
+          <MultiSelect
+            options={columnOptions}
+            hiddeBadages={true}
+            selectedValues={visibleColumns}
+            onSelectedChange={handleColumnSelect}
+            title="Columnas"
+            placeholder="Seleccionar columnas"
+            searchPlaceholder="Buscar columna..."
+            emptyMessage="No se encontraron columnas"
+          />
         </div>
-        <div className="flex gap-2">
-          <Label className="text-sm font-medium">Mostrar/Ocultar columnas:</Label>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => toggleColumn('student')}
-          >
-            {visibleColumns.student ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Estudiante
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => toggleColumn('amount')}
-          >
-            {visibleColumns.amount ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Monto
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => toggleColumn('paymentMethod')}
-          >
-            {visibleColumns.paymentMethod ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Método
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => toggleColumn('date')}
-          >
-            {visibleColumns.date ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Fecha
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => toggleColumn('notes')}
-          >
-            {visibleColumns.notes ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Notas
-          </Button>
-        </div>
+
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            {visibleColumns.student && <TableHead>Estudiante</TableHead>}
-            {visibleColumns.amount && <TableHead>Monto</TableHead>}
-            {visibleColumns.paymentMethod && <TableHead>Método</TableHead>}
-            {visibleColumns.date && <TableHead>Fecha</TableHead>}
-            {visibleColumns.notes && <TableHead>Notas</TableHead>}
+            {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
+            {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
+            {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
+            {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
+            {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredTransactions.map((transaction) => (
             <TableRow key={transaction.id}>
-              {visibleColumns.student && (
+              {visibleColumns.includes('student') && (
                 <TableCell>
                   {transaction.student?.firstname} {transaction.student?.lastname}
                 </TableCell>
               )}
-              {visibleColumns.amount && (
+              {visibleColumns.includes('amount') && (
                 <TableCell>${transaction.amount}</TableCell>
               )}
-              {visibleColumns.paymentMethod && (
+              {visibleColumns.includes('paymentMethod') && (
                 <TableCell>
                   {transaction.payment_method === 'cash' && 'Efectivo'}
                   {transaction.payment_method === 'transfer' && 'Transferencia'}
                   {transaction.payment_method === 'card' && 'Tarjeta'}
                 </TableCell>
               )}
-              {visibleColumns.date && (
+              {visibleColumns.includes('date') && (
                 <TableCell>
                   {new Date(transaction.created_at).toLocaleDateString()}
                 </TableCell>
               )}
-              {visibleColumns.notes && (
+              {visibleColumns.includes('notes') && (
                 <TableCell>{transaction.notes}</TableCell>
               )}
             </TableRow>
