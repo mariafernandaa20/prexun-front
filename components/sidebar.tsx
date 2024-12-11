@@ -179,6 +179,21 @@ const data = {
       url: "/dashboard/periodos",
       icon: CalendarClock,
     },
+    {
+      name: "Preparatorias",
+      url: "/dashboard/preparatorias",
+      icon: BookOpen,
+    },
+    {
+      name: "Facultades",
+      url: "/dashboard/facultades",
+      icon: BookOpen,
+    },
+    {
+      name: "Escuelas",
+      url: "/dashboard/escuelas",
+      icon: BookOpen,
+    },
   ],
   plantel_navigation: [
     {
