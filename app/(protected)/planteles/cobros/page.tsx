@@ -28,11 +28,21 @@ import {
 import { Label } from '@/components/ui/label';
 import { createCharge, getCharges } from '@/lib/api';
 import { Student, Transaction } from '@/lib/types';
+import { MultiSelect } from '@/components/multi-select';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
+  const [visibleColumns, setVisibleColumns] = useState({
+    student: true,
+    amount: true,
+    paymentMethod: true,
+    date: true,
+    notes: true
+  });
 
   useEffect(() => {
     fetchTransactions();
@@ -47,60 +57,182 @@ export default function CobrosPage() {
     }
   };
 
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesStudent = transaction.student?.firstname.toLowerCase().includes(searchStudent.toLowerCase());
-    const matchesPaymentMethod = paymentMethodFilter === 'all' || transaction.payment_method === paymentMethodFilter;
-    return matchesStudent && matchesPaymentMethod;
+  const handlePaymentMethodChange = (value: string) => {
+    if (value === 'all') {
+      setSelectedPaymentMethods(['all']);
+    } else {
+      const newMethods = selectedPaymentMethods.filter((m) => m !== 'all');
+      if (newMethods.includes(value)) {
+        setSelectedPaymentMethods(newMethods.filter((m) => m !== value));
+      } else {
+        setSelectedPaymentMethods([...newMethods, value]);
+      }
+    }
+  };
+
+  const handleStudentSelect = (values: string[]) => {
+    setSelectedStudents(values);
+  };
+
+  const toggleColumn = (column: keyof typeof visibleColumns) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
+  };
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    const studentFullName =
+      `${transaction.student?.username} ${transaction.student?.firstname} ${transaction.student?.lastname}`.toLowerCase();
+    const searchTerms = searchStudent.toLowerCase().split(' ');
+    const matchesSearch = searchTerms.every((term) =>
+      studentFullName.includes(term)
+    );
+
+    const matchesPaymentMethod =
+      selectedPaymentMethods.includes('all') ||
+      selectedPaymentMethods.includes(transaction.payment_method);
+
+    const matchesStudent =
+      selectedStudents.includes('all') ||
+      selectedStudents.includes(transaction.student?.id || '');
+
+    return matchesSearch && matchesPaymentMethod && matchesStudent;
   });
+
+  const uniqueStudents = transactions
+    .map(t => ({
+      value: t.student?.id || '',
+      label: `${t.student?.firstname} ${t.student?.lastname}`,
+    }))
+    .filter((student, index, self) => 
+      index === self.findIndex(s => s.value === student.value)
+    );
 
   return (
     <div className="p-6">
-      <div className="flex gap-4 mb-6">
-        <Input
-          placeholder="Buscar por estudiante..."
-          value={searchStudent}
-          onChange={(e) => setSearchStudent(e.target.value)}
-          className="w-[200px]"
-        />
-        <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Método de pago" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="cash">Efectivo</SelectItem>
-            <SelectItem value="transfer">Transferencia</SelectItem>
-            <SelectItem value="card">Tarjeta</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex gap-4">
+          <Input
+            placeholder="Buscar por nombre completo..."
+            value={searchStudent}
+            onChange={(e) => setSearchStudent(e.target.value)}
+            className="w-[300px]"
+          />
+          <div className="flex gap-2">
+            <Button
+              variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
+              onClick={() => setSelectedPaymentMethods(['all'])}
+            >
+              Todos los métodos
+            </Button>
+            <Button
+              variant={selectedPaymentMethods.includes('cash') ? 'default' : 'outline'}
+              onClick={() => handlePaymentMethodChange('cash')}
+            >
+              Efectivo
+            </Button>
+            <Button
+              variant={selectedPaymentMethods.includes('transfer') ? 'default' : 'outline'}
+              onClick={() => handlePaymentMethodChange('transfer')}
+            >
+              Transferencia
+            </Button>
+            <Button
+              variant={selectedPaymentMethods.includes('card') ? 'default' : 'outline'}
+              onClick={() => handlePaymentMethodChange('card')}
+            >
+              Tarjeta
+            </Button>
+          </div>
+          <MultiSelect
+            options={[{value: 'all', label: 'Todos los estudiantes'}, ...uniqueStudents]}
+            selectedValues={selectedStudents}
+            onSelectedChange={handleStudentSelect}
+            title="Estudiantes"
+            placeholder="Seleccionar estudiantes"
+            searchPlaceholder="Buscar estudiante..."
+            emptyMessage="No se encontraron estudiantes"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Label className="text-sm font-medium">Mostrar/Ocultar columnas:</Label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toggleColumn('student')}
+          >
+            {visibleColumns.student ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Estudiante
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toggleColumn('amount')}
+          >
+            {visibleColumns.amount ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Monto
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toggleColumn('paymentMethod')}
+          >
+            {visibleColumns.paymentMethod ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Método
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toggleColumn('date')}
+          >
+            {visibleColumns.date ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Fecha
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toggleColumn('notes')}
+          >
+            {visibleColumns.notes ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />} Notas
+          </Button>
+        </div>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Estudiante</TableHead>
-            <TableHead>Monto</TableHead>
-            <TableHead>Método</TableHead>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Notas</TableHead>
+            {visibleColumns.student && <TableHead>Estudiante</TableHead>}
+            {visibleColumns.amount && <TableHead>Monto</TableHead>}
+            {visibleColumns.paymentMethod && <TableHead>Método</TableHead>}
+            {visibleColumns.date && <TableHead>Fecha</TableHead>}
+            {visibleColumns.notes && <TableHead>Notas</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredTransactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell>{transaction.student?.firstname}</TableCell>
+            <TableRow key={transaction.id}>
+              {visibleColumns.student && (
+                <TableCell>
+                  {transaction.student?.firstname} {transaction.student?.lastname}
+                </TableCell>
+              )}
+              {visibleColumns.amount && (
                 <TableCell>${transaction.amount}</TableCell>
+              )}
+              {visibleColumns.paymentMethod && (
                 <TableCell>
                   {transaction.payment_method === 'cash' && 'Efectivo'}
                   {transaction.payment_method === 'transfer' && 'Transferencia'}
                   {transaction.payment_method === 'card' && 'Tarjeta'}
                 </TableCell>
+              )}
+              {visibleColumns.date && (
                 <TableCell>
                   {new Date(transaction.created_at).toLocaleDateString()}
                 </TableCell>
+              )}
+              {visibleColumns.notes && (
                 <TableCell>{transaction.notes}</TableCell>
-              </TableRow>
-            ))}
+              )}
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
