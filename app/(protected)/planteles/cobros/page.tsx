@@ -31,6 +31,8 @@ import { Student, Transaction } from '@/lib/types';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [searchStudent, setSearchStudent] = useState('');
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchTransactions();
@@ -45,8 +47,34 @@ export default function CobrosPage() {
     }
   };
 
+  const filteredTransactions = transactions.filter(transaction => {
+    const matchesStudent = transaction.student?.firstname.toLowerCase().includes(searchStudent.toLowerCase());
+    const matchesPaymentMethod = paymentMethodFilter === 'all' || transaction.payment_method === paymentMethodFilter;
+    return matchesStudent && matchesPaymentMethod;
+  });
+
   return (
     <div className="p-6">
+      <div className="flex gap-4 mb-6">
+        <Input
+          placeholder="Buscar por estudiante..."
+          value={searchStudent}
+          onChange={(e) => setSearchStudent(e.target.value)}
+          className="w-[200px]"
+        />
+        <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Método de pago" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="cash">Efectivo</SelectItem>
+            <SelectItem value="transfer">Transferencia</SelectItem>
+            <SelectItem value="card">Tarjeta</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -58,8 +86,7 @@ export default function CobrosPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions &&
-            transactions.map((transaction) => (
+          {filteredTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell>{transaction.student?.firstname}</TableCell>
                 <TableCell>${transaction.amount}</TableCell>
