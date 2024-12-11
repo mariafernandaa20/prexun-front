@@ -1,6 +1,6 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+'use client';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -16,20 +16,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Pencil, Trash2, Plus } from "lucide-react";
-import { toast } from "sonner";
-import { User, UserFormData } from "@/lib/types";
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Pencil, Trash2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { User, UserFormData } from '@/lib/types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,12 +40,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { MultiSelect } from "@/components/multi-select";
-import { createUser, deleteUser, getCampuses, getUsers, updateUser } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
-import axiosInstance from "@/lib/api/axiosConfig";
-import { useActiveCampusStore } from "@/lib/store/plantel-store";
+} from '@/components/ui/alert-dialog';
+import { MultiSelect } from '@/components/multi-select';
+import {
+  createUser,
+  deleteUser,
+  getCampuses,
+  getUsers,
+  updateUser,
+} from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
+import axiosInstance from '@/lib/api/axiosConfig';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 interface Campus {
   id: string;
@@ -63,10 +69,10 @@ export default function page() {
   const [campuses, setCampuses] = useState<{ id: string; name: string }[]>([]);
   const [formData, setFormData] = useState<UserFormData>({
     id: undefined,
-    name: "",
-    email: "",
-    role: "admin",
-    password: "",
+    name: '',
+    email: '',
+    role: 'admin',
+    password: '',
     campuses: [],
   });
 
@@ -80,11 +86,11 @@ export default function page() {
     try {
       setIsLoading(true);
       const response = await getUsers();
-      toast({ title: "Usuarios cargados correctamente" });
+      toast({ title: 'Usuarios cargados correctamente' });
       setUsers(response);
       setIsLoading(false);
     } catch (error) {
-      toast({ title: "Error al cargar usuarios" });
+      toast({ title: 'Error al cargar usuarios' });
       setIsLoading(false);
     }
   };
@@ -99,17 +105,17 @@ export default function page() {
         }))
       );
     } catch (error) {
-      toast({ title: "Error al cargar planteles" });
+      toast({ title: 'Error al cargar planteles' });
     }
   };
 
   const handleOpenCreateModal = () => {
     setSelectedUser(null);
     setFormData({
-      name: "",
-      email: "",
-      role: "user",
-      password: "",
+      name: '',
+      email: '',
+      role: 'user',
+      password: '',
       campuses: [],
     });
     setIsModalOpen(true);
@@ -122,7 +128,9 @@ export default function page() {
       name: user.name,
       email: user.email,
       role: user.role,
-      campuses: user.campuses ? user.campuses.map(campus => campus.id.toString()) : [],
+      campuses: user.campuses
+        ? user.campuses.map((campus) => campus.id.toString())
+        : [],
     });
     setIsModalOpen(true);
   };
@@ -133,18 +141,18 @@ export default function page() {
       if (selectedUser) {
         const response = await updateUser(formData as unknown as User);
         await fetchUsers();
-        toast({ title: "Usuario actualizado correctamente" });
+        toast({ title: 'Usuario actualizado correctamente' });
       } else {
         const response = await createUser(formData as unknown as User);
         await fetchUsers();
-        toast({ title: "Usuario creado correctamente" });
+        toast({ title: 'Usuario creado correctamente' });
       }
       setIsModalOpen(false);
     } catch (error: any) {
       toast({
-        title: "Error al guardar usuario",
-        description: error.response?.data?.message || "Intente nuevamente",
-        variant: "destructive",
+        title: 'Error al guardar usuario',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
       });
     }
   };
@@ -155,10 +163,10 @@ export default function page() {
     try {
       await deleteUser(selectedUser.id);
       await fetchUsers();
-      toast({ title: "Usuario eliminado correctamente" });
+      toast({ title: 'Usuario eliminado correctamente' });
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      toast({ title: "Error al eliminar usuario" });
+      toast({ title: 'Error al eliminar usuario' });
     }
   };
 
@@ -206,7 +214,9 @@ export default function page() {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
-                  {user.campuses ? user.campuses.map(campus => campus.name).join(", ") : "Sin planteles"}
+                  {user.campuses
+                    ? user.campuses.map((campus) => campus.name).join(', ')
+                    : 'Sin planteles'}
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
@@ -246,12 +256,12 @@ export default function page() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {selectedUser ? "Editar Usuario" : "Crear Usuario"}
+              {selectedUser ? 'Editar Usuario' : 'Crear Usuario'}
             </DialogTitle>
             <DialogDescription>
               {selectedUser
-                ? "Modifica los datos del usuario"
-                : "Introduce los datos del nuevo usuario"}
+                ? 'Modifica los datos del usuario'
+                : 'Introduce los datos del nuevo usuario'}
             </DialogDescription>
           </DialogHeader>
 
@@ -287,7 +297,7 @@ export default function page() {
                 onValueChange={(value) =>
                   setFormData((prev) => ({
                     ...prev,
-                    role: value as User["role"],
+                    role: value as User['role'],
                   }))
                 }
               >
@@ -320,13 +330,13 @@ export default function page() {
             </div>
             <div>
               <Label htmlFor="password">
-                {!selectedUser ? "Contraseña" : "Nueva Contraseña"}
+                {!selectedUser ? 'Contraseña' : 'Nueva Contraseña'}
               </Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                value={formData.password || ""}
+                value={formData.password || ''}
                 onChange={handleInputChange}
                 required={!selectedUser}
               />
@@ -341,7 +351,7 @@ export default function page() {
                 Cancelar
               </Button>
               <Button type="submit">
-                {selectedUser ? "Actualizar" : "Crear"}
+                {selectedUser ? 'Actualizar' : 'Crear'}
               </Button>
             </DialogFooter>
           </form>

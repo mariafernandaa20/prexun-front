@@ -26,12 +26,15 @@ export interface UserFormData {
 
 export interface Student {
   id?: string | null;
+  period_id: string;
+  period?: Period;
   username: string;
   firstname: string;
   lastname: string;
   email: string;
   phone: string;
   campus_id: string;
+  current_debt?: number;
   type: 'preparatoria' | 'facultad';
   status: 'active' | 'inactive';
 }
@@ -47,6 +50,18 @@ export interface Cohort {
 export interface Period {
   id: string;
   name: string;
+  price: number;
   start_date: string;
   end_date: string;
+}
+
+export interface Transaction {
+  id?: number;
+  student_id: number;
+  amount: number;
+  payment_method: 'cash' | 'transfer' | 'card';
+  denominations?: Record<string, number>;
+  created_at?: string;
+  notes?: string;
+  student?: Student;
 }

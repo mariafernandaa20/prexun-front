@@ -29,4 +29,6 @@ export const API_ENDPOINTS = {
   CREATE_PERIOD: '/api/periods',
   UPDATE_PERIOD: '/api/periods',
   DELETE_PERIOD: '/api/periods',
+  CREATE_CHARGE: '/api/charges',
+  GET_CHARGES: '/api/charges',
 } as const; 

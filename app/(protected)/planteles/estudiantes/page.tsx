@@ -8,12 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Student } from "@/lib/types";
+import { Period, Student } from "@/lib/types";
 import {
   getStudents,
   createStudent,
   updateStudent,
   deleteStudent,
+  getPeriods,
 } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Pencil, Trash2, Upload } from "lucide-react";
@@ -28,12 +29,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ImportStudent } from "./impoort-student";
+import ChargesForm from "@/components/dashboard/estudiantes/charges-form";
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [periods, setPeriods] = useState<Period[]>([]);
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
 
@@ -55,7 +58,14 @@ export default function Page() {
 
   useEffect(() => {
     fetchStudents();
+    fetchPeriods();
   }, []);
+
+  const fetchPeriods = async () => {
+    const response = await getPeriods();
+
+    setPeriods(response);
+  };
 
   const handleOpenCreateModal = () => {
     setSelectedStudent(null);
@@ -102,7 +112,7 @@ export default function Page() {
       });
     }
   };
-
+  console.log(students);
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -129,6 +139,8 @@ export default function Page() {
               <TableHead>Email</TableHead>
               <TableHead>Teléfono</TableHead>
               <TableHead>Curso</TableHead>
+              <TableHead>Periodo</TableHead>
+              <TableHead>Debe</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -139,8 +151,11 @@ export default function Page() {
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.phone}</TableCell>
                 <TableCell>{student.type}</TableCell>
+                <TableCell>{student.period.name}</TableCell>
+                <TableCell>{student.current_debt}</TableCell>
                 <TableCell className="p-4">
                   <div className="flex gap-2 justify-end">
+                    <ChargesForm student={student} />
                     <Button
                       variant="ghost"
                       size="icon"
@@ -175,6 +190,7 @@ export default function Page() {
             student={selectedStudent}
             onSubmit={handleSubmit}
             onCancel={() => setIsModalOpen(false)}
+            periods={periods}
           />
         </DialogContent>
       </Dialog>

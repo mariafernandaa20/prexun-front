@@ -1,6 +1,6 @@
 import axiosInstance from "./api/axiosConfig";
 import { API_ENDPOINTS } from "./api/endpoints";
-import { Campus, Period, Student, User } from "./types";
+import { Campus, Period, Student, Transaction, User } from "./types";
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
@@ -139,6 +139,7 @@ export const getCohorts = async () => {
 
 export const getPeriods = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.PERIODS);
+  console.log(response.data);
   return response.data;
 };
 
@@ -159,6 +160,16 @@ export const deletePeriod = async (id: string) => {
   const response = await axiosInstance.delete(
     `${API_ENDPOINTS.DELETE_PERIOD}/${id}`
   );
+  return response.data;
+};
+
+export const getCharges = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.GET_CHARGES);
+  return response.data;
+};
+
+export const createCharge = async (charge: Transaction) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CHARGE, charge);
   return response.data;
 };
 

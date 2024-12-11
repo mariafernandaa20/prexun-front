@@ -1,41 +1,51 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Campus, Student } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from 'react';
+import { Campus, Period, Student } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { getCohorts } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { getCohorts } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 interface StudentFormProps {
   student?: Student | null;
   onSubmit: (data: Student) => void;
   onCancel: () => void;
   campusId: string;
+  periods: Period[];
 }
 
-export function StudentForm({ student, onSubmit, onCancel, campusId }: StudentFormProps) {
+export function StudentForm({
+  student,
+  onSubmit,
+  onCancel,
+  campusId,
+  periods,
+}: StudentFormProps) {
   const { toast } = useToast();
-  const [cohorts, setCohorts] = useState<Array<{ id: string; name: string }>>([]);
+  const [cohorts, setCohorts] = useState<Array<{ id: string; name: string }>>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Student>({
     id: student?.id || null,
+    period_id: student?.period_id || null,
     campus_id: campusId,
-    username: student?.username || "",
-    firstname: student?.firstname || "",
-    lastname: student?.lastname || "",
-    email: student?.email || "",
-    phone: student?.phone || "",
-    type: student?.type || "preparatoria",
-    status: student?.status || "active",
+    username: student?.username || '',
+    firstname: student?.firstname || '',
+    lastname: student?.lastname || '',
+    email: student?.email || '',
+    phone: student?.phone || '',
+    type: student?.type || 'preparatoria',
+    status: student?.status || 'active',
   });
 
   useEffect(() => {
@@ -46,9 +56,9 @@ export function StudentForm({ student, onSubmit, onCancel, campusId }: StudentFo
         setCohorts(response);
       } catch (error: any) {
         toast({
-          title: "Error al cargar cohortes",
-          description: error.response?.data?.message || "Intente nuevamente",
-          variant: "destructive",
+          title: 'Error al cargar cohortes',
+          description: error.response?.data?.message || 'Intente nuevamente',
+          variant: 'destructive',
         });
       } finally {
         setIsLoading(false);
@@ -60,12 +70,12 @@ export function StudentForm({ student, onSubmit, onCancel, campusId }: StudentFo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.username || !formData.email) {
       toast({
-        title: "Error de validación",
-        description: "Por favor complete todos los campos requeridos",
-        variant: "destructive",
+        title: 'Error de validación',
+        description: 'Por favor complete todos los campos requeridos',
+        variant: 'destructive',
       });
       return;
     }
@@ -76,10 +86,8 @@ export function StudentForm({ student, onSubmit, onCancel, campusId }: StudentFo
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement> | { name: string; value: string }
   ) => {
-    const { name, value } = 'target' in e 
-      ? e.target 
-      : e;
-    
+    const { name, value } = 'target' in e ? e.target : e;
+    console.log(name, value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -92,6 +100,30 @@ export function StudentForm({ student, onSubmit, onCancel, campusId }: StudentFo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="period_id">Periodo</Label>
+        <Select
+          name="period_id"
+          value={Number(formData.period_id) as any}
+          onValueChange={(value) =>
+            handleChange({
+              name: 'period_id',
+              value: value,
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecciona el periodo" />
+          </SelectTrigger>
+          <SelectContent>
+            {periods.map((period) => (
+              <SelectItem key={period.id} value={period.id}>
+                {period.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="username">Usuario</Label>
         <Input
@@ -171,10 +203,10 @@ export function StudentForm({ student, onSubmit, onCancel, campusId }: StudentFo
         <Select
           name="type"
           value={formData.type}
-          onValueChange={(value) => 
-            handleChange({ 
-              name: "type", 
-              value: value as 'preparatoria' | 'facultad' 
+          onValueChange={(value) =>
+            handleChange({
+              name: 'type',
+              value: value as 'preparatoria' | 'facultad',
             })
           }
         >
@@ -196,4 +228,4 @@ export function StudentForm({ student, onSubmit, onCancel, campusId }: StudentFo
       </div>
     </form>
   );
-} 
+}

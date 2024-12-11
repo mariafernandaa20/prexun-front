@@ -197,6 +197,11 @@ const data = {
       icon: Users,
     },
     {
+      name: "Periodos",
+      url: "/planteles/periodos",
+      icon: CalendarClock,
+    },
+    {
       name: "Coherts",
       url: "/planteles/coherts",
       icon: BookOpen,
