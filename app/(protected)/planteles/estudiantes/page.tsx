@@ -32,6 +32,7 @@ import { ImportStudent } from "./impoort-student";
 import ChargesForm from "@/components/dashboard/estudiantes/charges-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/multi-select";
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -45,6 +46,23 @@ export default function Page() {
   const [searchPhone, setSearchPhone] = useState('');
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
+
+  const columnOptions = [
+    { value: 'username', label: 'Usuario' },
+    { value: 'created_at', label: 'Fecha de Inscripción' },
+    { value: 'email', label: 'Email' },
+    { value: 'phone', label: 'Teléfono' },
+    { value: 'type', label: 'Curso' },
+    { value: 'period', label: 'Periodo' },
+    { value: 'debt', label: 'Debe' },
+    { value: 'actions', label: 'Acciones' }
+  ];
+
+  const [visibleColumns, setVisibleColumns] = useState(columnOptions.map(col => col.value));
+
+  const handleColumnSelect = (selectedColumns: string[]) => {
+    setVisibleColumns(selectedColumns);
+  };
 
   const fetchStudents = async () => {
     try {
@@ -69,7 +87,6 @@ export default function Page() {
 
   const fetchPeriods = async () => {
     const response = await getPeriods();
-
     setPeriods(response);
   };
 
@@ -163,6 +180,16 @@ export default function Page() {
               <SelectItem value="facultad">Facultad</SelectItem>
             </SelectContent>
           </Select>
+          <MultiSelect
+            options={columnOptions}
+            hiddeBadages={true}
+            selectedValues={visibleColumns}
+            onSelectedChange={handleColumnSelect}
+            title="Columnas"
+            placeholder="Seleccionar columnas"
+            searchPlaceholder="Buscar columna..."
+            emptyMessage="No se encontraron columnas"
+          />
           <ImportStudent
             fetchStudents={fetchStudents}
             campusId={activeCampus?.id || ""}
@@ -180,45 +207,53 @@ export default function Page() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Usuario</TableHead>
-              <TableHead>Fecha de Inscripción</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Teléfono</TableHead>
-              <TableHead>Curso</TableHead>
-              <TableHead>Periodo</TableHead>
-              <TableHead>Debe</TableHead>
-              <TableHead>Acciones</TableHead>
+              {visibleColumns.includes('username') && <TableHead>Usuario</TableHead>}
+              {visibleColumns.includes('created_at') && <TableHead>Fecha de Inscripción</TableHead>}
+              {visibleColumns.includes('email') && <TableHead>Email</TableHead>}
+              {visibleColumns.includes('phone') && <TableHead>Teléfono</TableHead>}
+              {visibleColumns.includes('type') && <TableHead>Curso</TableHead>}
+              {visibleColumns.includes('period') && <TableHead>Periodo</TableHead>}
+              {visibleColumns.includes('debt') && <TableHead>Debe</TableHead>}
+              {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredStudents.map((student) => (
               <TableRow key={student.id}>
-                <TableCell>{student.firstname} {student.lastname}</TableCell>
-                <TableCell>{new Date(student.created_at).toLocaleDateString()}</TableCell>
-                <TableCell>{student.email}</TableCell>
-                <TableCell>{student.phone}</TableCell>
-                <TableCell>{student.type}</TableCell>
-                <TableCell>{student.period.name}</TableCell>
-                <TableCell>{student.current_debt}</TableCell>
-                <TableCell className="p-4">
-                  <div className="flex gap-2 justify-end">
-                    <ChargesForm student={student} />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleOpenEditModal(student)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(student.id!)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+                {visibleColumns.includes('username') && 
+                  <TableCell>{student.firstname} {student.lastname}</TableCell>}
+                {visibleColumns.includes('created_at') && 
+                  <TableCell>{new Date(student.created_at).toLocaleDateString()}</TableCell>}
+                {visibleColumns.includes('email') && 
+                  <TableCell>{student.email}</TableCell>}
+                {visibleColumns.includes('phone') && 
+                  <TableCell>{student.phone}</TableCell>}
+                {visibleColumns.includes('type') && 
+                  <TableCell>{student.type}</TableCell>}
+                {visibleColumns.includes('period') && 
+                  <TableCell>{student.period.name}</TableCell>}
+                {visibleColumns.includes('debt') && 
+                  <TableCell>{student.current_debt}</TableCell>}
+                {visibleColumns.includes('actions') && 
+                  <TableCell className="p-4">
+                    <div className="flex gap-2 justify-end">
+                      <ChargesForm student={student} />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenEditModal(student)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(student.id!)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>}
               </TableRow>
             ))}
           </TableBody>
