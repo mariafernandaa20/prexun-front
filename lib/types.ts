@@ -56,6 +56,21 @@ export interface Period {
   end_date: string;
 }
 
+export interface Municipio {
+  id?: string;
+  name: string;
+}
+
+export interface Prepa {
+  id?: string;
+  name: string;
+}
+
+export interface Facultad {
+  id?: string;
+  name: string;
+}
+
 export interface Transaction {
   id?: number;
   student_id: number;

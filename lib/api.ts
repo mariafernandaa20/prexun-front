@@ -1,6 +1,6 @@
 import axiosInstance from "./api/axiosConfig";
 import { API_ENDPOINTS } from "./api/endpoints";
-import { Campus, Period, Student, Transaction, User } from "./types";
+import { Campus, Facultad, Municipio, Period, Prepa, Student, Transaction, User } from "./types";
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
@@ -170,6 +170,81 @@ export const getCharges = async () => {
 
 export const createCharge = async (charge: Transaction) => {
   const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CHARGE, charge);
+  return response.data;
+};
+
+export const getMunicipios = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.MUNICIPIOS);
+  return response.data;
+};
+
+export const createMunicipio = async (municipio: Municipio) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_MUNICIPIO, municipio);
+  return response.data;
+};
+
+export const updateMunicipio = async (municipio: Municipio) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_MUNICIPIO}/${municipio.id}`,
+    municipio
+  );
+  return response.data;
+};
+
+export const deleteMunicipio = async (id: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_MUNICIPIO}/${id}`
+  );
+  return response.data;
+};
+
+export const getPrepas = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.PREPAS);
+  return response.data;
+};
+
+export const createPrepa = async (prepa: Prepa) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_PREPA, prepa);
+  return response.data;
+};
+
+export const updatePrepa = async (prepa: Prepa) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_PREPA}/${prepa.id}`,
+    prepa
+  );
+  return response.data;
+};
+
+export const deletePrepa = async (id: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_PREPA}/${id}`
+  );
+  return response.data;
+};
+
+export const getFacultades = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.FACULTADES);
+  return response.data;
+};
+
+export const createFacultad = async (facultad: Facultad) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_FACULTAD, facultad);
+  return response.data;
+};
+
+export const updateFacultad = async (facultad: Facultad) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_FACULTAD}/${facultad.id}`,
+    facultad
+  );
+  return response.data;
+};
+
+export const deleteFacultad = async (id: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_FACULTAD}/${id}`
+  );
   return response.data;
 };
 

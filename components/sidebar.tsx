@@ -180,6 +180,11 @@ const data = {
       icon: CalendarClock,
     },
     {
+      name: "Municipios",
+      url: "/dashboard/municipios",
+      icon: Map,
+    },
+    {
       name: "Preparatorias",
       url: "/dashboard/preparatorias",
       icon: BookOpen,
@@ -187,11 +192,6 @@ const data = {
     {
       name: "Facultades",
       url: "/dashboard/facultades",
-      icon: BookOpen,
-    },
-    {
-      name: "Escuelas",
-      url: "/dashboard/escuelas",
       icon: BookOpen,
     },
   ],
