@@ -194,6 +194,16 @@ const data = {
       url: "/dashboard/facultades",
       icon: BookOpen,
     },
+    {
+      name: "Carreras",
+      url: "/dashboard/carreras",
+      icon: BookOpen,
+    },
+    {
+      name: "Módulos",
+      url: "/dashboard/modulos",
+      icon: BookOpen,
+    },
   ],
   plantel_navigation: [
     {
@@ -221,7 +231,7 @@ const data = {
       url: "/planteles/coherts",
       icon: BookOpen,
     },
-
+ 
   ],
 };
 

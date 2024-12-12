@@ -43,4 +43,12 @@ export const API_ENDPOINTS = {
   CREATE_FACULTAD: '/api/facultades',
   UPDATE_FACULTAD: '/api/facultades',
   DELETE_FACULTAD: '/api/facultades',
+  CARREERAS: '/api/carreras',
+  CREATE_CARREERA: '/api/carreras',
+  UPDATE_CARREERA: '/api/carreras',
+  DELETE_CARREERA: '/api/carreras',
+  MODULOS: '/api/modulos',
+  CREATE_MODULO: '/api/modulos',
+  UPDATE_MODULO: '/api/modulos',
+  DELETE_MODULO: '/api/modulos',
 } as const; 

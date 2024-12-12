@@ -1,6 +1,6 @@
 import axiosInstance from "./api/axiosConfig";
 import { API_ENDPOINTS } from "./api/endpoints";
-import { Campus, Facultad, Municipio, Period, Prepa, Student, Transaction, User } from "./types";
+import { Campus, Carrera, Facultad, Modulo, Municipio, Period, Prepa, Student, Transaction, User } from "./types";
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
@@ -247,4 +247,55 @@ export const deleteFacultad = async (id: string) => {
   );
   return response.data;
 };
+
+export const getCarreras = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.CARREERAS);
+  return response.data;
+};
+
+export const createCarrera = async (carrera: Carrera) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CARREERA, carrera);
+  return response.data;
+};
+
+export const updateCarrera = async (carrera: Carrera) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_CARREERA}/${carrera.id}`,
+    carrera
+  );
+  return response.data;
+};
+
+export const deleteCarrera = async (id: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_CARREERA}/${id}`
+  );
+  return response.data;
+};
+
+export const getModules = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.MODULOS);
+  return response.data;
+};
+
+export const createModule = async (modulo: Modulo) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_MODULO, modulo);
+  return response.data;
+};
+
+export const updateModule = async (modulo: Modulo) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_MODULO}/${modulo.id}`,
+    modulo
+  );
+  return response.data;
+};
+
+export const deleteModule = async (id: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_MODULO}/${id}`
+  );
+  return response.data;
+};
+
 

@@ -71,6 +71,17 @@ export interface Facultad {
   name: string;
 }
 
+export interface Carrera {
+  id?: string;
+  name: string;
+  facultad_id: string;
+}
+
+export interface Modulo {
+  id?: string;
+  name: string;
+}
+
 export interface Transaction {
   id?: number;
   student_id: number;
