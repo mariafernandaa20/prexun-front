@@ -54,7 +54,7 @@ export interface Student {
   municipio?: Municipio;
   prepa?: Prepa;
   facultad?: Facultad;
-  carrer?: Carrera;
+  carrera?: Carrera;
 }
 
 export interface Cohort {

@@ -388,6 +388,9 @@ export function StudentForm({
           </>
         ) : (
           <>
+
+          </>
+        )}
             <div className="space-y-2">
               <Label htmlFor="carrer_id">Preparatoria</Label>
               <Select
@@ -412,9 +415,6 @@ export function StudentForm({
                 </SelectContent>
               </Select>
             </div>
-          </>
-        )}
-
         <div className="space-y-2">
           <Label htmlFor="average">Promedio</Label>
           <Input
