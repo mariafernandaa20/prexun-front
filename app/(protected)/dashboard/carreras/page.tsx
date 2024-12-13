@@ -79,13 +79,19 @@ export default function Page() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const carreraData = {
+        ...selectedCarrera,
+        modulo_ids: selectedModulos
+      };
+      
       if (selectedCarrera?.id) {
-        await updateCarrera(selectedCarrera);
+        await updateCarrera(carreraData);
       } else {
-        await createCarrera(selectedCarrera);
+        await createCarrera(carreraData);
       }
       setIsDialogOpen(false);
       setSelectedCarrera(null);
+      setSelectedModulos([]);
       loadCarreras();
     } catch (error) {
       console.error('Error submitting carrera:', error);
@@ -119,10 +125,6 @@ export default function Page() {
 
   const handleModuloChange = (selectedIds: string[]) => {
     setSelectedModulos(selectedIds);
-    setSelectedCarrera(prev => prev ? {
-      ...prev,
-      modulos: modulos.filter(modulo => selectedIds.includes(modulo.id))
-    } : null);
   };
 
   return (
@@ -131,7 +133,10 @@ export default function Page() {
         <h1 className="text-2xl font-bold">Carreras</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setSelectedCarrera({ name: '', facultad_id: '' })}>
+            <Button onClick={() => {
+              setSelectedCarrera({ name: '', facultad_id: '' });
+              setSelectedModulos([]);
+            }}>
               Agregar Carrera
             </Button>
           </DialogTrigger>
@@ -143,7 +148,7 @@ export default function Page() {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Select
-                value={selectedCarrera?.facultad_id || ''}
+                value={Number(selectedCarrera?.facultad_id) as any || ''}
                 onValueChange={handleFacultadChange}
               >
                 <SelectTrigger>
