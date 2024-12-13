@@ -189,7 +189,7 @@ export function AdminSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={data.admin_navigation} />
-        <NavMain items={data.navMain} />
+        <NavMain title="Configuración" items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
         <ThemeToggleSidebar />
