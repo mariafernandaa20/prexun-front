@@ -28,7 +28,7 @@ export interface Student {
   id?: string | null;
   period_id: string;
   period?: Period;
-  username: string;
+  username?: string;
   firstname: string;
   lastname: string;
   email: string;
@@ -37,7 +37,24 @@ export interface Student {
   created_at?: string;
   current_debt?: number;
   type: 'preparatoria' | 'facultad';
-  status: 'active' | 'inactive';
+  status: 'Activo' | 'Inactivo' | 'Baja' | 'Suspendido' | 'Transferido';
+  municipio_id: string;
+  facultad_id: string;
+  carrer_id: string;
+  prepa_id: string;
+  tutor_name: string;
+  tutor_phone: string;
+  tutor_relationship: string;
+  average: number;
+  attempts: string;
+  score: number;
+  health_conditions: string;
+  how_found_out: string;
+  preferred_communication: string;
+  municipio?: Municipio;
+  prepa?: Prepa;
+  facultad?: Facultad;
+  carrer?: Carrera;
 }
 
 export interface Cohort {

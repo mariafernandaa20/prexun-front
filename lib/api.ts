@@ -255,6 +255,7 @@ export const getCarreras = async () => {
 };
 
 export const createCarrera = async (carrera: Carrera) => {
+  console.log(carrera);
   const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CARREERA, carrera);
   return response.data;
 };
