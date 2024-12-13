@@ -30,7 +30,7 @@ import { Receipt } from 'lucide-react';
 import { Student, Transaction } from '@/lib/types';
 import { createCharge } from '@/lib/api';
 
-export default function ChargesForm({ student }: { student: Student }) {
+export default function ChargesForm({ fetchStudents, student }: { fetchStudents: () => void, student: Student }) {
   const [formData, setFormData] = useState<Transaction>({
     student_id: Number(student.id),
     amount: 0,
@@ -50,6 +50,7 @@ export default function ChargesForm({ student }: { student: Student }) {
     try {
       await createCharge(formData);
       setOpen(false);
+      fetchStudents();
     } catch (error: any) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);

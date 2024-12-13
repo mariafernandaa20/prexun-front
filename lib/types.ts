@@ -74,6 +74,7 @@ export interface Facultad {
 export interface Carrera {
   id?: string;
   name: string;
+  modulos?: Modulo[];
   facultad_id: string;
 }
 

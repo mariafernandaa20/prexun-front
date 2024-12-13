@@ -23,8 +23,9 @@ import {
   updateCarrera,
   deleteCarrera,
   getFacultades,
+  getModules,
 } from '@/lib/api';
-import type { Carrera, Facultad } from '@/lib/types';
+import type { Carrera, Facultad, Modulo } from '@/lib/types';
 import {
   Select,
   SelectContent,
@@ -32,16 +33,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { MultiSelect } from '@/components/multi-select';
 
 export default function Page() {
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [facultades, setFacultades] = useState<Facultad[]>([]);
   const [selectedCarrera, setSelectedCarrera] = useState<Carrera | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [modulos, setModulos] = useState<Modulo[]>([]);
+  const [selectedModulos, setSelectedModulos] = useState<string[]>([]);
 
   useEffect(() => {
     loadCarreras();
     loadFacultades();
+    loadModulos();
   }, []);
 
   const loadFacultades = async () => {
@@ -61,7 +66,16 @@ export default function Page() {
       console.error('Error loading carreras:', error);
     }
   };
-  
+
+  const loadModulos = async () => {
+    try {
+      const data = await getModules();
+      setModulos(data);
+    } catch (error) {
+      console.error('Error loading modulos:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -80,6 +94,7 @@ export default function Page() {
 
   const handleEdit = (carrera: Carrera) => {
     setSelectedCarrera({ ...carrera });
+    setSelectedModulos(carrera.modulos?.map(m => m.id) || []);
     setIsDialogOpen(true);
   };
 
@@ -100,6 +115,14 @@ export default function Page() {
 
   const handleNameChange = (value: string) => {
     setSelectedCarrera((prev) => prev ? { ...prev, name: value } : null);
+  };
+
+  const handleModuloChange = (selectedIds: string[]) => {
+    setSelectedModulos(selectedIds);
+    setSelectedCarrera(prev => prev ? {
+      ...prev,
+      modulos: modulos.filter(modulo => selectedIds.includes(modulo.id))
+    } : null);
   };
 
   return (
@@ -139,6 +162,18 @@ export default function Page() {
                 value={selectedCarrera?.name || ''}
                 onChange={(e) => handleNameChange(e.target.value)}
               />
+              <MultiSelect
+                options={modulos.map((modulo) => ({
+                  value: modulo.id,
+                  label: modulo.name,
+                }))}
+                selectedValues={selectedModulos}
+                onSelectedChange={handleModuloChange}
+                title="Módulos"
+                placeholder="Seleccionar módulos"
+                searchPlaceholder="Buscar módulo..."
+                emptyMessage="No se encontraron módulos"
+              />
 
               <Button type="submit">
                 {selectedCarrera?.id ? 'Actualizar' : 'Crear'}
@@ -160,6 +195,7 @@ export default function Page() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
+                  <TableHead>Módulos</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -167,6 +203,9 @@ export default function Page() {
                 {carrerasFacultad.map((carrera) => (
                   <TableRow key={carrera.id}>
                     <TableCell>{carrera.name}</TableCell>
+                    <TableCell>
+                      {carrera.modulos?.map(modulo => modulo.name).join(', ') || 'Sin módulos'}
+                    </TableCell>
                     <TableCell className="space-x-2">
                       <Button variant="outline" onClick={() => handleEdit(carrera)}>
                         Editar
@@ -182,7 +221,7 @@ export default function Page() {
                 ))}
                 {carrerasFacultad.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">
+                    <TableCell colSpan={3} className="text-center text-muted-foreground">
                       No hay carreras registradas para esta facultad
                     </TableCell>
                   </TableRow>

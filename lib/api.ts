@@ -250,6 +250,7 @@ export const deleteFacultad = async (id: string) => {
 
 export const getCarreras = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.CARREERAS);
+  console.log(response.data);
   return response.data;
 };
 
@@ -298,4 +299,17 @@ export const deleteModule = async (id: string) => {
   return response.data;
 };
 
+export const associateModulos = async (carreraId: string, moduloIds: string[]) => {
+  const response = await axiosInstance.post(
+    `${API_ENDPOINTS.CARREERAS}/${carreraId}/modulos`,
+    moduloIds
+  );
+  return response.data;
+};
 
+export const dissociateModulo = async (carreraId: string, moduloId: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.CARREERAS}/${carreraId}/modulos/${moduloId}`
+  );
+  return response.data;
+};

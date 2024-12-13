@@ -100,8 +100,8 @@ export default function FacultadesPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">Gestión de Facultades</h1>
-      
+      <h1 className="text-2xl font-bold mb-6">Facultades</h1>
+
       <div className="flex gap-4 mb-6">
         <Input
           placeholder="Nueva facultad"
