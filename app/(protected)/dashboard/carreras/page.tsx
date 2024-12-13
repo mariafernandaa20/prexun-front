@@ -44,8 +44,6 @@ export default function Page() {
     loadFacultades();
   }, []);
 
-
-
   const loadFacultades = async () => {
     try {
       const data = await getFacultades();
@@ -117,12 +115,12 @@ export default function Page() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {selectedCarrera ? 'Editar Carrera' : 'Agregar Nueva Carrera'}
+                {selectedCarrera?.id ? 'Editar Carrera' : 'Agregar Nueva Carrera'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Select
-                value={Number(selectedCarrera?.facultad_id) as any}
+                value={selectedCarrera?.facultad_id || ''}
                 onValueChange={handleFacultadChange}
               >
                 <SelectTrigger>
@@ -143,43 +141,57 @@ export default function Page() {
               />
 
               <Button type="submit">
-                {selectedCarrera ? 'Actualizar' : 'Crear'}
+                {selectedCarrera?.id ? 'Actualizar' : 'Crear'}
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Facultad</TableHead>
-            <TableHead>Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {carreras.map((carrera) => (
-            <TableRow key={carrera.id}>
-              <TableCell>{carrera.name}</TableCell>
-              <TableCell>
-                {facultades.find((f) => f.id === carrera.facultad_id)?.name}
-              </TableCell>
-              <TableCell className="space-x-2">
-                <Button variant="outline" onClick={() => handleEdit(carrera)}>
-                  Editar
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => handleDelete(carrera.id)}
-                >
-                  Eliminar
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {facultades.map((facultad) => {
+        const carrerasFacultad = carreras.filter(
+          (carrera) => carrera.facultad_id === facultad.id
+        );
+
+        return (
+          <div key={facultad.id} className="mb-8 w-full">
+            <h2 className="text-xl font-semibold mb-4">{facultad.name}</h2>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {carrerasFacultad.map((carrera) => (
+                  <TableRow key={carrera.id}>
+                    <TableCell>{carrera.name}</TableCell>
+                    <TableCell className="space-x-2">
+                      <Button variant="outline" onClick={() => handleEdit(carrera)}>
+                        Editar
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => handleDelete(carrera.id)}
+                      >
+                        Eliminar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {carrerasFacultad.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={2} className="text-center text-muted-foreground">
+                      No hay carreras registradas para esta facultad
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        );
+      })}
     </div>
   );
 }
