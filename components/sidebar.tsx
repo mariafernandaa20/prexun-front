@@ -56,87 +56,35 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Variables",
       url: "#",
       icon: Settings2,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Municipios",
+          url: "/dashboard/municipios",
+          icon: Map,
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Preparatorias",
+          url: "/dashboard/preparatorias",
+          icon: BookOpen,
         },
         {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
+          title: "Facultades",
+          url: "/dashboard/facultades",
+          icon: BookOpen,
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "Carreras",
+          url: "/dashboard/carreras",
+          icon: BookOpen,
         },
         {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
+          title: "Módulos",
+          url: "/dashboard/modulos",
+          icon: BookOpen,
         },
       ],
     },
@@ -179,31 +127,6 @@ const data = {
       url: "/dashboard/periodos",
       icon: CalendarClock,
     },
-    {
-      name: "Municipios",
-      url: "/dashboard/municipios",
-      icon: Map,
-    },
-    {
-      name: "Preparatorias",
-      url: "/dashboard/preparatorias",
-      icon: BookOpen,
-    },
-    {
-      name: "Facultades",
-      url: "/dashboard/facultades",
-      icon: BookOpen,
-    },
-    {
-      name: "Carreras",
-      url: "/dashboard/carreras",
-      icon: BookOpen,
-    },
-    {
-      name: "Módulos",
-      url: "/dashboard/modulos",
-      icon: BookOpen,
-    },
   ],
   plantel_navigation: [
     {
@@ -245,7 +168,7 @@ export function TemplateSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.admin_navigation} />
+        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
@@ -266,6 +189,7 @@ export function AdminSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={data.admin_navigation} />
+        <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
         <ThemeToggleSidebar />

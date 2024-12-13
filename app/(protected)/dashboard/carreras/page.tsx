@@ -36,11 +36,7 @@ import {
 export default function Page() {
   const [carreras, setCarreras] = useState<Carrera[]>([]);
   const [facultades, setFacultades] = useState<Facultad[]>([]);
-  const [newCarrera, setNewCarrera] = useState<Carrera>({
-    name: '',
-    facultad_id: '',
-  });
-  const [editingCarrera, setEditingCarrera] = useState<Carrera | null>(null);
+  const [selectedCarrera, setSelectedCarrera] = useState<Carrera | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -48,39 +44,64 @@ export default function Page() {
     loadFacultades();
   }, []);
 
-  const loadCarreras = async () => {
-    const data = await getCarreras();
-    setCarreras(data);
-  };
+
 
   const loadFacultades = async () => {
-    const data = await getFacultades();
-    setFacultades(data);
+    try {
+      const data = await getFacultades();
+      setFacultades(data);
+    } catch (error) {
+      console.error('Error loading facultades:', error);
+    }
   };
 
+  const loadCarreras = async () => {
+    try {
+      const data = await getCarreras();
+      setCarreras(data);
+    } catch (error) {
+      console.error('Error loading carreras:', error);
+    }
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingCarrera?.id) {
-      await updateCarrera(editingCarrera);
-    } else {
-      await createCarrera(newCarrera);
+    try {
+      if (selectedCarrera?.id) {
+        await updateCarrera(selectedCarrera);
+      } else {
+        await createCarrera(selectedCarrera);
+      }
+      setIsDialogOpen(false);
+      setSelectedCarrera(null);
+      loadCarreras();
+    } catch (error) {
+      console.error('Error submitting carrera:', error);
     }
-    setIsDialogOpen(false);
-    setNewCarrera({ name: '', facultad_id: '' });
-    setEditingCarrera(null);
-    loadCarreras();
   };
 
   const handleEdit = (carrera: Carrera) => {
-    setEditingCarrera(carrera);
+    setSelectedCarrera({ ...carrera });
     setIsDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta carrera?')) {
-      await deleteCarrera(id);
-      loadCarreras();
+      try {
+        await deleteCarrera(id);
+        loadCarreras();
+      } catch (error) {
+        console.error('Error deleting carrera:', error);
+      }
     }
+  };
+
+  const handleFacultadChange = (value: string) => {
+    setSelectedCarrera((prev) => prev ? { ...prev, facultad_id: value } : null);
+  };
+
+  const handleNameChange = (value: string) => {
+    setSelectedCarrera((prev) => prev ? { ...prev, name: value } : null);
   };
 
   return (
@@ -89,25 +110,20 @@ export default function Page() {
         <h1 className="text-2xl font-bold">Carreras</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Agregar Carrera</Button>
+            <Button onClick={() => setSelectedCarrera({ name: '', facultad_id: '' })}>
+              Agregar Carrera
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingCarrera ? 'Editar Carrera' : 'Agregar Nueva Carrera'}
+                {selectedCarrera ? 'Editar Carrera' : 'Agregar Nueva Carrera'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Select
-                value={editingCarrera?.facultad_id || newCarrera.facultad_id}
-                onValueChange={(value) =>
-                  editingCarrera
-                    ? setEditingCarrera({
-                        ...editingCarrera,
-                        facultad_id: value,
-                      })
-                    : setNewCarrera({ ...newCarrera, facultad_id: value })
-                }
+                value={Number(selectedCarrera?.facultad_id) as any}
+                onValueChange={handleFacultadChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona una facultad" />
@@ -122,19 +138,12 @@ export default function Page() {
               </Select>
               <Input
                 placeholder="Nombre de la carrera"
-                value={editingCarrera?.name || newCarrera.name}
-                onChange={(e) =>
-                  editingCarrera
-                    ? setEditingCarrera({
-                        ...editingCarrera,
-                        name: e.target.value,
-                      })
-                    : setNewCarrera({ ...newCarrera, name: e.target.value })
-                }
+                value={selectedCarrera?.name || ''}
+                onChange={(e) => handleNameChange(e.target.value)}
               />
 
               <Button type="submit">
-                {editingCarrera ? 'Actualizar' : 'Crear'}
+                {selectedCarrera ? 'Actualizar' : 'Crear'}
               </Button>
             </form>
           </DialogContent>
