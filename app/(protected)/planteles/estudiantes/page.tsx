@@ -65,6 +65,7 @@ export default function Page() {
   const [typeFilter, setTypeFilter] = useState<
     'all' | 'preparatoria' | 'facultad'
   >('all');
+  const [periodFilter, setPeriodFilter] = useState<string>('all');
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
@@ -235,6 +236,8 @@ export default function Page() {
 
   const filteredStudents = students.filter((student) => {
     const matchesType = typeFilter === 'all' || student.type === typeFilter;
+    const matchesPeriod =
+      periodFilter === 'all' || student.period.id === periodFilter;
     const matchesName =
       student.firstname.toLowerCase().includes(searchName.toLowerCase()) ||
       student.lastname.toLowerCase().includes(searchName.toLowerCase());
@@ -243,7 +246,9 @@ export default function Page() {
       new Date(student.created_at).toLocaleDateString().includes(searchDate);
     const matchesPhone = !searchPhone || student.phone.includes(searchPhone);
 
-    return matchesType && matchesName && matchesDate && matchesPhone;
+    return (
+      matchesType && matchesPeriod && matchesName && matchesDate && matchesPhone
+    );
   });
 
   return (
@@ -269,6 +274,22 @@ export default function Page() {
               searchPlaceholder="Buscar columna..."
               emptyMessage="No se encontraron columnas"
             />
+            <Select
+              value={periodFilter}
+              onValueChange={(value) => setPeriodFilter(value)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filtrar por periodo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los periodos</SelectItem>
+                {periods.map((period) => (
+                  <SelectItem key={period.id} value={period.id}>
+                    {period.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button onClick={handleOpenCreateModal}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Nuevo Estudiante
@@ -281,7 +302,7 @@ export default function Page() {
             </Button>
           </div>
           {showtAllFilters && (
-            <div className="flex">
+            <div className="flex gap-4">
               <Input
                 type="date"
                 value={searchDate}
