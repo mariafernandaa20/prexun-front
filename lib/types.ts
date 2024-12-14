@@ -104,6 +104,7 @@ export interface Modulo {
 export interface Transaction {
   id?: number;
   student_id: number;
+  campus_id: number;
   amount: number;
   payment_method: 'cash' | 'transfer' | 'card';
   denominations?: Record<string, number>;

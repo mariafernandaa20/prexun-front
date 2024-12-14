@@ -446,6 +446,7 @@ export default function Page() {
                     <TableCell className="p-4">
                       <div className="flex gap-2 justify-end">
                         <ChargesForm
+                          campusId={Number(activeCampus?.id)}
                           fetchStudents={fetchStudents}
                           student={student}
                         />

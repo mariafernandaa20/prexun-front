@@ -30,9 +30,10 @@ import { Receipt } from 'lucide-react';
 import { Student, Transaction } from '@/lib/types';
 import { createCharge } from '@/lib/api';
 
-export default function ChargesForm({ fetchStudents, student }: { fetchStudents: () => void, student: Student }) {
+export default function ChargesForm({ fetchStudents, student, campusId }: { fetchStudents: () => void, student: Student, campusId: number }) {
   const [formData, setFormData] = useState<Transaction>({
     student_id: Number(student.id),
+    campus_id: campusId,
     amount: 0,
     payment_method: 'cash',
     denominations: {},

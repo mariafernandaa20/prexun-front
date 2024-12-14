@@ -163,8 +163,8 @@ export const deletePeriod = async (id: string) => {
   return response.data;
 };
 
-export const getCharges = async () => {
-  const response = await axiosInstance.get(API_ENDPOINTS.GET_CHARGES);
+export const getCharges = async (campus_id: number) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.GET_CHARGES}/${campus_id}`);
   return response.data;
 };
 

@@ -29,6 +29,7 @@ import { Label } from '@/components/ui/label';
 import { createCharge, getCharges } from '@/lib/api';
 import { Student, Transaction } from '@/lib/types';
 import { MultiSelect } from '@/components/multi-select';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -36,6 +37,7 @@ export default function CobrosPage() {
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes']);
+  const { activeCampus } = useActiveCampusStore();
 
   useEffect(() => {
     fetchTransactions();
@@ -43,7 +45,7 @@ export default function CobrosPage() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await getCharges();
+      const response = await getCharges(Number(activeCampus.id));
       setTransactions(response);
     } catch (error) {
       console.error('Error fetching transactions:', error);
