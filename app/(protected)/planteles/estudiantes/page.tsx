@@ -79,6 +79,8 @@ export default function Page() {
       label: 'Fecha de Inscripción',
       defaultVisible: false,
     },
+    { value: 'firstname', label: 'Nombre', defaultVisible: true },
+    { value: 'lastname', label: 'Apellido', defaultVisible: true },
     { value: 'email', label: 'Email', defaultVisible: true },
     { value: 'phone', label: 'Teléfono', defaultVisible: true },
     { value: 'type', label: 'Curso', defaultVisible: false },
@@ -321,6 +323,12 @@ export default function Page() {
                 {visibleColumns.includes('matricula') && (
                   <TableHead>Matrícula</TableHead>
                 )}
+                {visibleColumns.includes('firstname') && (
+                  <TableHead>Nombre</TableHead>
+                )}
+                {visibleColumns.includes('lastname') && (
+                  <TableHead>Apellido</TableHead>
+                )}
                 {visibleColumns.includes('created_at') && (
                   <TableHead>Fecha de Inscripción</TableHead>
                 )}
@@ -384,6 +392,12 @@ export default function Page() {
                 <TableRow key={student.id}>
                   {visibleColumns.includes('matricula') && (
                     <TableCell>{student.id}</TableCell>
+                  )}
+                  {visibleColumns.includes('firstname') && (
+                    <TableCell>{student.firstname}</TableCell>
+                  )}
+                  {visibleColumns.includes('lastname') && (
+                    <TableCell>{student.lastname}</TableCell>
                   )}
                   {visibleColumns.includes('created_at') && (
                     <TableCell>
