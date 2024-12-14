@@ -73,11 +73,7 @@ export default function Page() {
   const { toast } = useToast();
 
   const columnOptions = [
-    {
-      value: 'matricula',
-      label: 'Matrícula',
-      defaultVisible: true,
-    },
+    { value: 'matricula', label: 'Matrícula', defaultVisible: true },
     {
       value: 'created_at',
       label: 'Fecha de Inscripción',
@@ -88,7 +84,6 @@ export default function Page() {
     { value: 'type', label: 'Curso', defaultVisible: false },
     { value: 'period', label: 'Periodo', defaultVisible: false },
     { value: 'debt', label: 'Debe', defaultVisible: true },
-    { value: 'matricula', label: 'Matrícula', defaultVisible: true },
     { value: 'carrera', label: 'Carrera', defaultVisible: false },
     { value: 'facultad', label: 'Facultad', defaultVisible: false },
     { value: 'prepa', label: 'Preparatoria', defaultVisible: false },
