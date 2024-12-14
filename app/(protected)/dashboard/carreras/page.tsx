@@ -80,11 +80,13 @@ export default function Page() {
     e.preventDefault();
     try {
       const carreraData = {
-        ...selectedCarrera,
-        modulo_ids: selectedModulos,
+        name: selectedCarrera?.name,
+        facultad_id: selectedCarrera?.facultad_id,
+        modulo_ids: selectedModulos
       };
+
       if (selectedCarrera?.id) {
-        await updateCarrera(carreraData);
+        await updateCarrera({ ...carreraData, id: selectedCarrera.id });
       } else {
         await createCarrera(carreraData);
       }
