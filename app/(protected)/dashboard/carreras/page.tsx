@@ -81,9 +81,8 @@ export default function Page() {
     try {
       const carreraData = {
         ...selectedCarrera,
-        modulo_ids: selectedModulos
+        modulo_ids: selectedModulos,
       };
-      
       if (selectedCarrera?.id) {
         await updateCarrera(carreraData);
       } else {
@@ -100,7 +99,7 @@ export default function Page() {
 
   const handleEdit = (carrera: Carrera) => {
     setSelectedCarrera({ ...carrera });
-    setSelectedModulos(carrera.modulos?.map(m => m.id) || []);
+    setSelectedModulos(carrera.modulos?.map(m => m.id) ||  []);
     setIsDialogOpen(true);
   };
 

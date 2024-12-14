@@ -92,12 +92,13 @@ export interface Carrera {
   id?: string;
   name: string;
   modulos?: Modulo[];
+  modulos_ids?: string[];
   facultad_id: string;
 }
 
 export interface Modulo {
   id?: string;
-  name: string;
+  name?: string;
 }
 
 export interface Transaction {
