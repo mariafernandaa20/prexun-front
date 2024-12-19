@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Campus, Cohort, Municipio, Carrera, Period, Student, Prepa, Facultad } from '@/lib/types';
+import { Campus, Cohort, Municipio, Carrera, Period, Student, Prepa, Facultad, Promocion, Grupo } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -25,6 +25,8 @@ interface StudentFormProps {
   prepas: Prepa[];
   facultades: Facultad[];
   carreras: Carrera[];
+  promos: Promocion[];
+  grupos: Grupo[];
 }
 
 export function StudentForm({
@@ -37,6 +39,8 @@ export function StudentForm({
   prepas,
   facultades,
   carreras,
+  promos,
+  grupos,
 }: StudentFormProps) {
   const { toast } = useToast();
 
@@ -45,6 +49,8 @@ export function StudentForm({
     id: student?.id || null,
     period_id: student?.period_id || '',
     campus_id: campusId,
+    promo_id: student?.promo_id || null,
+    grupo_id: student?.grupo_id || null,
     firstname: student?.firstname || '',
     lastname: student?.lastname || '',
     email: student?.email || '',
@@ -172,6 +178,44 @@ export function StudentForm({
               {periods.map((period) => (
                 <SelectItem key={period.id} value={period.id}>
                   {period.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="promo_id">Promoción</Label>
+          <Select
+            name="promo_id"
+            value={Number(formData.promo_id) as any}
+            onValueChange={(value) => handleChange({ name: 'promo_id', value: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona la promoción" />
+            </SelectTrigger>
+            <SelectContent>
+              {promos.map((promo) => (
+                <SelectItem key={promo.id} value={promo.id as any}>
+                  {promo.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="grupo_id">Grupo</Label>
+          <Select
+            name="grupo_id"
+            value={Number(formData.grupo_id) as any}
+            onValueChange={(value) => handleChange({ name: 'grupo_id', value: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona el grupo" />
+            </SelectTrigger>
+            <SelectContent>
+              {grupos.map((grupo) => (
+                <SelectItem key={grupo.id} value={grupo.id as any}>
+                  {grupo.name}
                 </SelectItem>
               ))}
             </SelectContent>

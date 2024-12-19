@@ -51,4 +51,12 @@ export const API_ENDPOINTS = {
   CREATE_MODULO: '/api/modulos',
   UPDATE_MODULO: '/api/modulos',
   DELETE_MODULO: '/api/modulos',
+  PROMOS: '/api/promociones',
+  CREATE_PROMO: '/api/promociones',
+  UPDATE_PROMO: '/api/promociones',
+  DELETE_PROMO: '/api/promociones',
+  GRUPOS: '/api/grupos',
+  CREATE_GRUPO: '/api/grupos',
+  UPDATE_GRUPO: '/api/grupos',
+  DELETE_GRUPO: '/api/grupos',
 } as const; 

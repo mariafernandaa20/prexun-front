@@ -26,12 +26,14 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { ThemeToggleSidebar } from "./layout/theme-toggle";
 import Image from "next/image";
+import { Separator } from "./ui/separator";
 
 // This is sample data.
-const data = {
+export const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -127,6 +129,16 @@ const data = {
       url: "/dashboard/periodos",
       icon: CalendarClock,
     },
+    {
+      name:"Promociones",
+      url: "/dashboard/promos",
+      icon: BookOpen,
+    },
+    {
+      name: "Grupos",
+      url: "/dashboard/grupos",
+      icon: BookOpen,
+    }
   ],
   plantel_navigation: [
     {
@@ -154,7 +166,6 @@ const data = {
       url: "/planteles/coherts",
       icon: BookOpen,
     },
- 
   ],
 };
 

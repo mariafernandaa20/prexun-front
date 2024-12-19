@@ -1,6 +1,6 @@
 import axiosInstance from "./api/axiosConfig";
 import { API_ENDPOINTS } from "./api/endpoints";
-import { Campus, Carrera, Facultad, Modulo, Municipio, Period, Prepa, Student, Transaction, User } from "./types";
+import { Campus, Carrera, Facultad, Grupo, Modulo, Municipio, Period, Prepa, Promocion, Student, Transaction, User } from "./types";
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
@@ -311,6 +311,56 @@ export const associateModulos = async (carreraId: string, moduloIds: string[]) =
 export const dissociateModulo = async (carreraId: string, moduloId: string) => {
   const response = await axiosInstance.delete(
     `${API_ENDPOINTS.CARREERAS}/${carreraId}/modulos/${moduloId}`
+  );
+  return response.data;
+};
+
+export const getPromos = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.PROMOS);
+  return response.data;
+};
+
+export const createPromo = async (promo: Promocion) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_PROMO, promo);
+  return response.data;
+};
+
+export const updatePromo = async (promo: Promocion) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_PROMO}/${promo.id}`,
+    promo
+  );
+  return response.data;
+};
+
+export const deletePromo = async (id: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_PROMO}/${id}`
+  );
+  return response.data;
+};
+
+export const getGrupos = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.GRUPOS);
+  return response.data;
+};
+
+export const createGrupo = async (grupo: Grupo) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_GRUPO, grupo);
+  return response.data;
+};
+
+export const updateGrupo = async (grupo: Grupo) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_GRUPO}/${grupo.id}`,
+    grupo
+  );
+  return response.data;
+};
+
+export const deleteGrupo = async (id: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_GRUPO}/${id}`
   );
   return response.data;
 };

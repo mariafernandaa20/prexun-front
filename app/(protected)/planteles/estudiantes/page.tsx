@@ -8,13 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Period, Student } from '@/lib/types';
+import { Grupo, Period, Promocion, Student } from '@/lib/types';
 import {
   getStudents,
   createStudent,
   updateStudent,
   deleteStudent,
   getPeriods,
+  getPromos,
+  getGrupos,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Pencil, Trash2, Upload, Filter } from 'lucide-react';
@@ -69,6 +71,8 @@ export default function Page() {
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
+  const [promos, setPromos] = useState<Promocion[]>([]);
+  const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [showtAllFilters, setShowtAllFilters] = useState(false);
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
@@ -86,7 +90,6 @@ export default function Page() {
     { value: 'phone', label: 'Teléfono', defaultVisible: true },
     { value: 'type', label: 'Curso', defaultVisible: false },
     { value: 'period', label: 'Periodo', defaultVisible: false },
-    { value: 'debt', label: 'Debe', defaultVisible: true },
     { value: 'carrera', label: 'Carrera', defaultVisible: false },
     { value: 'facultad', label: 'Facultad', defaultVisible: false },
     { value: 'prepa', label: 'Preparatoria', defaultVisible: false },
@@ -142,8 +145,8 @@ export default function Page() {
   const fetchStudents = async () => {
     try {
       setIsLoading(true);
-      const data = await getStudents(activeCampus?.id || '');
-      setStudents(data);
+      const response = await getStudents(activeCampus?.id || '');
+      setStudents(response);
     } catch (error: any) {
       toast({
         title: 'Error al cargar estudiantes',
@@ -154,11 +157,15 @@ export default function Page() {
       setIsLoading(false);
     }
   };
-
+  const fetchGrupos = async () => {
+    const response = await getGrupos();
+    setGrupos(response);
+  };
   useEffect(() => {
     fetchStudents();
     fetchPeriods();
-
+    fetchPromos();
+    fetchGrupos();
     try {
       getData();
     } catch (error) {
@@ -186,6 +193,11 @@ export default function Page() {
   const fetchPeriods = async () => {
     const response = await getPeriods();
     setPeriods(response);
+  };
+
+  const fetchPromos = async () => {
+    const response = await getPromos();
+    setPromos(response.active);
   };
 
   const handleOpenCreateModal = () => {
@@ -365,7 +377,6 @@ export default function Page() {
                 {visibleColumns.includes('period') && (
                   <TableHead>Periodo</TableHead>
                 )}
-                {visibleColumns.includes('debt') && <TableHead>Debe</TableHead>}
 
                 {visibleColumns.includes('carrera') && (
                   <TableHead>Carrera</TableHead>
@@ -437,10 +448,6 @@ export default function Page() {
                   {visibleColumns.includes('period') && (
                     <TableCell>{student.period.name}</TableCell>
                   )}
-                  {visibleColumns.includes('debt') && (
-                    <TableCell>{student.current_debt}</TableCell>
-                  )}
-
                   {visibleColumns.includes('carrera') && (
                     <TableCell>{student?.carrera?.name}</TableCell>
                   )}
@@ -525,6 +532,8 @@ export default function Page() {
             prepas={prepas}
             facultades={facultades}
             carreras={carreras}
+            promos={promos}
+            grupos={grupos}
           />
         </DialogContent>
       </Dialog>

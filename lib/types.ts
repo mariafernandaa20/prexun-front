@@ -28,6 +28,8 @@ export interface Student {
   id?: string | null;
   period_id: string;
   period?: Period;
+  promo_id?: number;
+  grupo_id?: number;
   username?: string;
   firstname: string;
   lastname: string;
@@ -99,6 +101,33 @@ export interface Carrera {
 export interface Modulo {
   id?: string;
   name?: string;
+}
+export interface Pago {
+  date: string;
+  amount: number;
+}
+export interface Promocion {
+  id?: number;
+  name: string;
+  type: string;
+  regular_cost: number;
+  cost: number;
+  active: boolean;
+  limit_date: string;
+  pagos: Pago[];
+  groups: string[];
+}
+
+export interface Grupo {
+  id?: number;
+  name: string;
+  type: string;
+  period_id: number;
+  plantel_id: number;
+  capacity: number;
+  frequency: string[];
+  start_time: string;
+  end_time: string;
 }
 
 export interface Transaction {

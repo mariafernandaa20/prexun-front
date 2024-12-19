@@ -6,16 +6,8 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import axiosInstance from "../api/axiosConfig";
 import { AUTH_ENDPOINTS } from "../api/endpoints";
-import { Campus } from "../types";
+import { Campus, User } from "../types";
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  campuses?: Campus[];
-  email_verified_at: string | null;
-}
 
 interface AuthState {
   user: User | null;
