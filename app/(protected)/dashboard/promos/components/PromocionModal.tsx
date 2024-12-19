@@ -93,7 +93,7 @@ export default function PromocionModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className={`sm:max-w-[${formData.type == 'Parcialidad' ? '1000px' : '700px'}]`}
+        className={`${formData.type == 'Parcialidad' ? 'sm:max-w-[1000px]' : 'sm:max-w-[700px]'}`}
       >
         <DialogHeader>
           <DialogTitle>
