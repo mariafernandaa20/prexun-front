@@ -133,7 +133,7 @@ export function StudentForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4  max-h-[calc(100vh-150px)] overflow-y-auto">
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="status">Estatus</Label>

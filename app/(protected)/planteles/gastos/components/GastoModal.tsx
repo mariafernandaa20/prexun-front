@@ -110,7 +110,7 @@ export function GastoModal({
         <DialogHeader>
           <DialogTitle>{gasto ? 'Editar Gasto' : 'Nuevo Gasto'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
           <div className="space-y-2">
             <Label htmlFor="admin_id">Administrador</Label>
             <Select
