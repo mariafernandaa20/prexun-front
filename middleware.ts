@@ -5,7 +5,6 @@ const publicRoutes = ['/login', '/register', '/forgot-password']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
   console.log('Middleware ejecutándose en:', pathname)
   console.log('Token:', request.cookies.get('auth-token'))
   console.log('Role:', request.cookies.get('user-role'))

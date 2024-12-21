@@ -129,7 +129,20 @@ export interface Grupo {
   start_time: string;
   end_time: string;
 }
-
+export interface Gasto {
+  id?: number;
+  category: string;
+  concept: string;
+  method: string;
+  amount: number;
+  date: string;
+  campus_id: number;
+  admin_id: number;
+  user_id: number;
+  image?: string | File;
+  user?: User;
+  admin?: User;
+}
 export interface Transaction {
   id?: number;
   student_id: number;

@@ -14,6 +14,9 @@ export default function Home() {
   if (user) {
     router.push("/dashboard");
   }
+  if(!user){
+    router.push("/login");
+  }
   const benefits = [
     {
       title: "Maestros especializados",

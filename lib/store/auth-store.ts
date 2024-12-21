@@ -7,6 +7,8 @@ import axios from "axios";
 import axiosInstance from "../api/axiosConfig";
 import { AUTH_ENDPOINTS } from "../api/endpoints";
 import { Campus, User } from "../types";
+import { getUsers } from "../api";
+import { getCampuses } from "../api";
 
 
 interface AuthState {
@@ -31,11 +33,20 @@ interface AuthState {
   ) => Promise<void>;
   resendVerification: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  users: User[];
+  setUsers: (users: User[]) => void;
+  fetchUsers: () => Promise<void>;
+  campuses: Campus[];
+  setCampuses: (campuses: Campus[]) => void;
+  fetchCampuses: () => Promise<void>;
+  initializeApp: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: true,
+  users: [],
+  campuses: [],
   setUser: (user) => set({ user }),
   setLoading: (loading) => set({ loading }),
 
@@ -128,4 +139,31 @@ export const useAuthStore = create<AuthState>((set) => ({
       throw error;
     }
   },
+
+  setUsers: (users) => set({ users }),
+  fetchUsers: async () => {
+    try {
+      const response = await getUsers();
+      console.log(response);
+      set({ users: response });
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      set({ users: [] });
+    }
+  },
+  setCampuses: (campuses) => set({ campuses }),
+  fetchCampuses: async () => {
+    const response = await getCampuses();
+    set({ campuses: response });
+  },
+  initializeApp: async () => {
+    try {
+      await Promise.all([
+        getUsers().then(users => set({ users })),
+        getCampuses().then(campuses => set({ campuses }))
+      ]);
+    } catch (error) {
+      console.error('Error initializing app:', error);
+    }
+  }
 }));

@@ -59,4 +59,8 @@ export const API_ENDPOINTS = {
   CREATE_GRUPO: '/api/grupos',
   UPDATE_GRUPO: '/api/grupos',
   DELETE_GRUPO: '/api/grupos',
+  GASTOS: '/api/gastos',
+  CREATE_GASTO: '/api/gastos',
+  UPDATE_GASTO: '/api/gastos',
+  DELETE_GASTO: '/api/gastos',
 } as const; 

@@ -8,15 +8,15 @@ import {
 } from "@/components/ui/sidebar";
 import { data as sidebarData } from "@/components/sidebar";
 import { usePathname } from 'next/navigation';
+import { useEffect } from "react";
+import { useAuthStore } from "@/lib/store/auth-store";
 
 export default function Page({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  console.log(pathname);
-  const item = sidebarData.navMain.find((item) => item.url === pathname);
-
-  console.log("Current Path:", pathname);
-  console.log("Matched Item:", item);
+  const { initializeApp } = useAuthStore();
+  
+  useEffect(() => {
+    initializeApp();
+  }, []);
 
   return (
     <SidebarProvider>
@@ -26,7 +26,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            <h1 className="text-lg font-bold">{item ? item.title : "Default Title"}</h1>
+            <h1 className="text-lg font-bold">Title</h1>
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>

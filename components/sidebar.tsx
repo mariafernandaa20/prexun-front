@@ -147,6 +147,11 @@ export const data = {
       icon: PieChart,
     },
     {
+      name: "Gastos",
+      url: "/planteles/gastos",
+      icon: PieChart,
+    },
+    {
       name: "Cobros",
       url: "/planteles/cobros",
       icon: PieChart,
@@ -161,11 +166,7 @@ export const data = {
       url: "/planteles/periodos",
       icon: CalendarClock,
     },
-    {
-      name: "Coherts",
-      url: "/planteles/coherts",
-      icon: BookOpen,
-    },
+    
   ],
 };
 

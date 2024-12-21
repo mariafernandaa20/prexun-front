@@ -1,6 +1,6 @@
 import axiosInstance from "./api/axiosConfig";
 import { API_ENDPOINTS } from "./api/endpoints";
-import { Campus, Carrera, Facultad, Grupo, Modulo, Municipio, Period, Prepa, Promocion, Student, Transaction, User } from "./types";
+import { Campus, Carrera, Facultad, Gasto, Grupo, Modulo, Municipio, Period, Prepa, Promocion, Student, Transaction, User } from "./types";
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
@@ -364,3 +364,43 @@ export const deleteGrupo = async (id: string) => {
   );
   return response.data;
 };
+
+export const getGastos = async (campus_id: string | undefined) => {
+  const response = await axiosInstance.get(API_ENDPOINTS.GASTOS, { params: { campus_id } });
+  return response.data;
+};
+
+export const createGasto = async (gasto: Gasto & { image?: File }) => {
+  const formData = new FormData();
+  
+  Object.keys(gasto).forEach(key => {
+    if (key === 'image' && gasto.image) {
+      formData.append('image', gasto.image);
+    } else {
+      formData.append(key, String(gasto[key as keyof Gasto]));
+    }
+  });
+
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_GASTO, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const updateGasto = async (gasto: Gasto) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_GASTO}/${gasto.id}`,
+    gasto
+  );
+  return response.data;
+};
+
+export const deleteGasto = async (id: string) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_GASTO}/${id}`
+  );
+  return response.data;
+};
+

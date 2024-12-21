@@ -1,3 +1,5 @@
+'use client'
+
 import { PlantelSidebar } from "@/components/sidebar";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -5,8 +7,16 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useAuthStore } from "@/lib/store/auth-store";
+import { useEffect } from "react";
 
 export default function Page({ children }: { children: React.ReactNode }) {
+  const { initializeApp } = useAuthStore();
+
+  useEffect(() => {
+    initializeApp();
+  }, []);
+
   return (
     <SidebarProvider>
       <PlantelSidebar />
