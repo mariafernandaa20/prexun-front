@@ -10,6 +10,8 @@ export const AUTH_ENDPOINTS = {
 
 export const API_ENDPOINTS = {
   DASHBOARD: '/api/dashboard',
+  INVOICE: '/api/invoice',
+  INVOICES: '/api/invoices',
   USERS: '/api/users',
   CREATE_USER: '/api/users',
   DELETE_USER: '/api/users',

@@ -8,6 +8,16 @@ export const getDashboardData = async () => {
   return response.data;
 };
 
+export const getInvoice = async (slug: string) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.INVOICE}/${slug}`);
+  return response.data;
+};
+
+export const getInvoices = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.INVOICES);
+  return response.data;
+};
+
 export const getUsers = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.USERS);
   console.log(response.data);
