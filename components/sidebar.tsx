@@ -14,6 +14,7 @@ import {
   PieChart,
   Settings2,
   Users,
+  Wallet,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -145,6 +146,11 @@ export const data = {
       name: "Dashboard",
       url: "/planteles",
       icon: PieChart,
+    },
+    {
+      name: "Caja",
+      url: "/planteles/caja",
+      icon: Wallet,
     },
     {
       name: "Gastos",

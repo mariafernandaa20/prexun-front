@@ -154,3 +154,14 @@ export interface Transaction {
   notes?: string;
   student?: Student;
 }
+
+export interface Caja {
+  id?: number;
+  amount: number;
+  final_amount?: number;
+  real_amount?: number;
+  date?: string;
+  campus_id: number;
+  created_at?: string;
+  updated_at?: string;
+}

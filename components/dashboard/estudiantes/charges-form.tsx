@@ -43,9 +43,34 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
+    return Object.entries(denominations).reduce((total, [denomination, count]) => {
+      return total + (Number(denomination) * (count || 0));
+    }, 0);
+  };
+
+  const validateDenominations = (): boolean => {
+    if (formData.payment_method === 'cash') {
+      const denominationsTotal = calculateDenominationsTotal(formData.denominations);
+      if (denominationsTotal !== formData.amount) {
+        setErrors({
+          ...errors,
+          denominations: `El total de las denominaciones (${denominationsTotal}) debe ser igual al monto del pago (${formData.amount})`
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+
+    if (!validateDenominations()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -62,13 +87,23 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
   };
 
   const handleDenominationChange = (denomination: string, value: string) => {
+    const newDenominations = {
+      ...formData.denominations,
+      [denomination]: parseInt(value) || 0,
+    };
+
     setFormData((prev) => ({
       ...prev,
-      denominations: {
-        ...prev.denominations,
-        [denomination]: parseInt(value) || 0,
-      },
+      denominations: newDenominations,
     }));
+
+    if (errors.denominations) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.denominations;
+        return newErrors;
+      });
+    }
   };
 
   return (
@@ -176,6 +211,12 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
                     )
                   )}
                 </div>
+                {errors.denominations && (
+                  <p className="text-red-500 text-sm mt-2">{errors.denominations}</p>
+                )}
+                <p className="text-sm text-gray-500 mt-2">
+                  Total en denominaciones: ${calculateDenominationsTotal(formData.denominations)}
+                </p>
               </div>
             )}
 

@@ -63,4 +63,8 @@ export const API_ENDPOINTS = {
   CREATE_GASTO: '/api/gastos',
   UPDATE_GASTO: '/api/gastos',
   DELETE_GASTO: '/api/gastos',
+  CAJAS: '/api/caja',
+  CREATE_CAJA: '/api/caja',
+  UPDATE_CAJA: '/api/caja',
+  DELETE_CAJA: '/api/caja',
 } as const; 

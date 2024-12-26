@@ -40,7 +40,7 @@ export const auth = {
   logout: async () => {
     try {
       await axiosInstance.post(AUTH_ENDPOINTS.LOGOUT);
-      localStorage.removeItem('token');
+      Cookies.remove('auth-token');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -79,19 +79,19 @@ export const auth = {
 
   getUser: async () => {
     try {
-      const response = await axiosInstance.get(AUTH_ENDPOINTS.USER);
+      const response = await axiosInstance.get(`${AUTH_ENDPOINTS.USER}/`); 
       return response.data;
     } catch (error) {
-      localStorage.removeItem('token');
+      Cookies.remove('auth-token');
       return null;
     }
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem('token');
+    return !!Cookies.get('auth-token');
   },
 
   getToken: () => {
-    return localStorage.getItem('token');
+    return Cookies.get('auth-token');
   },
 };
