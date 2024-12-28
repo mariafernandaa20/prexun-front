@@ -4,7 +4,7 @@ import { InvoiceClient } from "./invoice_page";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 // app/invoices/[slug]/page.js
 async function getInvoiceData(slug) {
-    console.log(API_URL);
+    console.log("API_URL", API_URL);
     const res = await fetch(`${API_URL}/api/invoice/${slug}`, {
         // Next.js 14 cache options
         cache: 'force-cache', // Default, SSG behavior
@@ -25,6 +25,7 @@ async function getInvoiceData(slug) {
 export default async function InvoicePage({ params }) {
     try {
         const invoice = await getInvoiceData(params.slug);
+        console.log(invoice);
         return <InvoiceClient invoice={invoice} />;
     } catch (error) {
         return (
