@@ -75,7 +75,7 @@ export default function InvoicePDF({ icon, invoice }) {
                         }
                     },
                     {
-                        content: "MX$2,000.00",
+                        content: invoice.amount.toLocaleString(),
                         styles: {
                             halign: 'center',
                             fontSize: 11

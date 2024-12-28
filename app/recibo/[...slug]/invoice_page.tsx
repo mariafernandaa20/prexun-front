@@ -99,7 +99,7 @@ export function InvoiceClient({ invoice }) {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-center">MX$2,000.00</td>
+                                    <td className="px-6 py-4 text-center">MX{invoice.amount}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -109,11 +109,11 @@ export function InvoiceClient({ invoice }) {
                         <div className="text-right">
                             <div className="flex justify-between mb-2">
                                 <span className="font-medium">Total parcial</span>
-                                <span>MX$2,000.00</span>
+                                <span>MX${invoice.amount}</span>
                             </div>
                             <div className="flex justify-between font-bold">
                                 <span>Total</span>
-                                <span>MX$2,000.00</span>
+                                <span>MX${invoice.amount}</span>
                             </div>
                         </div>
                     </div>
