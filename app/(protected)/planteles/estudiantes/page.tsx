@@ -48,6 +48,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { MultiSelect } from '@/components/multi-select';
 import Link from 'next/link';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -265,7 +266,8 @@ export default function Page() {
   });
 
   return (
-    <>
+    <Card>
+      <CardHeader>
       <div className="flex justify-between mb-6 max-w-[100vw-30rem]">
         <h1 className="text-2xl font-bold">Estudiantes</h1>
         <div className="flex flex-col gap-4">
@@ -347,6 +349,8 @@ export default function Page() {
           )}
         </div>
       </div>
+      </CardHeader>
+      <CardContent>
       <div className="overflow-x-auto max-w-[calc(100vw-20rem)]">
         {isLoading ? (
           <div className="text-center py-4">Cargando...</div>
@@ -519,6 +523,7 @@ export default function Page() {
           </Table>
         )}
       </div>
+      </CardContent>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="min-w-[60rem]">
           <DialogHeader>
@@ -541,6 +546,6 @@ export default function Page() {
           />
         </DialogContent>
       </Dialog>
-    </>
+    </Card>
   );
 }

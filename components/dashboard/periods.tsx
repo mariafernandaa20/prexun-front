@@ -25,6 +25,7 @@ import {
   getPeriods,
   updatePeriod,
 } from '@/lib/api';
+import { Card, CardContent, CardHeader } from '../ui/card';
 
 interface Period {
   id: string;
@@ -83,7 +84,8 @@ export function Periods() {
   };
 
   return (
-    <div className="p-8">
+    <Card>
+      <CardHeader>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Períodos</h1>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -144,8 +146,10 @@ export function Periods() {
           </DialogContent>
         </Dialog>
       </div>
+      </CardHeader>
 
-      <Table>
+    <CardContent>
+    <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
@@ -190,6 +194,7 @@ export function Periods() {
           ))}
         </TableBody>
       </Table>
-    </div>
+    </CardContent>
+    </Card>
   );
 }

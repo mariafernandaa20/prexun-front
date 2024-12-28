@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { MultiSelect } from '@/components/multi-select'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 export default function GastosPage() {
   const [gastos, setGastos] = useState<Gasto[]>([])
@@ -36,7 +37,7 @@ export default function GastosPage() {
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     'fecha',
     'empleado',
-    'recibe', 
+    'recibe',
     'concepto',
     'categoria',
     'monto',
@@ -110,129 +111,135 @@ export default function GastosPage() {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Gastos del Plantel</h1>
-        <Button onClick={() => handleOpenModal()}>Nuevo Gasto</Button>
-      </div>
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Gastos del Plantel</h1>
+          <div className='flex items-center gap-2'>
+            <div className="flex flex-col">
+              <label>Fecha Inicio</label>
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label>Fecha Fin</label>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label>Categoría</label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col">
+              <label>Columnas</label>
+              <MultiSelect
+                options={columnOptions}
+                title="Columnas"
+                selectedValues={visibleColumns}
+                hiddeBadages
+                onSelectedChange={handleColumnSelect}
+                placeholder="Seleccionar columnas"
+                searchPlaceholder="Buscar columna..."
+                emptyMessage="No se encontraron columnas"
+              />
+            </div>
+            <Button className='mt-6' onClick={() => handleOpenModal()}>Nuevo Gasto</Button>
+          </div>
 
-      <div className="flex gap-4 mb-6">
-        <div className="flex flex-col">
-          <label>Fecha Inicio</label>
-          <Input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
         </div>
-        <div className="flex flex-col">
-          <label>Fecha Fin</label>
-          <Input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col">
-          <label>Categoría</label>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar categoría" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-col">
-          <label>Columnas</label>
-          <MultiSelect  
-            options={columnOptions}
-            title="Columnas"
-            selectedValues={visibleColumns}
-            hiddeBadages
-            onSelectedChange={handleColumnSelect}
-            placeholder="Seleccionar columnas"
-            searchPlaceholder="Buscar columna..."
-            emptyMessage="No se encontraron columnas"
-          />
-        </div>
-      </div>
+      </CardHeader>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {visibleColumns.includes('fecha') && <TableHead>Fecha</TableHead>}
-            {visibleColumns.includes('empleado') && <TableHead>Empleado</TableHead>}
-            {visibleColumns.includes('recibe') && <TableHead>Recibe</TableHead>}
-            {visibleColumns.includes('concepto') && <TableHead>Concepto</TableHead>}
-            {visibleColumns.includes('categoria') && <TableHead>Categoria</TableHead>}
-            {visibleColumns.includes('monto') && <TableHead>Monto</TableHead>}
-            {visibleColumns.includes('comprobante') && <TableHead>Comprobante</TableHead>}
-            {visibleColumns.includes('acciones') && <TableHead>Acciones</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredGastos.map((gasto) => (
-            <TableRow key={gasto.id}>
-              {visibleColumns.includes('fecha') && 
-                <TableCell>
-                  {format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es })}
-                </TableCell>
-              }
-              {visibleColumns.includes('empleado') && <TableCell>{gasto.admin.name}</TableCell>}
-              {visibleColumns.includes('recibe') && <TableCell>{gasto.user.name}</TableCell>}
-              {visibleColumns.includes('concepto') && <TableCell>{gasto.concept}</TableCell>}
-              {visibleColumns.includes('categoria') && <TableCell>{gasto.category}</TableCell>}
-              {visibleColumns.includes('monto') && <TableCell>${gasto.amount}</TableCell>}
-              {visibleColumns.includes('comprobante') && 
-                <TableCell>
-                  {gasto.image && (
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src={gasto.image as string} 
-                        alt="Miniatura" 
-                        className="w-10 h-10 object-cover rounded"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleOpenImage(gasto.image as string)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        Ver
-                      </Button>
-                    </div>
-                  )}
-                </TableCell>
-              }
-              {visibleColumns.includes('acciones') && 
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOpenModal(gasto)}
-                  >
-                    <Pencil />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteGasto(gasto.id)}
-                  >
-                    <Trash />
-                  </Button>
-                </TableCell>
-              }
+
+      <CardContent>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {visibleColumns.includes('fecha') && <TableHead>Fecha</TableHead>}
+              {visibleColumns.includes('empleado') && <TableHead>Empleado</TableHead>}
+              {visibleColumns.includes('recibe') && <TableHead>Recibe</TableHead>}
+              {visibleColumns.includes('concepto') && <TableHead>Concepto</TableHead>}
+              {visibleColumns.includes('categoria') && <TableHead>Categoria</TableHead>}
+              {visibleColumns.includes('monto') && <TableHead>Monto</TableHead>}
+              {visibleColumns.includes('comprobante') && <TableHead>Comprobante</TableHead>}
+              {visibleColumns.includes('acciones') && <TableHead>Acciones</TableHead>}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredGastos.map((gasto) => (
+              <TableRow key={gasto.id}>
+                {visibleColumns.includes('fecha') &&
+                  <TableCell>
+                    {format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es })}
+                  </TableCell>
+                }
+                {visibleColumns.includes('empleado') && <TableCell>{gasto.admin.name}</TableCell>}
+                {visibleColumns.includes('recibe') && <TableCell>{gasto.user.name}</TableCell>}
+                {visibleColumns.includes('concepto') && <TableCell>{gasto.concept}</TableCell>}
+                {visibleColumns.includes('categoria') && <TableCell>{gasto.category}</TableCell>}
+                {visibleColumns.includes('monto') && <TableCell>${gasto.amount}</TableCell>}
+                {visibleColumns.includes('comprobante') &&
+                  <TableCell>
+                    {gasto.image && (
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={gasto.image as string}
+                          alt="Miniatura"
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenImage(gasto.image as string)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Ver
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                }
+                {visibleColumns.includes('acciones') &&
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleOpenModal(gasto)}
+                    >
+                      <Pencil />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteGasto(gasto.id)}
+                    >
+                      <Trash />
+                    </Button>
+                  </TableCell>
+                }
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
 
       <GastoModal
         isOpen={isModalOpen}
@@ -246,6 +253,6 @@ export default function GastosPage() {
           <img src={selectedImage} alt="Comprobante" className="w-full" />
         </DialogContent>
       </Dialog>
-    </div>
+    </Card>
   )
 }

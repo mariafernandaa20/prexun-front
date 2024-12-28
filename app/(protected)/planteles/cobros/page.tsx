@@ -32,6 +32,7 @@ import { MultiSelect } from '@/components/multi-select';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Share } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -126,8 +127,8 @@ export default function CobrosPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col gap-4 mb-6">
+    <Card>
+      <CardHeader>
         <div className="flex gap-4">
           <Input
             placeholder="Buscar por nombre completo..."
@@ -183,68 +184,71 @@ export default function CobrosPage() {
           />
         </div>
 
-      </div>
+      </CardHeader>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
-            {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
-            {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
-            {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
-            {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
-            {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
-            {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
-            {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredTransactions.map((transaction) => (
-            <TableRow key={transaction.id}>
-              {visibleColumns.includes('student') && (
-                <TableCell>
-                  {transaction.student?.firstname} {transaction.student?.lastname}
-                </TableCell>
-              )}
-              {visibleColumns.includes('amount') && (
-                <TableCell>${transaction.amount}</TableCell>
-              )}
-              {visibleColumns.includes('paymentMethod') && (
-                <TableCell>
-                  {transaction.payment_method === 'cash' && 'Efectivo'}
-                  {transaction.payment_method === 'transfer' && 'Transferencia'}
-                  {transaction.payment_method === 'card' && 'Tarjeta'}
-                </TableCell>
-              )}
-              {visibleColumns.includes('paid') && (
-                <TableCell>
-                  {transaction.paid ? 'Si' : 'No'}
-                </TableCell>
-              )}
-              {visibleColumns.includes('date') && (
-                <TableCell>
-                  {new Date(transaction.created_at).toLocaleDateString()}
-                </TableCell>
-              )}
-              {visibleColumns.includes('notes') && (
-                <TableCell>{transaction.notes}</TableCell>
-              )}
-              {visibleColumns.includes('limit_date') && (
-                <TableCell>
-                  {transaction.expiration_date ? new Date(transaction.expiration_date).toLocaleDateString() : 'No límite de pago'}
-                </TableCell>
-              )}
-              {visibleColumns.includes('actions') && (
-                <TableCell className="p-4">
-                  <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
-                    < Share className="w-4 h-4 mr-2" />
-                  </Button>
-                </TableCell>
-              )}
+      <CardContent>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
+              {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
+              {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
+              {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
+              {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
+              {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
+              {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
+              {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {filteredTransactions.map((transaction) => (
+              <TableRow key={transaction.id}>
+                {visibleColumns.includes('student') && (
+                  <TableCell>
+                    {transaction.student?.firstname} {transaction.student?.lastname}
+                  </TableCell>
+                )}
+                {visibleColumns.includes('amount') && (
+                  <TableCell>${transaction.amount}</TableCell>
+                )}
+                {visibleColumns.includes('paymentMethod') && (
+                  <TableCell>
+                    {transaction.payment_method === 'cash' && 'Efectivo'}
+                    {transaction.payment_method === 'transfer' && 'Transferencia'}
+                    {transaction.payment_method === 'card' && 'Tarjeta'}
+                  </TableCell>
+                )}
+                {visibleColumns.includes('paid') && (
+                  <TableCell>
+                    {transaction.paid ? 'Si' : 'No'}
+                  </TableCell>
+                )}
+                {visibleColumns.includes('date') && (
+                  <TableCell>
+                    {new Date(transaction.created_at).toLocaleDateString()}
+                  </TableCell>
+                )}
+                {visibleColumns.includes('notes') && (
+                  <TableCell>{transaction.notes}</TableCell>
+                )}
+                {visibleColumns.includes('limit_date') && (
+                  <TableCell>
+                    {transaction.expiration_date ? new Date(transaction.expiration_date).toLocaleDateString() : 'No límite de pago'}
+                  </TableCell>
+                )}
+                {visibleColumns.includes('actions') && (
+                  <TableCell className="p-4">
+                    <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
+                      < Share className="w-4 h-4 mr-2" />
+                    </Button>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

@@ -139,7 +139,13 @@ export const data = {
       name: "Grupos",
       url: "/dashboard/grupos",
       icon: BookOpen,
+    },
+    {
+      name: "Planteles",
+      url: "/planteles",
+      icon: Building,
     }
+
   ],
   plantel_navigation: [
     {
