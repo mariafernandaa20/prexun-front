@@ -26,6 +26,17 @@ export function InvoiceClient({ invoice }) {
     const generatePDF = async () => {
         const doc = new jsPDF();
 
+        // Water mark
+        doc.setFontSize(60);
+        doc.setTextColor(200, 200, 200);
+        doc.setFont(undefined, 'bold');
+        doc.text(invoice.paid ? "PAGADO" : "NO PAGADO", doc.internal.pageSize.width / 2+15, doc.internal.pageSize.height / 2 + 20, {
+            align: 'center',
+            angle: 45
+        });
+        doc.setTextColor(0, 0, 0);
+
+
         doc.addImage('/logo-horizontal.png', 'png', 15, 20, 40, 23);
         doc.setFontSize(18);
         doc.setFont(undefined, 'bold');
@@ -91,7 +102,9 @@ export function InvoiceClient({ invoice }) {
             },
             styles: {
                 fontSize: 11,
-                lineHeight: 1.5
+                lineHeight: 1.5,
+                fillColor: null,
+
             },
             columnStyles: {
                 0: { cellWidth: 'auto' },
@@ -124,6 +137,18 @@ export function InvoiceClient({ invoice }) {
 
     return (
         <div className='flex flex-col justify-center items-center mx-auto bg-white lg:h-screen text-black'>
+            <div
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                style={{
+                    transform: 'rotate(45deg)',
+                    opacity: 0.2,
+                    zIndex: 10
+                }}
+            >
+                <span className="text-gray-400 text-8xl font-bold">
+                    {invoice.paid ? "PAGADO" : "NO PAGADO"}
+                </span>
+            </div>
             <div className="px-4 py-10 bg-white sm:p-20 w-full sm:w-[800px] border border-gray-400">
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
