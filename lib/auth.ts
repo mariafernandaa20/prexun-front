@@ -79,7 +79,7 @@ export const auth = {
 
   getUser: async () => {
     try {
-      const response = await axiosInstance.get(`${AUTH_ENDPOINTS.USER}/`); 
+      const response = await axiosInstance.get(`${AUTH_ENDPOINTS.USER}`); 
       return response.data;
     } catch (error) {
       Cookies.remove('auth-token');
