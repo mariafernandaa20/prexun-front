@@ -1,24 +1,18 @@
 import Image from "next/image";
 import { InvoiceClient } from "./invoice_page";
+import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 // app/invoices/[slug]/page.js
 async function getInvoiceData(slug) {
     console.log("API_URL", API_URL);
-    const res = await fetch(`${API_URL}/api/invoice/${slug}`, {
-        // Next.js 14 cache options
-        cache: 'force-cache', // Default, SSG behavior
-        // cache: 'no-store', // For dynamic data
-        // next: {
-        //   revalidate: 60 // ISR behavior, revalidate every 60 seconds
-        // }
-    });
+    const res = await axios.get(`${API_URL}/api/invoice/${slug}`);
 
-    if (!res.ok) {
+    if (res.status !== 200) {
         throw new Error('Failed to fetch invoice');
     }
 
-    return res.json();
+    return res.data;
 }
 
 // Server Component

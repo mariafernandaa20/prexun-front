@@ -33,6 +33,7 @@ import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Share } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import InvoicePDF from '@/components/invoice_pdf';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -242,6 +243,7 @@ export default function CobrosPage() {
                     <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
                       < Share className="w-4 h-4 mr-2" />
                     </Button>
+                    <InvoicePDF icon={true} invoice={transaction} />
                   </TableCell>
                 )}
               </TableRow>
