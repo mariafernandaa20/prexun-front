@@ -1,9 +1,11 @@
 import Image from "next/image";
 import { InvoiceClient } from "./invoice_page";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 // app/invoices/[slug]/page.js
 async function getInvoiceData(slug) {
-    const res = await fetch(`http://localhost:8000/api/invoice/${slug}`, {
+    console.log(API_URL);
+    const res = await fetch(`${API_URL}/api/invoice/${slug}`, {
         // Next.js 14 cache options
         cache: 'force-cache', // Default, SSG behavior
         // cache: 'no-store', // For dynamic data
