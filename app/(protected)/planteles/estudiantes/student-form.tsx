@@ -70,6 +70,8 @@ export function StudentForm({
     health_conditions: student?.health_conditions || '',
     how_found_out: student?.how_found_out || '',
     preferred_communication: student?.preferred_communication || '',
+    general_book: student?.general_book || null,
+    module_book: student?.module_book || null ,
   });
 
   useEffect(() => {
@@ -297,7 +299,7 @@ export function StudentForm({
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder="Seleccionar municipio" />
+              <SelectValue placeholder="Seleccionar relación" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Padre">Padre</SelectItem>
@@ -435,30 +437,30 @@ export function StudentForm({
 
           </>
         )}
-            <div className="space-y-2">
-              <Label htmlFor="carrer_id">Preparatoria</Label>
-              <Select
-                name="prepa_id"
-                value={Number(formData.prepa_id) as any}
-                onValueChange={(value) =>
-                  handleChange({
-                    name: 'prepa_id',
-                    value: value,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar preparatoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {prepas.map((prepa) => (
-                    <SelectItem key={prepa.id} value={prepa.id}>
-                      {prepa.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="space-y-2">
+          <Label htmlFor="carrer_id">Preparatoria</Label>
+          <Select
+            name="prepa_id"
+            value={Number(formData.prepa_id) as any}
+            onValueChange={(value) =>
+              handleChange({
+                name: 'prepa_id',
+                value: value,
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar preparatoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {prepas.map((prepa) => (
+                <SelectItem key={prepa.id} value={prepa.id}>
+                  {prepa.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="average">Promedio</Label>
           <Input
@@ -532,7 +534,7 @@ export function StudentForm({
                 value: value,
               })
             }
-          > 
+          >
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar medio de comunicación" />
             </SelectTrigger>
@@ -561,7 +563,7 @@ export function StudentForm({
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar medio de comunicación" />
-              </SelectTrigger>
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="WhatsApp">WhatsApp</SelectItem>
               <SelectItem value="Plantel">Plantel</SelectItem>
@@ -571,6 +573,52 @@ export function StudentForm({
             </SelectContent>
           </Select>
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="general_book">Libro general</Label>
+          <Select
+            name="general_book"
+            value={formData.general_book}
+            onValueChange={(value) =>
+              handleChange({
+                name: 'general_book',
+                value: value,
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar medio de comunicación" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="No entregado">No entregado</SelectItem>
+              <SelectItem value="En fisico">En fisico</SelectItem>
+              <SelectItem value="En línea">En línea</SelectItem>
+              <SelectItem value="En línea y en fisico">En línea y en fisico</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {formData.type === 'facultad' && <div className="space-y-2">
+          <Label htmlFor="module_book">Libro de módulo</Label>
+          <Select
+            name="module_book"
+            value={formData.module_book}
+            onValueChange={(value) =>
+              handleChange({
+                name: 'module_book',
+                value: value,
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar medio de comunicación" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="No entregado">No entregado</SelectItem>
+              <SelectItem value="En fisico">En fisico</SelectItem>
+              <SelectItem value="En línea">En línea</SelectItem>
+              <SelectItem value="En línea y en fisico">En línea y en fisico</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>}
       </div>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>

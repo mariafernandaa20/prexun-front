@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import {
   getGrupos,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Pencil, Trash2, Upload, Filter } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Upload, Filter, Eye } from 'lucide-react';
 import { StudentForm } from './student-form';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import {
@@ -47,6 +47,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { MultiSelect } from '@/components/multi-select';
+import Link from 'next/link';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -487,11 +488,11 @@ export default function Page() {
                   {visibleColumns.includes('actions') && (
                     <TableCell className="p-4">
                       <div className="flex gap-2 justify-end">
-                        <ChargesForm
+                        {/* <ChargesForm
                           campusId={Number(activeCampus?.id)}
                           fetchStudents={fetchStudents}
                           student={student}
-                        />
+                        /> */}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -499,6 +500,9 @@ export default function Page() {
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
+                        <Link className={buttonVariants({ variant: 'ghost' })} href={`/planteles/estudiantes/${student.id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
                         <Button
                           variant="ghost"
                           size="icon"

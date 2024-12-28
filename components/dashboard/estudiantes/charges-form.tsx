@@ -1,20 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,34 +18,54 @@ import {
 import { Label } from '@/components/ui/label';
 import { Receipt } from 'lucide-react';
 import { Student, Transaction } from '@/lib/types';
-import { createCharge } from '@/lib/api';
+import { createCharge, updateCharge } from '@/lib/api';
 
-export default function ChargesForm({ fetchStudents, student, campusId }: { fetchStudents: () => void, student: Student, campusId: number }) {
-  const [formData, setFormData] = useState<Transaction>({
-    student_id: Number(student.id),
-    campus_id: campusId,
-    amount: 0,
-    payment_method: 'cash',
-    denominations: {},
-    notes: '',
-  });
+interface ChargesFormProps {
+  fetchStudents: () => void;
+  student?: Student | null;
+  campusId: number;
+  student_id?: number;
+  icon?: boolean;
+  transaction?: Transaction;
+  formData: Transaction;
+  setFormData: (formData: Transaction) => void;
+  onTransactionUpdate?: (transaction: Transaction) => void;
+  mode?: 'create' | 'update';
+}
+
+export default function ChargesForm({
+  fetchStudents,
+  student,
+  campusId,
+  student_id,
+  icon = false,
+  transaction,
+  formData,
+  setFormData,
+  onTransactionUpdate,
+  mode = 'create'
+}: ChargesFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
   const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
+    console.log(denominations);
     return Object.entries(denominations).reduce((total, [denomination, count]) => {
+      console.log(denomination, count);
       return total + (Number(denomination) * (count || 0));
     }, 0);
   };
 
   const validateDenominations = (): boolean => {
     if (formData.payment_method === 'cash') {
-      const denominationsTotal = calculateDenominationsTotal(formData.denominations);
-      if (denominationsTotal !== formData.amount) {
+      const denominationsTotal = Number(calculateDenominationsTotal(formData.denominations)).toFixed(2);
+      const amount = Number(formData.amount).toFixed(2);
+      
+      if (denominationsTotal !== amount) {
         setErrors({
           ...errors,
-          denominations: `El total de las denominaciones (${denominationsTotal}) debe ser igual al monto del pago (${formData.amount})`
+          denominations: `El total de las denominaciones (${denominationsTotal}) debe ser igual al monto del pago (${amount})`
         });
         return false;
       }
@@ -74,8 +84,19 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
     setLoading(true);
 
     try {
-      await createCharge(formData);
+      const updatedTransaction = mode === 'create'
+        ? await createCharge(formData)
+        : await updateCharge({
+          ...formData,
+          denominations: formData.payment_method === 'cash' ? formData.denominations : null,
+          paid: 1,
+          payment_date: new Date().toISOString().split('T')[0],
+        });
+
       setOpen(false);
+      if (onTransactionUpdate) {
+        onTransactionUpdate(updatedTransaction);
+      }
       fetchStudents();
     } catch (error: any) {
       if (error.response?.data?.errors) {
@@ -92,10 +113,10 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
       [denomination]: parseInt(value) || 0,
     };
 
-    setFormData((prev) => ({
-      ...prev,
+    setFormData({
+      ...formData,
       denominations: newDenominations,
-    }));
+    });
 
     if (errors.denominations) {
       setErrors((prev) => {
@@ -108,35 +129,39 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
 
   return (
     <>
-      <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
-        <Receipt className="w-4 h-4" />
-      </Button>
+      {icon ? (
+        <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
+          <Receipt className="w-4 h-4" />
+        </Button>
+      ) : (
+        <Button onClick={() => setOpen(true)}>
+          {mode === 'create' ? 'Crear Pago' : 'Registrar Pago'}
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Registrar Nuevo Pago</DialogTitle>
+            <DialogTitle>
+              {mode === 'create' ? 'Registrar Nuevo Pago' : 'Registrar Pago'}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Estudiante</Label>
-                <Input
-                  type="text"
-                  value={`${student.firstname} ${student.lastname}`}
-                  disabled
-                />
-                {errors.student_id && (
-                  <p className="text-red-500 text-sm">{errors.student_id}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label>Deuda actual</Label>
-                <Input type="text" value={student.period.price} disabled />
-                {errors.student_id && (
-                  <p className="text-red-500 text-sm">{errors.student_id}</p>
-                )}
-              </div>
+              {student && (
+                <div className="space-y-2">
+                  <Label>Estudiante</Label>
+                  <Input
+                    type="text"
+                    value={`${student.firstname} ${student.lastname}`}
+                    disabled
+                  />
+                  {errors.student_id && (
+                    <p className="text-red-500 text-sm">{errors.student_id}</p>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>Monto</Label>
                 <Input
@@ -173,9 +198,7 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
                   </SelectContent>
                 </Select>
                 {errors.payment_method && (
-                  <p className="text-red-500 text-sm">
-                    {errors.payment_method}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.payment_method}</p>
                 )}
               </div>
 
@@ -221,7 +244,7 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
             )}
 
             <Button type="submit" disabled={loading}>
-              {loading ? 'Procesando...' : 'Registrar Pago'}
+              {loading ? 'Procesando...' : mode === 'create' ? 'Registrar Pago' : 'Registrar Pago'}
             </Button>
           </form>
         </DialogContent>
@@ -229,3 +252,4 @@ export default function ChargesForm({ fetchStudents, student, campusId }: { fetc
     </>
   );
 }
+

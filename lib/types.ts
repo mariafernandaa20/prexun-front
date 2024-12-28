@@ -57,6 +57,9 @@ export interface Student {
   prepa?: Prepa;
   facultad?: Facultad;
   carrera?: Carrera;
+  general_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';
+  module_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';
+  transactions?: Transaction[];
 }
 
 export interface Cohort {
@@ -150,7 +153,10 @@ export interface Transaction {
   amount: number;
   payment_method: 'cash' | 'transfer' | 'card';
   denominations?: Record<string, number>;
+  paid?: number;
+  payment_date?: string;
   created_at?: string;
+  expiration_date?: string;
   notes?: string;
   student?: Student;
 }

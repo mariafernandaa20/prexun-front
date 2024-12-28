@@ -8,13 +8,28 @@ import dayjs from 'dayjs';
 
 export function InvoiceClient({ invoice }) {
     const [isGenerating, setIsGenerating] = useState(false)
+    const invoiceNumber = ({ id }) => {
+        if (id < 10) {
+            return `N-0000${id}`;
+        } if (id < 100) {
+            return `N-000${id}`;
+        }
+        if (id < 1000) {
+            return `N-00${id}`;
+        }
+        if (id < 10000) {
+            return `N-0${id}`;
+        }
+        return `N-${id}`;
+    };
 
     const generatePDF = async () => {
         const doc = new jsPDF();
 
-        doc.addImage('/logo-horizontal.png', 'png', 15, 20, 50, 25);
-        doc.setFontSize(20);
-        doc.text("Comprobante de pago", 200, 25, { align: "right" });
+        doc.addImage('/logo-horizontal.png', 'png', 15, 20, 40, 23);
+        doc.setFontSize(18);
+        doc.setFont(undefined, 'bold');
+        doc.text("Comprobante de pago", 195, 30, { align: "right" },);
 
         doc.setFontSize(12);
         const leftCol = 15;
@@ -25,20 +40,20 @@ export function InvoiceClient({ invoice }) {
         doc.text("Prexun Asesorías", leftCol, currentY);
         doc.setFont(undefined, 'normal');
         doc.setFontSize(11);
-        doc.text(invoice.campus.name, leftCol, currentY + 7);
-        doc.text(`${invoice.campus.address}`, leftCol, currentY + 14, { maxWidth: rightCol - leftCol - 10 });
+        doc.text(invoice.campus?.name, leftCol, currentY + 7);
+        doc.text(`${invoice.campus?.address}`, leftCol, currentY + 14, { maxWidth: rightCol - leftCol - 10 });
 
         doc.setFontSize(11);
         const rightColumnData = [
-            ["Número de factura:", `N-${invoice.id}`],
+            ["Número de factura:", `N-${invoice.id.toString().padStart(5, '0')}`],
             ["Fecha:", dayjs(invoice.created_at).format('DD/MM/YYYY')],
             ["Fecha de vencimiento:", invoice.due_date ? dayjs(invoice.due_date).format('DD/MM/YYYY') : 'Sin vencimiento'],
             ["Hora de pago:", invoice.payment_date ? dayjs(invoice.payment_date).format('HH:mm A') : 'No pagada']
         ];
 
         rightColumnData.forEach((row, index) => {
-            doc.text(row[0], rightCol, currentY + (index * 7));
-            doc.text(row[1], rightCol + 45, currentY + (index * 7));
+            doc.text(row[0], rightCol, currentY + (index * 7), { align: 'left' });
+            doc.text(row[1], rightCol + 90, currentY + (index * 7), { align: 'right' });
         });
 
         // Products table
@@ -108,25 +123,25 @@ export function InvoiceClient({ invoice }) {
     }
 
     return (
-        <div className='flex flex-col justify-center items-center mx-auto bg-white h-screen text-black'>
-            <div className="px-4 py-10 bg-white  sm:p-20 w-[800px] border border-gray-400">
+        <div className='flex flex-col justify-center items-center mx-auto bg-white lg:h-screen text-black'>
+            <div className="px-4 py-10 bg-white sm:p-20 w-full sm:w-[800px] border border-gray-400">
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center">
                             <Image src="/logo-horizontal.png" alt="Prexun" width={150} height={50} />
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-700">Comprobante de pago</h1>
+                        <h1 className=" lg:text-2xl font-bold text-gray-700">Comprobante de pago</h1>
                     </div>
-                    <div className="grid grid-cols-2 gap-8 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
                         <div>
                             <h3 className="font-semibold mb-2">Prexun Asesorías</h3>
-                            <p className="text-gray-600">{invoice.campus.name}</p>
-                            <p className="text-gray-600">{invoice.campus.address}</p>
+                            <p className="text-gray-600">{invoice.campus?.name}</p>
+                            <p className="text-gray-600">{invoice.campus?.address}</p>
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between">
                                 <span className="">Número de factura</span>
-                                <span>N-{invoice.id}</span>
+                                <span>{invoiceNumber(invoice)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="">Fecha</span>
@@ -137,8 +152,8 @@ export function InvoiceClient({ invoice }) {
                                 <span>{invoice.due_date ? invoice.due_date : 'Sin vencimiento'}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="">Hora de pago</span>
-                                <span>{invoice.payment_date ? invoice.payment_date : 'No pagada'}</span>
+                                <span className="">Metodo de pago</span>
+                                <span>{invoice.payment_method}</span>
                             </div>
                         </div>
                     </div>
@@ -176,7 +191,7 @@ export function InvoiceClient({ invoice }) {
                         </table>
                     </div>
 
-                    <div className="flex justify-end space-x-4 mb-8">
+                    <div className="flex flex-col sm:flex-row sm:justify-end space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
                         <div className="text-right">
                             <div className="flex justify-between mb-2">
                                 <span className="font-medium">Total parcial</span>

@@ -85,7 +85,12 @@ export const getStudents = async (campus_id: string) => {
   );
   return response.data;
 };
-
+export const getStudent = async (student: number) => {
+  console.log(`${API_ENDPOINTS.STUDENT}/${student}`);
+  const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT}/${student}`);
+  console.log(response.data);
+  return response.data;
+};
 export const createStudent = async (student: Student) => {
   const response = await axiosInstance.post(
     API_ENDPOINTS.CREATE_STUDENT,
@@ -180,6 +185,11 @@ export const getCharges = async (campus_id: number) => {
 
 export const createCharge = async (charge: Transaction) => {
   const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CHARGE, charge);
+  return response.data;
+};
+
+export const updateCharge = async (charge: Transaction) => {
+  const response = await axiosInstance.put(`${API_ENDPOINTS.UPDATE_CHARGE}/${charge.id}`, charge);
   return response.data;
 };
 

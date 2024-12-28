@@ -30,15 +30,17 @@ import { createCharge, getCharges } from '@/lib/api';
 import { Student, Transaction } from '@/lib/types';
 import { MultiSelect } from '@/components/multi-select';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { Share } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes']);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes', 'paid', 'limit_date', 'actions']);
   const { activeCampus } = useActiveCampusStore();
-
+  const { toast } = useToast();
   useEffect(() => {
     fetchTransactions();
   }, []);
@@ -97,7 +99,7 @@ export default function CobrosPage() {
       value: t.student?.id || '',
       label: `${t.student?.firstname} ${t.student?.lastname}`,
     }))
-    .filter((student, index, self) => 
+    .filter((student, index, self) =>
       index === self.findIndex(s => s.value === student.value)
     );
 
@@ -106,8 +108,22 @@ export default function CobrosPage() {
     { value: 'amount', label: 'Monto' },
     { value: 'paymentMethod', label: 'Método' },
     { value: 'date', label: 'Fecha' },
-    { value: 'notes', label: 'Notas' }
+    { value: 'notes', label: 'Notas' },
+    { value: 'paid', label: 'Pagado' },
+    { value: 'limit_date', label: 'Fecha límite de pago' },
+    { value: 'actions', label: 'Acciones' }
   ];
+
+  const handleShare = (transaction: Transaction) => {
+    const url = `https://admin.prexun.com/recibo/${transaction.id}`;
+    const text = `Este es un cobro de ${transaction.student?.firstname} ${transaction.student?.lastname}`;
+    navigator.clipboard.writeText(url);
+    toast({
+      title: 'Enlace copiado al portapapeles',
+      description: 'Puedes compartir este enlace con tus estudiantes',
+      variant: 'default'
+    });
+  };
 
   return (
     <div className="p-6">
@@ -146,7 +162,7 @@ export default function CobrosPage() {
             </Button>
           </div>
           <MultiSelect
-            options={[{value: 'all', label: 'Todos los estudiantes'}, ...uniqueStudents]}
+            options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
             hiddeBadages={true}
             selectedValues={selectedStudents}
             onSelectedChange={handleStudentSelect}
@@ -175,8 +191,11 @@ export default function CobrosPage() {
             {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
             {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
             {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
+            {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
             {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
             {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
+            {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
+            {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -197,6 +216,11 @@ export default function CobrosPage() {
                   {transaction.payment_method === 'card' && 'Tarjeta'}
                 </TableCell>
               )}
+              {visibleColumns.includes('paid') && (
+                <TableCell>
+                  {transaction.paid ? 'Si' : 'No'}
+                </TableCell>
+              )}
               {visibleColumns.includes('date') && (
                 <TableCell>
                   {new Date(transaction.created_at).toLocaleDateString()}
@@ -204,6 +228,18 @@ export default function CobrosPage() {
               )}
               {visibleColumns.includes('notes') && (
                 <TableCell>{transaction.notes}</TableCell>
+              )}
+              {visibleColumns.includes('limit_date') && (
+                <TableCell>
+                  {transaction.expiration_date ? new Date(transaction.expiration_date).toLocaleDateString() : 'No límite de pago'}
+                </TableCell>
+              )}
+              {visibleColumns.includes('actions') && (
+                <TableCell className="p-4">
+                  <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
+                    < Share className="w-4 h-4 mr-2" />
+                  </Button>
+                </TableCell>
               )}
             </TableRow>
           ))}

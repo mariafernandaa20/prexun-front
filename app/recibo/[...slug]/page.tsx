@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { InvoiceClient } from "./invoice_page";
 
 // app/invoices/[slug]/page.js
@@ -24,11 +25,11 @@ export default async function InvoicePage({ params }) {
         const invoice = await getInvoiceData(params.slug);
         return <InvoiceClient invoice={invoice} />;
     } catch (error) {
-        // Next.js error handling
         return (
-            <div className="flex items-center justify-center h-screen">
+            <div className="flex items-center justify-center h-screen w-screen bg-[#F0F0F0]">
                 <div className="text-center">
-                    <p className="text-red-600 text-lg">Error al cargar la factura</p>
+                    <p className="text-black text-lg text-pretty">No encontramos la factura que estas buscando.</p>
+                    <Image src="/dog.png" alt="404" width={400} height={400} />
                 </div>
             </div>
         );
