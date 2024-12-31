@@ -70,8 +70,8 @@ export function StudentForm({
     health_conditions: student?.health_conditions || '',
     how_found_out: student?.how_found_out || '',
     preferred_communication: student?.preferred_communication || '',
-    general_book: student?.general_book || null,
-    module_book: student?.module_book || null ,
+    general_book: student?.general_book || 'No entregado',
+    module_book: student?.module_book || 'No entregado' ,
   });
 
   useEffect(() => {

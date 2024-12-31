@@ -241,7 +241,7 @@ export default function CobrosPage() {
                 {visibleColumns.includes('actions') && (
                   <TableCell className="p-4">
                     <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
-                      < Share className="w-4 h-4 mr-2" />
+                      <Share className="w-4 h-4 mr-2" />
                     </Button>
                     <InvoicePDF icon={true} invoice={transaction} />
                   </TableCell>

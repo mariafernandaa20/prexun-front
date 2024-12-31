@@ -163,22 +163,6 @@ export default function Page() {
     const response = await getGrupos();
     setGrupos(response);
   };
-  useEffect(() => {
-    fetchStudents();
-    fetchPeriods();
-    fetchPromos();
-    fetchGrupos();
-    try {
-      getData();
-    } catch (error) {
-      toast({
-        title: 'Error al cargar datos',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
-      });
-    }
-  }, []);
-
   const getData = async () => {
     const responseCohorts = await getCohorts();
     const responseMunicipios = await getMunicipios();
@@ -212,6 +196,22 @@ export default function Page() {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    fetchStudents();
+    fetchPeriods();
+    fetchPromos();
+    fetchGrupos();
+    try {
+      getData();
+    } catch (error) {
+      toast({
+        title: 'Error al cargar datos',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    }
+  }, []);
+  
   const handleDelete = async (id: string) => {
     if (!confirm('¿Está seguro de eliminar este estudiante?')) return;
 

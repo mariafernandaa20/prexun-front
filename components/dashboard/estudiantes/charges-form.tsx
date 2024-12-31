@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Receipt } from 'lucide-react';
 import { Student, Transaction } from '@/lib/types';
 import { createCharge, updateCharge } from '@/lib/api';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ChargesFormProps {
   fetchStudents: () => void;
@@ -204,8 +205,8 @@ export default function ChargesForm({
 
               <div className="space-y-2">
                 <Label>Notas</Label>
-                <Input
-                  type="text"
+                <Textarea
+                  rows={6}
                   value={formData.notes}
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })

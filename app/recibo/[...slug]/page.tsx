@@ -5,8 +5,10 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 // app/invoices/[slug]/page.js
 async function getInvoiceData(slug) {
-    console.log("API_URL", API_URL);
-    const res = await axios.get(`${API_URL}/api/invoice/${slug}`);
+    console.log("API_URL", API_URL, slug);
+    const url = `${API_URL}/api/uuid_invoice/${slug}`;
+    console.log(url);
+    const res = await axios.get(url);
 
     if (res.status !== 200) {
         throw new Error('Failed to fetch invoice');
@@ -18,8 +20,7 @@ async function getInvoiceData(slug) {
 // Server Component
 export default async function InvoicePage({ params }) {
     try {
-        const invoice = await getInvoiceData(params.slug);
-        console.log(invoice);
+        const invoice = await getInvoiceData(params.slug.join('/'));
         return <InvoiceClient invoice={invoice} />;
     } catch (error) {
         return (

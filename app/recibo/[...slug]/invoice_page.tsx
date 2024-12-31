@@ -6,7 +6,7 @@ import "jspdf-autotable";
 import Image from "next/image";
 import dayjs from 'dayjs';
 import InvoicePDF from '@/components/invoice_pdf';
-
+import { formatTime } from '@/lib/utils';
 export function InvoiceClient({ invoice }) {
     const invoiceNumber = ({ id }) => {
         if (id < 10) {
@@ -23,7 +23,6 @@ export function InvoiceClient({ invoice }) {
         return `N-${id}`;
     };
 
- 
     return (
         <div className='flex flex-col justify-center items-center mx-auto bg-white lg:h-screen text-black'>
             <div
@@ -38,7 +37,7 @@ export function InvoiceClient({ invoice }) {
                     {invoice.paid ? "PAGADO" : "NO PAGADO"}
                 </span>
             </div>
-            <div className="px-4 py-10 bg-white sm:p-20 w-full sm:w-[800px] border border-gray-400">
+            <div className="px-4 py-10 bg-white sm:p-20 w-full sm:w-[800px] border border-gray-400  lg:min-h-[1056px]">
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center">
@@ -59,19 +58,29 @@ export function InvoiceClient({ invoice }) {
                             </div>
                             <div className="flex justify-between">
                                 <span className="">Fecha</span>
-                                <span>{dayjs(invoice.created_at).format('DD/MM/YYYY')}</span>
+                                <span>{new Intl.DateTimeFormat('es', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    timeZone: 'UTC'
+                                }).format(new Date(invoice.created_at))}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="">Fecha de vencimiento</span>
-                                <span>{invoice.due_date ? invoice.due_date : 'Sin vencimiento'}</span>
-                            </div>
+                                <span>
+                                    {invoice.expiration_date
+                                        ? formatTime({
+                                            time: invoice.expiration_date
+                                        })
+                                        : 'Sin vencimiento'
+                                    }
+                                </span>                         </div>
                             <div className="flex justify-between">
                                 <span className="">Metodo de pago</span>
                                 <span>{invoice.payment_method}</span>
                             </div>
                         </div>
                     </div>
-
                     <div className="border border-gray-400 overflow-hidden mb-8">
                         <table className="w-full">
                             <thead>
@@ -88,14 +97,11 @@ export function InvoiceClient({ invoice }) {
                                 <tr>
                                     <td className="px-6 py-4">
                                         <div>
-                                            <div className="font-medium text-gray-900">HF1 | R | 1-3</div>
+                                            <div className="font-medium text-gray-900">{invoice.student?.grupo?.name} | {invoice.student?.grupo.type}</div>
                                             <div className="text-gray-500">
-                                                <p>📅 Frecuencia clases: Lunes, miércoles y viernes</p>
-                                                <p>⏰ 8:00 a.m. - 10:00 a.m.</p>
-                                                <p className="mt-2">Parcialidad:</p>
-                                                <p>▪ $2,000 antes del 30 de septiembre el 2024</p>
-                                                <p className="mt-2">Liquidación:</p>
-                                                <p>▪ $2,000 antes del 15 de octubre del 2024</p>
+                                                <p>Frecuencia clases: {JSON.parse(invoice.student?.grupo?.frequency).join(', ')}</p>
+                                                <p>{invoice.student?.grupo?.start_time} - {invoice.student?.grupo?.end_time}</p>
+                                                <p>Notas: {invoice.notes}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -107,10 +113,6 @@ export function InvoiceClient({ invoice }) {
 
                     <div className="flex flex-col sm:flex-row sm:justify-end space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
                         <div className="text-right">
-                            <div className="flex justify-between mb-2">
-                                <span className="font-medium">Total parcial</span>
-                                <span>MX${invoice.amount}</span>
-                            </div>
                             <div className="flex justify-between font-bold">
                                 <span>Total</span>
                                 <span>MX${invoice.amount}</span>

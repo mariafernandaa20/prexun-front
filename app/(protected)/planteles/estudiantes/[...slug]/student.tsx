@@ -8,6 +8,7 @@ import { getStudent, updateCharge } from '@/lib/api'
 import { FormattedDate } from '@/lib/utils'
 import { StudentForm } from '../student-form'
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form'
+import { formatTime } from '@/lib/utils';
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -94,16 +95,15 @@ const TransactionsTable: React.FC<{
                             ))}
                         </TableCell>
                         <TableCell>
-                            <FormattedDate date={transaction.created_at} />
+                            {formatTime({ time: transaction.created_at })}
                         </TableCell>
                         <TableCell>
-                            <FormattedDate date={transaction.payment_date} />
+                            {formatTime({ time: transaction.payment_date })}
                         </TableCell>
                         <TableCell>
-                            <FormattedDate
-                                date={transaction.expiration_date}
-                                defaultText="Sin vencimiento"
-                            />
+                            {transaction.expiration_date ? formatTime({
+                                time: transaction.expiration_date
+                            }) : 'Sin vencimiento'}
                         </TableCell>
                         <TableCell>{transaction.notes}</TableCell>
                         <TableCell>{transaction.paid !== 0 ? 'Sí' : 'No'}</TableCell>
