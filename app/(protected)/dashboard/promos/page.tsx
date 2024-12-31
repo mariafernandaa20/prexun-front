@@ -15,6 +15,7 @@ import { createPromo, getPromos, updatePromo, deletePromo } from '@/lib/api'
 import { Promocion } from '@/lib/types'
 import { TrashIcon } from 'lucide-react'
 import { PencilIcon } from 'lucide-react'
+import { formatTime } from '@/lib/utils'
 
 
 export default function PromocionesPage() {
@@ -99,7 +100,7 @@ export default function PromocionesPage() {
               <TableCell>{promocion.type}</TableCell>
               <TableCell>${promocion.cost}</TableCell>
               <TableCell>
-                {format(new Date(promocion.limit_date), 'dd/MM/yyyy')}
+                {formatTime({time: promocion.limit_date})}
               </TableCell>
               <TableCell>
                 {promocion.groups.join(', ')}
