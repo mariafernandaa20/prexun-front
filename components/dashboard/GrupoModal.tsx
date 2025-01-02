@@ -49,9 +49,26 @@ export default function GrupoModal({
 
   useEffect(() => {
     if (grupo) {
-      setFormData(grupo);
+      // Asegurarse de que frequency sea un array
+      const frequency = Array.isArray(grupo.frequency) ? grupo.frequency : [];
+      setFormData({
+        ...grupo,
+        frequency,
+      });
+    } else {
+      // Resetear el formulario cuando se cierra
+      setFormData({
+        name: '',
+        type: '',
+        plantel_id: 0,
+        period_id: 0,
+        capacity: 0,
+        frequency: [],
+        start_time: '',
+        end_time: '',
+      });
     }
-  }, [grupo]);
+  }, [grupo, isOpen]); // Agregar isOpen como dependencia
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -89,12 +106,14 @@ export default function GrupoModal({
       period_id: parseInt(value),
     }));
   };
+
   const handleCampusChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
       plantel_id: parseInt(value),
     }));
   };
+
   const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
   return (
@@ -123,14 +142,14 @@ export default function GrupoModal({
                 <Label htmlFor="period_id">Periodo</Label>
                 <Select
                   onValueChange={handlePeriodChange}
-                  value={formData.period_id as any}
+                  value={formData.period_id.toString()}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar periodo" />
                   </SelectTrigger>
                   <SelectContent>
                     {periods.map((period) => (
-                      <SelectItem key={period.id} value={period.id}>
+                      <SelectItem key={period.id} value={period.id.toString()}>
                         {period.name}
                       </SelectItem>
                     ))}
@@ -138,17 +157,17 @@ export default function GrupoModal({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="period_id">Campus</Label>
+                <Label htmlFor="plantel_id">Campus</Label>
                 <Select
                   onValueChange={handleCampusChange}
-                  value={formData.plantel_id as any}
+                  value={formData.plantel_id.toString()}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar campus" />
                   </SelectTrigger>
                   <SelectContent>
                     {campuses.map((campus) => (
-                      <SelectItem key={campus.id} value={campus.id}>
+                      <SelectItem key={campus.id} value={campus.id.toString()}>
                         {campus.name}
                       </SelectItem>
                     ))}

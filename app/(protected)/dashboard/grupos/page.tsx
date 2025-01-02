@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Plus } from 'lucide-react';
+import { Plus, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Campus, Grupo, Period } from '@/lib/types';
 import GrupoModal from '../../../../components/dashboard/GrupoModal';
@@ -44,11 +44,18 @@ export default function GruposPage() {
           await createGrupo(grupo)
       }
       fetchGrupos()
+      setIsOpen(false)
+      setGrupo(null)
     } catch (error) {
       console.error('Error:', error)
     }
-    console.log(grupo);
   };
+
+  const handleEdit = (grupo: Grupo) => {
+    setGrupo(grupo);
+    setIsOpen(true);
+  };
+
   const fetchGrupos = async () => {
     try {
       const response = await getGrupos();
@@ -65,7 +72,6 @@ export default function GruposPage() {
   };
   const fetchPeriods = async () => {
     const response = await getPeriods();
-    console.log(response);
     setPeriods(response);
   };
 
@@ -96,18 +102,19 @@ export default function GruposPage() {
             <TableHead>Capacidad</TableHead>
             <TableHead>Frecuencia</TableHead>
             <TableHead>Horario</TableHead>
+            <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center">
+              <TableCell colSpan={6} className="text-center">
                 Cargando...
               </TableCell>
             </TableRow>
           ) : filteredGrupos.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center">
+              <TableCell colSpan={6} className="text-center">
                 No se encontraron grupos
               </TableCell>
             </TableRow>
@@ -119,9 +126,14 @@ export default function GruposPage() {
                 <TableCell>{grupo.name}</TableCell>
                 <TableCell>{grupo.type}</TableCell>
                 <TableCell>{grupo.capacity}</TableCell>
-                <TableCell>{grupo.frequency}</TableCell>
+                <TableCell>{Object.entries(JSON.parse(grupo.frequency as any)).map(([day, value]) => value).join(', ')}</TableCell>
                 <TableCell>
                   {grupo.start_time} - {grupo.end_time}
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="icon" onClick={() => handleEdit(grupo)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))
@@ -131,7 +143,10 @@ export default function GruposPage() {
 
       <GrupoModal
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={() => {
+          setIsOpen(false);
+          setGrupo(null);
+        }}
         onSubmit={handleSubmit}
         grupo={grupo}
         periods={periods}
