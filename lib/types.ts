@@ -171,3 +171,15 @@ export interface Caja {
   created_at?: string;
   updated_at?: string;
 }
+
+
+export interface Producto {
+  id?: number;
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  campus_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}

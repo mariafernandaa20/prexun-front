@@ -1,6 +1,6 @@
 import axiosInstance from "./api/axiosConfig";
 import { API_ENDPOINTS } from "./api/endpoints";
-import { Campus, Carrera, Caja, Facultad, Gasto, Grupo, Modulo, Municipio, Period, Prepa, Promocion, Student, Transaction, User } from "./types";
+import { Campus, Carrera, Caja, Facultad, Gasto, Grupo, Modulo, Municipio, Period, Prepa, Promocion, Student, Transaction, User, Producto } from "./types";
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
@@ -449,6 +449,31 @@ export const updateCaja = async (caja: Caja) => {
 export const deleteCaja = async (id: string) => {
   const response = await axiosInstance.delete(
     `${API_ENDPOINTS.DELETE_CAJA}/${id}`
+  );
+  return response.data;
+};
+
+export const getProductos = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.PRODUCTOS);
+  return response.data;
+};
+
+export const createProducto = async (producto: Producto) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_PRODUCTO, producto);
+  return response.data;
+};
+
+export const updateProducto = async (producto: Producto) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_PRODUCTO}/${producto.id}`,
+    producto
+  );
+  return response.data;
+};
+
+export const deleteProducto = async (id: number) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_PRODUCTO}/${id}`
   );
   return response.data;
 };

@@ -3,6 +3,7 @@
 import * as React from "react";
 import {
   AudioWaveform,
+  BaggageClaimIcon,
   BookOpen,
   Bot,
   Building,
@@ -13,6 +14,7 @@ import {
   Map,
   PieChart,
   Settings2,
+  ShoppingBag,
   Users,
   Wallet,
 } from "lucide-react";
@@ -139,6 +141,11 @@ export const data = {
       name: "Grupos",
       url: "/dashboard/grupos",
       icon: BookOpen,
+    },
+    {
+      name: "Productos",
+      url: "/dashboard/productos",
+      icon: ShoppingBag,
     },
     {
       name: "Planteles",
