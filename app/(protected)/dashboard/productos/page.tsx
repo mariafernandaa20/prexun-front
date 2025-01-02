@@ -14,8 +14,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusIcon } from 'lucide-react';
-import { Label } from 'recharts';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 
 export default function ProductsPage() {
     const [productos, setProductos] = useState<Producto[]>([]);
@@ -54,29 +54,40 @@ export default function ProductsPage() {
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">Productos</h1>
                     <div className="flex gap-4">
-                        <Label>Nuevo Producto</Label>
-                        <Input
-                            placeholder="Nombre"
-                            value={newProducto.name}
-                            onChange={(e) => setNewProducto({ ...newProducto, name: e.target.value })}
-                        />
-                        <Input
-                            placeholder="Stock"
-                            type="number"
-                            value={newProducto.stock}
-                            onChange={(e) => setNewProducto({ ...newProducto, stock: Number(e.target.value) })}
-                        />
-                        <Input
-                            placeholder="Descripción"
-                            value={newProducto.description}
-                            onChange={(e) => setNewProducto({ ...newProducto, description: e.target.value })}
-                        />
-                        <Input
-                            placeholder="Precio"
-                            type="number"
-                            value={newProducto.price}
-                            onChange={(e) => setNewProducto({ ...newProducto, price: Number(e.target.value) })}
-                        />
+                        <div>
+                            <Label>Nombre</Label>
+                            <Input
+                                placeholder="Nombre"
+                                value={newProducto.name}
+                                onChange={(e) => setNewProducto({ ...newProducto, name: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <Label>Descripción</Label>
+                            <Input
+                                placeholder="Descripción"
+                                value={newProducto.description}
+                                onChange={(e) => setNewProducto({ ...newProducto, description: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <Label>Precio</Label>
+                            <Input
+                                placeholder="Precio"
+                                type="number"
+                                value={newProducto.price}
+                                onChange={(e) => setNewProducto({ ...newProducto, price: Number(e.target.value) })}
+                            />
+                        </div>
+                        <div>
+                            <Label>Stock Inicial</Label>
+                            <Input
+                                placeholder="Stock"
+                                type="number"
+                                value={newProducto.stock}
+                                onChange={(e) => setNewProducto({ ...newProducto, stock: Number(e.target.value) })}
+                            />
+                        </div>
                         <Button onClick={handleCreate}>
                             <PlusIcon className="mr-2 h-4 w-4" /> Agregar Producto
                         </Button>
