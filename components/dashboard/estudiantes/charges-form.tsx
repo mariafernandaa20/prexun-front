@@ -59,7 +59,7 @@ export default function ChargesForm({
   };
 
   const validateDenominations = (): boolean => {
-    if (formData.payment_method === 'cash') {
+    if (formData.payment_method === 'cash' && formData.denominations && typeof formData.denominations === 'object' && !Array.isArray(formData.denominations)) {
       const denominationsTotal = Number(calculateDenominationsTotal(formData.denominations)).toFixed(2);
       const amount = Number(formData.amount).toFixed(2);
       
