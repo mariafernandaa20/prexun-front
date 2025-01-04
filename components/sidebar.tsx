@@ -133,7 +133,7 @@ export const data = {
       icon: CalendarClock,
     },
     {
-      name:"Promociones",
+      name: "Promociones",
       url: "/dashboard/promos",
       icon: BookOpen,
     },
@@ -160,14 +160,9 @@ export const data = {
       icon: PieChart,
     },
     {
-      name: "Caja",
-      url: "/planteles/caja",
-      icon: Wallet,
-    },
-    {
-      name: "Gastos",
-      url: "/planteles/gastos",
-      icon: PieChart,
+      name: "Estudiantes",
+      url: "/planteles/estudiantes",
+      icon: Users,
     },
     {
       name: "Cobros",
@@ -175,16 +170,15 @@ export const data = {
       icon: PieChart,
     },
     {
-      name: "Estudiantes",
-      url: "/planteles/estudiantes",
-      icon: Users,
+      name: "Gastos",
+      url: "/planteles/gastos",
+      icon: PieChart,
     },
     {
-      name: "Periodos",
-      url: "/planteles/periodos",
-      icon: CalendarClock,
+      name: "Caja",
+      url: "/planteles/caja",
+      icon: Wallet,
     },
-    
   ],
 };
 
@@ -235,7 +229,7 @@ export function PlantelSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher/>
+        <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={data.plantel_navigation} />
