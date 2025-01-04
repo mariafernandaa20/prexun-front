@@ -155,7 +155,7 @@ export interface Transaction {
   campus_id: number;
   amount: number;
   payment_method: 'cash' | 'transfer' | 'card';
-  denominations?: Record<string, number>;
+  denominations?: Record<string, number> | [];
   paid: number;
   payment_date?: string;
   created_at?: string;

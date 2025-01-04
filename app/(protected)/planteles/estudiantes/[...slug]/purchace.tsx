@@ -29,12 +29,12 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
   const [formData, setFormData] = useState<FormData>({
     product_id: '',
     quantity: 1,
-    payment_method: 'cash',
+    payment_method: 'card',
     amount: 0,
     paid: 0,
     comments: '',
     transaction_type: 'purchase',
-    denominations: null,
+    denominations: [],
   })
 
   const [products, setProducts] = useState<any[]>([])
@@ -58,7 +58,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         paid: formData.paid,
         notes: formData.comments,
         transaction_type: 'purchase',
-        denominations: null,
+        denominations: [],
       })
       
       if (response) {
@@ -69,7 +69,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
           payment_method: 'cash',
           amount: 0,
           paid: 0,
-          denominations: null,
+          denominations: [],
           comments: ''
         })
         setModalOpen(false)
