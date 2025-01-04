@@ -9,6 +9,8 @@ import { FormattedDate } from '@/lib/utils'
 import { StudentForm } from '../student-form'
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form'
 import { formatTime } from '@/lib/utils';
+import Purchace from './purchace'
+import { useActiveCampusStore } from '@/lib/store/plantel-store'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -141,11 +143,16 @@ const useStudent = (studentId: number) => {
     const updateTransaction = React.useCallback((updatedTransaction: Transaction) => {
         setStudent(prevStudent => {
             if (!prevStudent) return null
+
+            const transactionExists = prevStudent.transactions.some(t => t.id === updatedTransaction.id);
+
             return {
                 ...prevStudent,
-                transactions: prevStudent.transactions.map(transaction =>
-                    transaction.id === updatedTransaction.id ? updatedTransaction : transaction
-                )
+                transactions: transactionExists
+                    ? prevStudent.transactions.map(transaction =>
+                        transaction.id === updatedTransaction.id ? updatedTransaction : transaction
+                    )
+                    : [...prevStudent.transactions, updatedTransaction]
             }
         })
     }, [])
@@ -160,15 +167,26 @@ const useStudent = (studentId: number) => {
 export function StudentComponent({ slug }: { slug: string[] }) {
     const studentId = Number(slug.join('/'))
     const { student, loading, error, updateTransaction } = useStudent(studentId)
-
+    const campusId = useActiveCampusStore((state) => state.activeCampus?.id)
     if (loading) return <div>Cargando...</div>
     if (error) return <div>Error: {error.message}</div>
     if (!student) return <div>No se encontró el estudiante</div>
 
+    const handlePurchaseComplete = (newTransaction: Transaction) => {
+        updateTransaction(newTransaction)
+    }
+
     return (
         <Card>
             <CardHeader>
-                <h1>{student.firstname} {student.lastname}</h1>
+                <div className='flex justify-between items-center'>
+                    <h1>{student.firstname} {student.lastname}</h1>
+                    <Purchace
+                        campusId={campusId}
+                        studentId={student.id}
+                        onPurchaseComplete={handlePurchaseComplete as any}
+                    />
+                </div>
             </CardHeader>
             <CardContent>
                 {student.transactions && (

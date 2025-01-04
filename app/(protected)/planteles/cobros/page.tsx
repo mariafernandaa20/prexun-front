@@ -30,10 +30,11 @@ import { createCharge, getCharges } from '@/lib/api';
 import { Student, Transaction } from '@/lib/types';
 import { MultiSelect } from '@/components/multi-select';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
-import { Share } from 'lucide-react';
+import { Eye, Share } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import InvoicePDF from '@/components/invoice_pdf';
+import Link from 'next/link';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -117,7 +118,7 @@ export default function CobrosPage() {
   ];
 
   const handleShare = (transaction: Transaction) => {
-    const url = `https://admin.prexun.com/recibo/${transaction.id}`;
+    const url = `https://admin.prexun.com/recibo/${transaction.uuid}`;
     const text = `Este es un cobro de ${transaction.student?.firstname} ${transaction.student?.lastname}`;
     navigator.clipboard.writeText(url);
     toast({
@@ -239,11 +240,14 @@ export default function CobrosPage() {
                   </TableCell>
                 )}
                 {visibleColumns.includes('actions') && (
-                  <TableCell className="p-4">
+                  <TableCell className="p-4 flex items-center justify-right gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
                       <Share className="w-4 h-4 mr-2" />
                     </Button>
                     <InvoicePDF icon={true} invoice={transaction} />
+                    <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
+                      <Eye className="w-4 h-4 mr-2" />
+                    </Link>
                   </TableCell>
                 )}
               </TableRow>

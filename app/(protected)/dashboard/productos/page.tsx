@@ -52,7 +52,7 @@ export default function ProductsPage() {
         <Card>
             <CardHeader>
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Productos</h1>
+                    <h1 className="text-2xl font-bold mt-6">Productos</h1>
                     <div className="flex gap-4">
                         <div>
                             <Label>Nombre</Label>
@@ -88,7 +88,7 @@ export default function ProductsPage() {
                                 onChange={(e) => setNewProducto({ ...newProducto, stock: Number(e.target.value) })}
                             />
                         </div>
-                        <Button onClick={handleCreate}>
+                        <Button className='mt-6' onClick={handleCreate}>
                             <PlusIcon className="mr-2 h-4 w-4" /> Agregar Producto
                         </Button>
                     </div>

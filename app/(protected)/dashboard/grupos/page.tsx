@@ -102,6 +102,7 @@ export default function GruposPage() {
           <TableHead>Capacidad</TableHead>
           <TableHead>Frecuencia</TableHead>
           <TableHead>Horario</TableHead>
+          <TableHead>Estudiantes</TableHead>
           <TableHead>Acciones</TableHead>
         </TableRow>
       </TableHeader>
@@ -119,6 +120,7 @@ export default function GruposPage() {
             <TableCell>
               {grupo.start_time} - {grupo.end_time}
             </TableCell>
+            <TableCell>{grupo.students_count}/{grupo.capacity}</TableCell>
             <TableCell>
               <Button variant="ghost" size="icon" onClick={() => handleEdit(grupo)}>
                 <Pencil className="h-4 w-4" />

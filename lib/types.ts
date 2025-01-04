@@ -131,6 +131,7 @@ export interface Grupo {
   frequency: string[];
   start_time: string;
   end_time: string;
+  students_count?: number;
 }
 export interface Gasto {
   id?: number;
@@ -148,12 +149,14 @@ export interface Gasto {
 }
 export interface Transaction {
   id?: number;
+  uuid?: string;
+  product_id?: number;
   student_id: number;
   campus_id: number;
   amount: number;
   payment_method: 'cash' | 'transfer' | 'card';
   denominations?: Record<string, number>;
-  paid?: number;
+  paid: number;
   payment_date?: string;
   created_at?: string;
   expiration_date?: string;

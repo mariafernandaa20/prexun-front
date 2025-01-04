@@ -152,7 +152,6 @@ export const data = {
       url: "/planteles",
       icon: Building,
     }
-
   ],
   plantel_navigation: [
     {

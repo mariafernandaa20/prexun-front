@@ -217,7 +217,7 @@ export function StudentForm({
             <SelectContent>
               {grupos.map((grupo) => (
                 <SelectItem key={grupo.id} value={grupo.id as any}>
-                  {grupo.name}
+                  {grupo.name} - {grupo.students_count}/{grupo.capacity}
                 </SelectItem>
               ))}
             </SelectContent>
