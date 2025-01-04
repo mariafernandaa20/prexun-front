@@ -96,7 +96,12 @@ export default function GrupoModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    console.log(formData);
+    onSubmit({
+      ...formData,
+      start_time: formData.start_time,
+      end_time: formData.end_time,
+    });
     onClose();
   };
 
