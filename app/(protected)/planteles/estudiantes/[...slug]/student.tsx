@@ -11,6 +11,8 @@ import ChargesForm from '@/components/dashboard/estudiantes/charges-form'
 import { formatTime } from '@/lib/utils';
 import Purchace from './purchace'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
+import Link from 'next/link'
+import { Eye } from 'lucide-react'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -110,10 +112,15 @@ const TransactionsTable: React.FC<{
                         <TableCell>{transaction.notes}</TableCell>
                         <TableCell>{transaction.paid !== 0 ? 'Sí' : 'No'}</TableCell>
                         <TableCell>
-                            <TransactionActions
-                                transaction={transaction}
-                                onTransactionUpdate={onUpdateTransaction}
-                            />
+                            <div className='flex justify-left items-center gap-2'>
+                                <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
+                                    <Eye className="w-4 h-4 mr-2" />
+                                </Link>
+                                <TransactionActions
+                                    transaction={transaction}
+                                    onTransactionUpdate={onUpdateTransaction}
+                                />
+                            </div>
                         </TableCell>
                     </TableRow>
                 ))}
