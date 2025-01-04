@@ -21,6 +21,7 @@ interface FormData {
   amount: number
   comments?: string
   transaction_type?: string
+  denominations?: any
 }
 
 export default function Purchase({ campusId, studentId, onPurchaseComplete }: PurchaseFormProps) {
@@ -32,7 +33,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
     amount: 0,
     paid: 0,
     comments: '',
-    transaction_type: 'purchase'
+    transaction_type: 'purchase',
+    denominations: null,
   })
 
   const [products, setProducts] = useState<any[]>([])
@@ -53,12 +55,10 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         student_id: Number(studentId),
         amount: formData.amount,
         payment_method: formData.payment_method as "cash" | "transfer" | "card",
-        denominations: {
-          [formData.product_id]: formData.quantity
-        },
         paid: formData.paid,
         notes: formData.comments,
-        transaction_type: 'purchase'
+        transaction_type: 'purchase',
+        denominations: null,
       })
       
       if (response) {
@@ -69,6 +69,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
           payment_method: 'cash',
           amount: 0,
           paid: 0,
+          denominations: null,
           comments: ''
         })
         setModalOpen(false)
