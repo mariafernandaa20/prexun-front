@@ -164,6 +164,19 @@ export interface Transaction {
   student?: Student;
 }
 
+export interface Denomination {
+  1000: number;
+  500: number;
+  200: number;
+  100: number;
+  50: number;
+  20: number;
+  10: number;
+  5: number;
+  2: number;
+  1: number;
+}
+
 export interface Caja {
   id?: number;
   amount: number;
@@ -173,6 +186,8 @@ export interface Caja {
   campus_id: number;
   created_at?: string;
   updated_at?: string;
+  denominations_id?: number; 
+  denominations: Denomination;
 }
 
 
