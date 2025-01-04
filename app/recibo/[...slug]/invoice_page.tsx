@@ -97,7 +97,7 @@ export function InvoiceClient({ invoice }) {
                                 <tr>
                                     <td className="px-6 py-4">
                                         <div>
-                                            <div className="font-medium text-gray-900">{invoice.student?.grupo?.name} | {invoice.student?.grupo.type}</div>
+                                            <div className="font-medium text-gray-900">{invoice.student?.grupo?.name} | {invoice.student?.grupo?.type}</div>
                                             <div className="text-gray-500">
                                                 <p>Frecuencia clases: {JSON.parse(invoice.student?.grupo?.frequency).join(', ')}</p>
                                                 <p>{invoice.student?.grupo?.start_time} - {invoice.student?.grupo?.end_time}</p>

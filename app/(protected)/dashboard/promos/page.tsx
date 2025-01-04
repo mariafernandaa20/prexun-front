@@ -87,7 +87,9 @@ export default function PromocionesPage() {
           <TableRow>
             <TableHead>Nombre</TableHead>
             <TableHead>Tipo</TableHead>
-            <TableHead>Costo Neto</TableHead>
+            <TableHead>Costo Promo</TableHead>
+            <TableHead>Costo Regular</TableHead>
+            
             <TableHead>Fecha Limite De Aplicación</TableHead>
             <TableHead>Grupos Aplicables</TableHead>
             <TableHead>Acciones</TableHead>
@@ -99,6 +101,7 @@ export default function PromocionesPage() {
               <TableCell>{promocion.name}</TableCell>
               <TableCell>{promocion.type}</TableCell>
               <TableCell>${promocion.cost}</TableCell>
+              <TableCell>${promocion.regular_cost}</TableCell>
               <TableCell>
                 {formatTime({time: promocion.limit_date})}
               </TableCell>

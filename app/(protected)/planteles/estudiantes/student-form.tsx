@@ -198,7 +198,7 @@ export function StudentForm({
             <SelectContent>
               {promos.map((promo) => (
                 <SelectItem key={promo.id} value={promo.id as any}>
-                  {promo.name}
+                  {promo.name} {promo.type}
                 </SelectItem>
               ))}
             </SelectContent>
