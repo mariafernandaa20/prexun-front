@@ -80,7 +80,7 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
                 content: invoice.student?.grupo?.name + " | " + invoice.student?.grupo?.type + "\n\n" +
                     "Frecuencia clases:" + JSON.parse(invoice.student?.grupo?.frequency).join(', ') + "\n" +
                     invoice.student?.grupo?.start_time + " - " + invoice.student?.grupo?.end_time + "\n\n" +
-                    "Notas: " + invoice.notes,
+                    "Notas: " + invoice.notes ? invoice.notes : "",
                 styles: {
                     cellWidth: 'auto',
                     cellPadding: 4,
