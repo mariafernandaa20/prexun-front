@@ -144,7 +144,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   fetchUsers: async () => {
     try {
       const response = await getUsers();
-      console.log(response);
       set({ users: response });
     } catch (error) {
       console.error('Error fetching users:', error);

@@ -11,7 +11,6 @@ export const FormattedDate: React.FC<{ date: string | null, defaultText?: string
     date, 
     defaultText = 'Sin fecha' 
 }) => {
-  console.log(date);
     if (!date) return defaultText
     return new Date(date).toLocaleDateString()
 }
