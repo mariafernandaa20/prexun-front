@@ -20,6 +20,7 @@ interface FormData {
   payment_method: string
   amount: number
   comments?: string
+  transaction_type?: string
 }
 
 export default function Purchase({ campusId, studentId, onPurchaseComplete }: PurchaseFormProps) {
@@ -30,7 +31,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
     payment_method: 'cash',
     amount: 0,
     paid: 0,
-    comments: ''
+    comments: '',
+    transaction_type: 'purchase'
   })
 
   const [products, setProducts] = useState<any[]>([])
@@ -55,7 +57,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
           [formData.product_id]: formData.quantity
         },
         paid: formData.paid,
-        notes: formData.comments
+        notes: formData.comments,
+        transaction_type: 'purchase'
       })
       
       if (response) {

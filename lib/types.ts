@@ -161,6 +161,7 @@ export interface Transaction {
   created_at?: string;
   expiration_date?: string;
   notes?: string;
+  transaction_type?: string;
   student?: Student;
 }
 
