@@ -27,6 +27,7 @@ import {
 } from '@/lib/api';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Label } from '../ui/label';
 
 interface Period {
   id: string;
@@ -65,11 +66,6 @@ export function Periods() {
 
     if (!formData.name.trim()) {
       errors.name = 'El nombre es requerido';
-      isValid = false;
-    }
-
-    if (!formData.price || formData.price <= 0) {
-      errors.price = 'El precio debe ser mayor a 0';
       isValid = false;
     }
 
@@ -201,7 +197,9 @@ export function Periods() {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
+                  <Label htmlFor="name">Nombre del periodo</Label>
                   <Input
+                    id="name"
                     placeholder="Nombre del periodo"
                     value={formData.name}
                     onChange={(e) =>
@@ -213,9 +211,11 @@ export function Periods() {
                     <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
                   )}
                 </div>
-                <div>
+                {/* <div>
+                  <Label htmlFor="price">Precio</Label>
                   <Input
                     type="number"
+                    id="price"
                     placeholder="Precio"
                     value={formData.price}
                     onChange={(e) =>
@@ -226,9 +226,11 @@ export function Periods() {
                   {formErrors.price && (
                     <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>
                   )}
-                </div>
+                </div> */}
                 <div>
+                  <Label htmlFor="start_date">Fecha de inicio</Label>
                   <Input
+                    id="start_date"
                     type="date"
                     value={formData.start_date}
                     onChange={(e) =>
@@ -241,7 +243,9 @@ export function Periods() {
                   )}
                 </div>
                 <div>
+                  <Label htmlFor="end_date">Fecha de fin</Label>
                   <Input
+                    id="end_date"
                     type="date"
                     value={formData.end_date}
                     onChange={(e) =>
