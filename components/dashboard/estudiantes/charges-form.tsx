@@ -239,7 +239,7 @@ export default function ChargesForm({
                   <p className="text-red-500 text-sm mt-2">{errors.denominations}</p>
                 )}
                 <p className="text-sm text-gray-500 mt-2">
-                  Total en denominaciones: ${calculateDenominationsTotal(formData.denominations)}
+                  Total en denominaciones: ${formData.denominations && typeof formData.denominations === 'object' && !Array.isArray(formData.denominations) ? calculateDenominationsTotal(formData.denominations) : 0}
                 </p>
               </div>
             )}
