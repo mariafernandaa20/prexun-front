@@ -29,7 +29,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
     quantity: 1,
     payment_method: 'cash',
     amount: 0,
-    paid: 1,
+    paid: 0,
     comments: ''
   })
 
@@ -65,7 +65,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
           quantity: 1,
           payment_method: 'cash',
           amount: 0,
-          paid: 1,
+          paid: 0,
           comments: ''
         })
         setModalOpen(false)
