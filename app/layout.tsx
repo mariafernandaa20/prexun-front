@@ -19,6 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script src="https://analytics.ahrefs.com/analytics.js" data-key="tb4VnCQ9veS+etZWvizOmA" async></script>
+      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
