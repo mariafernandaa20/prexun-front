@@ -27,7 +27,6 @@ import { useActiveCampusStore } from "@/lib/store/plantel-store";
 export function TeamSwitcher() {
   const { user } = useAuthStore();
   const { isMobile } = useSidebar();
-  const router = useRouter();
   const { activeCampus, setActiveCampus } = useActiveCampusStore();
 
   React.useEffect(() => {

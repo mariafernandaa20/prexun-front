@@ -39,7 +39,7 @@ const TransactionActions: React.FC<{
 }> = ({ transaction, onTransactionUpdate }) => {
     const [formData, setFormData] = useState<Transaction>({
         ...transaction,
-        denominations: transaction.denominations || {},
+        denominations: transaction.denominations || [],
         notes: transaction.notes || '',
     });
 
@@ -73,6 +73,7 @@ const TransactionsTable: React.FC<{
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead>ID</TableHead>
                     <TableHead>Método</TableHead>
                     <TableHead>Monto</TableHead>
                     <TableHead>Denominaciones</TableHead>
@@ -87,6 +88,7 @@ const TransactionsTable: React.FC<{
             <TableBody>
                 {transactions.map((transaction) => (
                     <TableRow key={transaction.id}>
+                        <TableCell>{transaction.id}</TableCell>
                         <TableCell>
                             <PaymentMethod method={transaction.payment_method} />
                         </TableCell>

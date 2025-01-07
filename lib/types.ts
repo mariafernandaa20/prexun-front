@@ -1,5 +1,5 @@
 export interface Campus {
-  id?: string;
+  id?: number;
   name: string;
   code: string;
   address?: string;
@@ -35,7 +35,7 @@ export interface Student {
   lastname: string;
   email: string;
   phone: string;
-  campus_id: string;
+  campus_id: number;
   created_at?: string;
   current_debt?: number;
   type: 'preparatoria' | 'facultad';
@@ -178,20 +178,6 @@ export interface Denomination {
   1: number;
 }
 
-export interface Caja {
-  id?: number;
-  amount: number;
-  final_amount?: number;
-  real_amount?: number;
-  date?: string;
-  campus_id: number;
-  created_at?: string;
-  updated_at?: string;
-  denominations_id?: number; 
-  denominations: Denomination;
-}
-
-
 export interface Producto {
   id?: number;
   name: string;
@@ -199,6 +185,20 @@ export interface Producto {
   price: number;
   stock: number;
   campus_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+
+export interface Caja { 
+  id?: number;
+  campus_id: number;
+  initial_amount: number;
+  final_amount?: number;
+  notes?: string;
+  opened_at?: string;
+  closed_at?: string;
+  status: 'abierta' | 'cerrada';
   created_at?: string;
   updated_at?: string;
 }

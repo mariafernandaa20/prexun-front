@@ -19,7 +19,7 @@ interface StudentFormProps {
   student?: Student | null;
   onSubmit: (data: Student) => void;
   onCancel: () => void;
-  campusId: string;
+  campusId: number;
   periods: Period[];
   municipios: Municipio[];
   prepas: Prepa[];

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Dialog,
@@ -147,7 +147,7 @@ export default function Page() {
   const fetchStudents = async () => {
     try {
       setIsLoading(true);
-      const response = await getStudents(activeCampus?.id || '');
+      const response = await getStudents(activeCampus?.id);
       setStudents(response);
     } catch (error: any) {
       toast({
@@ -210,7 +210,7 @@ export default function Page() {
         variant: 'destructive',
       });
     }
-  }, []);
+  }, [activeCampus]);
   
   const handleDelete = async (id: string) => {
     if (!confirm('¿Está seguro de eliminar este estudiante?')) return;
@@ -532,7 +532,7 @@ export default function Page() {
             </DialogTitle>
           </DialogHeader>
           <StudentForm
-            campusId={activeCampus?.id || ''}
+            campusId={activeCampus?.id}
             student={selectedStudent}
             onSubmit={handleSubmit}
             onCancel={() => setIsModalOpen(false)}

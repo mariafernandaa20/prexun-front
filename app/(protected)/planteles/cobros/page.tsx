@@ -46,7 +46,7 @@ export default function CobrosPage() {
   const { toast } = useToast();
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [activeCampus]);
 
   const fetchTransactions = async () => {
     try {

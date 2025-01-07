@@ -104,7 +104,7 @@ export default function GastosPage() {
     }
 
     setFilteredGastos(filtered);
-  }, [startDate, endDate, selectedCategory, gastos]);
+  }, [startDate, endDate, selectedCategory, gastos, activeCampus]);
 
   const handleColumnSelect = (selected: string[]) => {
     setVisibleColumns(selected);
