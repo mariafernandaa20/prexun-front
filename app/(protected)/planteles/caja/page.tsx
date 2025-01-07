@@ -3,6 +3,7 @@ import { useActiveCampusStore } from '@/lib/store/plantel-store'
 import React from 'react'
 import CajaLayout from './CajaLayout'
 import { closeCaja, getCurrentCaja, openCaja } from '@/lib/api'
+import { Caja, Campus } from '@/lib/types'
 
 const useCaja = ({ activeCampus }: { activeCampus: Campus | null }) => {
   const [caja, setCaja] = React.useState<Caja | null>(null)
@@ -61,9 +62,13 @@ export default function CajaPage() {
     <CajaLayout caja={caja} onOpen={handleOpenCaja} onClose={handleCloseCaja}>
       {caja ? (
         <div>
-          <p>Caja abierta</p>
-          <p>Monto inicial: {caja.initialAmount}</p>
-          <p>Notas: {caja.openingNotes}</p>
+          <h2 className="text-2xl font-bold mb-4">Detalles de Caja</h2>
+          <p><strong>Estado:</strong> {caja.status}</p>
+          <p><strong>Monto Inicial:</strong> {caja.initial_amount}</p>
+          {caja.final_amount && <p><strong>Monto Final:</strong> {caja.final_amount}</p>}
+          {caja.notes && <p><strong>Notas:</strong> {caja.notes}</p>}
+          <p><strong>Abierta:</strong> {caja.opened_at}</p>
+          {caja.closed_at && <p><strong>Cerrada:</strong> {caja.closed_at}</p>}
         </div>
       ) : (
         <div>

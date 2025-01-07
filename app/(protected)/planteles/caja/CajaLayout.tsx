@@ -12,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Caja } from '@/lib/types'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 export default function CajaLayout({ children, caja, onOpen, onClose }: {
   children: React.ReactNode
@@ -40,11 +41,7 @@ export default function CajaLayout({ children, caja, onOpen, onClose }: {
 
   return (
     <div>
-      {caja ? (
-        <Button onClick={() => setOpen(true)}>Cerrar Caja</Button>
-      ) : (
-        <Button onClick={() => setOpen(true)}>Abrir Caja</Button>
-      )}
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger />
         <DialogContent>
@@ -93,7 +90,20 @@ export default function CajaLayout({ children, caja, onOpen, onClose }: {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {children}
+      <Card>
+        <CardHeader>
+          <div>
+            {caja ? (
+              <Button onClick={() => setOpen(true)}>Cerrar Caja</Button>
+            ) : (
+              <Button onClick={() => setOpen(true)}>Abrir Caja</Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {children}
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -33,7 +33,7 @@ import axiosInstance from "@/lib/api/axiosConfig";
 
 // Tipos para Plantel
 interface Campus {
-  id: string;
+  id: number;
   name: string;
   code: string;
   description: string;

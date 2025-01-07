@@ -72,7 +72,7 @@ export const updateCampus = async (campus: Campus) => {
   return response.data;
 };
 
-export const deleteCampus = async (id: string) => {
+export const deleteCampus = async (id: number) => {
   const response = await axiosInstance.delete(
     `${API_ENDPOINTS.DELETE_CAMPUS}/${id}`
   );
