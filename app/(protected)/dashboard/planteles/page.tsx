@@ -30,30 +30,7 @@ import {
 } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import axiosInstance from "@/lib/api/axiosConfig";
-
-// Tipos para Plantel
-interface Campus {
-  id: number;
-  name: string;
-  code: string;
-  description: string;
-  address: string;
-  is_active: boolean;
-  users?: Array<{
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  }>;
-}
-
-interface CampusFormData extends Omit<Campus, 'id' | 'users'> {
-  admin_ids?: string[];
-}
-
-interface CampusRequest extends Omit<Campus, 'users'> {
-  admin_ids?: string[];
-}
+import { Campus } from "@/lib/types";
 
 export default function Page() {
   const { toast } = useToast();
@@ -66,7 +43,7 @@ export default function Page() {
   const [selectedCampus, setSelectedCampus] = useState<Campus | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [formData, setFormData] = useState<CampusFormData>({
+  const [formData, setFormData] = useState<Campus>({
     name: "",
     code: "",
     description: "",
@@ -136,7 +113,7 @@ export default function Page() {
     e.preventDefault();
     try {
       if (selectedCampus) {
-        const campusRequest: CampusRequest = {
+        const campusRequest: Campus = {
           id: selectedCampus.id,
           name: formData.name,
           code: formData.code,
@@ -151,7 +128,7 @@ export default function Page() {
         );
         toast({ title: "Plantel actualizado correctamente" });
       } else {
-        const campusRequest: Omit<CampusRequest, 'id'> = {
+        const campusRequest: Campus = {
           name: formData.name,
           code: formData.code,
           description: formData.description,

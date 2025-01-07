@@ -5,6 +5,9 @@ export interface Campus {
   address?: string;
   is_active: boolean;
   administrator?: string[];
+  description?: string;
+  admin_ids?: string[];
+  users?: User[];
 }
 
 export interface User {
