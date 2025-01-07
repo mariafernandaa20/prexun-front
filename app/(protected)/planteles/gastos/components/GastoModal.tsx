@@ -62,9 +62,7 @@ export function GastoModal({
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('e.target.files');
     const file = e.target.files?.[0];
-    console.log(file);
     if (file) {
       setValue('image', file);
       const reader = new FileReader();
@@ -78,7 +76,6 @@ export function GastoModal({
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    console.log(file);
     if (file && file.type.startsWith('image/')) {
       setValue('image', file);
       const reader = new FileReader();

@@ -27,7 +27,6 @@ export default function PromocionesPage() {
   const fetchPromociones = async () => {
     try {
       const data = await getPromos()
-      console.log(data)
       setPromocionesActivas(data.active)
       setPromocionesInactivas(data.inactive)
     } catch (error) {

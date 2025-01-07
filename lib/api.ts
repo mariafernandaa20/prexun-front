@@ -5,7 +5,6 @@ import { Campus, Carrera, Caja, Facultad, Gasto, Grupo, Modulo, Municipio, Perio
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
-  console.log(response.data);
   return response.data;
 };
 
@@ -21,13 +20,11 @@ export const getInvoices = async () => {
 
 export const getUsers = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.USERS);
-  console.log(response.data);
   return response.data;
 };
 
 export const createUser = async (user: User) => {
   const response = await axiosInstance.post(API_ENDPOINTS.CREATE_USER, user);
-  console.log(response.data);
   return response.data;
 };
 
@@ -36,7 +33,6 @@ export const updateUser = async (user: User) => {
     `${API_ENDPOINTS.UPDATE_USER}/${user.id}`,
     user
   );
-  console.log(response.data);
   return response.data;
 };
 
@@ -44,13 +40,11 @@ export const deleteUser = async (id: string) => {
   const response = await axiosInstance.delete(
     `${API_ENDPOINTS.DELETE_USER}/${id}`
   );
-  console.log(response.data);
   return response.data;
 };
 
 export const getCampuses = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.CAMPUSES);
-  console.log(response.data);
   return response.data;
 };
 
@@ -59,7 +53,6 @@ export const createCampus = async (campus: Campus) => {
     API_ENDPOINTS.CREATE_CAMPUS,
     campus
   );
-  console.log(response.data);
   return response.data;
 };
 
@@ -68,7 +61,6 @@ export const updateCampus = async (campus: Campus) => {
     `${API_ENDPOINTS.UPDATE_CAMPUS}/${campus.id}`,
     campus
   );
-  console.log(response.data);
   return response.data;
 };
 
@@ -76,7 +68,6 @@ export const deleteCampus = async (id: number) => {
   const response = await axiosInstance.delete(
     `${API_ENDPOINTS.DELETE_CAMPUS}/${id}`
   );
-  console.log(response.data);
   return response.data;
 };
 
@@ -87,9 +78,7 @@ export const getStudents = async (campus_id: number) => {
   return response.data;
 };
 export const getStudent = async (student: number) => {
-  console.log(`${API_ENDPOINTS.STUDENT}/${student}`);
   const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT}/${student}`);
-  console.log(response.data);
   return response.data;
 };
 export const createStudent = async (student: Student) => {
@@ -101,13 +90,11 @@ export const createStudent = async (student: Student) => {
 };
 
 export const importStudents = async (file: File, campus_id: string) => {
-  console.log(file, campus_id);
   const formData = {
     file,
     campus_id
   }
 
-  console.log(formData);
   const response = await axiosInstance.post(
     API_ENDPOINTS.IMPORT_STUDENTS,
     formData,
@@ -155,7 +142,6 @@ export const getCohorts = async () => {
 
 export const getPeriods = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.PERIODS);
-  console.log(response.data);
   return response.data;
 };
 
@@ -271,12 +257,10 @@ export const deleteFacultad = async (id: string) => {
 
 export const getCarreras = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.CARREERAS);
-  console.log(response.data);
   return response.data;
 };
 
 export const createCarrera = async (carrera: Carrera) => {
-  console.log(carrera);
   const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CARREERA, carrera);
   return response.data;
 };

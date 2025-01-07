@@ -5,9 +5,7 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 // app/invoices/[slug]/page.js
 async function getInvoiceData(slug) {
-    console.log("API_URL", API_URL, slug);
     const url = `${API_URL}/api/uuid_invoice/${slug}`;
-    console.log(url);
     const res = await axios.get(url);
 
     if (res.status !== 200) {

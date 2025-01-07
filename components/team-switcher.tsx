@@ -38,7 +38,7 @@ export function TeamSwitcher() {
   const handleCampusChange = (campus: Campus) => {
     setActiveCampus(campus);
   };
-
+  
   return (
     <SidebarMenu>
       <SidebarMenuItem>

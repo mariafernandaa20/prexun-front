@@ -68,8 +68,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     const user = response.data.user;
     const token = response.data.token;
 
-    console.log(user);
-
     Cookies.set("auth-token", token, {
       expires: 7, // 7 días
       path: "/",

@@ -51,7 +51,6 @@ export default function ChargesForm({
   const [open, setOpen] = useState(false);
 
   const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
-    console.log(denominations);
     return Object.entries(denominations).reduce((total, [denomination, count]) => {
       return total + (Number(denomination) * (count || 0));
     }, 0);
@@ -225,7 +224,7 @@ export default function ChargesForm({
                         <Input
                           type="number"
                           min="0"
-                          value={formData.denominations[denom] || 0}
+                          value={formData.denominations[denom] || ''}
                           onChange={(e) =>
                             handleDenominationChange(denom, e.target.value)
                           }

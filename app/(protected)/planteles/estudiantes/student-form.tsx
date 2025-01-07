@@ -111,7 +111,6 @@ export function StudentForm({
     e: React.ChangeEvent<HTMLInputElement> | { name: string; value: string }
   ) => {
     const { name, value } = 'target' in e ? e.target : e;
-    console.log(name, value);
     if (name === 'facultad_id') {
       setFormData((prev) => ({
         ...prev,

@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { createCharge, getProductos } from '@/lib/api'
+import { useActiveCampusStore } from '@/lib/store/plantel-store'
 import { PlusIcon } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 
@@ -38,6 +39,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
   })
 
   const [products, setProducts] = useState<any[]>([])
+
+  const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -81,7 +84,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
 
   return (
     <>
-      <Button onClick={() => setModalOpen(true)}><PlusIcon className="mr-2 h-4 w-4" /> Comprar</Button>
+    {activeCampus?.latest_cash_register ? <Button onClick={() => setModalOpen(true)}><PlusIcon className="mr-2 h-4 w-4" /> Comprar</Button> : null}
+      
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
           <div className="p-4">

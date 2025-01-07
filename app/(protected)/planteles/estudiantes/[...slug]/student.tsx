@@ -44,7 +44,6 @@ const TransactionActions: React.FC<{
     });
 
     const handleMarkAsPaid = () => {
-        console.log(formData);
     };
 
     if (transaction.paid !== 0) return null;
