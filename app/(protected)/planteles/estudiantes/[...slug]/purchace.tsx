@@ -8,7 +8,7 @@ import { PlusIcon } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 
 interface PurchaseFormProps {
-  campusId: string
+  campusId: number
   studentId: string
   onPurchaseComplete?: (transaction: any)=> void
 }
