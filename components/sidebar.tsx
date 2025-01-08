@@ -165,7 +165,7 @@ export const data = {
       icon: Users,
     },
     {
-      name: "Cobros",
+      name: "Ingresos",
       url: "/planteles/cobros",
       icon: PieChart,
     },

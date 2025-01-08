@@ -3,9 +3,11 @@
 import {
   BadgeCheck,
   Bell,
+  Building,
   ChevronsUpDown,
   CreditCard,
   LogOut,
+  PieChart,
   Sparkles,
 } from "lucide-react";
 
@@ -27,6 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function NavUser() {
   const { user, logout } = useAuthStore();
@@ -77,6 +80,22 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
+            {user?.role === 'super_admin' && (
+              <>
+                <DropdownMenuLabel className="my-2 p-0 font-normal">
+                  <Link href="/dashboard/" className="flex items-center gap-2">
+                    <PieChart className="h-4 w-4 ml-3 mr-2" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuLabel>
+                <DropdownMenuLabel className="my-2 p-0 font-normal">
+                <Link href="/planteles/" className="flex items-center gap-2">
+                      <Building className="h-4 w-4 ml-3 mr-2" />
+                      Planteles
+                    </Link>
+                </DropdownMenuLabel>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="hover:cursor-pointer">
               <LogOut />

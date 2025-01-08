@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import InvoicePDF from '@/components/invoice_pdf';
 import Link from 'next/link';
+import AgregarIngreso from './AgregarIngreso';
 
 export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -131,61 +132,65 @@ export default function CobrosPage() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex gap-4">
-          <Input
-            placeholder="Buscar por nombre completo..."
-            value={searchStudent}
-            onChange={(e) => setSearchStudent(e.target.value)}
-            className="w-[300px]"
-          />
-          <div className="flex gap-2">
-            <Button
-              variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
-              onClick={() => setSelectedPaymentMethods(['all'])}
-            >
-              Todos los métodos
-            </Button>
-            <Button
-              variant={selectedPaymentMethods.includes('cash') ? 'default' : 'outline'}
-              onClick={() => handlePaymentMethodChange('cash')}
-            >
-              Efectivo
-            </Button>
-            <Button
-              variant={selectedPaymentMethods.includes('transfer') ? 'default' : 'outline'}
-              onClick={() => handlePaymentMethodChange('transfer')}
-            >
-              Transferencia
-            </Button>
-            <Button
-              variant={selectedPaymentMethods.includes('card') ? 'default' : 'outline'}
-              onClick={() => handlePaymentMethodChange('card')}
-            >
-              Tarjeta
-            </Button>
+        <div className="flex gap-4 justify-between">
+          <div className='flex gap-4'>
+            <Input
+              placeholder="Buscar por nombre completo..."
+              value={searchStudent}
+              onChange={(e) => setSearchStudent(e.target.value)}
+              className="w-[300px]"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
+                onClick={() => setSelectedPaymentMethods(['all'])}
+              >
+                Todos los métodos
+              </Button>
+              <Button
+                variant={selectedPaymentMethods.includes('cash') ? 'default' : 'outline'}
+                onClick={() => handlePaymentMethodChange('cash')}
+              >
+                Efectivo
+              </Button>
+              <Button
+                variant={selectedPaymentMethods.includes('transfer') ? 'default' : 'outline'}
+                onClick={() => handlePaymentMethodChange('transfer')}
+              >
+                Transferencia
+              </Button>
+              <Button
+                variant={selectedPaymentMethods.includes('card') ? 'default' : 'outline'}
+                onClick={() => handlePaymentMethodChange('card')}
+              >
+                Tarjeta
+              </Button>
+            </div>
+            <MultiSelect
+              options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
+              hiddeBadages={true}
+              selectedValues={selectedStudents}
+              onSelectedChange={handleStudentSelect}
+              title="Estudiantes"
+              placeholder="Seleccionar estudiantes"
+              searchPlaceholder="Buscar estudiante..."
+              emptyMessage="No se encontraron estudiantes"
+            />
+            <MultiSelect
+              options={columnOptions}
+              hiddeBadages={true}
+              selectedValues={visibleColumns}
+              onSelectedChange={handleColumnSelect}
+              title="Columnas"
+              placeholder="Seleccionar columnas"
+              searchPlaceholder="Buscar columna..."
+              emptyMessage="No se encontraron columnas"
+            />
           </div>
-          <MultiSelect
-            options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
-            hiddeBadages={true}
-            selectedValues={selectedStudents}
-            onSelectedChange={handleStudentSelect}
-            title="Estudiantes"
-            placeholder="Seleccionar estudiantes"
-            searchPlaceholder="Buscar estudiante..."
-            emptyMessage="No se encontraron estudiantes"
-          />
-          <MultiSelect
-            options={columnOptions}
-            hiddeBadages={true}
-            selectedValues={visibleColumns}
-            onSelectedChange={handleColumnSelect}
-            title="Columnas"
-            placeholder="Seleccionar columnas"
-            searchPlaceholder="Buscar columna..."
-            emptyMessage="No se encontraron columnas"
-          />
+          <div>
+            <AgregarIngreso />
+          </div>
         </div>
-
       </CardHeader>
 
       <CardContent>

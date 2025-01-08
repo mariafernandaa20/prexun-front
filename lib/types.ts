@@ -15,7 +15,7 @@ export interface User {
   id?: string
   name: string
   email: string
-  role: 'user' | 'admin' | 'super-admin'
+  role: 'user' | 'admin' | 'super_admin'
   campuses?: Campus[]
 }
 
@@ -23,7 +23,7 @@ export interface UserFormData {
   id?: string
   name: string
   email: string
-  role: 'user' | 'admin' | 'super-admin'
+  role: 'user' | 'admin' | 'super_admin'
   password?: string
   campuses?: string[]
 }
