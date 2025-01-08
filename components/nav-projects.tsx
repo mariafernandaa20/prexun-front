@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
   Folder,
   Forward,
@@ -7,19 +8,9 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
@@ -36,13 +27,17 @@ export function NavProjects({
   }[];
 }) {
   const { isMobile } = useSidebar();
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
       <SidebarMenu>
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton 
+              asChild
+              className={`${pathname === item.url ? "bg-accent" : "text-white"}`}
+            >
               <Link href={item.url}>
                 <item.icon />
                 <span>{item.name}</span>

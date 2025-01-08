@@ -191,7 +191,7 @@ export function TemplateSidebar({
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain title="Configuración" items={data.navMain} />
+        <NavMain title="Configuración" items={data.navMain}/>
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>

@@ -1,7 +1,23 @@
+
+'use client';
+
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import React from 'react'
 
 export default function Page() {
+const { activeCampus} = useActiveCampusStore();
+  
   return (
-    <div>Page</div>
+    <div>
+      <Card>
+        <CardHeader>
+          <h1 className="text-2xl font-bold">{activeCampus?.name}</h1>
+        </CardHeader>
+        <CardContent>
+          <p>Descripción: {activeCampus?.description}</p>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
