@@ -36,7 +36,7 @@ export function NavProjects({
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton 
               asChild
-              className={`${pathname === item.url ? "bg-accent" : "text-white"}`}
+              className={`${pathname === item.url ? "bg-white text-black" : "text-white"} hover:bg-white hover:text-black`}
             >
               <Link href={item.url}>
                 <item.icon />

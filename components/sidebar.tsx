@@ -208,7 +208,7 @@ export function AdminSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <h2 className="text-xl font-bold px-2 py-4 group-data-[collapsible=icon]:hidden">Prexun Asesorías</h2>
+        <h2 className="text-xl font-bold px-2 py-4 group-data-[collapsible=icon]:hidden text-white">Prexun Asesorías</h2>
         <Image className="group-data-[collapsible=icon]:block hidden py-4 " src="/prexun.png" alt="Prexun Logo" width={50} height={50} />
       </SidebarHeader>
       <SidebarContent>
@@ -223,6 +223,7 @@ export function AdminSidebar({
     </Sidebar>
   );
 }
+
 export function PlantelSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {

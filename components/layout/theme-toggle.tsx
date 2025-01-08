@@ -51,13 +51,13 @@ export function ThemeToggleSidebar() {
   const { theme, setTheme } = useTheme();
   return (
     <div className="flex gap-2 group-data-[collapsible=icon]:flex-col">
-      <button onClick={() => setTheme("light")} className={`p-2 rounded-md ${theme === "light" ? "bg-primary text-black" : ""}`}>
+      <button onClick={() => setTheme("light")} className={`p-2 rounded-md text-white ${theme === "light" ? "bg-primary text-white" : ""}`}>
         <Sun className="w-4 h-4"/>
       </button>
-      <button onClick={() => setTheme("dark")} className={`p-2 rounded-md ${theme === "dark" ? "bg-primary text-white" : ""}`}>
+      <button onClick={() => setTheme("dark")} className={`p-2 rounded-md text-white ${theme === "dark" ? "bg-primary text-white" : ""}`}>
         <Moon className="w-4 h-4"/>
       </button>
-      <button onClick={() => setTheme("system")} className={`p-2 rounded-md ${theme === "system" ? "bg-primary text-black dark:text-white" : ""}`}>
+      <button onClick={() => setTheme("system")} className={`p-2 rounded-md text-white ${theme === "system" ? "bg-primary text-white" : ""}`}>
         <Monitor className="w-4 h-4"/>
       </button>
     </div>
