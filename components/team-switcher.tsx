@@ -49,11 +49,11 @@ export function TeamSwitcher() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
+                <span className="truncate font-semibold text-white">
                   {activeCampus?.name || siteConfig.name}
                 </span>
                 {activeCampus && (
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="truncate text-xs text-muted-foreground text-white">
                     {activeCampus.code}
                   </span>
                 )}

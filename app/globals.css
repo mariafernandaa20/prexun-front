@@ -44,12 +44,12 @@
     --chart-5: #E87339;
     --radius: 0.5rem;
     --sidebar-background: #131F46;
-    --sidebar-foreground: #3F4147;
-    --sidebar-primary: #191919;
-    --sidebar-primary-foreground: #FAFAFA;
-    --sidebar-accent: #F4F4F5;
-    --sidebar-accent-foreground: #191919;
-    --sidebar-border: #E0E0E0;
+    --sidebar-foreground: #E0E0E0;
+    --sidebar-primary: #3B82F6;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #121212;
+    --sidebar-accent-foreground: #E0E0E0;
+    --sidebar-border: #333333;
     --sidebar-ring: #3B82F6;
   }
   .dark {
