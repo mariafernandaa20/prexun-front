@@ -241,13 +241,16 @@ export default function GastosPage() {
           </TableBody>
         </Table>
       </CardContent>
-
-      <GastoModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        gasto={selectedGasto}
-        onSubmit={onSubmit}
-      />
+      {
+        activeCampus?.latest_cash_register ? (
+          <GastoModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            gasto={selectedGasto}
+            onSubmit={onSubmit}
+          />) : null
+        
+      }
 
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
         <DialogContent className="max-w-3xl">
