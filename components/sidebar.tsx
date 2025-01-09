@@ -170,7 +170,7 @@ export const data = {
       icon: PieChart,
     },
     {
-      name: "Gastos",
+      name: "Egresos",
       url: "/planteles/gastos",
       icon: PieChart,
     },

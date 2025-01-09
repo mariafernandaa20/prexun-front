@@ -161,7 +161,8 @@ export default function GastosPage() {
                 emptyMessage="No se encontraron columnas"
               />
             </div>
-            <Button className='mt-6' onClick={() => handleOpenModal()}>Nuevo Gasto</Button>
+            {activeCampus?.latest_cash_register ? (<Button className='mt-6' onClick={() => handleOpenModal()}>Nuevo Gasto</Button>
+            ) : null}
           </div>
 
         </div>

@@ -147,6 +147,8 @@ export interface Gasto {
   campus_id: number;
   admin_id: number;
   user_id: number;
+  denominations?: Record<string, number> | [];
+  cash_register_id?: number;
   image?: string | File;
   user?: User;
   admin?: User;
