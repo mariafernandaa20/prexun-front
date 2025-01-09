@@ -381,7 +381,11 @@ export const createGasto = async (gasto: Gasto & { image?: File }) => {
   Object.keys(gasto).forEach(key => {
     if (key === 'image' && gasto.image) {
       formData.append('image', gasto.image);
-    } else {
+    } 
+    else if (key === 'denominations' && gasto.denominations) {
+      formData.append('denominations', JSON.stringify(gasto.denominations));
+    }
+    else {
       formData.append(key, String(gasto[key as keyof Gasto]));
     }
   });
@@ -393,6 +397,7 @@ export const createGasto = async (gasto: Gasto & { image?: File }) => {
   });
   return response.data;
 };
+
 
 export const updateGasto = async (gasto: Gasto) => {
   const response = await axiosInstance.put(

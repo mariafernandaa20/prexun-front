@@ -57,7 +57,6 @@ export function GastoModal({
       user: gasto.user,
       admin: gasto.admin
     } : {
-      id: undefined,
       concept: '',
       amount: 0,
       date: new Date().toISOString().split('T')[0],
@@ -69,8 +68,6 @@ export function GastoModal({
       campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
       cash_register_id: activeCampus.latest_cash_register.id,
       image: undefined,
-      user: undefined,
-      admin: undefined
     },
   });
 
