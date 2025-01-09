@@ -20,6 +20,7 @@ import { Receipt } from 'lucide-react';
 import { Student, Transaction } from '@/lib/types';
 import { createCharge, updateCharge } from '@/lib/api';
 import { Textarea } from '@/components/ui/textarea';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 interface ChargesFormProps {
   fetchStudents: () => void;
@@ -50,6 +51,8 @@ export default function ChargesForm({
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const activeCampus = useActiveCampusStore((state) => state.activeCampus);
+
   const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
     return Object.entries(denominations).reduce((total, [denomination, count]) => {
       return total + (Number(denomination) * (count || 0));
@@ -60,7 +63,7 @@ export default function ChargesForm({
     if (formData.payment_method === 'cash' && formData.denominations && typeof formData.denominations === 'object' && !Array.isArray(formData.denominations)) {
       const denominationsTotal = Number(calculateDenominationsTotal(formData.denominations)).toFixed(2);
       const amount = Number(formData.amount).toFixed(2);
-      
+
       if (denominationsTotal !== amount) {
         setErrors({
           ...errors,
@@ -89,6 +92,7 @@ export default function ChargesForm({
           ...formData,
           denominations: formData.payment_method === 'cash' ? formData.denominations : null,
           paid: 1,
+          cash_register_id: activeCampus.latest_cash_register.id,
           payment_date: new Date().toISOString().split('T')[0],
         });
 
@@ -126,17 +130,23 @@ export default function ChargesForm({
     }
   };
 
+
+
   return (
     <>
-      {icon ? (
-        <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
-          <Receipt className="w-4 h-4" />
-        </Button>
-      ) : (
-        <Button onClick={() => setOpen(true)}>
-          {mode === 'create' ? 'Crear Pago' : 'Registrar Pago'}
-        </Button>
-      )}
+
+      {
+        activeCampus?.latest_cash_register ? icon ? (
+          <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
+            <Receipt className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button onClick={() => setOpen(true)}>
+            {mode === 'create' ? 'Crear Pago' : 'Registrar Pago'}
+          </Button>
+        ) : null
+      }
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[600px]">

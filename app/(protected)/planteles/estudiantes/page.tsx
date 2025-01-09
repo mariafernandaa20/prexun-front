@@ -491,7 +491,7 @@ export default function Page() {
                   )}
                   {visibleColumns.includes('actions') && (
                     <TableCell className="p-4">
-                      <div className="flex gap-2 justify-end">
+                      <div className="flex gap-2">
                         {/* <ChargesForm
                           campusId={Number(activeCampus?.id)}
                           fetchStudents={fetchStudents}

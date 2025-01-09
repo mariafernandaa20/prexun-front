@@ -26,18 +26,26 @@ export default function CajaLayout({ children, caja, onOpen, onClose }: {
   const [notes, setNotes] = React.useState('')
 
   const handleOpenCaja = async () => {
-    await onOpen(Number(initialAmount), notes)
-    setOpen(false)
-    setInitialAmount('')
-    setNotes('')
-  }
+    await onOpen(Number(initialAmount), notes);
+    setOpen(false);
+    setInitialAmount('');
+    setNotes('');
+
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+  };
 
   const handleCloseCaja = async () => {
-    await onClose(Number(finalAmount), notes)
-    setOpen(false)
-    setFinalAmount('')
-    setNotes('')
-  }
+    await onClose(Number(finalAmount), notes);
+    setOpen(false);
+    setFinalAmount('');
+    setNotes('');
+
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+  };
 
   return (
     <div>
@@ -92,7 +100,7 @@ export default function CajaLayout({ children, caja, onOpen, onClose }: {
       </Dialog>
       <Card>
         <CardHeader>
-          <div>
+          <div className='flex items-center justify-end px-6'>
             {caja ? (
               <Button onClick={() => setOpen(true)}>Cerrar Caja</Button>
             ) : (

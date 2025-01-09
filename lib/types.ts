@@ -167,6 +167,7 @@ export interface Transaction {
   notes?: string;
   transaction_type?: string;
   student?: Student;
+  cash_register_id?: number;
 }
 
 export interface Denomination {
@@ -205,4 +206,6 @@ export interface Caja {
   status: 'abierta' | 'cerrada';
   created_at?: string;
   updated_at?: string;
+  transactions?: Transaction[];
+  gastos?: Gasto[];
 }
