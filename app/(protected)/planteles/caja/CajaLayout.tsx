@@ -55,9 +55,9 @@ export default function CajaLayout({ children, caja, onOpen, onClose }: {
     setInitialAmount('');
     setNotes('');
 
-    if (typeof window !== 'undefined') {
-      window.location.reload();
-    }
+    //if (typeof window !== 'undefined') {
+    //  window.location.reload();
+    //}
   };
 
   const handleCloseCaja = async () => {
@@ -66,9 +66,9 @@ export default function CajaLayout({ children, caja, onOpen, onClose }: {
     setFinalAmount('');
     setNotes('');
 
-    if (typeof window !== 'undefined') {
-      window.location.reload();
-    }
+    //if (typeof window !== 'undefined') {
+    //  window.location.reload();
+    //}
   };
 
   const handleDenominationChange = (denomination: string, value: string) => {
