@@ -3,7 +3,7 @@ import { useActiveCampusStore } from '@/lib/store/plantel-store'
 import React from 'react'
 import CajaLayout from './CajaLayout'
 import { closeCaja, getCurrentCaja, openCaja } from '@/lib/api'
-import { Caja, Transaction, Gasto, Campus } from '@/lib/types'
+import { Caja, Transaction, Gasto, Campus, Denomination } from '@/lib/types'
 import {
   Card,
   CardContent,
@@ -75,22 +75,72 @@ export default function CajaPage() {
   if (error) return <div className="text-red-500 p-4">Error: {error.message}</div>
 
   const { ingresos, egresos, gastosTotal, balance } = calculateTotals()
-  const handleOpenCaja = async (initialAmount: number, notes: string) => {
+  const handleOpenCaja = async (initialAmount: number, initialAmountCash: Denomination, notes: string) => {
     try {
-      await openCaja(Number(activeCampus?.id), initialAmount, notes)
+      await openCaja(Number(activeCampus?.id), initialAmount, initialAmountCash, notes)
       await fetchCaja()
     } catch (error) {
       console.error('Error al abrir caja:', error)
     }
   }
-  const handleCloseCaja = async (finalAmount: number, notes: string) => {
+  const handleCloseCaja = async (finalAmount: number, finalAmountCash: Denomination, notes: string) => {
     try {
-      await closeCaja(caja.id, finalAmount, notes)
+      await closeCaja(caja.id, finalAmount, finalAmountCash, notes)
       await fetchCaja()
     } catch (error) {
       console.error('Error al cerrar caja:', error)
     }
   }
+  function processCashRegister(data) {
+
+    if (!data) {
+      return { denominationCount: {}, totalTransactions: 0, totalExpenses: 0, netAmount: 0 };
+    }
+
+    // Inicializar contadores
+    let denominationCount = {};
+    let totalTransactions = 0;
+    let totalExpenses = 0;
+
+    // Procesar transacciones
+    data.transactions.forEach(transaction => {
+      if (transaction.denominations && transaction.denominations.length > 0) {
+        transaction.denominations.forEach(denom => {
+          const key = `${denom.value}`;
+          denominationCount[key] = (denominationCount[key] || 0) + denom.quantity;
+          totalTransactions += parseFloat(denom.value) * denom.quantity;
+        });
+      }
+    });
+
+    // Procesar gastos
+    data.gastos.forEach(gasto => {
+      if (gasto.denominations && gasto.denominations.length > 0) {
+        gasto.denominations.forEach(denom => {
+          const key = `${denom.value}`;
+          denominationCount[key] = (denominationCount[key] || 0) - denom.quantity;
+          totalExpenses += parseFloat(denom.value) * denom.quantity;
+        });
+      }
+    });
+
+    // Ordenar denominaciones por valor
+    const sortedDenominations = Object.entries(denominationCount)
+      .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
+      .filter(([_, count]) => count !== 0)
+      .map(([value, count]) => `${value}x${count}`);
+
+    return {
+      denominationBreakdown: sortedDenominations,
+      totalTransactions: totalTransactions.toFixed(2),
+      totalExpenses: totalExpenses.toFixed(2),
+      netAmount: (totalTransactions - totalExpenses).toFixed(2)
+    };
+  }
+
+  const result = processCashRegister(caja);
+  //const result = {denominationCount : {}, totalTransactions: 0, totalExpenses: 0, netAmount: 0};
+
   return (
     <CajaLayout caja={caja} onOpen={handleOpenCaja} onClose={handleCloseCaja}>
       {caja ? (
@@ -137,11 +187,30 @@ export default function CajaPage() {
                   <p className="text-sm text-muted-foreground">
                     Apertura: <span className="font-medium text-foreground">{new Date(caja.opened_at).toLocaleString()}</span>
                   </p>
+                  <p className="text-sm text-muted-foreground">
+                    Efectivo actual: <span className="font-medium text-foreground">{formatCurrency(result.netAmount)}</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Efectivo ingresado: <span className="font-medium text-foreground">{formatCurrency(result.totalTransactions)}</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Efectivo retirado: <span className="font-medium text-foreground">{formatCurrency(result.totalExpenses)}</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Efectivo actual: <span className="font-medium text-foreground">{formatCurrency(result.netAmount)}</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Billetes actuales: {result.denominationBreakdown.join(', ')}
+                  </p>
+
+
                   {caja.closed_at && (
                     <p className="text-sm text-muted-foreground">
                       Cierre: <span className="font-medium text-foreground">{new Date(caja.closed_at).toLocaleString()}</span>
                     </p>
                   )}
+
+
                 </div>
               </div>
             </CardContent>
@@ -168,6 +237,8 @@ export default function CajaPage() {
                           <TableHead>Tipo</TableHead>
                           <TableHead>Monto</TableHead>
                           <TableHead>Método</TableHead>
+                          <TableHead>Denominaciones</TableHead>
+                          <TableHead>Notas</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -181,6 +252,14 @@ export default function CajaPage() {
                             </TableCell>
                             <TableCell>{formatCurrency(transaction.amount)}</TableCell>
                             <TableCell>{transaction.payment_method}</TableCell>
+                            <TableCell>
+                              {Array.isArray(transaction.denominations) &&
+                                transaction.denominations
+                                  .map((d: any) => `${d.value}x${d.quantity}`)
+                                  .join(', ')}
+                            </TableCell>
+
+                            <TableCell>{transaction.notes}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -206,6 +285,8 @@ export default function CajaPage() {
                           <TableHead>Concepto</TableHead>
                           <TableHead>Categoría</TableHead>
                           <TableHead>Monto</TableHead>
+                          <TableHead>Denominaciones</TableHead>
+
                           <TableHead>Método</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -217,6 +298,12 @@ export default function CajaPage() {
                             <TableCell>{gasto.category}</TableCell>
                             <TableCell>{formatCurrency(gasto.amount)}</TableCell>
                             <TableCell>{gasto.method}</TableCell>
+                            <TableCell>
+                              {Array.isArray(gasto.denominations) &&
+                                gasto.denominations
+                                  .map((d: any) => `${d.value}x${d.quantity}`)
+                                  .join(', ')}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

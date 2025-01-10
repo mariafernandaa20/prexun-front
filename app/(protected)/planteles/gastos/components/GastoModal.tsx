@@ -258,7 +258,6 @@ export function GastoModal({
                       <Label>${denom}</Label>
                       <Input
                         type="number"
-                        min="0"
                         value={formData.denominations[denom] || ''}
                         onChange={(e) =>
                           handleDenominationChange(denom, e.target.value)

@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosInstance from "./api/axiosConfig";
 import { API_ENDPOINTS } from "./api/endpoints";
-import { Campus, Carrera, Caja, Facultad, Gasto, Grupo, Modulo, Municipio, Period, Prepa, Promocion, Student, Transaction, User, Producto } from "./types";
+import { Campus, Carrera, Caja, Facultad, Gasto, Grupo, Modulo, Municipio, Period, Prepa, Promocion, Student, Transaction, User, Producto, Denomination } from "./types";
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
@@ -461,11 +461,15 @@ export const getCurrentCaja = async (campus_id: number) => {
 export const openCaja = async (
   campusId: number,
   initialAmount: number, 
+  initialAmountCash: Denomination,
   notes: string
 ): Promise<Caja> => {
+
+  console.log(initialAmount, initialAmountCash);
   const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CAJA, {
     campus_id: campusId,
     initial_amount: initialAmount,
+    initial_amount_cash: initialAmountCash,
     notes,
     status: 'abierta',
   });
@@ -476,10 +480,15 @@ export const openCaja = async (
 export const closeCaja = async (
   cajaId: number,
   finalAmount: number,
+  finalAmountCash: Denomination,
   notes: string  
 ): Promise<Caja> => {
+
+  console.log(finalAmount, finalAmountCash);
+
   const response = await axiosInstance.put(`${API_ENDPOINTS.UPDATE_CAJA}/${cajaId}`, {
     final_amount: finalAmount,
+    final_amount_cash: finalAmountCash,
     notes,
     status: 'cerrada',
   });
