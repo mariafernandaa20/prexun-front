@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
 import { FileDown } from 'lucide-react';
 import React from 'react';
 import { Button } from './ui/button';
