@@ -55,13 +55,12 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
             timeZone: 'UTC'
         }).format(new Date(invoice.created_at)),],
 
-        ["Fecha de vencimiento:", new Intl.DateTimeFormat('es', {
+        ["Fecha de vencimiento:", invoice.expiration_date ? new Intl.DateTimeFormat('es', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
             timeZone: 'UTC'
-        }).format(new Date(invoice.expiration_date))
-        ],
+        }).format(new Date(invoice.expiration_date)) : 'Sin vencimiento'],
 
         ["Hora de pago:", invoice.payment_date ?
             dayjs(invoice.payment_date).format('HH:mm A') : 'No pagada']

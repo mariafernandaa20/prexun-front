@@ -137,7 +137,7 @@ export function InvoiceClient({ invoice }) {
                     </div>
                 </div>
             </div>
-
+            
             <InvoicePDF icon={false} invoice={invoice} />
         </div>
     )
