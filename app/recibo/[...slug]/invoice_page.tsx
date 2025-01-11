@@ -128,6 +128,12 @@ export function InvoiceClient({ invoice }) {
                         <p className="text-gray-600">
                             Todas las tarifas se muestran en MXN y están sujetas a impuestos sobre las ventas (según corresponda).
                         </p>
+                        <p className="text-gray-600">
+                            <a href="https://asesoriasprexun.com/terminos-y-condiciones/" target="_blank" rel="noreferrer">
+                                Terminos y Condiciones
+                            </a>
+                        </p>
+                        <Image src="/qr.png" alt="Prexun Terminos y Condiciones" width={150} height={50} />
                     </div>
                 </div>
             </div>

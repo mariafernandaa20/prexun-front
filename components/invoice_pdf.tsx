@@ -127,6 +127,7 @@ const generateComments = (doc, finalY, leftCol) => {
         leftCol, finalY + 45);
     doc.text("Todas las tarifas se muestran en MXN y están sujetas a impuestos sobre las ventas (según corresponda).",
         leftCol, finalY + 52);
+    doc.text("https://asesoriasprexun.com/terminos-y-condiciones/", leftCol, finalY + 58);
 };
 
 const generatePDF = (invoice) => {
@@ -145,6 +146,9 @@ const generatePDF = (invoice) => {
 
     generateTotals(doc, finalY, invoice);
     generateComments(doc, finalY, leftCol);
+    
+    // QR
+    doc.addImage('/qr.png', 'png', 15, finalY + 60, 40, 40);
 
     doc.save(`comprobante-${invoice.id.toString().padStart(5, '0')}.pdf`);
 };
