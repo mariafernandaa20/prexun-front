@@ -53,7 +53,7 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
             month: '2-digit',
             year: 'numeric',
             timeZone: 'UTC'
-        }).format(new Date(invoice.created_at)),],
+        }).format(new Date(invoice.updated_at)),],
 
         ["Fecha de vencimiento:", invoice.expiration_date ? new Intl.DateTimeFormat('es', {
             day: '2-digit',
@@ -63,7 +63,7 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
         }).format(new Date(invoice.expiration_date)) : 'Sin vencimiento'],
 
         ["Hora de pago:", invoice.payment_date ?
-            dayjs(invoice.payment_date).format('HH:mm A') : 'No pagada']
+            dayjs(invoice.updated_at).format('HH:mm A') : 'No pagada']
     ];
 
     details.forEach((row, index) => {
@@ -73,15 +73,42 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
 };
 
 const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
+
+    const formatPrice = (amount: number | undefined): string => {
+        return typeof amount === 'number' 
+            ? `$${amount.toLocaleString()}` 
+            : '$0';
+    };
+
+
+    const formatFrequency = (frequencyStr: string | undefined): string => {
+        try {
+            return frequencyStr 
+                ? JSON.parse(frequencyStr).join(', ')
+                : 'No especificada';
+        } catch {
+            return 'No especificada';
+        }
+    };
+
+    const buildServiceDescription = (invoice: any): string => {
+        const grupo = invoice?.student?.grupo ?? {};
+        const groupInfo = [
+            `${grupo.name ?? 'Sin grupo'} | ${grupo.type ?? 'Sin tipo'}`,
+            `Frecuencia clases: ${formatFrequency(grupo.frequency)}`,
+            `${grupo.start_time ?? 'N/A'} - ${grupo.end_time ?? 'N/A'}`,
+            `Notas: ${invoice.notes ?? 'Sin notas'}`
+        ];
+
+        return groupInfo.join('\n');
+    };
+
     doc.autoTable({
         startY: currentY + 40,
         head: [["PRODUCTOS Y SERVICIOS", "VALOR"]],
         body: [[
             {
-                content: invoice.student?.grupo?.name + " | " + invoice.student?.grupo?.type + "\n\n" +
-                    "Frecuencia clases:" + JSON.parse(invoice.student?.grupo?.frequency).join(', ') + "\n" +
-                    invoice.student?.grupo?.start_time + " - " + invoice.student?.grupo?.end_time + "\n\n" +
-                    "Notas: " + invoice.notes ? invoice.notes : "",
+                content: buildServiceDescription(invoice),
                 styles: {
                     cellWidth: 'auto',
                     cellPadding: 4,
