@@ -50,6 +50,33 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
     fetchProducts()
   },[]);
 
+  // Función para manejar el cambio de producto
+  const handleProductChange = (productId: string) => {
+    const selectedProduct = products.find(product => product.id === parseInt(productId));
+    if (selectedProduct) {
+      setFormData({
+        ...formData,
+        product_id: productId,
+        amount: selectedProduct.price * formData.quantity,
+        comments: `Compra de ${selectedProduct.name}`,
+        paid: selectedProduct.price * formData.quantity
+      });
+    }
+  };
+
+  // Función para manejar el cambio de cantidad
+  const handleQuantityChange = (quantity: number) => {
+    const selectedProduct = products.find(product => product.id === parseInt(formData.product_id));
+    if (selectedProduct) {
+      setFormData({
+        ...formData,
+        quantity,
+        amount: selectedProduct.price * quantity,
+        paid: selectedProduct.price * quantity
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -96,7 +123,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                   Producto
                   <select
                     value={formData.product_id}
-                    onChange={(e) => setFormData({...formData, product_id: e.target.value})}
+                    onChange={(e) => handleProductChange(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     required
                   >
@@ -116,7 +143,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                   <Input
                     type="number"
                     value={formData.quantity}
-                    onChange={(e) => setFormData({...formData, quantity: parseInt(e.target.value)})}
+                    onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                   />
@@ -149,6 +176,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                     onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value)})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
+                    readOnly
                   />
                 </label>
               </div>
