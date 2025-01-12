@@ -139,10 +139,12 @@ export default function CajaPage() {
   }
 
   const result = processCashRegister(caja);
+  
+  const actualAmount = Number(result.netAmount ? result.netAmount : 0) + caja?.initial_amount ? Number(caja.initial_amount) : 0;
   //const result = {denominationCount : {}, totalTransactions: 0, totalExpenses: 0, netAmount: 0};
 
   return (
-    <CajaLayout caja={caja} onOpen={handleOpenCaja} onClose={handleCloseCaja}>
+    <CajaLayout caja={caja} onOpen={handleOpenCaja} onClose={handleCloseCaja} actualAmount={actualAmount}>
       {caja ? (
         <div className="space-y-6 p-6">
           <Card>
@@ -188,22 +190,14 @@ export default function CajaPage() {
                     Apertura: <span className="font-medium text-foreground">{new Date(caja.opened_at).toLocaleString()}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Efectivo actual: <span className="font-medium text-foreground">{formatCurrency(result.netAmount)}</span>
-                  </p>
-                  <p className="text-sm text-muted-foreground">
                     Efectivo ingresado: <span className="font-medium text-foreground">{formatCurrency(result.totalTransactions)}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Efectivo retirado: <span className="font-medium text-foreground">{formatCurrency(result.totalExpenses)}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Efectivo actual: <span className="font-medium text-foreground">{formatCurrency(result.netAmount)}</span>
+                    Efectivo actual: <span className="font-medium text-foreground">{formatCurrency(actualAmount)}</span>
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Billetes actuales: {result.denominationBreakdown.join(', ')}
-                  </p>
-
-
                   {caja.closed_at && (
                     <p className="text-sm text-muted-foreground">
                       Cierre: <span className="font-medium text-foreground">{new Date(caja.closed_at).toLocaleString()}</span>

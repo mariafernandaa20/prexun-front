@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Caja, Denomination } from '@/lib/types'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useForm } from 'react-hook-form'
+import { Textarea } from '@/components/ui/textarea'
 
 interface FormData {
   denominations: Denomination;
@@ -27,11 +28,12 @@ function calculateDenominationsTotal(denominations: Denomination): number {
   }, 0);
 }
 
-export default function CajaLayout({ children, caja, onOpen, onClose }: {
+export default function CajaLayout({ children, caja, onOpen, onClose, actualAmount }: {
   children: React.ReactNode
   caja: Caja | null
   onOpen: (initialAmount: number, initialAmountCash: Denomination, notes: string) => Promise<void>
   onClose: (finalAmount: number, finalAmountCash: Denomination, notes: string) => Promise<void>
+  actualAmount: number
 }) {
   const [open, setOpen] = useState(false)
   const [initialAmount, setInitialAmount] = useState('')
@@ -50,25 +52,47 @@ export default function CajaLayout({ children, caja, onOpen, onClose }: {
   const formData = watch();
 
   const handleOpenCaja = async () => {
-    await onOpen(Number(calculateDenominationsTotal(formData.denominations)), formData.denominations, notes);
+    const denominationsTotal = calculateDenominationsTotal(formData.denominations);
+
+    // Validación para apertura de caja
+    if (!caja && denominationsTotal !== Number(initialAmount)) {
+      alert("El monto total no coincide con la suma de las denominaciones");
+      return;
+    }
+
+    await onOpen(Number(denominationsTotal), formData.denominations, notes);
     setOpen(false);
     setInitialAmount('');
     setNotes('');
 
-    //if (typeof window !== 'undefined') {
-    //  window.location.reload();
-    //}
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
   };
 
   const handleCloseCaja = async () => {
-    await onClose(Number(calculateDenominationsTotal(formData.denominations)), formData.denominations, notes);
+    const denominationsTotal = calculateDenominationsTotal(formData.denominations);
+
+    // Validación para cierre de caja
+    if (denominationsTotal !== Number(finalAmount)) {
+      alert("El monto total no coincide con la suma de las denominaciones");
+      return;
+    }
+
+    // Validación adicional con actualAmount
+    if (denominationsTotal !== actualAmount) {
+      alert("El monto ingresado no coincide con el monto actual en caja");
+      return;
+    }
+
+    await onClose(Number(denominationsTotal), formData.denominations, notes);
     setOpen(false);
     setFinalAmount('');
     setNotes('');
 
-    //if (typeof window !== 'undefined') {
-    //  window.location.reload();
-    //}
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
   };
 
   const handleDenominationChange = (denomination: string, value: string) => {
@@ -118,28 +142,18 @@ export default function CajaLayout({ children, caja, onOpen, onClose }: {
                 <p className="text-sm text-gray-500 mt-2">
                   Total en denominaciones: ${calculateDenominationsTotal(formData.denominations)}
                 </p>
+                {caja && (
+                  <p className="col-span-4 text-sm text-gray-500">
+                    Monto actual en caja: ${actualAmount}
+                  </p>
+                )}
               </div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="amount" className="text-right">
-                Monto Total
-              </Label>
-              <Input
-                id="amount"
-                value={caja ? finalAmount : initialAmount}
-                onChange={(e) =>
-                  caja
-                    ? setFinalAmount(e.target.value)
-                    : setInitialAmount(e.target.value)
-                }
-                className="col-span-3"
-              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="notes" className="text-right">
                 Notas
               </Label>
-              <Input
+              <Textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
