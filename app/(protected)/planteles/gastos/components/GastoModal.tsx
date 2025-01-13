@@ -53,7 +53,7 @@ export function GastoModal({
       category: gasto.category,
       campus_id: gasto.campus_id,
       cash_register_id: activeCampus.latest_cash_register.id,
-      image: undefined,
+      image: null,
       user: gasto.user,
       admin: gasto.admin
     } : {
@@ -67,7 +67,7 @@ export function GastoModal({
       category: '',
       campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
       cash_register_id: activeCampus.latest_cash_register.id,
-      image: undefined,
+      image: null,
     },
   });
 
