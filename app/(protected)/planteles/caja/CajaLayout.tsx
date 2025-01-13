@@ -17,9 +17,11 @@ import { Caja, Denomination } from '@/lib/types'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useForm } from 'react-hook-form'
 import { Textarea } from '@/components/ui/textarea'
+import { formatCurrency } from '@/lib/utils'
 
 interface FormData {
   denominations: Denomination;
+  next_day_cash: Denomination;
 }
 
 function calculateDenominationsTotal(denominations: Denomination): number {
@@ -32,7 +34,7 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
   children: React.ReactNode
   caja: Caja | null
   onOpen: (initialAmount: number, initialAmountCash: Denomination, notes: string) => Promise<void>
-  onClose: (finalAmount: number, finalAmountCash: Denomination, notes: string) => Promise<void>
+  onClose: (finalAmount: number, finalAmountCash: Denomination, next_day: number, next_day_cash: Denomination, notes: string) => Promise<void>
   actualAmount: number
 }) {
   const [open, setOpen] = useState(false)
@@ -45,6 +47,10 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
       denominations: {
         '1000': 0, '500': 0, '200': 0, '100': 0,
         '50': 0, '20': 0, '10': 0, '5': 0
+      },
+      next_day_cash: {
+        '1000': 0, '500': 0, '200': 0, '100': 0,
+        '50': 0, '20': 0, '10': 0, '5': 0
       }
     }
   });
@@ -54,27 +60,22 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
   const handleOpenCaja = async () => {
     const denominationsTotal = calculateDenominationsTotal(formData.denominations);
 
-    // Validación para apertura de caja
-    if (!caja && denominationsTotal !== Number(initialAmount)) {
-      alert("El monto total no coincide con la suma de las denominaciones");
-      return;
-    }
-
     await onOpen(Number(denominationsTotal), formData.denominations, notes);
     setOpen(false);
     setInitialAmount('');
     setNotes('');
 
-    if (typeof window !== 'undefined') {
-      window.location.reload();
-    }
+    // if (typeof window !== 'undefined') {
+    //   window.location.reload();
+    // }
   };
 
   const handleCloseCaja = async () => {
     const denominationsTotal = calculateDenominationsTotal(formData.denominations);
+    const nextDay = calculateDenominationsTotal(formData.denominations);
 
     // Validación para cierre de caja
-    if (denominationsTotal !== Number(finalAmount)) {
+    if (denominationsTotal !== Number(actualAmount)) {
       alert("El monto total no coincide con la suma de las denominaciones");
       return;
     }
@@ -85,14 +86,14 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
       return;
     }
 
-    await onClose(Number(denominationsTotal), formData.denominations, notes);
+    await onClose(Number(denominationsTotal), formData.denominations, nextDay, formData.next_day_cash, notes);
     setOpen(false);
     setFinalAmount('');
     setNotes('');
 
-    if (typeof window !== 'undefined') {
-      window.location.reload();
-    }
+    // if (typeof window !== 'undefined') {
+    //   window.location.reload();
+    // }
   };
 
   const handleDenominationChange = (denomination: string, value: string) => {
@@ -101,6 +102,13 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
       [denomination]: Number(value) || 0,
     };
     setValue('denominations', newDenominations);
+  };
+  const handleNextDayDenominationChange = (denomination: string, value: string) => {
+    const newDenominations = {
+      ...formData.next_day_cash,
+      [denomination]: Number(value) || 0,
+    };
+    setValue('next_day_cash', newDenominations);
   };
 
   return (
@@ -113,16 +121,16 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
             <DialogDescription>
               {caja
                 ? 'Ingrese el monto final y notas para cerrar la caja'
-                : 'Ingrese el monto inicial y notas para abrir la caja'}
+                : 'No es necesario ingresar el monto inicial, el monto inicial se define al cerrar la caja y se agrega automaticamente, si lo desea puede remplazarlo manualmente.'}
             </DialogDescription>
           </DialogHeader>
+
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="amount" className="text-right">
+            <div>
+              <Label htmlFor="amount" className="text-right text-lg">
                 Monto {caja ? 'Final' : 'Inicial'}
               </Label>
               <div className="space-y-2 col-span-3">
-                <Label>Denominaciones</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {['1000', '500', '200', '100', '50', '20', '10', '5'].map(
                     (denom) => (
@@ -140,28 +148,56 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
                   )}
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  Total en denominaciones: ${calculateDenominationsTotal(formData.denominations)}
+                  <span className="text-white"> Total en denominaciones:</span> {formatCurrency(calculateDenominationsTotal(formData.denominations))}
                 </p>
                 {caja && (
                   <p className="col-span-4 text-sm text-gray-500">
-                    Monto actual en caja: ${actualAmount}
+                    <span className="text-white"> Monto actual en caja:</span> {formatCurrency(actualAmount)}
                   </p>
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">
-                Notas
-              </Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
+            {caja && (
+              <>
+                <div>
+                  <Label htmlFor="amount" className="text-right text-lg">
+                    Siguiente día
+                  </Label>
+                  <div className="space-y-2 col-span-3">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {['1000', '500', '200', '100', '50', '20', '10', '5'].map(
+                        (denom) => (
+                          <div key={denom} className="space-y-1">
+                            <Label>${denom}</Label>
+                            <Input
+                              type="number"
+                              value={formData.next_day_cash[denom] || ''}
+                              onChange={(e) =>
+                                handleNextDayDenominationChange(denom, e.target.value)
+                              }
+                            />
+                          </div>
+                        )
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Total en denominaciones: ${calculateDenominationsTotal(formData.next_day_cash)}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="notes" className="text-right">
+                    Notas
+                  </Label>
+                  <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div></>
+            )}
           </div>
-
           <DialogFooter>
             <Button
               onClick={caja ? handleCloseCaja : handleOpenCaja}

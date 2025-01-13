@@ -83,16 +83,16 @@ export default function CajaPage() {
       console.error('Error al abrir caja:', error)
     }
   }
-  const handleCloseCaja = async (finalAmount: number, finalAmountCash: Denomination, notes: string) => {
+  const handleCloseCaja = async (finalAmount: number, finalAmountCash: Denomination, next_day: number, next_day_cash: Denomination, notes: string) => {
     try {
-      await closeCaja(caja.id, finalAmount, finalAmountCash, notes)
+      await closeCaja(caja.id, finalAmount, finalAmountCash, next_day, next_day_cash, notes)
       await fetchCaja()
     } catch (error) {
       console.error('Error al cerrar caja:', error)
     }
   }
-  function processCashRegister(data) {
 
+  function processCashRegister(data) {
     if (!data) {
       return { denominationCount: {}, totalTransactions: 0, totalExpenses: 0, netAmount: 0 };
     }
@@ -139,8 +139,9 @@ export default function CajaPage() {
   }
 
   const result = processCashRegister(caja);
-  
-  const actualAmount = Number(result.netAmount ? result.netAmount : 0) + caja?.initial_amount ? Number(caja.initial_amount) : 0;
+
+  const actualAmount = (result.totalTransactions ? Number(result.totalTransactions) : 0) + (caja?.initial_amount ? Number(caja.initial_amount) : 0);
+
   //const result = {denominationCount : {}, totalTransactions: 0, totalExpenses: 0, netAmount: 0};
 
   return (
@@ -203,8 +204,6 @@ export default function CajaPage() {
                       Cierre: <span className="font-medium text-foreground">{new Date(caja.closed_at).toLocaleString()}</span>
                     </p>
                   )}
-
-
                 </div>
               </div>
             </CardContent>
@@ -252,7 +251,6 @@ export default function CajaPage() {
                                   .map((d: any) => `${d.value}x${d.quantity}`)
                                   .join(', ')}
                             </TableCell>
-
                             <TableCell>{transaction.notes}</TableCell>
                           </TableRow>
                         ))}

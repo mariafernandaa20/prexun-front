@@ -59,7 +59,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         product_id: productId,
         amount: selectedProduct.price * formData.quantity,
         comments: `Compra de ${selectedProduct.name}`,
-        paid: selectedProduct.price * formData.quantity
+        paid: 0
       });
     }
   };
@@ -72,7 +72,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         ...formData,
         quantity,
         amount: selectedProduct.price * quantity,
-        paid: selectedProduct.price * quantity
+        paid: 0
       });
     }
   };
@@ -85,7 +85,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         student_id: Number(studentId),
         amount: formData.amount,
         payment_method: formData.payment_method as "cash" | "transfer" | "card",
-        paid: formData.paid,
+        paid: 0,
         notes: formData.comments,
         transaction_type: 'purchase',
         denominations: [],

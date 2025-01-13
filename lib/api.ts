@@ -481,6 +481,8 @@ export const closeCaja = async (
   cajaId: number,
   finalAmount: number,
   finalAmountCash: Denomination,
+  next_day: number,
+  next_day_cash: Denomination,
   notes: string  
 ): Promise<Caja> => {
 
@@ -489,6 +491,8 @@ export const closeCaja = async (
   const response = await axiosInstance.put(`${API_ENDPOINTS.UPDATE_CAJA}/${cajaId}`, {
     final_amount: finalAmount,
     final_amount_cash: finalAmountCash,
+    next_day,
+    next_day_cash,
     notes,
     status: 'cerrada',
   });
