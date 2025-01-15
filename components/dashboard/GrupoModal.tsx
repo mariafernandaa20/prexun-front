@@ -45,18 +45,18 @@ export default function GrupoModal({
     frequency: [],
     start_time: '',
     end_time: '',
+    start_date: '',
+    end_date: '',
   });
 
   useEffect(() => {
     if (grupo) {
-      // Asegurarse de que frequency sea un array
       const frequency = Array.isArray(grupo.frequency) ? grupo.frequency : [];
       setFormData({
         ...grupo,
         frequency,
       });
     } else {
-      // Resetear el formulario cuando se cierra
       setFormData({
         name: '',
         type: '',
@@ -66,25 +66,32 @@ export default function GrupoModal({
         frequency: [],
         start_time: '',
         end_time: '',
+        start_date: '',
+        end_date: '',
       });
     }
   }, [grupo, isOpen]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-  
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!timeRegex.test(value)) {
-      console.error("Invalid time format. Please use HH:mm.");
-      return;
+
+    if (name === 'start_time' || name === 'end_time') {
+      const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (value && !timeRegex.test(value)) {
+        return;
+      }
     }
-  
+
+    if (name === 'capacity') {
+      const numValue = parseInt(value);
+      if (isNaN(numValue) || numValue < 0) return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
-  
 
   const handleTypeChange = (value: string) => {
     setFormData((prev) => ({
@@ -104,10 +111,25 @@ export default function GrupoModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.name || !formData.type || formData.capacity <= 0) {
+      alert('Por favor, complete todos los campos requeridos');
+      return;
+    }
+
+    if (new Date(formData.end_date) <= new Date(formData.start_date)) {
+      alert('La fecha de fin debe ser posterior a la fecha de inicio');
+      return;
+    }
+    const formatTime = (time: string) => {
+      const [hours, minutes] = time.split(':');
+      return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+    };
+
     onSubmit({
       ...formData,
-      start_time: formData.start_time,
-      end_time: formData.end_time,
+      start_time: formatTime(formData.start_time),
+      end_time: formatTime(formData.end_time),
     });
     onClose();
   };
@@ -207,6 +229,28 @@ export default function GrupoModal({
                   name="capacity"
                   type="number"
                   value={formData.capacity}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="start_date">Fecha de Inicio</Label>
+                <Input
+                  id="start_date"
+                  name="start_date"
+                  type="date"
+                  value={formData.start_date}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end_date">Fecha de Fin</Label>
+                <Input
+                  id="end_date"
+                  name="end_date"
+                  type="date"
+                  value={formData.end_date}
                   onChange={handleInputChange}
                   required
                 />

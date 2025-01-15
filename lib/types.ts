@@ -135,6 +135,8 @@ export interface Grupo {
   frequency: string[];
   start_time: string;
   end_time: string;
+  start_date: string;
+  end_date: string;
   students_count?: number;
 }
 export interface Gasto {
