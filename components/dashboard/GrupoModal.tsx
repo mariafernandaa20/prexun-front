@@ -68,15 +68,23 @@ export default function GrupoModal({
         end_time: '',
       });
     }
-  }, [grupo, isOpen]); // Agregar isOpen como dependencia
+  }, [grupo, isOpen]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { 
     const { name, value } = e.target;
+  
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(value)) {
+      console.error("Invalid time format. Please use HH:mm.");
+      return;
+    }
+  
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
+  
 
   const handleTypeChange = (value: string) => {
     setFormData((prev) => ({
