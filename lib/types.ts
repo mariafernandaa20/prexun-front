@@ -64,6 +64,7 @@ export interface Student {
   general_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';
   module_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';
   transactions?: Transaction[];
+  grupo? : Grupo;
 }
 
 export interface Cohort {
