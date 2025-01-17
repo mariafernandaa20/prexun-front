@@ -59,7 +59,7 @@ export function InvoiceClient({ invoice }) {
                             </div>
                             <div className="flex justify-between">
                                 <span className="">Estudiante</span>
-                                <span>{invoice.student?.firstname} </span>
+                                <span>{invoice.student?.firstname} {invoice.student?.lastname}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="">Fecha</span>
