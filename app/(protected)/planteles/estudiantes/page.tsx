@@ -80,7 +80,7 @@ export default function Page() {
   const { toast } = useToast();
 
   const columnOptions = [
-    { value: 'matricula', label: 'Matrícula', defaultVisible: true },
+    { value: 'matricula', label: 'Matrícula', defaultVisible: false },
     {
       value: 'created_at',
       label: 'Fecha de Inscripción',
