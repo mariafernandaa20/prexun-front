@@ -140,25 +140,35 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
     });
 };
 
-const generateTotals = (doc, finalY ,invoice) => {
+const generateTotals = (doc, finalY, invoice) => {
     doc.setFontSize(11);
     doc.setFont(undefined, 'bold');
-    doc.text("Total:", 140, finalY + 20);
-    doc.text("$" + invoice.amount.toLocaleString(), 200, finalY + 20, { align: "right" });
+    
+    doc.text("Subtotal:", 140, finalY + 20);
+    doc.text("$" + (invoice.amount * 0.84).toLocaleString(), 200, finalY + 20, { align: "right" });
+    
+    doc.text("IVA:", 140, finalY + 28);
+    doc.text("$" + (invoice.amount * 0.16).toLocaleString(), 200, finalY + 28, { align: "right" });
+    
+    doc.text("Total:", 140, finalY + 36);
+    doc.text("$" + invoice.amount.toLocaleString(), 200, finalY + 36, { align: "right" });
 };
+
 
 const generateComments = (doc, finalY, leftCol) => {
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
-    doc.text("Comentarios", leftCol, finalY + 35);
+    doc.text("Comentarios", leftCol, finalY + 50);
     doc.setFont(undefined, 'normal');
     doc.setFontSize(10);
     doc.text("Este es un Comprobante de Pago este no es un comprobante fiscal ni una factura",
-        leftCol, finalY + 45);
+        leftCol, finalY + 60);
     doc.text("Todas las tarifas se muestran en MXN y están sujetas a impuestos sobre las ventas (según corresponda).",
-        leftCol, finalY + 52);
-    doc.text("https://asesoriasprexun.com/terminos-y-condiciones/", leftCol, finalY + 58);
+        leftCol, finalY + 67);
+    doc.text("https://asesoriasprexun.com/terminos-y-condiciones/", 
+        leftCol, finalY + 74);
 };
+
 
 const generatePDF = (invoice) => {
     const doc = new jsPDF();
@@ -178,8 +188,8 @@ const generatePDF = (invoice) => {
     generateComments(doc, finalY, leftCol);
     
     // QR
-    doc.addImage('/qr.png', 'png', 15, finalY + 60, 40, 40);
-
+    doc.addImage('/qr.png', 'png', 15, finalY + 76, 40, 40);
+    
     doc.save(`comprobante-${invoice.id.toString().padStart(5, '0')}.pdf`);
 };
 

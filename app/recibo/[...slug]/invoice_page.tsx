@@ -121,7 +121,15 @@ export function InvoiceClient({ invoice }) {
 
                     <div className="flex flex-col sm:flex-row sm:justify-end space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
                         <div className="text-right">
-                            <div className="flex justify-between font-bold">
+                            <div className="flex justify-between font-bold gap-4">
+                                <span>SubTotal</span>
+                                <span>MX${invoice.amount * 0.84}</span>
+                            </div>
+                            <div className="flex justify-between font-bold gap-4">
+                                <span>IVA</span>
+                                <span>MX${invoice.amount * 0.16}</span>
+                            </div>
+                            <div className="flex justify-between font-bold gap-4">
                                 <span>Total</span>
                                 <span>MX${invoice.amount}</span>
                             </div>
