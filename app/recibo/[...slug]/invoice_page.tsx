@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import InvoicePDF from '@/components/invoice_pdf';
 import { formatTime } from '@/lib/utils';
 export function InvoiceClient({ invoice }) {
+    console.log(invoice);
     const invoiceNumber = ({ id }) => {
         if (id < 10) {
             return `N-0000${id}`;
@@ -53,8 +54,12 @@ export function InvoiceClient({ invoice }) {
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between">
-                                <span className="">Número de factura</span>
+                                <span className="">Comprobante de Pago</span>
                                 <span>{invoiceNumber(invoice)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="">Estudiante</span>
+                                <span>{invoice.student?.firstname} </span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="">Fecha</span>

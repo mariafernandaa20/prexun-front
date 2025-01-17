@@ -46,7 +46,8 @@ const generateCompanyInfo = (doc, campus, leftCol, rightCol, currentY) => {
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
     doc.setFontSize(11);
     const details = [
-        ["Número de factura:", `N-${invoice.id.toString().padStart(5, '0')}`],
+        ["Comprobante de Pago:", `N-${invoice.id.toString().padStart(5, '0')}`],
+        ["Estudiante:", invoice.student?.firstname],
 
         ["Fecha:", new Intl.DateTimeFormat('es', {
             day: '2-digit',
@@ -62,7 +63,7 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
             timeZone: 'UTC'
         }).format(new Date(invoice.expiration_date)) : 'Sin vencimiento'],
 
-        ["Hora de pago:", invoice.payment_date ?
+        ["Hora de pago:", invoice.paid === 1 ?
             dayjs(invoice.updated_at).format('HH:mm A') : 'No pagada']
     ];
 
