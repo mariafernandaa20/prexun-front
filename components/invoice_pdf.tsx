@@ -160,21 +160,40 @@ const generateTotals = (doc, finalY, invoice) => {
     doc.text("$" + invoice.amount.toLocaleString(), 200, finalY + 36, { align: "right" });
 };
 
-
 const generateComments = (doc, finalY, leftCol) => {
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text("Comentarios", leftCol, finalY + 50);
     doc.setFont(undefined, 'normal');
     doc.setFontSize(10);
-    doc.text("Este es un Comprobante de Pago este no es un comprobante fiscal ni una factura",
-        leftCol, finalY + 60);
-    doc.text("Todas las tarifas se muestran en MXN y están sujetas a impuestos sobre las ventas (según corresponda).",
-        leftCol, finalY + 67);
-    doc.text("https://asesoriasprexun.com/terminos-y-condiciones/",
-        leftCol, finalY + 74);
-};
 
+    const maxWidth = 140;
+
+    const lines = [
+        "Este es un Comprobante de Pago este no es un comprobante fiscal ni una factura",
+        "Todas las tarifas se muestran en MXN y están sujetas a impuestos sobre las ventas (según corresponda).",
+        "No se hacen devoluciones o compensaciones de ninguna índole.",
+        "El valor de promoción solo aplica si se liquida en las fechas convenidas.",
+        "El libro de estudios se entregará una semana previa al inicio de clases.",
+        "Si usted requiere factura, solicitar al registrarse.",
+        "No se emitira en caso de no ser solicitada en la inscripción.",
+        "Nuestro material esta protegido por derechos de autor, haces uso con fines diferentes al establecido es perseguido por la ley.",
+        "En las sesiones de clase y evaluaciones no se permite usar o tener en las manos teléfonos celulares.",
+        "Los padres encargados del alumno deberán solicitar informes del desempeño durante el curso.",
+        "Si por alguna situación esporádica el Estado suspende las clases presenciales, las clases seran en línea.",
+        "https://asesoriasprexun.com/terminos-y-condiciones/"
+    ];
+
+    let currentY = finalY + 60;
+    lines.forEach((line, index) => {
+        const splitLines = doc.splitTextToSize(index + 1 + '. ' + line, maxWidth);
+        doc.text(splitLines, leftCol, currentY);
+        currentY += 5 * splitLines.length;
+    });
+        
+    // Add QR code to the right side
+    doc.addImage('/qr.png', 'png', 160, finalY + 50, 40, 40);
+};
 
 const generatePDF = (invoice) => {
     const doc = new jsPDF();
@@ -192,9 +211,6 @@ const generatePDF = (invoice) => {
 
     generateTotals(doc, finalY, invoice);
     generateComments(doc, finalY, leftCol);
-
-    // QR
-    doc.addImage('/qr.png', 'png', 15, finalY + 76, 40, 40);
 
     doc.save(`comprobante-${invoice.id.toString().padStart(5, '0')}.pdf`);
 };
