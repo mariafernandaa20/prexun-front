@@ -92,7 +92,17 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
         const grupo = invoice?.student?.grupo ?? {};
         const groupInfo = [
             `${grupo.name ?? 'Sin grupo'} | ${grupo.type ?? 'Sin tipo'}`,
-            `${grupo.start_date} - ${grupo.end_date}`,
+            `${new Date(grupo.start_date).toLocaleDateString('es-MX', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                timeZone: 'UTC'
+            })} - ${new Date(invoice.end_date).toLocaleDateString('es-MX', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                timeZone: 'UTC'
+            })}`,
             `Frecuencia clases: ${formatFrequency(grupo.frequency)}`,
             `${grupo.start_time ?? 'N/A'} - ${grupo.end_time ?? 'N/A'}`,
             `${invoice.notes ?? ''}`

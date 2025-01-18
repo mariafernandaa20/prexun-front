@@ -106,7 +106,17 @@ export function InvoiceClient({ invoice }) {
                                         <div>
                                             <div className="font-medium text-gray-900">{invoice.student?.grupo?.name} | {invoice.student?.grupo?.type}</div>
                                             <div className="font-medium text-gray-900">
-                                                {invoice.student?.grupo?.start_date} - {invoice.student?.grupo?.end_date}
+                                                {new Date(invoice.student?.grupo?.start_date).toLocaleDateString('es-MX', {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                    timeZone: 'UTC'
+                                                })} - {new Date(invoice.student?.grupo?.end_date).toLocaleDateString('es-MX', {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                    timeZone: 'UTC'
+                                                })}
                                             </div>
                                             <div className="text-gray-500">
                                                 <p>Frecuencia clases: {JSON.parse(invoice.student?.grupo?.frequency).join(', ')}</p>
