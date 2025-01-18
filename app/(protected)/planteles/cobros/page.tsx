@@ -111,6 +111,7 @@ export default function CobrosPage() {
     { value: 'student', label: 'Estudiante' },
     { value: 'amount', label: 'Monto' },
     { value: 'paymentMethod', label: 'Método' },
+    { value: 'payment_date', label: 'Fecha de pago' },
     { value: 'date', label: 'Fecha' },
     { value: 'notes', label: 'Notas' },
     { value: 'paid', label: 'Pagado' },
@@ -202,6 +203,7 @@ export default function CobrosPage() {
               {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
               {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
               {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
+              {visibleColumns.includes('payment_date') && <TableHead>Fecha de pago</TableHead>}
               {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
               {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
               {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
@@ -229,6 +231,11 @@ export default function CobrosPage() {
                 {visibleColumns.includes('paid') && (
                   <TableCell>
                     {transaction.paid ? 'Si' : 'No'}
+                  </TableCell>
+                )}
+                {visibleColumns.includes('payment_date') && (
+                  <TableCell>
+                    {new Date(transaction.payment_date).toLocaleDateString()}
                   </TableCell>
                 )}
                 {visibleColumns.includes('date') && (
