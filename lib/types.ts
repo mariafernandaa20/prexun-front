@@ -167,7 +167,7 @@ export interface Transaction {
   payment_method: 'cash' | 'transfer' | 'card';
   denominations?: Record<string, number> | [];
   paid: number;
-  payment_date: string;
+  payment_date: string | null;
   created_at?: string;
   expiration_date?: string;
   notes?: string;

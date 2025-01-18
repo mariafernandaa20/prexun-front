@@ -89,6 +89,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         notes: formData.comments,
         transaction_type: 'purchase',
         denominations: [],
+        payment_date: null,
       })
       
       if (response) {
