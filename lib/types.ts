@@ -127,6 +127,7 @@ export interface Promocion {
 }
 
 export interface Grupo {
+  campuses?: string[];
   id?: number;
   name: string;
   type: string;
@@ -166,7 +167,7 @@ export interface Transaction {
   payment_method: 'cash' | 'transfer' | 'card';
   denominations?: Record<string, number> | [];
   paid: number;
-  payment_date?: string;
+  payment_date: string;
   created_at?: string;
   expiration_date?: string;
   notes?: string;

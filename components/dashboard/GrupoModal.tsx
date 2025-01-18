@@ -18,6 +18,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { MultiSelect } from '../multi-select';
+import { getCampuses } from '@/lib/api';
+import { toast } from '@/hooks/use-toast';
 
 interface GrupoModalProps {
   isOpen: boolean;
@@ -36,6 +39,7 @@ export default function GrupoModal({
   periods,
   campuses,
 }: GrupoModalProps) {
+
   const [formData, setFormData] = useState<Grupo>({
     name: '',
     type: '',
@@ -47,6 +51,7 @@ export default function GrupoModal({
     end_time: '',
     start_date: '',
     end_date: '',
+    campuses: [],
   });
 
   useEffect(() => {
@@ -68,6 +73,7 @@ export default function GrupoModal({
         end_time: '',
         start_date: '',
         end_date: '',
+        campuses: [],
       });
     }
   }, [grupo, isOpen]);
@@ -111,7 +117,7 @@ export default function GrupoModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.type || formData.capacity <= 0) {
       alert('Por favor, complete todos los campos requeridos');
       return;
@@ -141,10 +147,10 @@ export default function GrupoModal({
     }));
   };
 
-  const handleCampusChange = (value: string) => {
+  const handleCampusChange = (selectedCampuses: string[]) => {
     setFormData((prev) => ({
       ...prev,
-      plantel_id: parseInt(value),
+      campuses: selectedCampuses,
     }));
   };
 
@@ -190,23 +196,21 @@ export default function GrupoModal({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="plantel_id">Campus</Label>
-                <Select
-                  onValueChange={handleCampusChange}
-                  value={formData.plantel_id.toString()}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar campus" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {campuses.map((campus) => (
-                      <SelectItem key={campus.id} value={campus.id.toString()}>
-                        {campus.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+              <div>
+                <Label>Planteles</Label>
+                <MultiSelect
+                  options={campuses.map((campus) => ({
+                    value: campus.id.toString(),
+                    label: campus.name,
+                  }))}
+                  selectedValues={formData?.campuses || []}
+                  onSelectedChange={handleCampusChange}
+                  title="Planteles"
+                  placeholder="Seleccionar planteles"
+                  searchPlaceholder="Buscar plantel..."
+                  emptyMessage="No se encontraron planteles"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="type">Tipo</Label>

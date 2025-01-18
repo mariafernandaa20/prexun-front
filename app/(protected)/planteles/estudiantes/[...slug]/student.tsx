@@ -41,6 +41,7 @@ const TransactionActions: React.FC<{
         ...transaction,
         denominations: transaction.denominations || [],
         notes: transaction.notes || '',
+        payment_date: transaction.payment_date || new Date().toISOString().split('T')[0],
     });
 
     const handleMarkAsPaid = () => {

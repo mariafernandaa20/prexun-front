@@ -157,6 +157,20 @@ export default function ChargesForm({
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Fecha de pago</Label>
+                <Input
+                  type="date"
+                  value={formData.payment_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, payment_date: e.target.value })
+                  }
+                  required
+                />
+                {errors.payment_date && (
+                  <p className="text-red-500 text-sm">{errors.payment_date}</p>
+                )}
+              </div>
               {student && (
                 <div className="space-y-2">
                   <Label>Estudiante</Label>
@@ -185,6 +199,8 @@ export default function ChargesForm({
                   <p className="text-red-500 text-sm">{errors.amount}</p>
                 )}
               </div>
+
+
 
               <div className="space-y-2">
                 <Label>Método de Pago</Label>
