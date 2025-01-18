@@ -63,12 +63,14 @@ export function InvoiceClient({ invoice }) {
                             </div>
                             <div className="flex justify-between">
                                 <span className="">Fecha</span>
-                                <span>{new Intl.DateTimeFormat('es', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                    timeZone: 'UTC'
-                                }).format(new Date(invoice.created_at))}</span>
+                                <span>
+                                    {new Date(invoice.created_at).toLocaleDateString('es-MX', {
+                                        day: 'numeric',
+                                        month: 'long',
+                                        year: 'numeric',
+                                        timeZone: 'UTC'
+                                    })}
+                                </span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="">Fecha de vencimiento</span>
@@ -105,11 +107,11 @@ export function InvoiceClient({ invoice }) {
                                             <div className="font-medium text-gray-900">{invoice.student?.grupo?.name} | {invoice.student?.grupo?.type}</div>
                                             <div className="font-medium text-gray-900">
                                                 {invoice.student?.grupo?.start_date} - {invoice.student?.grupo?.end_date}
-                                            </div> 
+                                            </div>
                                             <div className="text-gray-500">
                                                 <p>Frecuencia clases: {JSON.parse(invoice.student?.grupo?.frequency).join(', ')}</p>
                                                 <p>{invoice.student?.grupo?.start_time} - {invoice.student?.grupo?.end_time}</p>
-                                                <p>Notas: {invoice.notes}</p>
+                                                <p>{invoice.notes}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -153,7 +155,7 @@ export function InvoiceClient({ invoice }) {
                     </div>
                 </div>
             </div>
-            
+
             <InvoicePDF icon={false} invoice={invoice} />
         </div>
     )
