@@ -3,10 +3,7 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Student, Transaction } from "@/lib/types"
 import { Table, TableCell, TableHead, TableHeader, TableRow, TableBody } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { getStudent, updateCharge } from '@/lib/api'
-import { FormattedDate } from '@/lib/utils'
-import { StudentForm } from '../student-form'
+import { getStudent } from '@/lib/api'
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form'
 import { formatTime } from '@/lib/utils';
 import Purchace from './purchace'

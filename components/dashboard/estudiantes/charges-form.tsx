@@ -93,7 +93,7 @@ export default function ChargesForm({
           denominations: formData.payment_method === 'cash' ? formData.denominations : null,
           paid: 1,
           cash_register_id: activeCampus.latest_cash_register.id,
-          payment_date: new Date().toISOString().split('T')[0],
+          payment_date: formData.payment_date,
         });
 
       setOpen(false);
