@@ -207,18 +207,18 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Card>
-        <CardHeader>
+      <div>
+        <div>
           <div className='flex items-center justify-end px-6'>
             <Button onClick={() => setOpen(true)}>
               {caja ? 'Cerrar Caja' : 'Abrir Caja'}
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div>
           {children}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
