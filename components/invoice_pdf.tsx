@@ -47,7 +47,8 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
     doc.setFontSize(11);
     const details = [
         ["Comprobante de Pago:", `N-${invoice.id.toString().padStart(5, '0')}`],
-        ["Estudiante:", invoice.student?.firstname + " " + invoice.student?.lastname],
+        ["Estudiante:", invoice.student?.firstname],
+        ["", invoice.student?.lastname],
 
         ["Fecha:", new Intl.DateTimeFormat('es', {
             day: '2-digit',
@@ -189,7 +190,7 @@ const generatePDF = (invoice) => {
     
     // QR
     doc.addImage('/qr.png', 'png', 15, finalY + 76, 40, 40);
-    
+
     doc.save(`comprobante-${invoice.id.toString().padStart(5, '0')}.pdf`);
 };
 
