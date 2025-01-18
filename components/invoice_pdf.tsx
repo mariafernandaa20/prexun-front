@@ -50,19 +50,9 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
         ["Estudiante:", invoice.student?.firstname],
         ["", invoice.student?.lastname],
 
-        ["Fecha:", new Intl.DateTimeFormat('es', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            timeZone: 'UTC'
-        }).format(new Date(invoice.updated_at)),],
+        ["Fecha:", invoice.updated_at],
 
-        ["Fecha de vencimiento:", invoice.expiration_date ? new Intl.DateTimeFormat('es', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            timeZone: 'UTC'
-        }).format(new Date(invoice.expiration_date)) : 'Sin vencimiento'],
+        ["Fecha de vencimiento:", invoice.expiration_date ? invoice.expiration_date : 'Sin vencimiento'],
 
         ["Hora de pago:", invoice.paid === 1 ?
             dayjs(invoice.updated_at).format('HH:mm A') : 'No pagada']
@@ -97,7 +87,7 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
         const grupo = invoice?.student?.grupo ?? {};
         const groupInfo = [
             `${grupo.name ?? 'Sin grupo'} | ${grupo.type ?? 'Sin tipo'}`,
-            `${new Date(grupo.start_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })} - ${new Date(grupo.end_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+            `${grupo.start_date} - ${grupo.end_date}`,
             `Frecuencia clases: ${formatFrequency(grupo.frequency)}`,
             `${grupo.start_time ?? 'N/A'} - ${grupo.end_time ?? 'N/A'}`,
             `Notas: ${invoice.notes ?? 'Sin notas'}`

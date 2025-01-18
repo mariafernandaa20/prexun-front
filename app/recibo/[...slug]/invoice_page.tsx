@@ -6,7 +6,7 @@ import "jspdf-autotable";
 import Image from "next/image";
 import dayjs from 'dayjs';
 import InvoicePDF from '@/components/invoice_pdf';
-import { formatTime } from '@/lib/utils';
+import { FormattedDate, formatTime } from '@/lib/utils';
 export function InvoiceClient({ invoice }) {
     console.log(invoice);
     const invoiceNumber = ({ id }) => {
@@ -104,7 +104,7 @@ export function InvoiceClient({ invoice }) {
                                         <div>
                                             <div className="font-medium text-gray-900">{invoice.student?.grupo?.name} | {invoice.student?.grupo?.type}</div>
                                             <div className="font-medium text-gray-900">
-                                                {new Date(invoice.student?.grupo?.start_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })} - {new Date(invoice.student?.grupo?.end_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                {invoice.student?.grupo?.start_date} - {invoice.student?.grupo?.end_date}
                                             </div> 
                                             <div className="text-gray-500">
                                                 <p>Frecuencia clases: {JSON.parse(invoice.student?.grupo?.frequency).join(', ')}</p>
