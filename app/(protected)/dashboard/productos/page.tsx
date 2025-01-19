@@ -50,7 +50,7 @@ export default function ProductsPage() {
 
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className='sticky top-0 z-10 bg-card'>
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold mt-6">Productos</h1>
                     <div className="flex gap-4">

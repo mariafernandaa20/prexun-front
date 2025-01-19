@@ -149,7 +149,7 @@ export default function CajaPage() {
       {caja ? (
         <div className="space-y-6 p-6">
           <Card>
-            <CardHeader>
+            <CardHeader className='sticky top-0 z-10 bg-card'>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Estado de Caja</CardTitle>
@@ -215,7 +215,7 @@ export default function CajaPage() {
             </TabsList>
             <TabsContent value="transactions">
               <Card>
-                <CardHeader>
+                <CardHeader className='sticky top-0 z-10 bg-card'>
                   <CardTitle>Transacciones</CardTitle>
                   <CardDescription>
                     Lista de todas las transacciones realizadas
@@ -262,7 +262,7 @@ export default function CajaPage() {
             </TabsContent>
             <TabsContent value="gastos">
               <Card>
-                <CardHeader>
+                <CardHeader className='sticky top-0 z-10 bg-card'>
                   <CardTitle>Gastos</CardTitle>
                   <CardDescription>
                     Lista de todos los gastos registrados
@@ -308,7 +308,7 @@ export default function CajaPage() {
         </div>
       ) : (
         <Card className="m-6">
-          <CardHeader>
+          <CardHeader className='sticky top-0 z-10 bg-card'>
             <CardTitle>Caja Cerrada</CardTitle>
             <CardDescription>
               No hay ninguna caja abierta en este momento

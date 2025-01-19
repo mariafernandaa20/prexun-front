@@ -184,7 +184,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
 
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className='sticky top-0 z-10 bg-card'>
                 <div className='flex justify-between items-center'>
                     <h1>{student.firstname} {student.lastname}</h1>
                     <Purchace

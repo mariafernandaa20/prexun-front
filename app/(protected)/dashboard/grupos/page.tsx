@@ -167,7 +167,7 @@ export default function GruposPage() {
 
             return (
               <Card key={period.id}>
-                <CardHeader>
+                <CardHeader className='sticky top-0 z-10 bg-card'>
                   <CardTitle>{period.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
