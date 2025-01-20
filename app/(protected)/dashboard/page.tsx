@@ -135,142 +135,142 @@ export default function DashboardMetrics() {
 
             {/* Gráficas */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-  {/* Gráfica de Ingresos Diarios */}
-  <Card className="p-4">
-    <h3 className="font-bold mb-4">Ingresos Diarios</h3>
-    <div style={{ width: '100%', height: '400px' }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={data.chartData.transactions.daily}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="date"
-            tickFormatter={(value) => new Date(value).toLocaleDateString()}
-          />
-          <YAxis />
-          <Tooltip
-            formatter={(value) => [`$${value.toLocaleString()}`, 'Monto']}
-            labelFormatter={(label) => new Date(label).toLocaleDateString()}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="total"
-            stroke="#22c55e"
-            name="Ingresos"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </Card>
+              {/* Gráfica de Ingresos Diarios */}
+              <Card className="p-4">
+                <h3 className="font-bold mb-4">Ingresos Diarios</h3>
+                <div style={{ width: '100%', height: '400px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={data.chartData.transactions.daily}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                      />
+                      <YAxis />
+                      <Tooltip
+                        formatter={(value) => [`$${value.toLocaleString()}`, 'Monto']}
+                        labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        stroke="#22c55e"
+                        name="Ingresos"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
 
-  {/* Gráfica de Gastos Diarios */}
-  <Card className="p-4">
-    <h3 className="font-bold mb-4">Gastos Diarios</h3>
-    <div style={{ width: '100%', height: '400px' }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={data.chartData.gastos.daily}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="date"
-            tickFormatter={(value) => new Date(value).toLocaleDateString()}
-          />
-          <YAxis />
-          <Tooltip
-            formatter={(value) => [`$${value.toLocaleString()}`, 'Monto']}
-            labelFormatter={(label) => new Date(label).toLocaleDateString()}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="total"
-            stroke="#ef4444"
-            name="Gastos"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </Card>
+              {/* Gráfica de Gastos Diarios */}
+              <Card className="p-4">
+                <h3 className="font-bold mb-4">Gastos Diarios</h3>
+                <div style={{ width: '100%', height: '400px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={data.chartData.gastos.daily}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="date"
+                        tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                      />
+                      <YAxis />
+                      <Tooltip
+                        formatter={(value) => [`$${value.toLocaleString()}`, 'Monto']}
+                        labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        stroke="#ef4444"
+                        name="Gastos"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
 
-  {/* Gráfica de Ingresos Mensuales */}
-  <Card className="p-4">
-    <h3 className="font-bold mb-4">Ingresos Mensuales</h3>
-    <div style={{ width: '100%', height: '400px' }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={data.chartData.transactions.monthly}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="month"
-            tickFormatter={(value) => {
-              const date = new Date(value)
-              return date.toLocaleDateString('es-MX', { month: 'short', year: 'numeric' })
-            }}
-          />
-          <YAxis />
-          <Tooltip
-            formatter={(value) => [`$${value.toLocaleString()}`, 'Monto']}
-            labelFormatter={(label) => {
-              const date = new Date(label)
-              return date.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
-            }}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="total"
-            stroke="#22c55e"
-            name="Ingresos"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </Card>
+              {/* Gráfica de Ingresos Mensuales */}
+              <Card className="p-4">
+                <h3 className="font-bold mb-4">Ingresos Mensuales</h3>
+                <div style={{ width: '100%', height: '400px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={data.chartData.transactions.monthly}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="month"
+                        tickFormatter={(value) => {
+                          const date = new Date(value)
+                          return date.toLocaleDateString('es-MX', { month: 'short', year: 'numeric' })
+                        }}
+                      />
+                      <YAxis />
+                      <Tooltip
+                        formatter={(value) => [`$${value.toLocaleString()}`, 'Monto']}
+                        labelFormatter={(label) => {
+                          const date = new Date(label)
+                          return date.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+                        }}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        stroke="#22c55e"
+                        name="Ingresos"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
 
-  {/* Gráfica de Gastos Mensuales */}
-  <Card className="p-4">
-    <h3 className="font-bold mb-4">Gastos Mensuales</h3>
-    <div style={{ width: '100%', height: '400px' }}>
-      <ResponsiveContainer width="100%" height="100%" >
-        <LineChart
-          data={data.chartData.gastos.monthly}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="month"
-            tickFormatter={(value) => {
-              const date = new Date(value)
-              return date.toLocaleDateString('es-MX', { month: 'short', year: 'numeric' })
-            }}
-          />
-          <YAxis />
-          <Tooltip
-            formatter={(value) => [`$${value.toLocaleString()}`, 'Monto']}
-            labelFormatter={(label) => {
-              const date = new Date(label)
-              return date.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
-            }}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="total"
-            stroke="#ef4444"
-            name="Gastos"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </Card>
-</div>
+              {/* Gráfica de Gastos Mensuales */}
+              <Card className="p-4">
+                <h3 className="font-bold mb-4">Gastos Mensuales</h3>
+                <div style={{ width: '100%', height: '400px' }}>
+                  <ResponsiveContainer width="100%" height="100%" >
+                    <LineChart
+                      data={data.chartData.gastos.monthly}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="month"
+                        tickFormatter={(value) => {
+                          const date = new Date(value)
+                          return date.toLocaleDateString('es-MX', { month: 'short', year: 'numeric' })
+                        }}
+                      />
+                      <YAxis />
+                      <Tooltip
+                        formatter={(value) => [`$${value.toLocaleString()}`, 'Monto']}
+                        labelFormatter={(label) => {
+                          const date = new Date(label)
+                          return date.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+                        }}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        stroke="#ef4444"
+                        name="Gastos"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+            </div>
 
             {/* Tabla de resumen */}
             <Card className="p-4 mt-8">

@@ -525,13 +525,13 @@ export default function Page() {
                           <Link className={buttonVariants({ variant: 'ghost' })} href={`/planteles/estudiantes/${student.id}`}>
                             <Eye className="h-4 w-4" />
                           </Link>
-                          <Button
+                          {/* <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDelete(student.id!)}
                           >
                             <Trash2 className="h-4 w-4" />
-                          </Button>
+                          </Button> */}
                           {user?.role === 'super_admin' && (
                             <Button
                               variant="ghost"
