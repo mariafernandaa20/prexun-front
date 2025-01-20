@@ -169,15 +169,22 @@ const generateTotals = (doc, finalY, invoice) => {
     doc.setFontSize(11);
     doc.setFont(undefined, 'bold');
 
+    // Calculations with 2 decimal tolerance
+    const subtotal = +(invoice.amount / 1.16).toFixed(2);
+    const iva = +(invoice.amount - subtotal).toFixed(2);
+    const total = +invoice.amount.toFixed(2);
+
+    // Add text to the document
     doc.text("Subtotal:", 140, finalY + 20);
-    doc.text("$" + (Math.round(invoice.amount / 1.16)).toLocaleString(), 200, finalY + 20, { align: "right" });
+    doc.text("$" + subtotal.toLocaleString(), 200, finalY + 20, { align: "right" });
 
     doc.text("IVA:", 140, finalY + 25);
-    doc.text("$" + (Math.round(invoice.amount - (invoice.amount / 1.16))).toLocaleString(), 200, finalY + 25, { align: "right" });
+    doc.text("$" + iva.toLocaleString(), 200, finalY + 25, { align: "right" });
 
     doc.text("Total:", 140, finalY + 30);
-    doc.text("$" + invoice.amount.toLocaleString(), 200, finalY + 30, { align: "right" });
+    doc.text("$" + total.toLocaleString(), 200, finalY + 30, { align: "right" });
 };
+
 
 const generateComments = (doc, finalY, leftCol) => {
     doc.setFont(undefined, 'bold');
