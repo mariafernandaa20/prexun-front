@@ -228,6 +228,22 @@ export default function Page() {
     }
   };
 
+  const handleDeleteForever = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este estudiante permanentemente?')) return;
+
+    try {
+      await deleteStudent(id, true);
+      await fetchStudents();
+      toast({ title: 'Estudiante eliminado correctamente' });
+    } catch (error: any) {
+      toast({
+        title: 'Error al eliminar estudiante',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleSubmit = async (formData: Student) => {
     try {
       if (selectedStudent) {
@@ -511,6 +527,14 @@ export default function Page() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(student.id!)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className='text-red-500 hover:text-red-700'
+                          onClick={() => handleDeleteForever(student.id!)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

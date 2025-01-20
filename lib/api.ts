@@ -115,9 +115,13 @@ export const updateStudent = async (student: Student) => {
   return response.data;
 };
 
-export const deleteStudent = async (id: string) => {
+export const deleteStudent = async (id: string, permanent: boolean = false) => {
   const response = await axiosInstance.delete(
-    `${API_ENDPOINTS.DELETE_STUDENT}/${id}`
+    `${API_ENDPOINTS.DELETE_STUDENT}/${id}`, {
+      params: {
+        permanent
+      }
+    }
   );
   return response.data;
 };
