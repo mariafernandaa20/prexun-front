@@ -143,7 +143,7 @@ export function InvoiceClient({ invoice }) {
                             </div>
                             <div className="flex justify-between font-bold gap-4">
                                 <span>Total</span>
-                                <span>MX${invoice.amount.toFixed(2)}</span>
+                                <span>MX${Number(invoice.amount).toFixed(2)}</span>
                             </div>
                         </div>
 
