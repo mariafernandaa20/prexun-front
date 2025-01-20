@@ -11,6 +11,25 @@ declare module 'jspdf' {
         autoTable: (options: any) => any;
     }
 }
+
+const formatTime = (time) => {
+    if (!time) return 'N/A';
+
+    // Crear un objeto Date con una fecha arbitraria y la hora especificada
+    const [hours, minutes] = time.split(':');
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+
+    // Formatear la hora en 12 horas con AM/PM
+    return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+};
+
+
 const generateWatermark = (doc, isPaid) => {
     doc.setFontSize(60);
     doc.setTextColor(200, 200, 200);
@@ -104,7 +123,7 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
                 timeZone: 'UTC'
             })}`,
             `Frecuencia clases: ${formatFrequency(grupo.frequency)}`,
-            `${grupo.start_time ?? 'N/A'} - ${grupo.end_time ?? 'N/A'}`,
+            `${grupo.start_time ? formatTime(grupo.start_time) : 'N/A'} - ${grupo.end_time ? formatTime(grupo.end_time) : 'N/A'}`,
             `${invoice.notes ?? ''}`
         ];
 
@@ -170,29 +189,29 @@ const generateComments = (doc, finalY, leftCol) => {
     const maxWidth = 140;
 
     const lines = [
-        "Este es un Comprobante de Pago este no es un comprobante fiscal ni una factura",
-        "Todas las tarifas se muestran en MXN y están sujetas a impuestos sobre las ventas (según corresponda).",
-        "No se hacen devoluciones o compensaciones de ninguna índole.",
-        "El valor de promoción solo aplica si se liquida en las fechas convenidas.",
-        "El libro de estudios se entregará una semana previa al inicio de clases.",
-        "Si usted requiere factura, solicitar al registrarse.",
-        "No se emitira en caso de no ser solicitada en la inscripción.",
-        "Nuestro material esta protegido por derechos de autor, haces uso con fines diferentes al establecido es perseguido por la ley.",
-        "En las sesiones de clase y evaluaciones no se permite usar o tener en las manos teléfonos celulares.",
-        "Los padres encargados del alumno deberán solicitar informes del desempeño durante el curso.",
-        "Si por alguna situación esporádica el Estado suspende las clases presenciales, las clases seran en línea.",
-        "https://asesoriasprexun.com/terminos-y-condiciones/"
+        'Este es un "Comprobante de pago", por ende, no es un comprobante fiscal o una factura.',
+        'Todas las tarifas se muestran en MXN y están sujetas a impuestos sobre las ventas (según corresponda).',
+        'No se hacen devoluciones o compensaciones de ninguna índole.',
+        'El valor de promoción solo aplica si se liquida en las fechas convenidas.',
+        'El libro de estudios se entregará una semana previa al inicio de clases.',
+        'Si usted requiere factura, solicitar al registrarse; no se emitirá en caso de no ser solicitada en la inscripción.',
+        'Nuestro material está protegido por derechos de autor, hacer uso con fines diferentes al establecido es perseguido por la ley.',
+        'En las sesiones de clase y evaluaciones no se permite usar o tener en las manos teléfonos celulares.',
+        'Los padres o tutores encargados del alumno deberán solicitar informes de su desempeño durante el curso.',
+        'Si por alguna situación esporádica el Estado suspende las clases presenciales, las clases serán en línea.'
     ];
 
     let currentY = finalY + 60;
     lines.forEach((line, index) => {
-        const splitLines = doc.splitTextToSize(index + 1 + '. ' + line, maxWidth);
+        const splitLines = doc.splitTextToSize((index + 1) + '. ' + line, maxWidth);
         doc.text(splitLines, leftCol, currentY);
         currentY += 5 * splitLines.length;
     });
-        
+
     // Add QR code to the right side
     doc.addImage('/qr.png', 'png', 160, finalY + 50, 40, 40);
+    doc.setFontSize(8);
+    doc.text("Términos y Condiciones", 180, finalY + 95, { align: "center" });
 };
 
 const generatePDF = (invoice) => {

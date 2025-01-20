@@ -149,36 +149,36 @@ export function InvoiceClient({ invoice }) {
                     </div>
 
                     <div className="border-t pt-8 text-xs">
-                        <h3 className="font-semibold mb-4">Comentarios</h3>
-                        <p className="text-gray-600 mb-4">
-                            1. Este es un Comprobante de Pago este no es un comprobante fiscal ni una factura
+                        <h3 className="font-semibold">Comentarios</h3>
+                        <p className="text-gray-600">
+                            1. Este es un "Comprobante de pago", por ende, no es un comprobante fiscal o una factura.
                         </p>
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-gray-600">
                             2. Todas las tarifas se muestran en MXN y están sujetas a impuestos sobre las ventas (según corresponda).
                         </p>
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-gray-600">
                             3. No se hacen devoluciones o compensaciones de ninguna índole.
                         </p>
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-gray-600">
                             4. El valor de promoción solo aplica si se liquida en las fechas convenidas.
                         </p>
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-gray-600">
                             5. El libro de estudios se entregará una semana previa al inicio de clases.
                         </p>
-                        <p className="text-gray-600 mb-4">
-                            6. Si usted requiere factura, solicitar al registrarse. No se emitira en caso de no ser solicitada en la inscripción.
+                        <p className="text-gray-600">
+                            6. Si usted requiere factura, solicitar al registrarse; no se emitirá en caso de no ser solicitada en la inscripción.
                         </p>
-                        <p className="text-gray-600 mb-4">
-                            7. Nuestro material esta protegido por derechos de autor, haces uso con fines diferentes al establecido es perseguido por la ley.
+                        <p className="text-gray-600">
+                            7. Nuestro material está protegido por derechos de autor, hacer uso con fines diferentes al establecido es perseguido por la ley.
                         </p>
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-gray-600">
                             8. En las sesiones de clase y evaluaciones no se permite usar o tener en las manos teléfonos celulares.
                         </p>
-                        <p className="text-gray-600 mb-4">
-                            9. Los padres encargados del alumno deberán solicitar informes del desempeño durante el curso.
+                        <p className="text-gray-600">
+                            9. Los padres o tutores encargados del alumno deberán solicitar informes de su desempeño durante el curso.
                         </p>
-                        <p className="text-gray-600 mb-4">
-                            10. Si por alguna situación esporádica el Estado suspende las clases presenciales, las clases seran en línea.
+                        <p className="text-gray-600">
+                            10. Si por alguna situación esporádica el Estado suspende las clases presenciales, las clases serán en línea.
                         </p>
                         <p className="text-gray-600">
                             <a href="https://asesoriasprexun.com/terminos-y-condiciones/" target="_blank" rel="noreferrer">
