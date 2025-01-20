@@ -49,6 +49,7 @@ import { Input } from '@/components/ui/input';
 import { MultiSelect } from '@/components/multi-select';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -77,6 +78,7 @@ export default function Page() {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [showtAllFilters, setShowtAllFilters] = useState(false);
   const { activeCampus } = useActiveCampusStore();
+  const { user } = useAuthStore();
   const { toast } = useToast();
 
   const columnOptions = [
@@ -211,7 +213,7 @@ export default function Page() {
       });
     }
   }, [activeCampus]);
-  
+
   const handleDelete = async (id: string) => {
     if (!confirm('¿Está seguro de eliminar este estudiante?')) return;
 
@@ -284,269 +286,271 @@ export default function Page() {
   return (
     <Card>
       <CardHeader className='sticky top-0 z-10 bg-card'>
-      <div className="flex justify-between mb-6 max-w-[100vw-30rem] ">
-        <h1 className="text-2xl font-bold">Estudiantes</h1>
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-4">
-            <Input
-              placeholder="Buscar por nombre..."
-              value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
-              className="w-[200px]"
-            />
-
-            <MultiSelect
-              options={columnOptions}
-              hiddeBadages={true}
-              selectedValues={visibleColumns}
-              onSelectedChange={handleColumnSelect}
-              title="Columnas"
-              placeholder="Seleccionar columnas"
-              searchPlaceholder="Buscar columna..."
-              emptyMessage="No se encontraron columnas"
-            />
-            <Select
-              value={periodFilter}
-              onValueChange={(value) => setPeriodFilter(value)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filtrar por periodo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los periodos</SelectItem>
-                {periods.map((period) => (
-                  <SelectItem key={period.id} value={period.id}>
-                    {period.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={handleOpenCreateModal}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Nuevo Estudiante
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => setShowtAllFilters(!showtAllFilters)}
-            >
-              <Filter className="h-4 w-4" />
-            </Button>
-          </div>
-          {showtAllFilters && (
+        <div className="flex justify-between mb-6 max-w-[100vw-30rem] ">
+          <h1 className="text-2xl font-bold">Estudiantes</h1>
+          <div className="flex flex-col gap-4">
             <div className="flex gap-4">
               <Input
-                type="date"
-                value={searchDate}
-                onChange={(e) => setSearchDate(e.target.value)}
+                placeholder="Buscar por nombre..."
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
                 className="w-[200px]"
               />
-              <Input
-                placeholder="Buscar por teléfono..."
-                value={searchPhone}
-                onChange={(e) => setSearchPhone(e.target.value)}
-                className="w-[200px]"
+
+              <MultiSelect
+                options={columnOptions}
+                hiddeBadages={true}
+                selectedValues={visibleColumns}
+                onSelectedChange={handleColumnSelect}
+                title="Columnas"
+                placeholder="Seleccionar columnas"
+                searchPlaceholder="Buscar columna..."
+                emptyMessage="No se encontraron columnas"
               />
               <Select
-                value={typeFilter}
-                onValueChange={(value: 'all' | 'preparatoria' | 'facultad') =>
-                  setTypeFilter(value)
-                }
+                value={periodFilter}
+                onValueChange={(value) => setPeriodFilter(value)}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrar por tipo" />
+                  <SelectValue placeholder="Filtrar por periodo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="preparatoria">Preparatoria</SelectItem>
-                  <SelectItem value="facultad">Facultad</SelectItem>
+                  <SelectItem value="all">Todos los periodos</SelectItem>
+                  {periods.map((period) => (
+                    <SelectItem key={period.id} value={period.id}>
+                      {period.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              <Button onClick={handleOpenCreateModal}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Nuevo Estudiante
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setShowtAllFilters(!showtAllFilters)}
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
             </div>
-          )}
+            {showtAllFilters && (
+              <div className="flex gap-4">
+                <Input
+                  type="date"
+                  value={searchDate}
+                  onChange={(e) => setSearchDate(e.target.value)}
+                  className="w-[200px]"
+                />
+                <Input
+                  placeholder="Buscar por teléfono..."
+                  value={searchPhone}
+                  onChange={(e) => setSearchPhone(e.target.value)}
+                  className="w-[200px]"
+                />
+                <Select
+                  value={typeFilter}
+                  onValueChange={(value: 'all' | 'preparatoria' | 'facultad') =>
+                    setTypeFilter(value)
+                  }
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filtrar por tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="preparatoria">Preparatoria</SelectItem>
+                    <SelectItem value="facultad">Facultad</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       </CardHeader>
       <CardContent>
-      <div className="overflow-x-auto max-w-[calc(100vw-20rem)]">
-        {isLoading ? (
-          <div className="text-center py-4">Cargando...</div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {visibleColumns.includes('matricula') && (
-                  <TableHead>Matrícula</TableHead>
-                )}
-                {visibleColumns.includes('firstname') && (
-                  <TableHead>Nombre</TableHead>
-                )}
-                {visibleColumns.includes('lastname') && (
-                  <TableHead>Apellido</TableHead>
-                )}
-                {visibleColumns.includes('created_at') && (
-                  <TableHead>Fecha de Inscripción</TableHead>
-                )}
-                {visibleColumns.includes('email') && (
-                  <TableHead>Email</TableHead>
-                )}
-                {visibleColumns.includes('phone') && (
-                  <TableHead>Teléfono</TableHead>
-                )}
-                {visibleColumns.includes('type') && (
-                  <TableHead>Curso</TableHead>
-                )}
-                {visibleColumns.includes('period') && (
-                  <TableHead>Periodo</TableHead>
-                )}
-
-                {visibleColumns.includes('carrera') && (
-                  <TableHead>Carrera</TableHead>
-                )}
-                {visibleColumns.includes('facultad') && (
-                  <TableHead>Facultad</TableHead>
-                )}
-                {visibleColumns.includes('prepa') && (
-                  <TableHead>Preparatoria</TableHead>
-                )}
-                {visibleColumns.includes('municipio') && (
-                  <TableHead>Municipio</TableHead>
-                )}
-                {visibleColumns.includes('tutor_name') && (
-                  <TableHead>Tutor</TableHead>
-                )}
-                {visibleColumns.includes('tutor_phone') && (
-                  <TableHead>Teléfono del Tutor</TableHead>
-                )}
-                {visibleColumns.includes('tutor_relationship') && (
-                  <TableHead>Relación con el Tutor</TableHead>
-                )}
-                {visibleColumns.includes('preferred_communication') && (
-                  <TableHead>Medio de Comunicación</TableHead>
-                )}
-                {visibleColumns.includes('status') && (
-                  <TableHead>Estado</TableHead>
-                )}
-                {visibleColumns.includes('health_conditions') && (
-                  <TableHead>Condiciones de Salud</TableHead>
-                )}
-                {visibleColumns.includes('how_found_out') && (
-                  <TableHead>Cómo se Enteró</TableHead>
-                )}
-                {visibleColumns.includes('preferred_communication') && (
-                  <TableHead>Medio de Comunicación</TableHead>
-                )}
-                {visibleColumns.includes('actions') && (
-                  <TableHead>Acciones</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStudents.map((student) => (
-                <TableRow key={student.id}>
+        <div className="overflow-x-auto max-w-[calc(100vw-20rem)]">
+          {isLoading ? (
+            <div className="text-center py-4">Cargando...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {visibleColumns.includes('matricula') && (
-                    <TableCell>{student.id}</TableCell>
+                    <TableHead>Matrícula</TableHead>
                   )}
                   {visibleColumns.includes('firstname') && (
-                    <TableCell>{student.firstname}</TableCell>
+                    <TableHead>Nombre</TableHead>
                   )}
                   {visibleColumns.includes('lastname') && (
-                    <TableCell>{student.lastname}</TableCell>
+                    <TableHead>Apellido</TableHead>
                   )}
                   {visibleColumns.includes('created_at') && (
-                    <TableCell>
-                      {new Date(student.created_at).toLocaleDateString()}
-                    </TableCell>
+                    <TableHead>Fecha de Inscripción</TableHead>
                   )}
                   {visibleColumns.includes('email') && (
-                    <TableCell>{student.email}</TableCell>
+                    <TableHead>Email</TableHead>
                   )}
                   {visibleColumns.includes('phone') && (
-                    <TableCell>{student.phone}</TableCell>
+                    <TableHead>Teléfono</TableHead>
                   )}
                   {visibleColumns.includes('type') && (
-                    <TableCell>{student.type}</TableCell>
+                    <TableHead>Curso</TableHead>
                   )}
                   {visibleColumns.includes('period') && (
-                    <TableCell>{student.period.name}</TableCell>
+                    <TableHead>Periodo</TableHead>
                   )}
+
                   {visibleColumns.includes('carrera') && (
-                    <TableCell>{student?.carrera?.name}</TableCell>
+                    <TableHead>Carrera</TableHead>
                   )}
                   {visibleColumns.includes('facultad') && (
-                    <TableCell>{student?.facultad?.name}</TableCell>
+                    <TableHead>Facultad</TableHead>
                   )}
                   {visibleColumns.includes('prepa') && (
-                    <TableCell>{student?.prepa?.name}</TableCell>
+                    <TableHead>Preparatoria</TableHead>
                   )}
                   {visibleColumns.includes('municipio') && (
-                    <TableCell>{student?.municipio?.name}</TableCell>
+                    <TableHead>Municipio</TableHead>
                   )}
                   {visibleColumns.includes('tutor_name') && (
-                    <TableCell>{student.tutor_name}</TableCell>
+                    <TableHead>Tutor</TableHead>
                   )}
                   {visibleColumns.includes('tutor_phone') && (
-                    <TableCell>{student.tutor_phone}</TableCell>
+                    <TableHead>Teléfono del Tutor</TableHead>
                   )}
                   {visibleColumns.includes('tutor_relationship') && (
-                    <TableCell>{student.tutor_relationship}</TableCell>
+                    <TableHead>Relación con el Tutor</TableHead>
                   )}
                   {visibleColumns.includes('preferred_communication') && (
-                    <TableCell>{student.preferred_communication}</TableCell>
+                    <TableHead>Medio de Comunicación</TableHead>
                   )}
                   {visibleColumns.includes('status') && (
-                    <TableCell>{student.status}</TableCell>
+                    <TableHead>Estado</TableHead>
                   )}
                   {visibleColumns.includes('health_conditions') && (
-                    <TableCell>{student.health_conditions}</TableCell>
+                    <TableHead>Condiciones de Salud</TableHead>
                   )}
                   {visibleColumns.includes('how_found_out') && (
-                    <TableCell>{student.how_found_out}</TableCell>
+                    <TableHead>Cómo se Enteró</TableHead>
                   )}
                   {visibleColumns.includes('preferred_communication') && (
-                    <TableCell>{student.preferred_communication}</TableCell>
+                    <TableHead>Medio de Comunicación</TableHead>
                   )}
                   {visibleColumns.includes('actions') && (
-                    <TableCell className="p-4">
-                      <div className="flex gap-2">
-                        {/* <ChargesForm
+                    <TableHead>Acciones</TableHead>
+                  )}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.map((student) => (
+                  <TableRow key={student.id}>
+                    {visibleColumns.includes('matricula') && (
+                      <TableCell>{student.id}</TableCell>
+                    )}
+                    {visibleColumns.includes('firstname') && (
+                      <TableCell>{student.firstname}</TableCell>
+                    )}
+                    {visibleColumns.includes('lastname') && (
+                      <TableCell>{student.lastname}</TableCell>
+                    )}
+                    {visibleColumns.includes('created_at') && (
+                      <TableCell>
+                        {new Date(student.created_at).toLocaleDateString()}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes('email') && (
+                      <TableCell>{student.email}</TableCell>
+                    )}
+                    {visibleColumns.includes('phone') && (
+                      <TableCell>{student.phone}</TableCell>
+                    )}
+                    {visibleColumns.includes('type') && (
+                      <TableCell>{student.type}</TableCell>
+                    )}
+                    {visibleColumns.includes('period') && (
+                      <TableCell>{student.period.name}</TableCell>
+                    )}
+                    {visibleColumns.includes('carrera') && (
+                      <TableCell>{student?.carrera?.name}</TableCell>
+                    )}
+                    {visibleColumns.includes('facultad') && (
+                      <TableCell>{student?.facultad?.name}</TableCell>
+                    )}
+                    {visibleColumns.includes('prepa') && (
+                      <TableCell>{student?.prepa?.name}</TableCell>
+                    )}
+                    {visibleColumns.includes('municipio') && (
+                      <TableCell>{student?.municipio?.name}</TableCell>
+                    )}
+                    {visibleColumns.includes('tutor_name') && (
+                      <TableCell>{student.tutor_name}</TableCell>
+                    )}
+                    {visibleColumns.includes('tutor_phone') && (
+                      <TableCell>{student.tutor_phone}</TableCell>
+                    )}
+                    {visibleColumns.includes('tutor_relationship') && (
+                      <TableCell>{student.tutor_relationship}</TableCell>
+                    )}
+                    {visibleColumns.includes('preferred_communication') && (
+                      <TableCell>{student.preferred_communication}</TableCell>
+                    )}
+                    {visibleColumns.includes('status') && (
+                      <TableCell>{student.status}</TableCell>
+                    )}
+                    {visibleColumns.includes('health_conditions') && (
+                      <TableCell>{student.health_conditions}</TableCell>
+                    )}
+                    {visibleColumns.includes('how_found_out') && (
+                      <TableCell>{student.how_found_out}</TableCell>
+                    )}
+                    {visibleColumns.includes('preferred_communication') && (
+                      <TableCell>{student.preferred_communication}</TableCell>
+                    )}
+                    {visibleColumns.includes('actions') && (
+                      <TableCell className="p-4">
+                        <div className="flex gap-2">
+                          {/* <ChargesForm
                           campusId={Number(activeCampus?.id)}
                           fetchStudents={fetchStudents}
                           student={student}
                         /> */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenEditModal(student)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Link className={buttonVariants({ variant: 'ghost' })} href={`/planteles/estudiantes/${student.id}`}>
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(student.id!)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className='text-red-500 hover:text-red-700'
-                          onClick={() => handleDeleteForever(student.id!)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenEditModal(student)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Link className={buttonVariants({ variant: 'ghost' })} href={`/planteles/estudiantes/${student.id}`}>
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(student.id!)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          {user?.role === 'super_admin' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className='text-red-500 hover:text-red-700'
+                              onClick={() => handleDeleteForever(student.id!)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
       </CardContent>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="min-w-[60rem]">
