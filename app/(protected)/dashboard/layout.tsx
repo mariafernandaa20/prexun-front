@@ -17,7 +17,6 @@ export default function Page({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     initializeApp();
   }, []);
-
   return (
     <SidebarProvider>
       <AdminSidebar />
@@ -29,7 +28,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
             <h1 className="text-lg font-bold">Title</h1>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+        <div>{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
