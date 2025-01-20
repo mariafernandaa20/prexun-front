@@ -116,7 +116,7 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
                 month: 'long',
                 year: 'numeric',
                 timeZone: 'UTC'
-            })} - ${new Date(invoice.end_date).toLocaleDateString('es-MX', {
+            })} - ${new Date(grupo.end_date).toLocaleDateString('es-MX', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
