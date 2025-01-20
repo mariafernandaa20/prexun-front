@@ -170,13 +170,13 @@ const generateTotals = (doc, finalY, invoice) => {
     doc.setFont(undefined, 'bold');
 
     doc.text("Subtotal:", 140, finalY + 20);
-    doc.text("$" + (invoice.amount * 0.84).toLocaleString(), 200, finalY + 20, { align: "right" });
+    doc.text("$" + (Math.round(invoice.amount / 1.16)).toLocaleString(), 200, finalY + 20, { align: "right" });
 
-    doc.text("IVA:", 140, finalY + 28);
-    doc.text("$" + (invoice.amount * 0.16).toLocaleString(), 200, finalY + 28, { align: "right" });
+    doc.text("IVA:", 140, finalY + 25);
+    doc.text("$" + (Math.round(invoice.amount - (invoice.amount / 1.16))).toLocaleString(), 200, finalY + 25, { align: "right" });
 
-    doc.text("Total:", 140, finalY + 36);
-    doc.text("$" + invoice.amount.toLocaleString(), 200, finalY + 36, { align: "right" });
+    doc.text("Total:", 140, finalY + 30);
+    doc.text("$" + invoice.amount.toLocaleString(), 200, finalY + 30, { align: "right" });
 };
 
 const generateComments = (doc, finalY, leftCol) => {

@@ -135,11 +135,11 @@ export function InvoiceClient({ invoice }) {
                         <div className="text-right">
                             <div className="flex justify-between font-bold gap-4">
                                 <span>SubTotal</span>
-                                <span>MX${invoice.amount * 0.84}</span>
+                                <span>MX${Math.round(invoice.amount / 1.16)}</span>
                             </div>
                             <div className="flex justify-between font-bold gap-4">
                                 <span>IVA</span>
-                                <span>MX${invoice.amount * 0.16}</span>
+                                <span>MX${Math.round(invoice.amount - (invoice.amount / 1.16))}</span>
                             </div>
                             <div className="flex justify-between font-bold gap-4">
                                 <span>Total</span>
