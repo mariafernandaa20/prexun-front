@@ -172,7 +172,7 @@ const generateTotals = (doc, finalY, invoice) => {
     // Calculations with 2 decimal tolerance
     const subtotal = +(invoice.amount / 1.16).toFixed(2);
     const iva = +(invoice.amount - subtotal).toFixed(2);
-    const total = +invoice.amount.toFixed(2);
+    const total = +invoice.amount;
 
     // Add text to the document
     doc.text("Subtotal:", 140, finalY + 20);
