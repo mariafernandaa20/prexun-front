@@ -12,6 +12,11 @@ export interface Campus {
   users?: User[];
 }
 
+export enum PaymentMethod {
+  cash = 'Efectivo',
+  transfer = 'Transferencia',
+  card = 'Tarjeta'
+}
 export interface User {
   id?: string
   name: string

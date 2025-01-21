@@ -5,12 +5,14 @@ import 'jspdf-autotable';
 import { FileDown } from 'lucide-react';
 import React from 'react';
 import { Button } from './ui/button';
+import { PaymentMethod } from '@/lib/types';
 
 declare module 'jspdf' {
     interface jsPDF {
         autoTable: (options: any) => any;
     }
 }
+
 
 const formatTime = (time) => {
     if (!time) return 'N/A';
@@ -65,7 +67,7 @@ const generateCompanyInfo = (doc, campus, leftCol, rightCol, currentY) => {
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
     doc.setFontSize(11);
     const details = [
-        ["Comprobante de Pago:", `N-${invoice.id.toString().padStart(5, '0')}`],
+        ["Comprobante de Pago:", `N-${invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}`],
         ["Estudiante:", invoice.student?.firstname],
         ["", invoice.student?.lastname],
 
@@ -79,12 +81,13 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
         ["Fecha de vencimiento:", invoice.expiration_date ? invoice.expiration_date : 'Sin vencimiento'],
 
         ["Hora de pago:", invoice.paid === 1 ?
-            dayjs(invoice.updated_at).format('HH:mm A') : 'No pagada']
+            dayjs(invoice.updated_at).format('HH:mm A') : 'No pagada'],
+        ["Metodo de pago:", PaymentMethod[invoice.payment_method]]
     ];
 
     details.forEach((row, index) => {
-        doc.text(row[0], rightCol, currentY + (index * 7), { align: 'left' });
-        doc.text(row[1], rightCol + 90, currentY + (index * 7), { align: 'right' });
+        doc.text(row[0], rightCol, currentY + (index * 5), { align: 'left' });
+        doc.text(row[1], rightCol + 90, currentY + (index * 5), { align: 'right' });
     });
 };
 
@@ -238,7 +241,7 @@ const generatePDF = (invoice) => {
     generateTotals(doc, finalY, invoice);
     generateComments(doc, finalY, leftCol);
 
-    doc.save(`comprobante-${invoice.id.toString().padStart(5, '0')}.pdf`);
+    doc.save(`comprobante-${invoice.folio? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}.pdf`);
 };
 
 const InvoicePDF = ({ icon, invoice }) => {

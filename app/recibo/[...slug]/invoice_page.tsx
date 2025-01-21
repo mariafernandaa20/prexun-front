@@ -7,21 +7,23 @@ import Image from "next/image";
 import dayjs from 'dayjs';
 import InvoicePDF from '@/components/invoice_pdf';
 import { FormattedDate, formatTime } from '@/lib/utils';
+import { PaymentMethod } from '@/lib/types';
 export function InvoiceClient({ invoice }) {
-    console.log(invoice);
-    const invoiceNumber = ({ id }) => {
-        if (id < 10) {
-            return `N-0000${id}`;
-        } if (id < 100) {
-            return `N-000${id}`;
+
+    const invoiceNumber = ({ folio }) => {
+        if (!folio) return 'No pagado';
+        if (folio < 10) {
+            return `N-0000${folio}`;
+        } if (folio < 100) {
+            return `N-000${folio}`;
         }
-        if (id < 1000) {
-            return `N-00${id}`;
+        if (folio < 1000) {
+            return `N-00${folio}`;
         }
-        if (id < 10000) {
-            return `N-0${id}`;
+        if (folio < 10000) {
+            return `N-0${folio}`;
         }
-        return `N-${id}`;
+        return `N-${folio}`;
     };
 
     return (
@@ -84,7 +86,7 @@ export function InvoiceClient({ invoice }) {
                                 </span>                         </div>
                             <div className="flex justify-between">
                                 <span className="">Metodo de pago</span>
-                                <span>{invoice.payment_method}</span>
+                                <span>{PaymentMethod[invoice.payment_method]}</span>
                             </div>
                         </div>
                     </div>
