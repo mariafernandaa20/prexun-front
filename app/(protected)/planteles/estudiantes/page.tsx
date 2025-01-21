@@ -37,7 +37,6 @@ import {
   getMunicipios,
   getPrepas,
 } from '@/lib/api';
-import ChargesForm from '@/components/dashboard/estudiantes/charges-form';
 import {
   Select,
   SelectContent,

@@ -180,9 +180,35 @@ export const createCharge = async (charge: Transaction) => {
 };
 
 export const updateCharge = async (charge: Transaction) => {
-  const response = await axiosInstance.put(`${API_ENDPOINTS.UPDATE_CHARGE}/${charge.id}`, charge);
+  const formData = new FormData();
+
+  formData.append('_method', 'PUT');
+
+  Object.keys(charge).forEach(key => {
+    if (charge[key] !== null && charge[key] !== undefined) {
+      if (key === 'image' && charge[key] instanceof File) {
+        formData.append('image', charge[key]);
+      } else if (typeof charge[key] === 'object') {
+        formData.append(key, JSON.stringify(charge[key]));
+      } else {
+        formData.append(key, String(charge[key]));
+      }
+    }
+  });
+
+  const response = await axiosInstance.post(
+    `${API_ENDPOINTS.UPDATE_CHARGE}/${charge.id}`, 
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+
   return response.data;
 };
+
 
 export const getMunicipios = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.MUNICIPIOS);

@@ -174,6 +174,7 @@ export interface Transaction {
   transaction_type?: string;
   student?: Student;
   cash_register_id?: number;
+  image?: string | File;
 }
 
 export interface Denomination {

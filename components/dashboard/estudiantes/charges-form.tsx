@@ -94,6 +94,7 @@ export default function ChargesForm({
           paid: 1,
           cash_register_id: activeCampus.latest_cash_register.id,
           payment_date: formData.payment_date,
+          image: formData.image,
         });
 
       setOpen(false);
@@ -226,7 +227,19 @@ export default function ChargesForm({
                   <p className="text-red-500 text-sm">{errors.payment_method}</p>
                 )}
               </div>
-
+              {formData.payment_method === 'transfer' &&
+                (
+                  <div className="space-y-2">
+                    <Label>Comprobante</Label>
+                    <Input
+                      type='file'
+                      accept="image/*"
+                      onChange={(e) =>
+                        setFormData({ ...formData, image: e.target.files?.[0] })
+                      }
+                    />
+                  </div>
+                )}
               <div className="space-y-2">
                 <Label>Notas</Label>
                 <Textarea

@@ -38,6 +38,8 @@ import Link from 'next/link';
 import AgregarIngreso from './AgregarIngreso';
 
 export default function CobrosPage() {
+  const [imageModalOpen, setImageModalOpen] = useState(false)
+  const [selectedImage, setSelectedImage] = useState('')
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
@@ -78,7 +80,10 @@ export default function CobrosPage() {
   const handleColumnSelect = (values: string[]) => {
     setVisibleColumns(values);
   };
-
+  const handleOpenImage = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setImageModalOpen(true);
+  }
   const filteredTransactions = transactions.filter((transaction) => {
     const studentFullName =
       `${transaction.student?.username} ${transaction.student?.firstname} ${transaction.student?.lastname}`.toLowerCase();
@@ -207,6 +212,7 @@ export default function CobrosPage() {
               {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
               {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
               {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
+              <TableHead>Comprobante</TableHead>
               {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
             </TableRow>
           </TableHeader>
@@ -251,6 +257,25 @@ export default function CobrosPage() {
                     {transaction.expiration_date ? new Date(transaction.expiration_date).toLocaleDateString() : 'No límite de pago'}
                   </TableCell>
                 )}
+                <TableCell>
+                  {transaction.image && (
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={transaction.image as string}
+                        alt="Miniatura"
+                        className="w-10 h-10 object-cover rounded"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenImage(transaction.image as string)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Ver
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
                 {visibleColumns.includes('actions') && (
                   <TableCell className="p-4 flex items-center justify-right gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
@@ -262,10 +287,16 @@ export default function CobrosPage() {
                     </Link>
                   </TableCell>
                 )}
+
               </TableRow>
             ))}
           </TableBody>
         </Table>
+        <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
+          <DialogContent className="max-w-3xl">
+            <img src={selectedImage} alt="Comprobante" className="w-full" />
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
