@@ -50,6 +50,7 @@ export default function Page() {
     address: "",
     is_active: true,
     admin_ids: [],
+    folio_inicial: 1,
   });
 
   useEffect(() => {
@@ -92,6 +93,7 @@ export default function Page() {
       address: "",
       is_active: true,
       admin_ids: [],
+      folio_inicial: 1,
     });
     setIsModalOpen(true);
   };
@@ -105,6 +107,7 @@ export default function Page() {
       address: campus.address,
       is_active: campus.is_active,
       admin_ids: campus.users?.map(user => user.id.toString()) || [],
+      folio_inicial: campus.folio_inicial,
     });
     setIsModalOpen(true);
   };
@@ -121,6 +124,7 @@ export default function Page() {
           address: formData.address,
           is_active: formData.is_active,
           admin_ids: formData.admin_ids || [],
+          folio_inicial: formData.folio_inicial,
         };
         const response = await updateCampus(campusRequest);
         setCampuses(
@@ -135,6 +139,7 @@ export default function Page() {
           address: formData.address,
           is_active: formData.is_active,
           admin_ids: formData.admin_ids || [],
+          folio_inicial: formData.folio_inicial,
         };
         const response = await createCampus(campusRequest);
         setCampuses([...campuses, response]);
@@ -284,6 +289,17 @@ export default function Page() {
                 id="name"
                 name="name"
                 value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="folio_inicial">Folio Inicial</Label>
+              <Input
+                id="folio_inicial"
+                name="folio_inicial"
+                value={formData.folio_inicial}
                 onChange={handleInputChange}
                 required
               />

@@ -7,6 +7,7 @@ export interface Campus {
   administrator?: string[];
   description?: string;
   admin_ids?: string[];
+  folio_inicial: number;
   latest_cash_register?: Caja | null;
   users?: User[];
 }

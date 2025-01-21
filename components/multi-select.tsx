@@ -1,4 +1,3 @@
-// components/MultiSelect.tsx
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -95,7 +94,7 @@ export function MultiSelect({
             {selectedValues.length > 0
               ? `${selectedValues.length} seleccionados`
               : placeholder}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0">
