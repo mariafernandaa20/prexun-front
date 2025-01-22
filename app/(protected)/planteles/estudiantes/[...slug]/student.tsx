@@ -36,7 +36,7 @@ const TransactionActions: React.FC<{
 }> = ({ transaction, onTransactionUpdate }) => {
     const [formData, setFormData] = useState<Transaction>({
         ...transaction,
-        denominations: transaction.denominations || [],
+        denominations: {},
         notes: transaction.notes || '',
         payment_date: transaction.payment_date || new Date().toISOString().split('T')[0],
         image: transaction.image || null,

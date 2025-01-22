@@ -79,10 +79,6 @@ export default function ChargesForm({
     e.preventDefault();
     setErrors({});
 
-    if (!validateDenominations()) {
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -90,7 +86,7 @@ export default function ChargesForm({
         ? await createCharge(formData)
         : await updateCharge({
           ...formData,
-          denominations: formData.payment_method === 'cash' ? formData.denominations : null,
+          denominations: null,
           paid: 1,
           cash_register_id: activeCampus.latest_cash_register.id,
           payment_date: formData.payment_date,
@@ -252,7 +248,7 @@ export default function ChargesForm({
               </div>
             </div>
 
-            {formData.payment_method === 'cash' && (
+            {/* {formData.payment_method === 'cash' && (
               <div className="space-y-2">
                 <Label>Denominaciones</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -278,7 +274,7 @@ export default function ChargesForm({
                   Total en denominaciones: ${formData.denominations && typeof formData.denominations === 'object' && !Array.isArray(formData.denominations) ? calculateDenominationsTotal(formData.denominations) : 0}
                 </p>
               </div>
-            )}
+            )} */}
 
             <Button type="submit" disabled={loading}>
               {loading ? 'Procesando...' : mode === 'create' ? 'Registrar Pago' : 'Registrar Pago'}
