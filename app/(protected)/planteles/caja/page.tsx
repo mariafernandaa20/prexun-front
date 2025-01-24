@@ -277,8 +277,6 @@ export default function CajaPage() {
                           <TableHead>Concepto</TableHead>
                           <TableHead>Categoría</TableHead>
                           <TableHead>Monto</TableHead>
-                          <TableHead>Denominaciones</TableHead>
-
                           <TableHead>Método</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -290,12 +288,6 @@ export default function CajaPage() {
                             <TableCell>{gasto.category}</TableCell>
                             <TableCell>{formatCurrency(gasto.amount)}</TableCell>
                             <TableCell>{gasto.method}</TableCell>
-                            <TableCell>
-                              {Array.isArray(gasto.denominations) &&
-                                gasto.denominations
-                                  .map((d: any) => `${d.value}x${d.quantity}`)
-                                  .join(', ')}
-                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
