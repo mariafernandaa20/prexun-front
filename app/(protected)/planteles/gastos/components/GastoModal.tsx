@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Gasto } from '@/lib/types';
+import { toast } from '@/hooks/use-toast';
 
 interface GastoModalProps {
   isOpen: boolean;
@@ -47,7 +48,7 @@ export function GastoModal({
       amount: gasto.amount,
       date: gasto.date,
       method: gasto.method,
-      denominations: gasto.denominations || {},
+      denominations: null,
       user_id: gasto.user_id,
       admin_id: gasto.admin_id,
       category: gasto.category,
@@ -61,7 +62,7 @@ export function GastoModal({
       amount: 0,
       date: new Date().toISOString().split('T')[0],
       method: 'Efectivo',
-      denominations: {},
+      denominations: null,
       user_id: undefined, 
       admin_id: undefined,
       category: '',
@@ -76,14 +77,6 @@ export function GastoModal({
   const handleChange = (e: { name: keyof Gasto; value: any }) => {
     console.log(e);
     setValue(e.name, e.value);
-  };
-
-  const handleDenominationChange = (denomination: string, value: string) => {
-    const newDenominations = {
-      ...formData.denominations,
-      [denomination]: Number(value) || 0,
-    };
-    setValue('denominations', newDenominations);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,39 +108,11 @@ export function GastoModal({
     e.preventDefault();
   };
 
-  const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
-    return Object.entries(denominations).reduce((total, [denomination, count]) => {
-      return total + (Number(denomination) * (count || 0));
-    }, 0);
-  };
-
-  const validateDenominations = (): boolean => {
-    if (formData.method === 'Efectivo' && formData.denominations) {
-      const denominationsTotal = Number(calculateDenominationsTotal(formData.denominations ? [] as any : formData.denominations)).toFixed(2);
-      const amount = Number(formData.amount).toFixed(2);
-
-      if (denominationsTotal !== amount) {
-        setErrors({
-          ...errors,
-          denominations: `El total de las denominaciones (${denominationsTotal}) debe ser igual al monto del pago (${amount})`
-        });
-        return false;
-      }
-    }
-    return true;
-  };
-
   const onSubmitForm = async (data: Gasto & { image?: File }) => {
     try {
-      console.log(data);
-      if (validateDenominations()) {
-        console.log(errors);
-        return;
-      }
-
       await onSubmit({
         ...data,
-        denominations: formData.method === 'Efectivo' ? formData.denominations : null,
+        denominations: null,
         campus_id: Number(activeCampus.id),
       });
       reset();
@@ -155,6 +120,11 @@ export function GastoModal({
       setErrors({});
       onClose();
     } catch (error) {
+      toast({
+        title: 'Error al enviar el formulario',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive'
+      })
       console.error('Error al enviar el formulario:', error);
     }
   };
@@ -248,30 +218,7 @@ export function GastoModal({
               </SelectContent>
             </Select>
           </div>
-          {formData.method === 'Efectivo' && (
-            <div className="space-y-2">
-              <Label>Denominaciones</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {['1000', '500', '200', '100', '50', '20', '10', '5'].map(
-                  (denom) => (
-                    <div key={denom} className="space-y-1">
-                      <Label>${denom}</Label>
-                      <Input
-                        type="number"
-                        value={formData.denominations[denom] || ''}
-                        onChange={(e) =>
-                          handleDenominationChange(denom, e.target.value)
-                        }
-                      />
-                    </div>
-                  )
-                )}
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                Total en denominaciones: ${formData.denominations && typeof formData.denominations === 'object' && !Array.isArray(formData.denominations) ? calculateDenominationsTotal(formData.denominations) : 0}
-              </p>
-            </div>
-          )}
+
           <div>
             <label>Fecha</label>
             <Input type="date" {...register('date', { required: true })} />

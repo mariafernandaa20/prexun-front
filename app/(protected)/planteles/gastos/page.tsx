@@ -81,7 +81,7 @@ export default function GastosPage() {
 
   useEffect(() => {
     fetchGastos();
-  }, []);
+  }, [activeCampus]);
 
   const fetchGastos = async () => {
     const response = await getGastos(activeCampus.id);

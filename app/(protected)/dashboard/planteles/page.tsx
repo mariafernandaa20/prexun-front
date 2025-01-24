@@ -31,6 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import axiosInstance from "@/lib/api/axiosConfig";
 import { Campus } from "@/lib/types";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function Page() {
   const { toast } = useToast();
@@ -183,228 +184,237 @@ export default function Page() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Gestión de Planteles</h2>
-        <Button variant="secondary" onClick={handleOpenCreateModal}>
-          <Plus className="mr-2 h-4 w-4" /> Crear Plantel
-        </Button>
-      </div>
+    <div className="m-4">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Gestión de Planteles</h2>
+            <Button variant="secondary" onClick={handleOpenCreateModal}>
+              <Plus className="mr-2 h-4 w-4" /> Crear Plantel
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="p-4">
 
-      {/* Tabla de Planteles */}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Código</TableHead>
-            <TableHead>Dirección</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Usuarios Asignados</TableHead>
-            <TableHead>Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {campuses ? (
-            campuses.map((campus) => (
-              <TableRow key={campus.id}>
-                <TableCell>{campus.name}</TableCell>
-                <TableCell>{campus.code}</TableCell>
-                <TableCell>{campus.address || "No especificada"}</TableCell>
-                <TableCell>
-                  <span
-                    className={
-                      campus.is_active ? "text-green-600" : "text-red-600"
-                    }
-                  >
-                    {campus.is_active ? "Activo" : "Inactivo"}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {campus.users && campus.users.length > 0 ? (
-                    <div className="max-h-20 overflow-y-auto">
-                      {campus.users.map((user) => (
-                        <div key={user.id} className="text-sm">
-                          <span className="font-medium">{user.name}</span>
-                          <span className="text-muted-foreground ml-2">
-                            ({user.role})
-                          </span>
+
+            {/* Tabla de Planteles */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Código</TableHead>
+                  <TableHead>Dirección</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Usuarios Asignados</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {campuses ? (
+                  campuses.map((campus) => (
+                    <TableRow key={campus.id}>
+                      <TableCell>{campus.name}</TableCell>
+                      <TableCell>{campus.code}</TableCell>
+                      <TableCell>{campus.address || "No especificada"}</TableCell>
+                      <TableCell>
+                        <span
+                          className={
+                            campus.is_active ? "text-green-600" : "text-red-600"
+                          }
+                        >
+                          {campus.is_active ? "Activo" : "Inactivo"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {campus.users && campus.users.length > 0 ? (
+                          <div className="max-h-20 overflow-y-auto">
+                            {campus.users.map((user) => (
+                              <div key={user.id} className="text-sm">
+                                <span className="font-medium">{user.name}</span>
+                                <span className="text-muted-foreground ml-2">
+                                  ({user.role})
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Sin usuarios</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenEditModal(campus)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedCampus(campus);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">Sin usuarios</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleOpenEditModal(campus)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setSelectedCampus(campus);
-                        setIsDeleteDialogOpen(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">
+                      No hay planteles disponibles
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+
+            {/* Modal de Creación/Edición */}
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {selectedCampus ? "Editar Plantel" : "Crear Plantel"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {selectedCampus
+                      ? "Modifica los datos del plantel"
+                      : "Introduce los datos del nuevo plantel"}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Nombre del Plantel</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                    />
                   </div>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center">
-                No hay planteles disponibles
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
 
-      {/* Modal de Creación/Edición */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {selectedCampus ? "Editar Plantel" : "Crear Plantel"}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedCampus
-                ? "Modifica los datos del plantel"
-                : "Introduce los datos del nuevo plantel"}
-            </DialogDescription>
-          </DialogHeader>
+                  <div>
+                    <Label htmlFor="folio_inicial">Folio Inicial</Label>
+                    <Input
+                      id="folio_inicial"
+                      name="folio_inicial"
+                      value={formData.folio_inicial}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nombre del Plantel</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="folio_inicial">Folio Inicial</Label>
-              <Input
-                id="folio_inicial"
-                name="folio_inicial"
-                value={formData.folio_inicial}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+                  <div>
+                    <Label htmlFor="code">Código del Plantel</Label>
+                    <Input
+                      id="code"
+                      name="code"
+                      value={formData.code}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
 
-            <div>
-              <Label htmlFor="code">Código del Plantel</Label>
-              <Input
-                id="code"
-                name="code"
-                value={formData.code}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+                  <div>
+                    <Label htmlFor="description">Descripción</Label>
+                    <Input
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
 
-            <div>
-              <Label htmlFor="description">Descripción</Label>
-              <Input
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+                  <div>
+                    <Label htmlFor="address">Dirección</Label>
+                    <Input
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
 
-            <div>
-              <Label htmlFor="address">Dirección</Label>
-              <Input
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="is_active"
+                      name="is_active"
+                      checked={formData.is_active}
+                      onChange={handleInputChange}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="is_active">Plantel Activo</Label>
+                  </div>
 
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="is_active"
-                name="is_active"
-                checked={formData.is_active}
-                onChange={handleInputChange}
-                className="h-4 w-4"
-              />
-              <Label htmlFor="is_active">Plantel Activo</Label>
-            </div>
+                  <div>
+                    <Label>Administradores</Label>
+                    <MultiSelect
+                      options={administrators.map((admin) => ({
+                        value: admin.id.toString(),
+                        label: admin.name,
+                      }))}
+                      selectedValues={formData.admin_ids || []}
+                      onSelectedChange={handleAdministratorChange}
+                      title="Administradores"
+                      placeholder="Seleccionar administradores"
+                      searchPlaceholder="Buscar administrador..."
+                      emptyMessage="No se encontraron administradores"
+                    />
+                  </div>
 
-            <div>
-              <Label>Administradores</Label>
-              <MultiSelect
-                options={administrators.map((admin) => ({
-                  value: admin.id.toString(),
-                  label: admin.name,
-                }))}
-                selectedValues={formData.admin_ids || []}
-                onSelectedChange={handleAdministratorChange}
-                title="Administradores"
-                placeholder="Seleccionar administradores"
-                searchPlaceholder="Buscar administrador..."
-                emptyMessage="No se encontraron administradores"
-              />
-            </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsModalOpen(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit">
+                      {selectedCampus ? "Actualizar" : "Crear"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit">
-                {selectedCampus ? "Actualizar" : "Crear"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Diálogo de Confirmación de Eliminación */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>¿Estás seguro?</DialogTitle>
-            <DialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el
-              plantel.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Eliminar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            {/* Diálogo de Confirmación de Eliminación */}
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>¿Estás seguro?</DialogTitle>
+                  <DialogDescription>
+                    Esta acción no se puede deshacer. Se eliminará permanentemente el
+                    plantel.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteDialogOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button variant="destructive" onClick={handleDelete}>
+                    Eliminar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
