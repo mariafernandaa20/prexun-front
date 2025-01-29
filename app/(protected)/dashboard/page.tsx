@@ -22,7 +22,7 @@ export default function DashboardMetrics() {
   const [error, setError] = useState(null)
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(new Date().setDate(1)),
-    to: new Date()
+    to: new Date(new Date(new Date().setMonth(new Date().getMonth() + 1)).setDate(0))
   })
 
 
