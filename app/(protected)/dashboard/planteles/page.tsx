@@ -184,7 +184,7 @@ export default function Page() {
   };
 
   return (
-    <div className="m-4">
+    <div className="w-full max-w-[100vw] overflow-x-hidden p-4">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">

@@ -189,203 +189,205 @@ export default function page() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end items-center">
-        <Button variant="secondary" onClick={handleOpenCreateModal}>
-          <Plus className="mr-2 h-4 w-4" /> Crear Usuario
-        </Button>
-      </div>
+    <div className="w-full max-w-[100vw] overflow-x-hidden">
+      <div className="p-4">
+        <div className="flex justify-end items-center">
+          <Button variant="secondary" onClick={handleOpenCreateModal}>
+            <Plus className="mr-2 h-4 w-4" /> Crear Usuario
+          </Button>
+        </div>
 
-      {/* Tabla de Usuarios */}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Rol</TableHead>
-            <TableHead>Planteles</TableHead>
-            <TableHead>Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users ? (
-            users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>
-                  {user.campuses
-                    ? user.campuses.map((campus) => campus.name).join(', ')
-                    : 'Sin planteles'}
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleOpenEditModal(user)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setIsDeleteDialogOpen(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+        {/* Tabla de Usuarios */}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Rol</TableHead>
+              <TableHead>Planteles</TableHead>
+              <TableHead>Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users ? (
+              users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    {user.campuses
+                      ? user.campuses.map((campus) => campus.name).join(', ')
+                      : 'Sin planteles'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenEditModal(user)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">
+                  No se encontraron usuarios.
                 </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center">
-                No se encontraron usuarios.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
 
-      {/* Modal de Creación/Edición */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {selectedUser ? 'Editar Usuario' : 'Crear Usuario'}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedUser
-                ? 'Modifica los datos del usuario'
-                : 'Introduce los datos del nuevo usuario'}
-            </DialogDescription>
-          </DialogHeader>
+        {/* Modal de Creación/Edición */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {selectedUser ? 'Editar Usuario' : 'Crear Usuario'}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedUser
+                  ? 'Modifica los datos del usuario'
+                  : 'Introduce los datos del nuevo usuario'}
+              </DialogDescription>
+            </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nombre</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="name">Nombre</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="email">Correo Electrónico</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+              <div>
+                <Label htmlFor="email">Correo Electrónico</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="role">Rol</Label>
-              <Select
-                name="role"
-                value={formData.role}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    role: value as User['role'],
-                  }))
-                }
+              <div>
+                <Label htmlFor="role">Rol</Label>
+                <Select
+                  name="role"
+                  value={formData.role}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      role: value as User['role'],
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="super_admin">
+                      Super Administrador
+                    </SelectItem>
+                    <SelectItem value="maestro">Maestro</SelectItem>
+                    <SelectItem value="proveedor">Proveedor</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Planteles</Label>
+                <MultiSelect
+                  options={campuses.map((campus) => ({
+                    value: campus.id.toString(),
+                    label: campus.name,
+                  }))}
+                  selectedValues={formData.campuses}
+                  onSelectedChange={handleCampusChange}
+                  title="Planteles"
+                  placeholder="Seleccionar planteles"
+                  searchPlaceholder="Buscar plantel..."
+                  emptyMessage="No se encontraron planteles"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">
+                  {!selectedUser ? 'Contraseña' : 'Nueva Contraseña'}
+                </Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password || ''}
+                  onChange={handleInputChange}
+                  required={!selectedUser}
+                />
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit">
+                  {selectedUser ? 'Actualizar' : 'Crear'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Diálogo de Confirmación de Eliminación */}
+        <AlertDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Se eliminará permanentemente el
+                usuario.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-red-500 hover:bg-red-600 text-white"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un rol" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="super_admin">
-                    Super Administrador
-                  </SelectItem>
-                  <SelectItem value="maestro">Maestro</SelectItem>
-                  <SelectItem value="proveedor">Proveedor</SelectItem>
-                  <SelectItem value="otro">Otro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Planteles</Label>
-              <MultiSelect
-                options={campuses.map((campus) => ({
-                  value: campus.id.toString(),
-                  label: campus.name,
-                }))}
-                selectedValues={formData.campuses}
-                onSelectedChange={handleCampusChange}
-                title="Planteles"
-                placeholder="Seleccionar planteles"
-                searchPlaceholder="Buscar plantel..."
-                emptyMessage="No se encontraron planteles"
-              />
-            </div>
-            <div>
-              <Label htmlFor="password">
-                {!selectedUser ? 'Contraseña' : 'Nueva Contraseña'}
-              </Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password || ''}
-                onChange={handleInputChange}
-                required={!selectedUser}
-              />
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit">
-                {selectedUser ? 'Actualizar' : 'Crear'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Diálogo de Confirmación de Eliminación */}
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el
-              usuario.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   );
 }

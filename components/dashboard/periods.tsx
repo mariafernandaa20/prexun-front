@@ -82,7 +82,7 @@ export function Periods() {
     if (formData.start_date && formData.end_date) {
       const startDate = new Date(formData.start_date);
       const endDate = new Date(formData.end_date);
-      
+
       if (endDate < startDate) {
         errors.end_date = 'La fecha de fin debe ser posterior a la fecha de inicio';
         isValid = false;
@@ -115,7 +115,7 @@ export function Periods() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -167,51 +167,53 @@ export function Periods() {
   };
 
   return (
-    <Card>
-      <CardHeader className='sticky top-0 z-10 bg-card'>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Períodos</h1>
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => {
-                  setCurrentPeriod(null);
-                  setFormData({
-                    name: '',
-                    start_date: '',
-                    end_date: '',
-                    price: 0,
-                  });
-                  setFormErrors({});
-                  setError(null);
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Período
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {currentPeriod ? 'Editar Período' : 'Nuevo Período'}
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nombre del periodo</Label>
-                  <Input
-                    id="name"
-                    placeholder="Nombre del periodo"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className={formErrors.name ? 'border-red-500' : ''}
-                  />
-                  {formErrors.name && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
-                  )}
-                </div>
-                {/* <div>
+    <div className="w-full max-w-[100vw] overflow-x-hidden">
+      <div className="p-4">
+        <Card>
+          <CardHeader className='sticky top-0 z-10 bg-card'>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold">Períodos</h1>
+              <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      setCurrentPeriod(null);
+                      setFormData({
+                        name: '',
+                        start_date: '',
+                        end_date: '',
+                        price: 0,
+                      });
+                      setFormErrors({});
+                      setError(null);
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Nuevo Período
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      {currentPeriod ? 'Editar Período' : 'Nuevo Período'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Nombre del periodo</Label>
+                      <Input
+                        id="name"
+                        placeholder="Nombre del periodo"
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        className={formErrors.name ? 'border-red-500' : ''}
+                      />
+                      {formErrors.name && (
+                        <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                      )}
+                    </div>
+                    {/* <div>
                   <Label htmlFor="price">Precio</Label>
                   <Input
                     type="number"
@@ -227,122 +229,124 @@ export function Periods() {
                     <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>
                   )}
                 </div> */}
-                <div>
-                  <Label htmlFor="start_date">Fecha de inicio</Label>
-                  <Input
-                    id="start_date"
-                    type="date"
-                    value={formData.start_date}
-                    onChange={(e) =>
-                      setFormData({ ...formData, start_date: e.target.value })
-                    }
-                    className={formErrors.start_date ? 'border-red-500' : ''}
-                  />
-                  {formErrors.start_date && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.start_date}</p>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor="end_date">Fecha de fin</Label>
-                  <Input
-                    id="end_date"
-                    type="date"
-                    value={formData.end_date}
-                    onChange={(e) =>
-                      setFormData({ ...formData, end_date: e.target.value })
-                    }
-                    className={formErrors.end_date ? 'border-red-500' : ''}
-                  />
-                  {formErrors.end_date && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.end_date}</p>
-                  )}
-                </div>
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {currentPeriod ? 'Actualizando...' : 'Creando...'}
-                    </>
-                  ) : (
-                    currentPeriod ? 'Actualizar' : 'Crear'
-                  )}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
+                    <div>
+                      <Label htmlFor="start_date">Fecha de inicio</Label>
+                      <Input
+                        id="start_date"
+                        type="date"
+                        value={formData.start_date}
+                        onChange={(e) =>
+                          setFormData({ ...formData, start_date: e.target.value })
+                        }
+                        className={formErrors.start_date ? 'border-red-500' : ''}
+                      />
+                      {formErrors.start_date && (
+                        <p className="text-red-500 text-sm mt-1">{formErrors.start_date}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="end_date">Fecha de fin</Label>
+                      <Input
+                        id="end_date"
+                        type="date"
+                        value={formData.end_date}
+                        onChange={(e) =>
+                          setFormData({ ...formData, end_date: e.target.value })
+                        }
+                        className={formErrors.end_date ? 'border-red-500' : ''}
+                      />
+                      {formErrors.end_date && (
+                        <p className="text-red-500 text-sm mt-1">{formErrors.end_date}</p>
+                      )}
+                    </div>
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {currentPeriod ? 'Actualizando...' : 'Creando...'}
+                        </>
+                      ) : (
+                        currentPeriod ? 'Actualizar' : 'Crear'
+                      )}
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
 
-      <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        
-        {isLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Fecha Inicio</TableHead>
-                <TableHead>Fecha Fin</TableHead>
-                <TableHead>Precio</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {periods.map((period) => (
-                <TableRow key={period.id}>
-                  <TableCell>{period.name}</TableCell>
-                  <TableCell>
-                    {format(new Date(period.start_date), 'dd/MM/yyyy')}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(period.end_date), 'dd/MM/yyyy')}
-                  </TableCell>
-                  <TableCell>{period.price}</TableCell>
-                  <TableCell className="space-x-2">
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setCurrentPeriod(period);
-                        setFormData({
-                          name: period.name,
-                          start_date: period.start_date,
-                          end_date: period.end_date,
-                          price: period.price,
-                        });
-                        setFormErrors({});
-                        setError(null);
-                        setIsOpen(true);
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleDelete(period.id)}
-                      disabled={isLoading}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+          <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {isLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Fecha Inicio</TableHead>
+                    <TableHead>Fecha Fin</TableHead>
+                    <TableHead>Precio</TableHead>
+                    <TableHead>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {periods.map((period) => (
+                    <TableRow key={period.id}>
+                      <TableCell>{period.name}</TableCell>
+                      <TableCell>
+                        {format(new Date(period.start_date), 'dd/MM/yyyy')}
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(period.end_date), 'dd/MM/yyyy')}
+                      </TableCell>
+                      <TableCell>{period.price}</TableCell>
+                      <TableCell className="space-x-2">
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setCurrentPeriod(period);
+                            setFormData({
+                              name: period.name,
+                              start_date: period.start_date,
+                              end_date: period.end_date,
+                              price: period.price,
+                            });
+                            setFormErrors({});
+                            setError(null);
+                            setIsOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleDelete(period.id)}
+                          disabled={isLoading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

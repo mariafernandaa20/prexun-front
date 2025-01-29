@@ -70,7 +70,7 @@ export default function PromocionesPage() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">{titulo}</h2>
         {titulo === "Activas" && (
-          <Button 
+          <Button
             className="bg-blue-600 text-white"
             onClick={() => {
               setPromocionSeleccionada(undefined)
@@ -88,7 +88,7 @@ export default function PromocionesPage() {
             <TableHead>Tipo</TableHead>
             <TableHead>Costo Promo</TableHead>
             <TableHead>Costo Regular</TableHead>
-            
+
             <TableHead>Fecha Limite De Aplicación</TableHead>
             <TableHead>Grupos Aplicables</TableHead>
             <TableHead>Acciones</TableHead>
@@ -102,21 +102,21 @@ export default function PromocionesPage() {
               <TableCell>${promocion.cost}</TableCell>
               <TableCell>${promocion.regular_cost}</TableCell>
               <TableCell>
-                {formatTime({time: promocion.limit_date})}
+                {formatTime({ time: promocion.limit_date })}
               </TableCell>
               <TableCell>
                 {promocion.groups.join(', ')}
               </TableCell>
               <TableCell className="flex items-center">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => handleEditarPromocion(promocion)}
                 >
                   <PencilIcon className="w-4 h-4" />
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => promocion.id && handleEliminarPromocion(promocion.id)}
                 >
@@ -131,28 +131,32 @@ export default function PromocionesPage() {
   )
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <h1 className="text-3xl font-bold mb-8">Promociones</h1>
-      
-      <TablaPromociones 
-        promociones={promocionesActivas} 
-        titulo="Activas" 
-      />
-      
-      <TablaPromociones 
-        promociones={promocionesInactivas} 
-        titulo="Inactivas" 
-      />
+    <div className="w-full max-w-[100vw] overflow-x-hidden">
+      <div className="p-4">
+        <div className="container mx-auto py-8 space-y-8">
+          <h1 className="text-3xl font-bold mb-8">Promociones</h1>
 
-      <PromocionModal
-        isOpen={modalOpen}
-        onClose={() => {
-          setModalOpen(false)
-          setPromocionSeleccionada(undefined)
-        }}
-        onSubmit={handleSubmitPromocion}
-        promocion={promocionSeleccionada}
-      />
+          <TablaPromociones
+            promociones={promocionesActivas}
+            titulo="Activas"
+          />
+
+          <TablaPromociones
+            promociones={promocionesInactivas}
+            titulo="Inactivas"
+          />
+
+          <PromocionModal
+            isOpen={modalOpen}
+            onClose={() => {
+              setModalOpen(false)
+              setPromocionSeleccionada(undefined)
+            }}
+            onSubmit={handleSubmitPromocion}
+            promocion={promocionSeleccionada}
+          />
+        </div>
+      </div>
     </div>
   )
 }

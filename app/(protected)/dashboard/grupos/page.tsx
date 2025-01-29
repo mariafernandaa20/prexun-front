@@ -40,7 +40,7 @@ export default function GruposPage() {
   // Agrupar grupos por periodo
   const groupedGrupos = React.useMemo(() => {
     const grouped = new Map<string, Grupo[]>();
-    
+
     filteredGrupos.forEach((grupo) => {
       const periodId = grupo.period_id;
       if (!grouped.has(periodId as any)) {
@@ -48,7 +48,7 @@ export default function GruposPage() {
       }
       grouped.get(periodId as any)?.push(grupo);
     });
-    
+
     return grouped;
   }, [filteredGrupos]);
 
@@ -137,59 +137,63 @@ export default function GruposPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 p-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Grupos</h1>
-        <Button onClick={() => setIsOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Grupo
-        </Button>
-      </div>
-
-      <div className="flex items-center">
-        <Input
-          placeholder="Buscar grupos..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-sm"
-        />
-      </div>
-
-      {isLoading ? (
-        <div className="text-center">Cargando...</div>
-      ) : filteredGrupos.length === 0 ? (
-        <div className="text-center">No se encontraron grupos</div>
-      ) : (
+    <div className="w-full max-w-[100vw] overflow-x-hidden">
+      <div className="p-4">
         <div className="flex flex-col gap-6">
-          {periods.map((period) => {
-            const periodGrupos = groupedGrupos.get(period.id) || [];
-            if (periodGrupos.length === 0) return null;
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Grupos</h1>
+            <Button onClick={() => setIsOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Grupo
+            </Button>
+          </div>
 
-            return (
-              <Card key={period.id}>
-                <CardHeader className='sticky top-0 z-10 bg-card'>
-                  <CardTitle>{period.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <GruposTable grupos={periodGrupos} />
-                </CardContent>
-              </Card>
-            );
-          })}
+          <div className="flex items-center">
+            <Input
+              placeholder="Buscar grupos..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+
+          {isLoading ? (
+            <div className="text-center">Cargando...</div>
+          ) : filteredGrupos.length === 0 ? (
+            <div className="text-center">No se encontraron grupos</div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              {periods.map((period) => {
+                const periodGrupos = groupedGrupos.get(period.id) || [];
+                if (periodGrupos.length === 0) return null;
+
+                return (
+                  <Card key={period.id}>
+                    <CardHeader className='sticky top-0 z-10 bg-card'>
+                      <CardTitle>{period.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <GruposTable grupos={periodGrupos} />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          <GrupoModal
+            isOpen={isOpen}
+            onClose={() => {
+              setIsOpen(false);
+              setGrupo(null);
+            }}
+            onSubmit={handleSubmit}
+            grupo={grupo}
+            periods={periods}
+            campuses={campuses}
+          />
         </div>
-      )}
-
-      <GrupoModal
-        isOpen={isOpen}
-        onClose={() => {
-          setIsOpen(false);
-          setGrupo(null);
-        }}
-        onSubmit={handleSubmit}
-        grupo={grupo}
-        periods={periods}
-        campuses={campuses}
-      />
+      </div>
     </div>
   );
 }
