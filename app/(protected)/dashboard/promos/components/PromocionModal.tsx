@@ -19,6 +19,7 @@ import {
 import { MultiSelect } from '@/components/multi-select';
 import { Promocion } from '@/lib/types';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 interface PromocionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -73,10 +74,10 @@ export default function PromocionModal({
     onClose();
   };
 
-  const updatePago = (index: number, field: 'amount' | 'date', value: string | number) => {
+  const updatePago = (index: number, field: 'amount' | 'date' | 'description', value: string | number) => {
     const newPagos = [...formData.pagos];
     if (!newPagos[index]) {
-      newPagos[index] = { amount: 0, date: '' };
+      newPagos[index] = { amount: 0, date: '', description: '' };
     }
     newPagos[index] = {
       ...newPagos[index],
@@ -86,7 +87,7 @@ export default function PromocionModal({
   };
 
   const agregarPago = () => {
-    const newPagos = [...formData.pagos, { amount: 0, date: '' }];
+    const newPagos = [...formData.pagos, { amount: 0, date: '', description: '' }];
     setFormData({ ...formData, pagos: newPagos });
   };
 
@@ -102,9 +103,8 @@ export default function PromocionModal({
         </DialogHeader>
         <form
           onSubmit={handleSubmit}
-          className={`grid gap-4 ${
-            formData.type === 'Parcialidad' ? 'grid-cols-3' : 'grid-cols-2'
-          }`}
+          className={`grid gap-4 ${formData.type === 'Parcialidad' ? 'grid-cols-3' : 'grid-cols-2'
+            }`}
         >
           <div>
             <div className="space-y-2">
@@ -190,6 +190,13 @@ export default function PromocionModal({
                   onChange={(e) => updatePago(0, 'amount', e.target.value)}
                   required
                 />
+                <Label htmlFor='description'>Descripción</Label>
+                <Textarea
+                  id='description'
+                  value={formData.pagos[0]?.description || ''}
+                  onChange={(e) => updatePago(0, 'description', e.target.value)}
+                  required
+                />
               </div>
               {formData.pagos.slice(1).map((_, index) => (
                 <div key={index + 1} className="space-y-2">
@@ -219,6 +226,17 @@ export default function PromocionModal({
                         <path d="M18 6L6 18M6 6l12 12" />
                       </svg>
                     </Button>
+
+
+                  </div>
+                  <div>
+                    <Label htmlFor='description'>Descripción</Label>
+                    <Textarea
+                      id='description'
+                      value={formData.pagos[index + 1]?.description || ''}
+                      onChange={(e) => updatePago(index + 1, 'description', e.target.value)}
+                      required
+                    />
                   </div>
                   <Input
                     id={`pago_${index + 1}`}
@@ -237,9 +255,9 @@ export default function PromocionModal({
                   />
                 </div>
               ))}
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={agregarPago}
                 className="mt-4"
               >

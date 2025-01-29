@@ -119,6 +119,7 @@ export interface Modulo {
 export interface Pago {
   date: string;
   amount: number;
+  description: string;
 }
 export interface Promocion {
   id?: number;
