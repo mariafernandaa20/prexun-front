@@ -21,9 +21,10 @@ export default function DashboardMetrics() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [dateRange, setDateRange] = useState<DateRange>({
-    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    from: new Date(new Date().setDate(1)),
     to: new Date()
   })
+
 
   const handleDateChange = (newDateRange: DateRange | undefined) => {
     if (newDateRange?.from) {
