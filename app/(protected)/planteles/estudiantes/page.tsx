@@ -1,4 +1,5 @@
 'use client';
+import { FaWhatsapp } from "react-icons/fa6";
 
 import React, { useEffect, useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -514,6 +515,10 @@ export default function Page() {
                           fetchStudents={fetchStudents}
                           student={student}
                         /> */}
+                        <a className={buttonVariants({ variant: 'ghost' })} href={`https://wa.me/${student.phone}`} target="_blank" rel="noreferrer">
+                        <FaWhatsapp />
+
+                        </a>
                           <Button
                             variant="ghost"
                             size="icon"
