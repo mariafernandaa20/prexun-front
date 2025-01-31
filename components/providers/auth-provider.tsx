@@ -8,7 +8,6 @@ import { auth } from "@/lib/auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setUser = useAuthStore((state) => state.setUser);
-
   useEffect(() => {
     const verifyAuth = async () => {
       const token = Cookies.get('auth-token');
@@ -30,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     verifyAuth();
-  }, [setUser]);
+  }, []);
 
   return <>{children}</>;
 }

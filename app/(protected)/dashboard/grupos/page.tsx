@@ -11,14 +11,12 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Plus, Pencil } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { Campus, Grupo, Period } from '@/lib/types';
 import GrupoModal from '../../../../components/dashboard/GrupoModal';
 import { createGrupo, getCampuses, getGrupos, getPeriods, updateGrupo } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function GruposPage() {
-  const router = useRouter();
   const [grupos, setGrupos] = React.useState<Grupo[]>([]);
   const [search, setSearch] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(true);
