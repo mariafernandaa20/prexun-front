@@ -73,7 +73,7 @@ export default function Page() {
 
   const fetchAdministrators = async () => {
     try {
-      const response = await axiosInstance.get("/api/users?role=admin");
+      const response = await axiosInstance.get("/users?role=admin");
       setAdministrators(
         response.data.map((admin: any) => ({
           id: admin.id.toString(),
