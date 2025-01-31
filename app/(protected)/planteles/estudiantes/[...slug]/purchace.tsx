@@ -23,6 +23,9 @@ interface FormData {
   comments?: string
   transaction_type?: string
   denominations?: any
+  customPrice?: number
+  customName?: string
+  isCustom: boolean
 }
 
 export default function Purchase({ campusId, studentId, onPurchaseComplete }: PurchaseFormProps) {
@@ -36,11 +39,13 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
     comments: '',
     transaction_type: 'purchase',
     denominations: [],
+    customPrice: 0,
+    customName: '',
+    isCustom: false
   })
 
   const [products, setProducts] = useState<any[]>([])
-
-  const activeCampus = useActiveCampusStore((state) => state.activeCampus);
+  const activeCampus = useActiveCampusStore((state) => state.activeCampus)
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -48,34 +53,62 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
       setProducts(response)
     }
     fetchProducts()
-  },[]);
+  },[])
 
-  // Función para manejar el cambio de producto
   const handleProductChange = (productId: string) => {
-    const selectedProduct = products.find(product => product.id === parseInt(productId));
+    const selectedProduct = products.find(product => product.id === parseInt(productId))
     if (selectedProduct) {
       setFormData({
         ...formData,
         product_id: productId,
         amount: selectedProduct.price * formData.quantity,
         comments: `Compra de ${selectedProduct.name}`,
-        paid: 0
-      });
+        paid: 0,
+        customPrice: selectedProduct.price,
+        customName: selectedProduct.name,
+        isCustom: false
+      })
     }
-  };
+  }
 
-  // Función para manejar el cambio de cantidad
   const handleQuantityChange = (quantity: number) => {
-    const selectedProduct = products.find(product => product.id === parseInt(formData.product_id));
-    if (selectedProduct) {
+    if (formData.isCustom) {
       setFormData({
         ...formData,
         quantity,
-        amount: selectedProduct.price * quantity,
+        amount: (formData.customPrice || 0) * quantity,
         paid: 0
-      });
+      })
+    } else {
+      const selectedProduct = products.find(product => product.id === parseInt(formData.product_id))
+      if (selectedProduct) {
+        setFormData({
+          ...formData,
+          quantity,
+          amount: selectedProduct.price * quantity,
+          paid: 0
+        })
+      }
     }
-  };
+  }
+
+  const handleCustomPriceChange = (price: number) => {
+    setFormData({
+      ...formData,
+      customPrice: price,
+      amount: price * formData.quantity,
+      isCustom: true
+    })
+  }
+
+  const handleCustomNameChange = (name: string) => {
+    setFormData({
+      ...formData,
+      customName: name,
+      comments: `Compra de ${name}`,
+      isCustom: true
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,7 +134,10 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
           amount: 0,
           paid: 0,
           denominations: [],
-          comments: ''
+          comments: '',
+          customPrice: 0,
+          customName: '',
+          isCustom: false
         })
         setModalOpen(false)
       }
@@ -112,7 +148,11 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
 
   return (
     <>
-    {activeCampus?.latest_cash_register ? <Button onClick={() => setModalOpen(true)}><PlusIcon className="mr-2 h-4 w-4" /> Comprar</Button> : null}
+      {activeCampus?.latest_cash_register ? 
+        <Button onClick={() => setModalOpen(true)}>
+          <PlusIcon className="mr-2 h-4 w-4" /> Comprar
+        </Button> 
+      : null}
       
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
@@ -135,6 +175,31 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                       </option>
                     ))}
                   </select>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Nombre Personalizado
+                  <Input
+                    type="text"
+                    value={formData.customName}
+                    onChange={(e) => handleCustomNameChange(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  />
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Precio Personalizado
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.customPrice}
+                    onChange={(e) => handleCustomPriceChange(parseFloat(e.target.value))}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  />
                 </label>
               </div>
 
@@ -169,12 +234,11 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
 
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Monto
+                  Monto Total
                   <Input
                     type="number"
                     step="0.01"
                     value={formData.amount}
-                    onChange={(e) => setFormData({...formData, amount: parseFloat(e.target.value)})}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                     readOnly
