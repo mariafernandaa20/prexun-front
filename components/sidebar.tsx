@@ -118,6 +118,11 @@ export const data = {
       icon: PieChart,
     },
     {
+      name: "Estudiantes",
+      url: "/dashboard/students",
+      icon: Users,
+    },
+    {
       name: "Planteles",
       url: "/dashboard/planteles",
       icon: Building,

@@ -42,7 +42,7 @@ export default function DashboardMetrics() {
       setLoading(true)
       setError(null)
 
-      const response = await axiosInstance.get('/api/dashboard', {
+      const response = await axiosInstance.get('/dashboard', {
         params: {
           start_date: dateRange.from.toISOString(),
           end_date: dateRange.to.toISOString()
