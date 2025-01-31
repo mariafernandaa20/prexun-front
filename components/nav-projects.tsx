@@ -33,7 +33,7 @@ export function NavProjects({
     <SidebarGroup>
       <SidebarMenu>
         {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
+          <SidebarMenuItem key={item.url}>
             <SidebarMenuButton 
               asChild
               className={`${pathname === item.url ? "bg-white text-black" : "text-white"} hover:bg-white hover:text-black`}
