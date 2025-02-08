@@ -123,6 +123,11 @@ export const data = {
       icon: Users,
     },
     {
+      name: "Cohortes",
+      url: "/dashboard/cohortes",
+      icon: Users,
+    },
+    {
       name: "Planteles",
       url: "/dashboard/planteles",
       icon: Building,
