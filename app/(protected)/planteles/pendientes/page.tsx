@@ -55,18 +55,17 @@ export default function CobrosPage() {
 
   const fetchTransactions = async () => {
     try {
-      const params = {
-        campus_id: activeCampus?.id,
-        expiration_date: expirationDate || null,
-      };
-  
-      const response = await axiosInstance.get('/charges/notPaid', { params });
-      setTransactions(response.data);
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-    }
-  };
+        const params = {
+            campus_id: activeCampus?.id,
+            expiration_date: expirationDate || null,
+        };
 
+        const response = await axiosInstance.get('/charges/not-paid', { params });
+        setTransactions(response.data);
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+    }
+};
   const handleStudentSelect = (values: string[]) => {
     setSelectedStudents(values);
   };
@@ -211,12 +210,12 @@ export default function CobrosPage() {
                 )}
                 {visibleColumns.includes('payment_date') && (
                   <TableCell>
-                    {new Date(transaction.payment_date).toLocaleDateString()}
+                    {transaction.payment_date}
                   </TableCell>
                 )}
                 {visibleColumns.includes('date') && (
                   <TableCell>
-                    {new Date(transaction.created_at).toLocaleDateString()}
+                    {transaction.created_at}
                   </TableCell>
                 )}
                 {visibleColumns.includes('notes') && (
@@ -224,7 +223,7 @@ export default function CobrosPage() {
                 )}
                 {visibleColumns.includes('limit_date') && (
                   <TableCell>
-                    {transaction.expiration_date ? new Date(transaction.expiration_date).toLocaleDateString() : 'No límite de pago'}
+                    {transaction.expiration_date ?  transaction.expiration_date : 'No límite de pago'}
                   </TableCell>
                 )}
                 <TableCell>
