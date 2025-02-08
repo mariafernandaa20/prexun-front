@@ -170,8 +170,13 @@ export const data = {
       icon: Users,
     },
     {
-      name: "Ingresos",
+      name: "Pagos",
       url: "/planteles/cobros",
+      icon: PieChart,
+    },
+    {
+      name: "Pendientes",
+      url: "/planteles/pendientes",
       icon: PieChart,
     },
     {
