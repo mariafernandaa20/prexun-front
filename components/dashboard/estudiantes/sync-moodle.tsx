@@ -14,20 +14,18 @@ export default function SyncMoodle() {
     const handleSyncMoodle = async () => {
         setCohortStatus("loading")
         try {
-            //Cohorts
-            const response = await axiosInstance.post("/cohorts/sync-all"); // Cambia la ruta
+            const response = await axiosInstance.post("/cohorts/sync-all");
 
-            //Procesa respuesta
             console.log(response.data);
             setCohortStatus("success");
             toast({
                 title: "Sincronización de Cohorts exitosa",
                 description: `
-          Total de estudiantes: ${response.data.total_students}
-          Asignados exitosamente: ${response.data.success_count}
-          Ya asignados: ${response.data.already_assigned_count}
-          Sin cohort encontrado: ${response.data.no_cohort_found_count}
-          Errores: ${response.data.error_count}
+        Total de estudiantes: ${response.data.total_students}
+        Asignados exitosamente: ${response.data.success_count}
+        Ya asignados: ${response.data.already_assigned_count}
+        Sin cohort encontrado: ${response.data.no_cohort_found_count}
+        Errores: ${response.data.error_count}
         `,
             });
 
@@ -35,12 +33,11 @@ export default function SyncMoodle() {
             console.error(error);
             setCohortStatus("error");
 
-             let errorMessage = "Hubo un problema al sincronizar los cohorts con Moodle.";
+            let errorMessage = "Hubo un problema al sincronizar los cohorts con Moodle.";
             if (error.response && error.response.data && error.response.data.errors) {
-               //Errores especificos
                 const moodleErrors = error.response.data.errors;
                 errorMessage = "Errores de Moodle (Cohorts):\n" + moodleErrors.join("\n");
-            } else if (error.response && error.response.data && error.response.data.message){
+            } else if (error.response && error.response.data && error.response.data.message) {
                 //Errores del Backend
                 errorMessage = error.response.data.message
             }
@@ -52,33 +49,31 @@ export default function SyncMoodle() {
             });
 
         } finally {
-             setTimeout(() => setCohortStatus("idle"), 3000); //Vuelve a idle
+            setTimeout(() => setCohortStatus("idle"), 3000); 
         }
     };
 
-      const handleSyncUsers = async() => {
-         setUserStatus("loading")
+    const handleSyncUsers = async () => {
+        setUserStatus("loading")
         try {
-            //Usuarios
-            const usersResponse = await axiosInstance.post("/students/sync-module") // Cambia la ruta
+            
+            const usersResponse = await axiosInstance.post("/students/sync-module")
             console.log(usersResponse.data)
             setUserStatus("success")
-             toast({
+            toast({
                 title: "Sincronización de usuarios exitosa",
                 description: `Usuarios Creados: ${usersResponse.data.length}`,
             });
 
 
-        } catch (error){
+        } catch (error) {
             setUserStatus("error")
             console.log(error)
-              let errorMessage = "Hubo un problema al sincronizar los usuarios con Moodle.";
+            let errorMessage = "Hubo un problema al sincronizar los usuarios con Moodle.";
             if (error.response && error.response.data && error.response.data.errors) {
-              //Errores de Moodle
                 const moodleErrors = error.response.data.errors;
                 errorMessage = "Errores de Moodle (Usuarios):\n" + moodleErrors.join("\n");
-            } else if (error.response && error.response.data && error.response.data.message){
-                //Errores del Backend
+            } else if (error.response && error.response.data && error.response.data.message) {
                 errorMessage = error.response.data.message
             }
 
@@ -89,10 +84,49 @@ export default function SyncMoodle() {
             });
 
         } finally {
-           setTimeout(() => setUserStatus("idle"), 3000);
+            setTimeout(() => setUserStatus("idle"), 3000);
         }
 
     }
+
+    const handleExportEmailAndGroup = async () => {
+        try {
+            const response = await axiosInstance.get('/students/export-email-group', {
+                responseType: 'blob',
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'student_email_group.csv');
+            document.body.appendChild(link);
+            link.click();
+
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast({
+                title: "Exportación Exitosa",
+                description: "El archivo CSV se ha generado y descargado correctamente.",
+            });
+
+        } catch (error) {
+            console.error("Error exporting CSV:", error);
+             let errorMessage = "Hubo un problema al exportar el archivo CSV.";
+
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message; // Backend error message
+            }
+
+            toast({
+                title: "Error de Exportación",
+                description: errorMessage,
+                variant: "destructive",
+            });
+        }
+    };
+
 
     const getButtonContent = (status) => {
         switch (status) {
@@ -106,16 +140,16 @@ export default function SyncMoodle() {
                 return null
         }
     }
-  const getButtonClassName = (status) => {
-    switch (status) {
-      case "success":
-        return "bg-green-500 hover:bg-green-600 text-white";
-      case "error":
-        return "bg-red-500 hover:bg-red-600 text-white";
-      default:
-        return "bg-blue-500 hover:bg-blue-600 text-white"; // Default Shadcn button style
-    }
-  };
+    const getButtonClassName = (status) => {
+        switch (status) {
+            case "success":
+                return "bg-green-500 hover:bg-green-600 text-white";
+            case "error":
+                return "bg-red-500 hover:bg-red-600 text-white";
+            default:
+                return "bg-blue-500 hover:bg-blue-600 text-white";
+        }
+    };
 
 
     return (
@@ -123,7 +157,7 @@ export default function SyncMoodle() {
             <Button
                 onClick={handleSyncMoodle}
                 disabled={cohortStatus === "loading" || userStatus === 'loading'}
-                 className={`min-w-[200px] ${getButtonClassName(cohortStatus)} font-semibold py-2 px-4 rounded-lg transition-colors duration-300`}
+                className={`min-w-[200px] ${getButtonClassName(cohortStatus)} font-semibold py-2 px-4 rounded-lg transition-colors duration-300`}
             >
                 {getButtonContent(cohortStatus)}
                 {cohortStatus === "loading" ? "Sincronizando..." : cohortStatus === 'success' ? "Cohorts Sincronizados" : cohortStatus === 'error' ? "Error" : "Sincronizar Cohorts"}
@@ -136,6 +170,14 @@ export default function SyncMoodle() {
             >
                 {getButtonContent(userStatus)}
                 {userStatus === "loading" ? "Sincronizando..." : userStatus === 'success' ? "Usuarios Sincronizados" : userStatus === 'error' ? 'Error' : "Sincronizar Usuarios"}
+            </Button>
+             <Button
+                onClick={handleExportEmailAndGroup}
+                //  Optionally disable while other operations are in progress
+                disabled={userStatus === "loading" || cohortStatus === 'loading'}
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            >
+                Exportar CSV
             </Button>
         </div>
     )
