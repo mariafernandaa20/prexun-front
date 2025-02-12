@@ -93,48 +93,47 @@ export default function CajaPage() {
   }
 
   function processCashRegister(data) {
-    if (!data) {
-      return { denominationCount: {}, totalTransactions: 0, totalExpenses: 0, netAmount: 0 };
-    }
-
-    // Inicializar contadores
-    let denominationCount = {};
+    const denominationBreakdown = {};
     let totalTransactions = 0;
     let totalExpenses = 0;
 
-    // Procesar transacciones
-    data.transactions.forEach(transaction => {
-      if (transaction.denominations && transaction.denominations.length > 0) {
+    if (!data) {
+      return { denominationBreakdown: [], totalTransactions: 0, totalExpenses: 0, netAmount: 0 };
+    }
+
+    data.transactions?.forEach(transaction => {
+      const amount = Number(transaction.amount || 0);
+      if (transaction.payment_method === 'cash') {
+        totalTransactions += amount;
+      } else if (transaction.denominations && transaction.denominations.length > 0) {
         transaction.denominations.forEach(denom => {
-          const key = `${denom.value}`;
-          denominationCount[key] = (denominationCount[key] || 0) + denom.quantity;
-          totalTransactions += parseFloat(denom.value) * denom.quantity;
+          const value = Number(denom.value || 0);
+          const quantity = Number(denom.quantity || 0);
+          denominationBreakdown[value] = (denominationBreakdown[value] || 0) + quantity;
         });
       }
     });
 
-    // Procesar gastos
-    data.gastos.forEach(gasto => {
-      if (gasto.denominations && gasto.denominations.length > 0) {
-        gasto.denominations.forEach(denom => {
-          const key = `${denom.value}`;
-          denominationCount[key] = (denominationCount[key] || 0) - denom.quantity;
-          totalExpenses += parseFloat(denom.value) * denom.quantity;
-        });
-      }
+    data.gastos?.forEach(gasto => {
+      const amount = Number(gasto.amount || 0);
+      totalExpenses += amount;
+      gasto.denominations?.forEach(denom => {
+        const value = Number(denom.value || 0);
+        const quantity = Number(denom.quantity || 0);
+        denominationBreakdown[value] = (denominationBreakdown[value] || 0) - quantity;
+      });
     });
 
-    // Ordenar denominaciones por valor
-    const sortedDenominations = Object.entries(denominationCount)
-      .sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
-      .filter(([_, count]) => count !== 0)
+    const breakdownArray = Object.entries(denominationBreakdown)
+      .sort((a, b) => a[0] - b[0])
+      .filter(([, count]) => count !== 0)
       .map(([value, count]) => `${value}x${count}`);
 
     return {
-      denominationBreakdown: sortedDenominations,
-      totalTransactions: totalTransactions.toFixed(2),
-      totalExpenses: totalExpenses.toFixed(2),
-      netAmount: (totalTransactions - totalExpenses).toFixed(2)
+      denominationBreakdown: breakdownArray,
+      totalTransactions: Number(totalTransactions.toFixed(2)),
+      totalExpenses: Number(totalExpenses.toFixed(2)),
+      netAmount: Number((totalTransactions - totalExpenses).toFixed(2)),
     };
   }
 
