@@ -125,7 +125,7 @@ export default function CajaPage() {
     });
 
     const breakdownArray = Object.entries(denominationBreakdown)
-      .sort((a, b) => a[0] - b[0])
+      .sort((a, b) => + a[0] - + b[0])
       .filter(([, count]) => count !== 0)
       .map(([value, count]) => `${value}x${count}`);
 
