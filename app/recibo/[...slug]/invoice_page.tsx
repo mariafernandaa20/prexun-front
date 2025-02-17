@@ -66,7 +66,7 @@ export function InvoiceClient({ invoice }) {
                             <div className="flex justify-between">
                                 <span className="">Fecha</span>
                                 <span>
-                                    {new Date(invoice.created_at).toLocaleDateString('es-MX', {
+                                    {new Date(invoice.payment_date ? invoice.payment_date : invoice.created_at).toLocaleDateString('es-MX', {
                                         day: 'numeric',
                                         month: 'long',
                                         year: 'numeric',

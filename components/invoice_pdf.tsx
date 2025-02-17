@@ -71,7 +71,7 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
         ["Estudiante:", invoice.student?.firstname],
         ["", invoice.student?.lastname],
 
-        ["Fecha:", new Date(invoice.created_at).toLocaleDateString('es-MX', {
+        ["Fecha:", new Date(invoice.payment_date ? invoice.payment_date : invoice.created_at).toLocaleDateString('es-MX', {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
