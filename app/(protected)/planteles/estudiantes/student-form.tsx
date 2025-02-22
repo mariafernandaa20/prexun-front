@@ -45,6 +45,7 @@ export function StudentForm({
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingButton, setIsLoadingButton] = useState(false);
   const [formData, setFormData] = useState<Student>({
     id: student?.id || null,
     period_id: student?.period_id || '',
@@ -94,7 +95,8 @@ export function StudentForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+    
+    
     if (!formData.email || !formData.firstname || !formData.lastname || !formData.phone) {
       toast({
         title: 'Error de validación',
@@ -103,8 +105,10 @@ export function StudentForm({
       });
       return;
     }
-
+    
+    setIsLoadingButton(true);
     onSubmit(formData);
+    setIsLoadingButton(false);
   };
 
   const handleChange = (
@@ -171,6 +175,7 @@ export function StudentForm({
                 value: value,
               })
             }
+            disabled={!!student?.id}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecciona el periodo" />
@@ -189,6 +194,7 @@ export function StudentForm({
           <Select
             name="promo_id"
             value={Number(formData.promo_id) as any}
+            disabled={!!student?.id}
             onValueChange={(value) => handleChange({ name: 'promo_id', value: value })}
           >
             <SelectTrigger>
@@ -209,6 +215,7 @@ export function StudentForm({
             name="grupo_id"
             value={Number(formData.grupo_id) as any}
             onValueChange={(value) => handleChange({ name: 'grupo_id', value: value })}
+            disabled={!!student?.id}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecciona el grupo" />
@@ -255,6 +262,7 @@ export function StudentForm({
             onChange={handleChange}
             required
             placeholder="correo@ejemplo.com"
+            disabled={!!student?.id}
           />
         </div>
         <div className="space-y-2">
@@ -368,6 +376,7 @@ export function StudentForm({
                 value: value as 'preparatoria' | 'facultad',
               })
             }
+            disabled={!!student?.id}
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar ingreso" />
@@ -623,7 +632,7 @@ export function StudentForm({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit">Guardar</Button>
+        <Button type="submit" disabled={isLoadingButton}>{isLoadingButton ? 'Guardando...' : 'Guardar'}</Button>
       </div>
     </form>
   );

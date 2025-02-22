@@ -184,25 +184,56 @@ export function StudentComponent({ slug }: { slug: string[] }) {
     }
 
     return (
-        <Card>
-            <CardHeader className='sticky top-0 z-10 bg-card'>
-                <div className='flex justify-between items-center'>
-                    <h1>{student.firstname} {student.lastname}</h1>
-                    <Purchace
-                        campusId={campusId}
-                        studentId={student.id}
-                        onPurchaseComplete={handlePurchaseComplete as any}
-                    />
-                </div>
-            </CardHeader>
-            <CardContent>
-                {student.transactions && (
-                    <TransactionsTable
-                        transactions={student.transactions}
-                        onUpdateTransaction={updateTransaction}
-                    />
-                )}
-            </CardContent>
-        </Card>
+        <div className="space-y-4">
+            <Card>
+                <CardHeader className='sticky top-0 z-10 bg-card'>
+                    <div className='flex justify-between items-center'>
+                        <h1 className="text-2xl font-bold">{student.firstname} {student.lastname}</h1>
+                        <Purchace
+                            campusId={campusId}
+                            studentId={student.id}
+                            onPurchaseComplete={handlePurchaseComplete as any}
+                        />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <h3 className="font-semibold">Información Personal</h3>
+                            <p><span className="text-muted-foreground">ID:</span> {student.id}</p>
+                            <p><span className="text-muted-foreground">Usuario Moodle:</span> {student.id}</p>
+                            <p><span className="text-muted-foreground">Email:</span> {student.email || 'No registrado'}</p>
+                            <p><span className="text-muted-foreground">Teléfono:</span> {student.phone || 'No registrado'}</p>
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="font-semibold">Estado Académico</h3>
+                            <p><span className="text-muted-foreground">Estatus:</span> {student.status || 'Activo'}</p>
+                            <p><span className="text-muted-foreground">Grupo:</span> {student.grupo_id || 'No asignado'}</p>
+                            <p><span className="text-muted-foreground">Fecha de registro:</span> {formatTime({ time: student.created_at })}</p>
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="font-semibold">Resumen de Pagos</h3>
+                            <p><span className="text-muted-foreground">Total de transacciones:</span> {student.transactions?.length || 0}</p>
+                            <p><span className="text-muted-foreground">Pagos pendientes:</span> {student.transactions?.filter(t => t.paid === 0).length || 0}</p>
+                            <p><span className="text-muted-foreground">Último pago:</span> {student.transactions?.length ? formatTime({ time: student.transactions[student.transactions.length - 1].payment_date }) : 'Sin pagos'}</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <h2 className="text-xl font-semibold">Historial de Transacciones</h2>
+                </CardHeader>
+                <CardContent>
+                    {student.transactions && (
+                        <TransactionsTable
+                            transactions={student.transactions}
+                            onUpdateTransaction={updateTransaction}
+                        />
+                    )}
+                </CardContent>
+            </Card>
+        </div>
     )
 }
