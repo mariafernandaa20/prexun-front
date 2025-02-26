@@ -196,7 +196,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                                 studentId={student.id}
                                 onPurchaseComplete={handlePurchaseComplete as any}
                             />
-                            <UpdatePersonalInfo student={student} />
+                            <UpdatePersonalInfo student={student as any} />
                         </div>
                     </div>
                 </CardHeader>
