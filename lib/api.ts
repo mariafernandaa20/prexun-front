@@ -77,10 +77,12 @@ export const getStudents = async (campus_id: number) => {
   );
   return response.data;
 };
+
 export const getStudent = async (student: number) => {
   const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT}/${student}`);
   return response.data;
 };
+
 export const createStudent = async (student: Student) => {
   const response = await axiosInstance.post(
     API_ENDPOINTS.CREATE_STUDENT,

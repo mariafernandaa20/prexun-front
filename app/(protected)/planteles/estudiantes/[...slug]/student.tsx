@@ -10,6 +10,7 @@ import Purchace from './purchace'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
 import Link from 'next/link'
 import { Eye } from 'lucide-react'
+import UpdatePersonalInfo from '@/components/dashboard/UpdatePersonalInfo'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -189,11 +190,14 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 <CardHeader className='sticky top-0 z-10 bg-card'>
                     <div className='flex justify-between items-center'>
                         <h1 className="text-2xl font-bold">{student.firstname} {student.lastname}</h1>
-                        <Purchace
-                            campusId={campusId}
-                            studentId={student.id}
-                            onPurchaseComplete={handlePurchaseComplete as any}
-                        />
+                        <div className='flex gap-4'>
+                            <Purchace
+                                campusId={campusId}
+                                studentId={student.id}
+                                onPurchaseComplete={handlePurchaseComplete as any}
+                            />
+                            <UpdatePersonalInfo student={student} />
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>

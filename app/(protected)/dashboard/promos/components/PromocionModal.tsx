@@ -164,6 +164,7 @@ export default function PromocionModal({
                 onValueChange={(value) =>
                   setFormData({ ...formData, type: value })
                 }
+                disabled={!!promocion}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un tipo" />
