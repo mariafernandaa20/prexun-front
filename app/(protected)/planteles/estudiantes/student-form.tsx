@@ -237,6 +237,7 @@ export function StudentForm({
             value={formData.firstname}
             onChange={handleChange}
             required
+            disabled={!!student?.id}
             placeholder="Nombre completo del estudiante"
           />
         </div>
@@ -248,6 +249,7 @@ export function StudentForm({
             value={formData.lastname}
             onChange={handleChange}
             required
+            disabled={!!student?.id}
             placeholder="Apellido del estudiante"
           />
         </div>

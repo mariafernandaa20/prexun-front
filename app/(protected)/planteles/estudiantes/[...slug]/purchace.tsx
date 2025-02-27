@@ -11,7 +11,7 @@ import React, { useState, useEffect } from 'react'
 interface PurchaseFormProps {
   campusId: number
   studentId: string
-  onPurchaseComplete?: (transaction: any)=> void
+  onPurchaseComplete?: (transaction: any) => void
 }
 
 interface FormData {
@@ -26,6 +26,7 @@ interface FormData {
   customPrice?: number
   customName?: string
   isCustom: boolean
+  expiration_date: string
 }
 
 export default function Purchase({ campusId, studentId, onPurchaseComplete }: PurchaseFormProps) {
@@ -41,7 +42,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
     denominations: [],
     customPrice: 0,
     customName: '',
-    isCustom: false
+    isCustom: false,
+    expiration_date: ''
   })
 
   const [products, setProducts] = useState<any[]>([])
@@ -53,7 +55,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
       setProducts(response)
     }
     fetchProducts()
-  },[])
+  }, [])
 
   const handleProductChange = (productId: string) => {
     const selectedProduct = products.find(product => product.id === parseInt(productId))
@@ -123,8 +125,9 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         transaction_type: 'purchase',
         denominations: [],
         payment_date: null,
+        expiration_date: formData.expiration_date || null
       })
-      
+
       if (response) {
         onPurchaseComplete?.(response)
         setFormData({
@@ -137,7 +140,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
           comments: '',
           customPrice: 0,
           customName: '',
-          isCustom: false
+          isCustom: false,
+          expiration_date: ''
         })
         setModalOpen(false)
       }
@@ -148,12 +152,12 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
 
   return (
     <>
-      {activeCampus?.latest_cash_register ? 
+      {activeCampus?.latest_cash_register ?
         <Button onClick={() => setModalOpen(true)}>
           <PlusIcon className="mr-2 h-4 w-4" /> Comprar
-        </Button> 
-      : null}
-      
+        </Button>
+        : null}
+
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
           <div className="p-4">
@@ -185,7 +189,17 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                     type="text"
                     value={formData.customName}
                     onChange={(e) => handleCustomNameChange(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  />
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Fecha Límite de Pago
+                  <Input
+                    type="date"
+                    value={formData.expiration_date}
+                    onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
                   />
                 </label>
               </div>
@@ -198,7 +212,6 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                     step="0.01"
                     value={formData.customPrice}
                     onChange={(e) => handleCustomPriceChange(parseFloat(e.target.value))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                   />
                 </label>
               </div>
@@ -210,7 +223,6 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                     type="number"
                     value={formData.quantity}
                     onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                   />
                 </label>
@@ -221,11 +233,10 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                   Método de Pago
                   <select
                     value={formData.payment_method}
-                    onChange={(e) => setFormData({...formData, payment_method: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     required
                   >
-                    <option value="cash">Efectivo</option>
                     <option value="card">Tarjeta</option>
                     <option value="transfer">Transferencia</option>
                   </select>
@@ -239,7 +250,6 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                     type="number"
                     step="0.01"
                     value={formData.amount}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                     readOnly
                   />
@@ -251,8 +261,7 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                   Comentarios
                   <Textarea
                     value={formData.comments}
-                    onChange={(e) => setFormData({...formData, comments: e.target.value})}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                    onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
                   />
                 </label>
               </div>

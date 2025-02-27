@@ -189,15 +189,6 @@ export default function CajaPage() {
                   <p className="text-sm text-muted-foreground">
                     Apertura: <span className="font-medium text-foreground">{new Date(caja.opened_at).toLocaleString()}</span>
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Efectivo ingresado: <span className="font-medium text-foreground">{formatCurrency(result.totalTransactions)}</span>
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Efectivo retirado: <span className="font-medium text-foreground">{formatCurrency(result.totalExpenses)}</span>
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Efectivo actual: <span className="font-medium text-foreground">{formatCurrency(actualAmount)}</span>
-                  </p>
                   {caja.closed_at && (
                     <p className="text-sm text-muted-foreground">
                       Cierre: <span className="font-medium text-foreground">{new Date(caja.closed_at).toLocaleString()}</span>

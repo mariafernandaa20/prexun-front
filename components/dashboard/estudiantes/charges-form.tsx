@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -21,6 +20,7 @@ import { Student, Transaction } from '@/lib/types';
 import { createCharge, updateCharge } from '@/lib/api';
 import { Textarea } from '@/components/ui/textarea';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { Input } from '@/components/ui/input';
 
 interface ChargesFormProps {
   fetchStudents: () => void;
@@ -214,7 +214,6 @@ export default function ChargesForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cash">Efectivo</SelectItem>
                     <SelectItem value="transfer">Transferencia</SelectItem>
                     <SelectItem value="card">Tarjeta</SelectItem>
                   </SelectContent>
