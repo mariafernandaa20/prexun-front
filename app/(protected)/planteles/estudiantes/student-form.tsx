@@ -50,7 +50,7 @@ export function StudentForm({
     id: student?.id || null,
     period_id: student?.period_id || '',
     campus_id: campusId,
-    promo_id: student?.promo_id || null,
+    promo_id: null,
     grupo_id: student?.grupo_id || null,
     firstname: student?.firstname || '',
     lastname: student?.lastname || '',
@@ -189,7 +189,7 @@ export function StudentForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="promo_id">Promoción</Label>
           <Select
             name="promo_id"
@@ -208,7 +208,7 @@ export function StudentForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
         <div className="space-y-2">
           <Label htmlFor="grupo_id">Grupo</Label>
           <Select

@@ -15,12 +15,16 @@ import { updateStudent } from '@/lib/api/studentApi'
 interface Student {
     id: number
     email: string
+    firstname: string
+    lastname: string
 }
 
 export default function UpdatePersonalInfo({student}: {student: Student}) {
     const [formData, setFormData] = useState({
         id: student.id,
         email: student.email,
+        firstname: student.firstname,
+        lastname: student.lastname,
         })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,6 +60,30 @@ export default function UpdatePersonalInfo({student}: {student: Student}) {
               value={formData.email}
               onChange={handleInputChange}
               placeholder="correo@prexun.com"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="firstname">Nombre</Label>
+            <Input
+              id="firstname"
+              name="firstname"
+              type="firstname"
+              value={formData.firstname}
+              onChange={handleInputChange}
+              placeholder="Nombre"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="lastname">Apellido</Label>
+            <Input
+              id="lastname"
+              name="lastname"
+              type="lastname"
+              value={formData.lastname}
+              onChange={handleInputChange}
+              placeholder="Nombre"
               required
             />
           </div>
