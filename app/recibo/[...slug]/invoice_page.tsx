@@ -64,7 +64,7 @@ export function InvoiceClient({ invoice }) {
                         <div className="space-y-2">
                             <div className="flex justify-between">
                                 <span className="font-medium">Comprobante de Pago</span>
-                                <span>{invoiceNumber(invoice)}</span>
+                                <span className='bg-yellow-200 p-2'>{invoiceNumber(invoice)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-medium">Estudiante</span>

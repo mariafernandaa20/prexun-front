@@ -86,6 +86,30 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
     ];
 
     details.forEach((row, index) => {
+        // Añadir fondo amarillo claro solo para el número de comprobante (primera fila)
+        if (index === 0) {
+            const invoiceNumber = `${invoice?.campus?.name?.charAt(0)}-${invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}`;
+            const textWidth = doc.getTextWidth(invoiceNumber);
+            
+            // Guardar el estado actual
+            const currentFillColor = doc.getFillColor();
+            
+            // Establecer color amarillo claro (#FFFFCC)
+            doc.setFillColor(255, 255, 204);
+            
+            // Dibujar el rectángulo (con un poco de padding)
+            doc.rect(
+                rightCol + 90 - textWidth - 2, // X position (ajustado para alineación derecha)
+                currentY + (index * 5) - 4,    // Y position (ajustado arriba del texto)
+                textWidth + 4,                 // Width (con padding)
+                6,                             // Height
+                'F'                            // 'F' significa "fill"
+            );
+            
+            // Restaurar el color de relleno original
+            doc.setFillColor(currentFillColor);
+        }
+        
         doc.text(row[0], rightCol, currentY + (index * 5), { align: 'left' });
         doc.text(row[1], rightCol + 90, currentY + (index * 5), { align: 'right' });
     });
