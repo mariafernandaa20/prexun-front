@@ -536,7 +536,7 @@ export default function Page() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button> */}
-                          {user?.role === 'super_admin' && (
+                          {/* {user?.role === 'super_admin' && (
                             <Button
                               variant="ghost"
                               size="icon"
@@ -545,7 +545,7 @@ export default function Page() {
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                          )}
+                          )} */}
                         </div>
                       </TableCell>
                     )}
