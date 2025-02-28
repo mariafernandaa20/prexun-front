@@ -299,7 +299,7 @@ export default function CobrosPage() {
           </TableBody>
         </Table>
         <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="max-w-3xl max-h-[80vh] h-full">
             <img src={selectedImage} alt="Comprobante" className="w-full" />
           </DialogContent>
         </Dialog>
