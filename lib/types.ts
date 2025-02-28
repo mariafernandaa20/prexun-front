@@ -179,6 +179,7 @@ export interface Transaction {
   expiration_date?: string;
   notes?: string;
   transaction_type?: string;
+  folio?: number;
   student?: Student;
   cash_register_id?: number;
   image?: string | File;

@@ -216,6 +216,7 @@ export default function CajaPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>Folio</TableHead>
                           <TableHead>Fecha</TableHead>
                           <TableHead>Tipo</TableHead>
                           <TableHead>Monto</TableHead>
@@ -227,6 +228,7 @@ export default function CajaPage() {
                       <TableBody>
                         {caja.transactions?.map((transaction) => (
                           <TableRow key={transaction.id}>
+                            <TableCell>{transaction.folio}</TableCell>
                             <TableCell>{new Date(transaction.payment_date).toLocaleString()}</TableCell>
                             <TableCell>
                               <Badge variant={transaction.transaction_type === 'ingreso' ? 'default' : 'destructive'}>

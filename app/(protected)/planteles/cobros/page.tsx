@@ -44,7 +44,7 @@ export default function CobrosPage() {
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes', 'paid', 'limit_date', 'actions']);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes', 'paid', 'limit_date', 'actions', 'folio']);
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
   useEffect(() => {
@@ -120,6 +120,7 @@ export default function CobrosPage() {
     { value: 'date', label: 'Fecha' },
     { value: 'notes', label: 'Notas' },
     { value: 'paid', label: 'Pagado' },
+    { value: 'folio', label: 'Folio' },
     { value: 'limit_date', label: 'Fecha límite de pago' },
     { value: 'actions', label: 'Acciones' }
   ];
@@ -200,10 +201,10 @@ export default function CobrosPage() {
       </CardHeader>
 
       <CardContent>
-
         <Table>
           <TableHeader>
             <TableRow>
+              {visibleColumns.includes('folio') && <TableHead>Folio</TableHead>}
               {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
               {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
               {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
@@ -219,6 +220,11 @@ export default function CobrosPage() {
           <TableBody>
             {filteredTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
+                {visibleColumns.includes('folio') && (
+                  <TableCell>
+                    {transaction.folio}
+                  </TableCell>
+                )}
                 {visibleColumns.includes('student') && (
                   <TableCell>
                     {transaction.student?.firstname} {transaction.student?.lastname}
