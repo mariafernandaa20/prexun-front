@@ -317,10 +317,7 @@ export default function page() {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div>
-                <Label>Planteles</Label>
-                <MultiSelect
+              <MultiSelect
                   options={campuses.map((campus) => ({
                     value: campus.id.toString(),
                     label: campus.name,
@@ -332,6 +329,8 @@ export default function page() {
                   searchPlaceholder="Buscar plantel..."
                   emptyMessage="No se encontraron planteles"
                 />
+              <div>
+
               </div>
               <div>
                 <Label htmlFor="password">

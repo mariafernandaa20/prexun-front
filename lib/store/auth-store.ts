@@ -151,6 +151,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setCampuses: (campuses) => set({ campuses }),
   fetchCampuses: async () => {
     const response = await getCampuses();
+    console.log(response);
     set({ campuses: response });
   },
   initializeApp: async () => {

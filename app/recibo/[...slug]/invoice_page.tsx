@@ -60,6 +60,8 @@ export function InvoiceClient({ invoice }) {
                             <h3 className="font-semibold mb-2">Prexun Asesorías</h3>
                             <p className="text-gray-600">{invoice.campus?.name}</p>
                             <p className="text-gray-600">{invoice.campus?.address}</p>
+                            <p className="text-gray-600">{invoice.campus?.titular}</p>
+                            <p className="text-gray-600">{invoice.campus?.rfc}</p>
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between">

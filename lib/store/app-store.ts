@@ -1,54 +1,104 @@
-import { create } from 'zustand'
-import { Campus, Grupo } from '../types'
-import axiosInstance from '../api/axiosConfig'
+// lib/store/app-store.js
+import { create } from 'zustand';
+import axiosInstance from '@/lib/api/axiosConfig';
 
-interface EntityState<T> {
-  data: T[]
-  loading: boolean
-  error: string | null
-}
-
-interface AppStore {
-  campuses: EntityState<Campus>
-  groups: EntityState<Grupo>
-  fetchCampuses: () => Promise<void>
-  fetchGroups: () => Promise<void>
-}
-
-export const useAppStore = create<AppStore>((set) => ({
-  campuses: { data: [], loading: false, error: null },
-  personnel: { data: [], loading: false, error: null },
-  groups: { data: [], loading: false, error: null },
-
-  fetchCampuses: async () => {
+export const useAppStore = create((set, get) => ({
+  // State
+  cards: [],
+  campuses: [],
+  isLoadingCards: false,
+  isLoadingCampuses: false,
+  
+  // Fetch cards
+  fetchCards: async () => {
     try {
-      set((state) => ({ campuses: { ...state.campuses, loading: true, error: null } }))
-      const response = await axiosInstance.get('/campuses')
-      set((state) => ({ campuses: { ...state.campuses, data: response.data, loading: false } }))
+      set({ isLoadingCards: true });
+      const response = await axiosInstance.get('/cards');
+      set({ cards: response.data, isLoadingCards: false });
     } catch (error) {
-      set((state) => ({ 
-        campuses: { 
-          ...state.campuses,
-          error: error instanceof Error ? error.message : 'Failed to fetch campuses',
-          loading: false 
-        }
-      }))
+      console.error('Error fetching cards:', error);
+      set({ isLoadingCards: false });
+      throw error;
     }
   },
-
-  fetchGroups: async () => {
+  
+  // Fetch campuses
+  fetchCampuses: async () => {
     try {
-      set((state) => ({ groups: { ...state.groups, loading: true, error: null } }))
-      const response = await axiosInstance.get('/groups')
-      set((state) => ({ groups: { ...state.groups, data: response.data, loading: false } }))
+      set({ isLoadingCampuses: true });
+      const response = await axiosInstance.get('/campuses');
+      set({ campuses: response.data, isLoadingCampuses: false });
     } catch (error) {
-      set((state) => ({ 
-        groups: { 
-          ...state.groups,
-          error: error instanceof Error ? error.message : 'Failed to fetch groups',
-          loading: false 
-        }
-      }))
+      console.error('Error fetching campuses:', error);
+      set({ isLoadingCampuses: false });
+      throw error;
+    }
+  },
+  
+  // Add card
+  addCard: async (cardData) => {
+    try {
+      const response = await axiosInstance.post('/cards', cardData);
+      set(state => ({ 
+        cards: [...state.cards, response.data.data] 
+      }));
+      return response.data;
+    } catch (error) {
+      console.error('Error adding card:', error);
+      throw error;
+    }
+  },
+  
+  // Update card
+  updateCard: async (cardId, cardData) => {
+    try {
+      const response = await axiosInstance.put(`/cards/${cardId}`, cardData);
+      set(state => ({
+        cards: state.cards.map(card => 
+          card.id === cardId ? response.data.data : card
+        )
+      }));
+      return response.data;
+    } catch (error) {
+      console.error('Error updating card:', error);
+      throw error;
+    }
+  },
+  
+  // Delete card
+  deleteCard: async (cardId) => {
+    try {
+      await axiosInstance.delete(`/cards/${cardId}`);
+      set(state => ({
+        cards: state.cards.filter(card => card.id !== cardId)
+      }));
+    } catch (error) {
+      console.error('Error deleting card:', error);
+      throw error;
+    }
+  },
+  
+  // Initialize app data
+  initAppData: async () => {
+    try {
+      set({ isLoadingCards: true, isLoadingCampuses: true });
+      
+      // Fetch both cards and campuses in parallel
+      const [cardsResponse, campusesResponse] = await Promise.all([
+        axiosInstance.get('/cards'),
+        axiosInstance.get('/campuses')
+      ]);
+      
+      set({ 
+        cards: cardsResponse.data, 
+        campuses: campusesResponse.data,
+        isLoadingCards: false,
+        isLoadingCampuses: false
+      });
+    } catch (error) {
+      console.error('Error initializing app data:', error);
+      set({ isLoadingCards: false, isLoadingCampuses: false });
+      throw error;
     }
   }
-}))
+}));

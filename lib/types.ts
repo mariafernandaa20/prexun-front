@@ -1,5 +1,7 @@
 export interface Campus {
   id?: number;
+  titular?: string;
+  rfc?: string;
   name: string;
   code: string;
   address?: string;

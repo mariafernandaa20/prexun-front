@@ -10,13 +10,15 @@ import { data as sidebarData } from "@/components/sidebar";
 import { usePathname } from 'next/navigation';
 import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store/auth-store";
+import { useAppStore } from "@/lib/store/app-store";
 
 export default function Page({ children }: { children: React.ReactNode }) {
-  const { initializeApp } = useAuthStore();
-  
+  const { initializeApp, user } = useAuthStore();
+
   useEffect(() => {
     initializeApp();
-  }, []);
+  }, [user]);
+
   return (
     <SidebarProvider>
       <AdminSidebar />

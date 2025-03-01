@@ -13,12 +13,9 @@ import { useEffect } from "react";
 
 export default function Page({ children }: { children: React.ReactNode }) {
   const { initializeApp } = useAuthStore();
-  const { fetchCampuses, fetchGroups } = useAppStore();
 
   useEffect(() => {
     initializeApp();
-    fetchCampuses();
-    fetchGroups();
   }, []);
 
   return (

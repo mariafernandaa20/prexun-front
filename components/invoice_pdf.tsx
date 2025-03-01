@@ -53,15 +53,31 @@ const generateHeader = (doc) => {
 };
 
 const generateCompanyInfo = (doc, campus, leftCol, rightCol, currentY) => {
+    // Título
     doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
     doc.text("Prexun Asesorías", leftCol, currentY);
+    
+    // Restaurar fuente normal
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
-    doc.text(campus?.name, leftCol, currentY + 7);
-    doc.text(`${campus?.address}`, leftCol, currentY + 14, {
-        maxWidth: rightCol - leftCol - 10
-    });
+    
+    // Nombre del campus
+    currentY += 7;
+    doc.text(campus?.name, leftCol, currentY);
+    
+    currentY += 7;
+    const addressLines = doc.splitTextToSize(campus?.address, rightCol - leftCol - 10);
+    doc.text(addressLines, leftCol, currentY);
+    
+    currentY += (addressLines.length * 7);
+    
+    // Titular
+    doc.text(`Titular: ${campus?.titular}`, leftCol, currentY);
+    
+    // RFC
+    currentY += 7;
+    doc.text(`RFC: ${campus?.rfc}`, leftCol, currentY);
 };
 
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {

@@ -46,6 +46,8 @@ export default function Page() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState<Campus>({
     name: "",
+    titular: "",
+    rfc: "",
     code: "",
     description: "",
     address: "",
@@ -89,6 +91,7 @@ export default function Page() {
     setSelectedCampus(null);
     setFormData({
       name: "",
+      titular: "",
       code: "",
       description: "",
       address: "",
@@ -103,6 +106,8 @@ export default function Page() {
     setSelectedCampus(campus);
     setFormData({
       name: campus.name,
+      titular: campus.titular,
+      rfc: campus.rfc,
       code: campus.code,
       description: campus.description,
       address: campus.address,
@@ -203,6 +208,8 @@ export default function Page() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
+                  <TableHead>Titular</TableHead>
+                  <TableHead>RFC</TableHead>
                   <TableHead>Código</TableHead>
                   <TableHead>Dirección</TableHead>
                   <TableHead>Estado</TableHead>
@@ -215,6 +222,8 @@ export default function Page() {
                   campuses.map((campus) => (
                     <TableRow key={campus.id}>
                       <TableCell>{campus.name}</TableCell>
+                      <TableCell>{campus.titular}</TableCell>
+                      <TableCell>{campus.rfc}</TableCell>
                       <TableCell>{campus.code}</TableCell>
                       <TableCell>{campus.address || "No especificada"}</TableCell>
                       <TableCell>
@@ -289,13 +298,33 @@ export default function Page() {
                   </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="grid grid-cols-2 w-full gap-4 max-h-[80vh] overflow-y-auto">
                   <div>
                     <Label htmlFor="name">Nombre del Plantel</Label>
                     <Input
                       id="name"
                       name="name"
                       value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="titular">Titular</Label>
+                    <Input
+                      id="titular"
+                      name="titular"
+                      value={formData.titular}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rfc">RFC</Label>
+                    <Input
+                      id="rfc"
+                      name="rfc"
+                      value={formData.rfc}
                       onChange={handleInputChange}
                       required
                     />
@@ -357,7 +386,7 @@ export default function Page() {
                     <Label htmlFor="is_active">Plantel Activo</Label>
                   </div>
 
-                  <div>
+                  <div className="col-span-full">
                     <Label>Administradores</Label>
                     <MultiSelect
                       options={administrators.map((admin) => ({
