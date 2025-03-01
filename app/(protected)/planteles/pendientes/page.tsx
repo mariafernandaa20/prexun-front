@@ -33,7 +33,7 @@ import InvoicePDF from '@/components/invoice_pdf';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api/axiosConfig';
-import { Transaction } from '@/lib/types';
+import { Transaction, Card as CardType } from '@/lib/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form';
 
@@ -59,13 +59,15 @@ const PAYMENT_METHOD_LABELS = {
 };
 const TransactionActions: React.FC<{
   transaction: Transaction;
+  cards: CardType[];
   onTransactionUpdate: (updatedTransaction: Transaction) => void;
-}> = ({ transaction, onTransactionUpdate }) => {
+}> = ({ transaction, onTransactionUpdate, cards }) => {
   const [formData, setFormData] = useState<Transaction>({
     ...transaction,
     denominations: {},
     notes: transaction.notes || '',
     payment_date: transaction.payment_date || new Date().toISOString().split('T')[0],
+    card_id: transaction.card_id || null,
     image: transaction.image || null,
   });
 
@@ -98,6 +100,7 @@ const TransactionActions: React.FC<{
   return (
     <ChargesForm
       campusId={transaction.campus_id}
+      cards={cards}
       fetchStudents={handleMarkAsPaid}
       student_id={transaction.student_id}
       transaction={transaction}
@@ -120,7 +123,16 @@ export default function CobrosPage() {
   const [expirationDate, setExpirationDate] = useState('');
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
+  const [cards, setCards] = useState<CardType[]>([]);
 
+  useEffect(()=>{
+    const fetchCards = async () => {
+      const response = await axiosInstance.get('/cards');
+
+      setCards(response.data);
+    }
+    fetchCards();
+  }, []);
   // Hooks
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
@@ -275,6 +287,7 @@ export default function CobrosPage() {
             <Eye className="w-4 h-4 mr-2" />
           </Link>
           <TransactionActions
+            cards={cards}
             transaction={transaction}
             onTransactionUpdate={() => { }}
           />

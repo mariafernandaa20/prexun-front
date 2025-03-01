@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Receipt } from 'lucide-react';
-import { Student, Transaction } from '@/lib/types';
+import { Card, Student, Transaction } from '@/lib/types';
 import { createCharge, updateCharge } from '@/lib/api';
 import { Textarea } from '@/components/ui/textarea';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 interface ChargesFormProps {
   fetchStudents: () => void;
   student?: Student | null;
+  cards: Card[];
   campusId: number;
   student_id?: number;
   icon?: boolean;
@@ -37,6 +38,7 @@ interface ChargesFormProps {
 
 export default function ChargesForm({
   fetchStudents,
+  cards,
   student,
   campusId,
   student_id,
@@ -235,6 +237,31 @@ export default function ChargesForm({
                     />
                   </div>
                 )}
+              {formData.payment_method === 'transfer' && (
+                <div className="space-y-2">
+                  <Label>Tarjeta</Label>
+                  <Select
+                    value={formData.card_id}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        card_id: value,
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cards.map(card => (
+                        <SelectItem key={card.id} value={card.id.toString()}>
+                          {card.number}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>Notas</Label>
                 <Textarea

@@ -185,6 +185,13 @@ export interface Transaction {
   student?: Student;
   cash_register_id?: number;
   image?: string | File;
+  card_id?: string;
+}
+
+export interface Card {
+  id?: number;
+  number: string;
+  name: string;
 }
 
 export interface Denomination {
