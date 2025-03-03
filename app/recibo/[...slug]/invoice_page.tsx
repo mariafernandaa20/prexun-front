@@ -11,6 +11,8 @@ import { PaymentMethod } from '@/lib/types';
 
 export function InvoiceClient({ invoice }) {
 
+    console.log(invoice);
+
     const invoiceNumber = ({ folio }) => {
         if (!folio) return 'No pagado';
         if (folio < 10) {
@@ -62,6 +64,9 @@ export function InvoiceClient({ invoice }) {
                             <p className="text-gray-600">{invoice.campus?.address}</p>
                             <p className="text-gray-600">{invoice.campus?.titular}</p>
                             <p className="text-gray-600">{invoice.campus?.rfc}</p>
+                            <p className="text-gray-600"><span className='font-bold'>Tarjeta:</span> {invoice?.card?.number}</p>
+                            <p className="text-gray-600"><span className='font-bold'>CLABE:</span> {invoice?.card?.clabe}</p>
+
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between">

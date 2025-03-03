@@ -191,7 +191,10 @@ export interface Transaction {
 export interface Card {
   id?: number;
   number: string;
+  campus_id: number;
   name: string;
+  clabe: string;
+  sat: boolean;
 }
 
 export interface Denomination {

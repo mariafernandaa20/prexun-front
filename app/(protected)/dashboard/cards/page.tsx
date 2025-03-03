@@ -33,14 +33,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {Card as CardType} from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api/axiosConfig';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const CardManagement = () => {
-    const [cards, setCards] = useState([]);
+    const [cards, setCards] = useState<CardType[]>([]);
     const [campuses, setCampuses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -53,6 +55,8 @@ const CardManagement = () => {
     const addForm = {
         number: '',
         name: '',
+        clabe: '',
+        sat: true,
         campus_id: ''
     };
 
@@ -85,12 +89,19 @@ const CardManagement = () => {
     }, []);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: type === 'checkbox' ? checked : value 
+        }));
     };
 
     const handleSelectChange = (value, name) => {
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleCheckboxChange = (checked, name) => {
+        setFormData(prev => ({ ...prev, [name]: Boolean(checked) }));
     };
 
     const handleAddCard = async () => {
@@ -158,6 +169,8 @@ const CardManagement = () => {
         setFormData({
             number: card.number,
             name: card.name,
+            clabe: card.clabe || '',
+            sat: Boolean(card.sat),
             campus_id: card.campus_id.toString()
         });
         setIsEditDialogOpen(true);
@@ -193,7 +206,17 @@ const CardManagement = () => {
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="number">Card Number</Label>
+                                    <Label htmlFor="name">Nombre</Label>
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter name"
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="number">Numero de tarjeta</Label>
                                     <Input
                                         id="number"
                                         name="number"
@@ -203,13 +226,21 @@ const CardManagement = () => {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="clabe">Clabe Interbancaria</Label>
                                     <Input
-                                        id="name"
-                                        name="name"
-                                        value={formData.name}
+                                        id="clabe"
+                                        name="clabe"
+                                        value={formData.clabe}
                                         onChange={handleInputChange}
-                                        placeholder="Enter name"
+                                        placeholder="Clabe interbancaria"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <Label htmlFor="sat">SAT</Label>
+                                    <Checkbox 
+                                        id="sat" 
+                                        checked={formData.sat} 
+                                        onCheckedChange={(checked) => handleCheckboxChange(checked, 'sat')} 
                                     />
                                 </div>
                                 <div className="grid gap-2">
@@ -301,7 +332,16 @@ const CardManagement = () => {
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-number">Card Number</Label>
+                                    <Label htmlFor="edit-name">Nombre</Label>
+                                    <Input
+                                        id="edit-name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="edit-number">Numero de tarjeta</Label>
                                     <Input
                                         id="edit-number"
                                         name="number"
@@ -310,12 +350,21 @@ const CardManagement = () => {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="edit-name">Name</Label>
+                                    <Label htmlFor="edit-clabe">Clabe Interbancaria</Label>
                                     <Input
-                                        id="edit-name"
-                                        name="name"
-                                        value={formData.name}
+                                        id="edit-clabe"
+                                        name="clabe"
+                                        value={formData.clabe}
                                         onChange={handleInputChange}
+                                        placeholder="Clabe interbancaria"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <Label htmlFor="edit-sat">SAT</Label>
+                                    <Checkbox 
+                                        id="edit-sat" 
+                                        checked={formData.sat} 
+                                        onCheckedChange={(checked) => handleCheckboxChange(checked, 'sat')} 
                                     />
                                 </div>
                                 <div className="grid gap-2">

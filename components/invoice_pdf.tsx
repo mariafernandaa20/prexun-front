@@ -52,7 +52,7 @@ const generateHeader = (doc) => {
     doc.text("Comprobante de pago", 195, 30, { align: "right" });
 };
 
-const generateCompanyInfo = (doc, campus, leftCol, rightCol, currentY) => {
+const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, currentY) => {
     // Título
     doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
@@ -76,8 +76,16 @@ const generateCompanyInfo = (doc, campus, leftCol, rightCol, currentY) => {
     doc.text(`Titular: ${campus?.titular}`, leftCol, currentY);
     
     // RFC
-    currentY += 7;
+    currentY += 5;
     doc.text(`RFC: ${campus?.rfc}`, leftCol, currentY);
+
+    // Tarjeta
+    currentY += 5;
+    doc.text(`Tarjeta: ${card?.number}`, leftCol, currentY);
+
+    // CLABE
+    currentY += 5;
+    doc.text(`CLABE: ${card?.clabe}`, leftCol, currentY);
 };
 
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
@@ -174,7 +182,7 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
     };
 
     doc.autoTable({
-        startY: currentY + 40,
+        startY: currentY + 50,
         head: [["PRODUCTOS Y SERVICIOS", "VALOR"]],
         body: [[
             {
@@ -272,7 +280,7 @@ const generatePDF = (invoice) => {
 
     generateWatermark(doc, invoice.paid);
     generateHeader(doc);
-    generateCompanyInfo(doc, invoice.campus, leftCol, rightCol, currentY);
+    generateCompanyInfo(doc, invoice.campus, invoice.card, leftCol, rightCol, currentY);
     generateInvoiceDetails(doc, invoice, rightCol, currentY);
     generateProductsTable(doc, invoice, currentY);
 
