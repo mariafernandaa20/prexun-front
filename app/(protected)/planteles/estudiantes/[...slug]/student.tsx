@@ -1,7 +1,7 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Student, Transaction } from "@/lib/types"
+import { Student, Transaction, Card as CardType  } from "@/lib/types"
 import { Table, TableCell, TableHead, TableHeader, TableRow, TableBody } from '@/components/ui/table'
 import { getStudent } from '@/lib/api'
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form'
@@ -11,6 +11,7 @@ import { useActiveCampusStore } from '@/lib/store/plantel-store'
 import Link from 'next/link'
 import { Eye } from 'lucide-react'
 import UpdatePersonalInfo from '@/components/dashboard/UpdatePersonalInfo'
+import axiosInstance from '@/lib/api/axiosConfig'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -33,8 +34,9 @@ const parseDenominations = (denominations: any) => {
 };
 const TransactionActions: React.FC<{
     transaction: Transaction;
+    cards: CardType[];
     onTransactionUpdate: (updatedTransaction: Transaction) => void;
-}> = ({ transaction, onTransactionUpdate }) => {
+}> = ({ transaction, onTransactionUpdate, cards }) => {
     const [formData, setFormData] = useState<Transaction>({
         ...transaction,
         denominations: {},
@@ -51,6 +53,7 @@ const TransactionActions: React.FC<{
     return (
         <ChargesForm
             campusId={transaction.campus_id}
+            cards={cards}
             fetchStudents={handleMarkAsPaid}
             student_id={transaction.student_id}
             transaction={transaction}
@@ -68,6 +71,17 @@ const TransactionsTable: React.FC<{
     transactions: Transaction[];
     onUpdateTransaction: (updatedTransaction: Transaction) => void;
 }> = ({ transactions, onUpdateTransaction }) => {
+
+    const [cards, setCards] = useState<CardType[]>([]);
+
+  useEffect(()=>{
+    const fetchCards = async () => {
+      const response = await axiosInstance.get('/cards');
+
+      setCards(response.data);
+    }
+    fetchCards();
+  }, []);
     return (
         <Table>
             <TableHeader>
@@ -119,6 +133,7 @@ const TransactionsTable: React.FC<{
                                 </Link>
                                 <TransactionActions
                                     transaction={transaction}
+                                    cards={cards}
                                     onTransactionUpdate={onUpdateTransaction}
                                 />
                             </div>
