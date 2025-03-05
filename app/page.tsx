@@ -112,7 +112,7 @@ export default function Home() {
         </section>
 
         {/* Benefits Section */}
-        <section className="container mx-auto px-4 py-16 bg-gray-50">
+        <section className="container mx-auto px-4 py-16 bg-gray-50 dark:bg-gray-900">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div className="relative">
               <div className="absolute inset-0 bg-[#131f46] rounded-lg transform -rotate-2"></div>
@@ -126,7 +126,7 @@ export default function Home() {
               <h2 className="text-4xl font-medium">
                 ¡9 de cada 10 alumnos aceptados!
               </h2>
-              <p className="text-xl text-gray-600">
+              <p className="text-xl text-gray-600 dark:text-gray-400">
                 Gracias a nuestros beneficios exclusivos:
               </p>
               <div className="space-y-6">
@@ -135,7 +135,7 @@ export default function Home() {
                     <CheckCircle2 className="w-6 h-6 text-[#131f46] flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="font-medium text-lg">{benefit.title}</h3>
-                      <p className="text-gray-600">{benefit.description}</p>
+                      <p className="text-gray-600 dark:text-gray-400">{benefit.description}</p>
                     </div>
                   </div>
                 ))}
