@@ -96,7 +96,6 @@ export function StudentForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    
     if (!formData.email || !formData.firstname || !formData.lastname || !formData.phone) {
       toast({
         title: 'Error de validación',
@@ -106,6 +105,17 @@ export function StudentForm({
       return;
     }
     
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: 'Error de validación',
+        description: 'Por favor ingrese un correo electrónico válido',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Continuar con el envío del formulario
     setIsLoadingButton(true);
     onSubmit(formData);
     setIsLoadingButton(false);
