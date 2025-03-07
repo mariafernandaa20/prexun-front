@@ -89,17 +89,6 @@ export function InvoiceClient({ invoice }) {
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="font-medium">Fecha de vencimiento</span>
-                                <span className="text-right">
-                                    {invoice.expiration_date
-                                        ? formatTime({
-                                            time: invoice.expiration_date
-                                        })
-                                        : 'Sin vencimiento'
-                                    }
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
                                 <span className="font-medium">Método de pago</span>
                                 <span>{PaymentMethod[invoice.payment_method]}</span>
                             </div>
