@@ -125,7 +125,9 @@ export default function CobrosPage() {
   const [selectedImage, setSelectedImage] = useState('');
   const [cards, setCards] = useState<CardType[]>([]);
 
-  useEffect(()=>{
+  useEffect(() => {
+    if (!activeCampus) return
+
     const fetchCards = async () => {
       const response = await axiosInstance.get('/cards');
 

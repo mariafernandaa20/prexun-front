@@ -48,6 +48,8 @@ export default function CobrosPage() {
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
   useEffect(() => {
+    if (!activeCampus) return
+
     fetchTransactions();
   }, [activeCampus]);
 

@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Student, Transaction, Card as CardType  } from "@/lib/types"
+import { Student, Transaction, Card as CardType } from "@/lib/types"
 import { Table, TableCell, TableHead, TableHeader, TableRow, TableBody } from '@/components/ui/table'
 import { getStudent } from '@/lib/api'
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form'
@@ -74,14 +74,23 @@ const TransactionsTable: React.FC<{
 
     const [cards, setCards] = useState<CardType[]>([]);
 
-  useEffect(()=>{
-    const fetchCards = async () => {
-      const response = await axiosInstance.get('/cards');
+    const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
-      setCards(response.data);
-    }
-    fetchCards();
-  }, []);
+    useEffect(() => {
+        if (!activeCampus) return
+
+        const fetchCards = async () => {
+            if (!activeCampus) return;
+            const response = await axiosInstance.get('/cards', {
+                params: {
+                    campus_id: activeCampus.id
+                }
+            });
+
+            setCards(response.data);
+        }
+        fetchCards();
+    }, [activeCampus]);
     return (
         <Table>
             <TableHeader>

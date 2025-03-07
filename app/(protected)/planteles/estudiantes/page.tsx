@@ -199,6 +199,8 @@ export default function Page() {
   };
 
   useEffect(() => {
+    if (!activeCampus) return
+
     fetchStudents();
     fetchPeriods();
     fetchPromos();

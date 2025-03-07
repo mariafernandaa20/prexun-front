@@ -80,6 +80,8 @@ export default function GastosPage() {
   };
 
   useEffect(() => {
+    if (!activeCampus) return
+
     fetchGastos();
   }, [activeCampus]);
 

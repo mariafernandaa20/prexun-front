@@ -28,7 +28,10 @@ const useCaja = ({ activeCampus }: { activeCampus: Campus | null }) => {
   const [caja, setCaja] = React.useState<Caja | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<Error | null>(null)
+  
   const fetchCaja = React.useCallback(async () => {
+    if (!activeCampus) return
+    
     try {
       setLoading(true)
       const response = await getCurrentCaja(activeCampus?.id)
