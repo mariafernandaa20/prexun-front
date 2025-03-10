@@ -173,7 +173,7 @@ export const deletePeriod = async (id: string) => {
 
 export const getCharges = async (campusId, page, perPage) => {
   try {
-    const response = await axiosInstance.get(`/charges/${campusId}&page=${page}&per_page=${perPage}`);
+    const response = await axiosInstance.get(`/charges/${campusId}?page=${page}&per_page=${perPage}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching charges:', error);
