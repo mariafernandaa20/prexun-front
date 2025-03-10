@@ -56,16 +56,17 @@ export default function CobrosPage() {
     perPage: 200
   });
   const [loading, setLoading] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState("200"); // Estado para controlar items por página
 
   useEffect(() => {
     if (!activeCampus) return;
     fetchTransactions(pagination.currentPage);
-  }, [activeCampus, pagination.currentPage]);
+  }, [activeCampus, pagination.currentPage, itemsPerPage]);
 
   const fetchTransactions = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await getCharges(Number(activeCampus.id), page);
+      const response = await getCharges(Number(activeCampus.id), page, parseInt(itemsPerPage));
       
       // Ahora response tiene estructura de paginación
       setTransactions(response.data);
@@ -73,7 +74,7 @@ export default function CobrosPage() {
         currentPage: response.current_page,
         lastPage: response.last_page,
         total: response.total,
-        perPage: response.per_page
+        perPage: parseInt(itemsPerPage)
       });
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -86,6 +87,11 @@ export default function CobrosPage() {
     if (newPage > 0 && newPage <= pagination.lastPage) {
       setPagination(prev => ({...prev, currentPage: newPage}));
     }
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(value);
+    setPagination(prev => ({...prev, currentPage: 1})); // Regresar a primera página al cambiar items por página
   };
 
   const handlePaymentMethodChange = (value: string) => {
@@ -349,10 +355,30 @@ export default function CobrosPage() {
       </CardContent>
       
       {/* Paginación */}
-      <CardFooter className="flex justify-between items-center border-t p-4">
-        <div className="text-sm text-muted-foreground">
-          Mostrando {Math.min(pagination.total, (pagination.currentPage - 1) * pagination.perPage + 1)} a {Math.min(pagination.total, pagination.currentPage * pagination.perPage)} de {pagination.total} transacciones
+      <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+          <div className="text-sm text-muted-foreground">
+            Mostrando {Math.min(pagination.total, (pagination.currentPage - 1) * pagination.perPage + 1)} a {Math.min(pagination.total, pagination.currentPage * pagination.perPage)} de {pagination.total} transacciones
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Label htmlFor="itemsPerPage" className="text-sm">
+              Ítems por página:
+            </Label>
+            <Select value={itemsPerPage} onValueChange={handleItemsPerPageChange}>
+              <SelectTrigger id="itemsPerPage" className="w-[80px]">
+                <SelectValue placeholder="200" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="200">200</SelectItem>
+                <SelectItem value="500">500</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
