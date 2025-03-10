@@ -170,7 +170,7 @@ export function Periods() {
     <div className="w-full max-w-[100vw] overflow-x-hidden">
       <div className="p-4">
         <Card>
-          <CardHeader className='sticky top-0 z-10 bg-card'>
+          <CardHeader className='sticky top-0 z-8 bg-card'>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold">Períodos</h1>
               <Dialog open={isOpen} onOpenChange={setIsOpen}>

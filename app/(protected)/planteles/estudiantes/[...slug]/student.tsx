@@ -211,7 +211,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
     return (
         <div className="space-y-4">
             <Card>
-                <CardHeader className='sticky top-0 z-10 bg-card'>
+                <CardHeader className='sticky top-0 z-8 bg-card'>
                     <div className='flex justify-between items-center'>
                         <h1 className="text-2xl font-bold">{student.firstname} {student.lastname}</h1>
                         <div className='flex gap-4'>

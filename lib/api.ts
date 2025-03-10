@@ -171,9 +171,15 @@ export const deletePeriod = async (id: string) => {
   return response.data;
 };
 
-export const getCharges = async (campus_id: number) => {
-  const response = await axiosInstance.get(`${API_ENDPOINTS.GET_CHARGES}/${campus_id}`);
-  return response.data;
+// En tu archivo /lib/api.js o similar
+export const getCharges = async (campusId, page = 1) => {
+  try {
+    const response = await axiosInstance.get(`/charges/${campusId}&page=${page}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching charges:', error);
+    throw error;
+  }
 };
 
 export const createCharge = async (charge: Transaction) => {

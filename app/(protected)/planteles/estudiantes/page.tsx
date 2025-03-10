@@ -287,7 +287,7 @@ export default function Page() {
 
   return (
     <Card>
-      <CardHeader className='sticky top-0 z-10 bg-card'>
+      <CardHeader className='sticky top-0 z-8 bg-card'>
         <div className="flex justify-between mb-6 max-w-[100vw-30rem] ">
           <h1 className="text-2xl font-bold">Estudiantes</h1>
           <div className="flex flex-col gap-4">

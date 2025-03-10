@@ -30,16 +30,16 @@ import { createCharge, getCharges } from '@/lib/api';
 import { Student, Transaction } from '@/lib/types';
 import { MultiSelect } from '@/components/multi-select';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
-import { Eye, Share } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Share } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import InvoicePDF from '@/components/invoice_pdf';
 import Link from 'next/link';
 import AgregarIngreso from './AgregarIngreso';
 
 export default function CobrosPage() {
-  const [imageModalOpen, setImageModalOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState('')
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
@@ -47,18 +47,44 @@ export default function CobrosPage() {
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes', 'paid', 'limit_date', 'actions', 'folio']);
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
+  
+  // Agregar estados para manejar la paginación
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    perPage: 200
+  });
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    if (!activeCampus) return
+    if (!activeCampus) return;
+    fetchTransactions(pagination.currentPage);
+  }, [activeCampus, pagination.currentPage]);
 
-    fetchTransactions();
-  }, [activeCampus]);
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (page = 1) => {
     try {
-      const response = await getCharges(Number(activeCampus.id));
-      setTransactions(response);
+      setLoading(true);
+      const response = await getCharges(Number(activeCampus.id), page);
+      
+      // Ahora response tiene estructura de paginación
+      setTransactions(response.data);
+      setPagination({
+        currentPage: response.current_page,
+        lastPage: response.last_page,
+        total: response.total,
+        perPage: response.per_page
+      });
     } catch (error) {
       console.error('Error fetching transactions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= pagination.lastPage) {
+      setPagination(prev => ({...prev, currentPage: newPage}));
     }
   };
 
@@ -82,10 +108,12 @@ export default function CobrosPage() {
   const handleColumnSelect = (values: string[]) => {
     setVisibleColumns(values);
   };
+  
   const handleOpenImage = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setImageModalOpen(true);
-  }
+  };
+  
   const filteredTransactions = transactions.filter((transaction) => {
     const studentFullName =
       `${transaction.student?.username} ${transaction.student?.firstname} ${transaction.student?.lastname}`.toLowerCase();
@@ -140,7 +168,7 @@ export default function CobrosPage() {
 
   return (
     <Card>
-      <CardHeader className='sticky top-0 z-10 bg-card'>
+      <CardHeader className='sticky top-0 z-8 bg-card'>
         <div className="flex gap-4 justify-between">
           <div className='flex gap-4'>
             <Input
@@ -203,109 +231,174 @@ export default function CobrosPage() {
       </CardHeader>
 
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {visibleColumns.includes('folio') && <TableHead>Folio</TableHead>}
-              {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
-              {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
-              {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
-              {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
-              {visibleColumns.includes('payment_date') && <TableHead>Fecha de pago</TableHead>}
-              {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
-              {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
-              {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
-              <TableHead>Comprobante</TableHead>
-              {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTransactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                {visibleColumns.includes('folio') && (
-                  <TableCell>
-                    {transaction.folio}
-                  </TableCell>
-                )}
-                {visibleColumns.includes('student') && (
-                  <TableCell>
-                    {transaction.student?.firstname} {transaction.student?.lastname}
-                  </TableCell>
-                )}
-                {visibleColumns.includes('amount') && (
-                  <TableCell>${transaction.amount}</TableCell>
-                )}
-                {visibleColumns.includes('paymentMethod') && (
-                  <TableCell>
-                    {transaction.payment_method === 'cash' && 'Efectivo'}
-                    {transaction.payment_method === 'transfer' && 'Transferencia'}
-                    {transaction.payment_method === 'card' && 'Tarjeta'}
-                  </TableCell>
-                )}
-                {visibleColumns.includes('paid') && (
-                  <TableCell>
-                    {transaction.paid ? 'Si' : 'No'}
-                  </TableCell>
-                )}
-                {visibleColumns.includes('payment_date') && (
-                  <TableCell>
-                    {new Date(transaction.payment_date).toLocaleDateString()}
-                  </TableCell>
-                )}
-                {visibleColumns.includes('date') && (
-                  <TableCell>
-                    {new Date(transaction.created_at).toLocaleDateString()}
-                  </TableCell>
-                )}
-                {visibleColumns.includes('notes') && (
-                  <TableCell>{transaction.notes}</TableCell>
-                )}
-                {visibleColumns.includes('limit_date') && (
-                  <TableCell>
-                    {transaction.expiration_date ? new Date(transaction.expiration_date).toLocaleDateString() : 'No límite de pago'}
-                  </TableCell>
-                )}
-                <TableCell>
-                  {transaction.image && (
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={transaction.image as string}
-                        alt="Miniatura"
-                        className="w-10 h-10 object-cover rounded"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleOpenImage(transaction.image as string)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        Ver
-                      </Button>
-                    </div>
-                  )}
-                </TableCell>
-                {visibleColumns.includes('actions') && (
-                  <TableCell className="p-4 flex items-center justify-right gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
-                      <Share className="w-4 h-4 mr-2" />
-                    </Button>
-                    <InvoicePDF icon={true} invoice={transaction} />
-                    <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
-                      <Eye className="w-4 h-4 mr-2" />
-                    </Link>
-                  </TableCell>
-                )}
-
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <p>Cargando transacciones...</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {visibleColumns.includes('folio') && <TableHead>Folio</TableHead>}
+                {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
+                {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
+                {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
+                {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
+                {visibleColumns.includes('payment_date') && <TableHead>Fecha de pago</TableHead>}
+                {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
+                {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
+                {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
+                <TableHead>Comprobante</TableHead>
+                {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredTransactions.length > 0 ? (
+                filteredTransactions.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    {visibleColumns.includes('folio') && (
+                      <TableCell>
+                        {transaction.folio}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes('student') && (
+                      <TableCell>
+                        {transaction.student?.firstname} {transaction.student?.lastname}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes('amount') && (
+                      <TableCell>${transaction.amount}</TableCell>
+                    )}
+                    {visibleColumns.includes('paymentMethod') && (
+                      <TableCell>
+                        {transaction.payment_method === 'cash' && 'Efectivo'}
+                        {transaction.payment_method === 'transfer' && 'Transferencia'}
+                        {transaction.payment_method === 'card' && 'Tarjeta'}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes('paid') && (
+                      <TableCell>
+                        {transaction.paid ? 'Si' : 'No'}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes('payment_date') && (
+                      <TableCell>
+                        {new Date(transaction.payment_date).toLocaleDateString()}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes('date') && (
+                      <TableCell>
+                        {new Date(transaction.created_at).toLocaleDateString()}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes('notes') && (
+                      <TableCell>{transaction.notes}</TableCell>
+                    )}
+                    {visibleColumns.includes('limit_date') && (
+                      <TableCell>
+                        {transaction.expiration_date ? new Date(transaction.expiration_date).toLocaleDateString() : 'No límite de pago'}
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      {transaction.image && (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={transaction.image as string}
+                            alt="Miniatura"
+                            className="w-10 h-10 object-cover rounded"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenImage(transaction.image as string)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Ver
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                    {visibleColumns.includes('actions') && (
+                      <TableCell className="p-4 flex items-center justify-right gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
+                          <Share className="w-4 h-4 mr-2" />
+                        </Button>
+                        <InvoicePDF icon={true} invoice={transaction} />
+                        <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
+                          <Eye className="w-4 h-4 mr-2" />
+                        </Link>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={visibleColumns.length + 1} className="text-center py-4">
+                    No se encontraron transacciones
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        )}
         <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
           <DialogContent className="max-w-3xl max-h-[80vh] h-full overflow-y-scroll">
             <img src={selectedImage} alt="Comprobante" className="w-full" />
           </DialogContent>
         </Dialog>
       </CardContent>
+      
+      {/* Paginación */}
+      <CardFooter className="flex justify-between items-center border-t p-4">
+        <div className="text-sm text-muted-foreground">
+          Mostrando {Math.min(pagination.total, (pagination.currentPage - 1) * pagination.perPage + 1)} a {Math.min(pagination.total, pagination.currentPage * pagination.perPage)} de {pagination.total} transacciones
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, pagination.lastPage) }, (_, i) => {
+              // Determine which page numbers to show based on current page
+              let pageNum;
+              if (pagination.lastPage <= 5) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage >= pagination.lastPage - 2) {
+                pageNum = pagination.lastPage - 4 + i;
+              } else {
+                pageNum = pagination.currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNum}
+                  variant={pagination.currentPage === pageNum ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNum)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.lastPage}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

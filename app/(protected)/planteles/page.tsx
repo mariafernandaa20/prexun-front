@@ -11,7 +11,7 @@ const { activeCampus} = useActiveCampusStore();
   return (
     <div>
       <Card>
-        <CardHeader className='sticky top-0 z-10 bg-card'>
+        <CardHeader className='sticky top-0 z-8 bg-card'>
           <h1 className="text-2xl font-bold">{activeCampus?.name}</h1>
         </CardHeader>
         <CardContent>

@@ -301,7 +301,7 @@ export default function CobrosPage() {
   // Main render
   return (
     <Card>
-      <CardHeader className='sticky top-0 z-10 bg-card'>
+      <CardHeader className='sticky top-0 z-8 bg-card'>
         <div className="flex gap-4 justify-between">
           <div className='flex gap-4'>
             <Input
