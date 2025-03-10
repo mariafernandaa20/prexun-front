@@ -69,7 +69,6 @@ export default function CobrosPage() {
       setLoading(true);
       const response = await getCharges(Number(activeCampus.id), page, parseInt(itemsPerPage));
       
-      // Ahora response tiene estructura de paginación
       setTransactions(response.data);
       setPagination({
         currentPage: response.current_page,
@@ -77,6 +76,7 @@ export default function CobrosPage() {
         total: response.total,
         perPage: parseInt(itemsPerPage)
       });
+
     } catch (error) {
       console.error('Error fetching transactions:', error);
     } finally {
