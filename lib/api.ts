@@ -172,7 +172,7 @@ export const deletePeriod = async (id: string) => {
 };
 
 // En tu archivo /lib/api.js o similar
-export const getCharges = async (campusId, page = 1, perPage = 200) => {
+export const getCharges = async (campusId, page, perPage) => {
   try {
     const response = await axiosInstance.get(`/charges/${campusId}&page=${page}&per_page=${perPage}`);
     return response.data;

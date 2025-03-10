@@ -55,8 +55,9 @@ export default function CobrosPage() {
     total: 0,
     perPage: 200
   });
+  
   const [loading, setLoading] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState("200"); // Estado para controlar items por página
+  const [itemsPerPage, setItemsPerPage] = useState("50");
 
   useEffect(() => {
     if (!activeCampus) return;
