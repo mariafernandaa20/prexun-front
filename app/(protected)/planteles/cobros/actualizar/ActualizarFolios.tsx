@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast'
 
 const formSchema = z.object({
   campus_id: z.string().min(1, { message: 'Selecciona un plantel' }),
-  file: z.instanceof(FileList).refine(files => files.length > 0, {
+  file: z.instanceof(FileList as any).refine(files => files.length > 0, {
     message: 'Selecciona un archivo CSV o Excel',
   }),
 })
