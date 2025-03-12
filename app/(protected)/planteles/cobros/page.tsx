@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -36,6 +36,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import InvoicePDF from '@/components/invoice_pdf';
 import Link from 'next/link';
 import AgregarIngreso from './AgregarIngreso';
+import ActualizarFolios from './actualizar/ActualizarFolios';
 
 export default function CobrosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -231,8 +232,9 @@ export default function CobrosPage() {
               emptyMessage="No se encontraron columnas"
             />
           </div>
-          <div>
+          <div className="flex gap-2">
             <AgregarIngreso />
+            <Link href="/planteles/cobros/actualizar" className={buttonVariants({variant:'default'})}>Actualizar Folios</Link>
           </div>
         </div>
       </CardHeader>
