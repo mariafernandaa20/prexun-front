@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Eye, Share } from 'lucide-react';
+import { Eye, Share, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { MultiSelect } from '@/components/multi-select';
@@ -34,7 +34,7 @@ import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { Transaction, Card as CardType } from '@/lib/types';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form';
 
 // Constants
@@ -57,6 +57,7 @@ const PAYMENT_METHOD_LABELS = {
   transfer: 'Transferencia',
   card: 'Tarjeta'
 };
+
 const TransactionActions: React.FC<{
   transaction: Transaction;
   cards: CardType[];
@@ -124,40 +125,60 @@ export default function CobrosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [cards, setCards] = useState<CardType[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState("50");
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    perPage: 200
+  });
 
-  useEffect(() => {
-    if (!activeCampus) return
-
-    const fetchCards = async () => {
-      const response = await axiosInstance.get('/cards');
-
-      setCards(response.data);
-    }
-    fetchCards();
-  }, []);
   // Hooks
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
 
-  // Fetch transactions when dependencies change
-  useEffect(() => {
-    fetchTransactions();
-  }, [activeCampus, expirationDate]);
+  // Event handlers
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= pagination.lastPage) {
+      setPagination(prev => ({...prev, currentPage: newPage}));
+    }
+  };
+  
+  const handleItemsPerPageChange = (value: string) => {
+    console.log(value);
+    setItemsPerPage(value);
+    setPagination(prev => ({...prev, currentPage: 1}));
+  };
 
   // API interactions
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (page = 1) => {
+    if (!activeCampus) return;
     try {
       const params = {
         campus_id: activeCampus?.id,
         expiration_date: expirationDate || null,
+        page: page,
+        per_page: Number(itemsPerPage)
       };
 
       const response = await axiosInstance.get('/charges/not-paid', { params });
-      setTransactions(response.data);
+      setTransactions(response.data.data);
+      setPagination({
+        currentPage: response.data.current_page,
+        lastPage: response.data.last_page,
+        total: response.data.total,
+        perPage: response.data.per_page
+      });
     } catch (error) {
       console.error('Error fetching transactions:', error);
     }
   };
+
+   useEffect(() => {
+    if (!activeCampus) return;
+    fetchTransactions(pagination.currentPage);
+  }, [activeCampus, pagination.currentPage, itemsPerPage]);
 
   // Event handlers
   const handleStudentSelect = (values: string[]) => {
@@ -183,28 +204,31 @@ export default function CobrosPage() {
     });
   };
 
+  console.log(transactions)
   // Derived data
-  const filteredTransactions = transactions.filter((transaction) => {
+  const filteredTransactions = transactions?.filter((transaction) => {
+    if (!transaction || !transaction.student) return false;
+    
     // Filter by search terms
-    const studentFullName = `${transaction.student?.username} ${transaction.student?.firstname} ${transaction.student?.lastname}`.toLowerCase();
+    const studentFullName = `${transaction.student.username || ''} ${transaction.student.firstname || ''} ${transaction.student.lastname || ''}`.toLowerCase();
     const searchTerms = searchStudent.toLowerCase().split(' ');
     const matchesSearch = searchTerms.every((term) => studentFullName.includes(term));
 
     // Filter by selected students
     const matchesStudent = selectedStudents.includes('all') ||
-      selectedStudents.includes(transaction.student?.id || '');
+      selectedStudents.includes(transaction.student.id || '');
 
     return matchesSearch && matchesStudent;
-  });
+  }) || [];
 
-  const uniqueStudents = transactions
+  const uniqueStudents = transactions?.length ? transactions
     .map(t => ({
       value: t.student?.id || '',
       label: `${t.student?.firstname} ${t.student?.lastname}`,
     }))
     .filter((student, index, self) =>
       index === self.findIndex(s => s.value === student.value)
-    );
+    ) : [];
 
   // Component rendering helpers
   const renderTableHeaders = () => (
@@ -354,6 +378,48 @@ export default function CobrosPage() {
           </DialogContent>
         </Dialog>
       </CardContent>
+
+      <CardFooter>
+        <div className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <div className="text-sm text-muted-foreground">
+              {filteredTransactions.length} resultados
+            </div>
+            <Select value={itemsPerPage} onValueChange={handleItemsPerPageChange}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="50 por página" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handlePageChange(pagination.currentPage - 1)}
+              disabled={pagination.currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-sm">
+              Página {pagination.currentPage} de {pagination.lastPage}
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handlePageChange(pagination.currentPage + 1)}
+              disabled={pagination.currentPage === pagination.lastPage}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardFooter>
     </Card>
   );
 }
