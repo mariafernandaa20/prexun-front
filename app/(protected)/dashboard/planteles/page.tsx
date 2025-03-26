@@ -285,7 +285,7 @@ export default function Page() {
             </Table>
 
             {/* Modal de Creación/Edición */}
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen} modal={false}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>

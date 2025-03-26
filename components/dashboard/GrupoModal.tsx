@@ -157,7 +157,7 @@ export default function GrupoModal({
   const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose} modal={false}>
       <DialogContent className={`sm:max-w-[700px]`}>
         <DialogHeader>
           <DialogTitle>
