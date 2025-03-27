@@ -74,6 +74,7 @@ export default function Page() {
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
+  const [searchMatricula, setSearchMatricula] = useState('');
   const [promos, setPromos] = useState<Promocion[]>([]);
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [showtAllFilters, setShowtAllFilters] = useState(false);
@@ -279,9 +280,9 @@ export default function Page() {
       !searchDate ||
       new Date(student.created_at).toLocaleDateString().includes(searchDate);
     const matchesPhone = !searchPhone || student.phone.includes(searchPhone);
-
+    const matchesMatricula = !searchMatricula || student.id.includes(searchMatricula);
     return (
-      matchesType && matchesPeriod && matchesName && matchesDate && matchesPhone
+      matchesType && matchesPeriod && matchesName && matchesDate && matchesPhone && matchesMatricula
     );
   });
 
@@ -348,6 +349,12 @@ export default function Page() {
                   placeholder="Buscar por teléfono..."
                   value={searchPhone}
                   onChange={(e) => setSearchPhone(e.target.value)}
+                  className="w-[200px]"
+                />
+                <Input
+                  placeholder="Buscar por matricula..."
+                  value={searchMatricula}
+                  onChange={(e) => setSearchMatricula(e.target.value)}
                   className="w-[200px]"
                 />
                 <Select
@@ -517,10 +524,10 @@ export default function Page() {
                           fetchStudents={fetchStudents}
                           student={student}
                         /> */}
-                        <a className={buttonVariants({ variant: 'ghost' })} href={`https://wa.me/${student.phone}`} target="_blank" rel="noreferrer">
-                        <FaWhatsapp />
+                          <a className={buttonVariants({ variant: 'ghost' })} href={`https://wa.me/${student.phone}`} target="_blank" rel="noreferrer">
+                            <FaWhatsapp />
 
-                        </a>
+                          </a>
                           <Button
                             variant="ghost"
                             size="icon"
