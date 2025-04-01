@@ -290,10 +290,7 @@ export default function Page() {
     <Card>
       <CardHeader className='sticky top-0 z-8 bg-card'>
         <div className="flex justify-between mb-6 max-w-[100vw-30rem] ">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">Estudiantes</h1>
-            <h1>Mostrando {filteredStudents.length}</h1>
-          </div>
+          <h1 className="text-2xl font-bold">Estudiantes</h1>
           <div className="flex flex-col gap-4">
             <div className="flex gap-4">
               <Input
