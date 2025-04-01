@@ -74,7 +74,7 @@ export default function Page() {
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
-  const [searchMatricula, setSearchMatricula] = useState('');
+  const [searchMatricula, setSearchMatricula] = useState<number>(null);
   const [promos, setPromos] = useState<Promocion[]>([]);
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [showtAllFilters, setShowtAllFilters] = useState(false);
@@ -280,7 +280,7 @@ export default function Page() {
       !searchDate ||
       new Date(student.created_at).toLocaleDateString().includes(searchDate);
     const matchesPhone = !searchPhone || student.phone.includes(searchPhone);
-    const matchesMatricula = !searchMatricula || student.id.includes(searchMatricula);
+    const matchesMatricula = !searchMatricula || String(student.id).includes(String(searchMatricula));
     return (
       matchesType && matchesPeriod && matchesName && matchesDate && matchesPhone && matchesMatricula
     );
@@ -290,7 +290,10 @@ export default function Page() {
     <Card>
       <CardHeader className='sticky top-0 z-8 bg-card'>
         <div className="flex justify-between mb-6 max-w-[100vw-30rem] ">
-          <h1 className="text-2xl font-bold">Estudiantes</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">Estudiantes</h1>
+            <h1>Mostrando {filteredStudents.length}</h1>
+          </div>
           <div className="flex flex-col gap-4">
             <div className="flex gap-4">
               <Input
@@ -354,7 +357,7 @@ export default function Page() {
                 <Input
                   placeholder="Buscar por matricula..."
                   value={searchMatricula}
-                  onChange={(e) => setSearchMatricula(e.target.value)}
+                  onChange={(e) => setSearchMatricula(Number(e.target.value))}
                   className="w-[200px]"
                 />
                 <Select
