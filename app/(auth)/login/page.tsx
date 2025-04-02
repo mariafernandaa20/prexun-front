@@ -121,24 +121,6 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
-          <div className="space-y-2">
-            <p className="px-8 text-center text-sm text-muted-foreground">
-              <Link
-                href="/forgot-password"
-                className="hover:text-brand underline underline-offset-4"
-              >
-                Olvidaste tu contraseña?
-              </Link>
-            </p>
-            <p className="px-8 text-center text-sm text-muted-foreground">
-              <Link
-                href="/register"
-                className="hover:text-brand underline underline-offset-4"
-              >
-                No tienes una cuenta? Registrate
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>

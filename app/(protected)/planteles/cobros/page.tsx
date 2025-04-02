@@ -36,7 +36,9 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import InvoicePDF from '@/components/invoice_pdf';
 import Link from 'next/link';
 import AgregarIngreso from './AgregarIngreso';
+import EditarFolio from './EditarFolio';
 import ActualizarFolios from './actualizar/ActualizarFolios';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 export default function CobrosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -47,6 +49,7 @@ export default function CobrosPage() {
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes', 'paid', 'limit_date', 'actions', 'folio']);
   const { activeCampus } = useActiveCampusStore();
+  const { user } = useAuthStore();
   const { toast } = useToast();
   
   // Agregar estados para manejar la paginación
@@ -336,6 +339,7 @@ export default function CobrosPage() {
                         <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
                           <Eye className="w-4 h-4 mr-2" />
                         </Link>
+                        {user?.role === 'super_admin' && <EditarFolio transaction={transaction} onSuccess={() => fetchTransactions(pagination.currentPage)} />}
                       </TableCell>
                     )}
                   </TableRow>
