@@ -47,7 +47,7 @@ export default function CobrosPage() {
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'date', 'notes', 'paid', 'limit_date', 'actions', 'folio']);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'payment_date', 'notes', 'paid', 'actions', 'folio']);
   const { activeCampus } = useActiveCampusStore();
   const { user } = useAuthStore();
   const { toast } = useToast();
@@ -96,7 +96,7 @@ export default function CobrosPage() {
 
   const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(value);
-    setPagination(prev => ({...prev, currentPage: 1})); // Regresar a primera página al cambiar items por página
+    setPagination(prev => ({...prev, currentPage: 1}));
   };
 
   const handlePaymentMethodChange = (value: string) => {
@@ -295,7 +295,7 @@ export default function CobrosPage() {
                     )}
                     {visibleColumns.includes('payment_date') && (
                       <TableCell>
-                        {new Date(transaction.payment_date).toLocaleDateString()}
+                        {transaction.payment_date}
                       </TableCell>
                     )}
                     {visibleColumns.includes('date') && (
