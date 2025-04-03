@@ -154,6 +154,7 @@ export default function CobrosPage() {
     );
 
   const columnOptions = [
+    { value: 'id', label: 'ID' },
     { value: 'student', label: 'Estudiante' },
     { value: 'amount', label: 'Monto' },
     { value: 'paymentMethod', label: 'Método' },
@@ -251,6 +252,7 @@ export default function CobrosPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                {visibleColumns.includes('id') && <TableHead>ID</TableHead>}
                 {visibleColumns.includes('folio') && <TableHead>Folio</TableHead>}
                 {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
                 {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
@@ -268,6 +270,11 @@ export default function CobrosPage() {
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
+                    {visibleColumns.includes('id') && (
+                      <TableCell>
+                        {transaction.id}
+                      </TableCell>
+                    )}
                     {visibleColumns.includes('folio') && (
                       <TableCell>
                         {transaction.folio}
