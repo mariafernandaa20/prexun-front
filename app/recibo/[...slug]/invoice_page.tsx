@@ -16,17 +16,17 @@ export function InvoiceClient({ invoice }) {
     const invoiceNumber = ({ folio }) => {
         if (!folio) return 'No pagado';
         if (folio < 10) {
-            return `${invoice?.campus?.name?.charAt(0)}-0000${folio}`;
+            return `${invoice?.campus?.name?.charAt(0)}I-0000${folio}`;
         } if (folio < 100) {
-            return `${invoice?.campus?.name?.charAt(0)}-000${folio}`;
+            return `${invoice?.campus?.name?.charAt(0)}I-000${folio}`;
         }
         if (folio < 1000) {
             return `${invoice?.campus?.name?.charAt(0)}-00${folio}`;
         }
         if (folio < 10000) {
-            return `${invoice?.campus?.name?.charAt(0)}-0${folio}`;
+            return `${invoice?.campus?.name?.charAt(0)}I-0${folio}`;
         }
-        return `${invoice?.campus?.name?.charAt(0)}-${folio}`;
+        return `${invoice?.campus?.name?.charAt(0)}I-${folio}`;
     };
 
     return (
@@ -71,7 +71,7 @@ export function InvoiceClient({ invoice }) {
                         <div className="space-y-2">
                             <div className="flex justify-between">
                                 <span className="font-medium">Comprobante de Pago</span>
-                                <span className='bg-yellow-200 p-2'>{invoiceNumber(invoice)}</span>
+                                <span className='bg-yellow-200 p-2'>{invoice.folio_new || invoiceNumber(invoice)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-medium">Estudiante</span>

@@ -91,7 +91,7 @@ const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, curren
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
     doc.setFontSize(11);
     const details = [
-        ["Comprobante de Pago:", `${invoice?.campus?.name?.charAt(0)}-${invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}`],
+        ["Comprobante de Pago:", invoice.folio_new ? invoice.folio_new : `${invoice?.campus?.name?.charAt(0)}-${invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}`],
         ["Estudiante:", invoice.student?.firstname],
         ["", invoice.student?.lastname],
 
