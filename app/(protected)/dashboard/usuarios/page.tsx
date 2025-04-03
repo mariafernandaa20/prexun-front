@@ -311,6 +311,7 @@ export default function page() {
                     <SelectItem value="super_admin">
                       Super Administrador
                     </SelectItem>
+                    <SelectItem value="contador">Contador</SelectItem>
                     <SelectItem value="maestro">Maestro</SelectItem>
                     <SelectItem value="proveedor">Proveedor</SelectItem>
                     <SelectItem value="otro">Otro</SelectItem>

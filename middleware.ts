@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
 
   if (role === 'super_admin') {
     return NextResponse.next()
-  } else if (role === 'admin') {
+  } else if (role === 'admin' || role === 'contador') {
     if (!pathname.startsWith('/planteles')) {
       return NextResponse.redirect(new URL('/planteles', request.url))
     }
