@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '../ui/button'
 import { PenIcon } from 'lucide-react'
 import {
@@ -11,21 +11,52 @@ import {
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { updateStudent } from '@/lib/api/studentApi'
+import { getGrupos } from '@/lib/api'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select"
 
 interface Student {
     id: number
     email: string
     firstname: string
     lastname: string
+    grupo_id?: number
+}
+
+interface Grupo {
+  id?: number
+  name: string
+  capacity: number
+  students_count?: number
 }
 
 export default function UpdatePersonalInfo({student}: {student: Student}) {
+    const [grupos, setGrupos] = useState<Grupo[]>([])
     const [formData, setFormData] = useState({
         id: student.id,
         email: student.email,
         firstname: student.firstname,
         lastname: student.lastname,
+        grupo_id: student.grupo_id || "",
         })
+
+  useEffect(() => {
+    const fetchGrupos = async () => {
+      try {
+        const response = await getGrupos()
+        setGrupos(response)
+      } catch (error) {
+        console.error('Error al cargar grupos:', error)
+      }
+    }
+
+    fetchGrupos()
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -34,7 +65,12 @@ export default function UpdatePersonalInfo({student}: {student: Student}) {
     })
   }
 
-  
+  const handleSelectChange = (value: string, name: string) => {
+    setFormData({
+      ...formData,
+      [name]: value
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,6 +85,7 @@ export default function UpdatePersonalInfo({student}: {student: Student}) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Actualizar Información Personal</DialogTitle>
+          <div className='text-gray-500'>Este formulario actualiza directamente a moodle</div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -83,9 +120,28 @@ export default function UpdatePersonalInfo({student}: {student: Student}) {
               type="lastname"
               value={formData.lastname}
               onChange={handleInputChange}
-              placeholder="Nombre"
+              placeholder="Apellido"
               required
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="grupo_id">Grupo</Label>
+            <Select
+              name="grupo_id"
+              value={formData.grupo_id as string}
+              onValueChange={(value) => handleSelectChange(value, 'grupo_id')}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el grupo" />
+              </SelectTrigger>
+              <SelectContent>
+                {grupos.map((grupo) => (
+                  <SelectItem key={grupo.id} value={grupo.id?.toString() || ""}>
+                    {grupo.name} - {grupo.students_count || 0}/{grupo.capacity}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <Button type="submit" className="w-full">
             Guardar Cambios
