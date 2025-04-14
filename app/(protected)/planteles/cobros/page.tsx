@@ -352,7 +352,7 @@ export default function CobrosPage() {
                         <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
                           <Eye className="w-4 h-4 mr-2" />
                         </Link>
-                        {user?.role === 'super_admin' || user?.role === 'contador' && <EditarFolio transaction={transaction} onSuccess={() => fetchTransactions(pagination.currentPage)} />}
+                        {(user?.role === 'super_admin' || user?.role === 'contador') && <EditarFolio transaction={transaction} onSuccess={() => fetchTransactions(pagination.currentPage)} />}
                       </TableCell>
                     )}
                   </TableRow>
