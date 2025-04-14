@@ -184,6 +184,7 @@ export interface Transaction {
   folio?: number;
   student?: Student;
   cash_register_id?: number;
+  folio_new?: string;
   image?: string | File;
   card_id?: string;
 }

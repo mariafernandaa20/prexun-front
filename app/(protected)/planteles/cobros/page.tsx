@@ -254,6 +254,7 @@ export default function CobrosPage() {
               <TableRow>
                 {visibleColumns.includes('id') && <TableHead>ID</TableHead>}
                 {visibleColumns.includes('folio') && <TableHead>Folio</TableHead>}
+                {visibleColumns.includes('folio') && <TableHead>Nuevo Folio</TableHead>}
                 {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
                 {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
                 {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
@@ -278,6 +279,11 @@ export default function CobrosPage() {
                     {visibleColumns.includes('folio') && (
                       <TableCell>
                         {transaction.folio}
+                      </TableCell>
+                    )}
+                    {visibleColumns.includes('folio') && (
+                      <TableCell>
+                        {transaction.folio_new}
                       </TableCell>
                     )}
                     {visibleColumns.includes('student') && (

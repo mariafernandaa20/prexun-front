@@ -71,6 +71,7 @@ export default function EditarFolio({ transaction, onSuccess }: EditarFolioProps
           <DialogTitle>Editar Folio</DialogTitle>
           <DialogDescription>
             Actualiza el folio de la transacción de {transaction.student?.firstname} {transaction.student?.lastname}.
+            Al actualizar el numero automaticamente se actualiza al nuevo formato. 
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
