@@ -24,7 +24,11 @@ export const getUsers = async () => {
 };
 
 export const createUser = async (user: User) => {
-  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_USER, user);
+  const formatedUser = {
+    ...user,
+    email: user.email.toLowerCase(),
+  }
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_USER, formatedUser);
   return response.data;
 };
 
