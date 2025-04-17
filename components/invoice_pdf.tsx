@@ -72,12 +72,12 @@ const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, curren
     
     currentY += (addressLines.length * 7);
     
-    // Titular
-    doc.text(`Titular: ${campus?.titular}`, leftCol, currentY);
+    // // Titular
+    // doc.text(`Titular: ${campus?.titular}`, leftCol, currentY);
     
-    // RFC
-    currentY += 5;
-    doc.text(`RFC: ${campus?.rfc}`, leftCol, currentY);
+    // // RFC
+    // currentY += 5;
+    // doc.text(`RFC: ${campus?.rfc}`, leftCol, currentY);
 
     // Tarjeta
     currentY += 5;
