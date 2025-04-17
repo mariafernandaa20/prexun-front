@@ -80,12 +80,12 @@ const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, curren
     // doc.text(`RFC: ${campus?.rfc}`, leftCol, currentY);
 
     // Tarjeta
-    currentY += 5;
-    doc.text(`Tarjeta: ${card?.number}`, leftCol, currentY);
+    // currentY += 5;
+    // doc.text(`Tarjeta: ${card?.number}`, leftCol, currentY);
 
     // CLABE
-    currentY += 5;
-    doc.text(`CLABE: ${card?.clabe}`, leftCol, currentY);
+    // currentY += 5;
+    // doc.text(`CLABE: ${card?.clabe}`, leftCol, currentY);
 };
 
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {

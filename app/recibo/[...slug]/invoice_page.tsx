@@ -64,8 +64,8 @@ export function InvoiceClient({ invoice }) {
                             <p className="text-gray-600">{invoice.campus?.address}</p>
                             {/* <p className="text-gray-600">{invoice.campus?.titular}</p>
                             <p className="text-gray-600">{invoice.campus?.rfc}</p> */}
-                            <p className="text-gray-600"><span className='font-bold'>Tarjeta:</span> {invoice?.card?.number}</p>
-                            <p className="text-gray-600"><span className='font-bold'>CLABE:</span> {invoice?.card?.clabe}</p>
+                            {/* <p className="text-gray-600"><span className='font-bold'>Tarjeta:</span> {invoice?.card?.number}</p>
+                            <p className="text-gray-600"><span className='font-bold'>CLABE:</span> {invoice?.card?.clabe}</p> */}
 
                         </div>
                         <div className="space-y-2">
