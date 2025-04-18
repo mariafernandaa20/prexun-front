@@ -8,15 +8,22 @@ import {
   Bot,
   Building,
   CalendarClock,
+  CreditCard,
   Command,
   Frame,
   GalleryVerticalEnd,
+  GraduationCap,
+  LayoutDashboard,
   Map,
   PieChart,
+  Receipt,
+  School,
   Settings2,
   ShoppingBag,
   Users,
   Wallet,
+  AlertCircle,
+  DollarSign,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -115,17 +122,17 @@ export const data = {
     {
       name: "Dashboard",
       url: "/dashboard",
-      icon: PieChart,
+      icon: LayoutDashboard,
     },
     {
       name: "Tarjetas",
       url: "/dashboard/cards",
-      icon: PieChart,
+      icon: CreditCard,
     },
     {
       name: "Estudiantes",
       url: "/dashboard/students",
-      icon: Users,
+      icon: GraduationCap,
     },
     {
       name: "Cohortes",
@@ -150,12 +157,17 @@ export const data = {
     {
       name: "Promociones",
       url: "/dashboard/promos",
-      icon: BookOpen,
+      icon: DollarSign,
     },
     {
       name: "Grupos",
       url: "/dashboard/grupos",
-      icon: BookOpen,
+      icon: School,
+    },
+    {
+      name: "Semanas Intensivas",
+      url: "/dashboard/semanas-intensivas",
+      icon: CalendarClock,
     },
     {
       name: "Productos",
@@ -172,27 +184,27 @@ export const data = {
     {
       name: "Dashboard",
       url: "/planteles",
-      icon: PieChart,
+      icon: LayoutDashboard,
     },
     {
       name: "Estudiantes",
       url: "/planteles/estudiantes",
-      icon: Users,
+      icon: GraduationCap,
     },
     {
       name: "Pagos",
       url: "/planteles/cobros",
-      icon: PieChart,
+      icon: Receipt,
     },
     {
       name: "Pendientes",
       url: "/planteles/pendientes",
-      icon: PieChart,
+      icon: AlertCircle,
     },
     {
       name: "Egresos",
       url: "/planteles/gastos",
-      icon: PieChart,
+      icon: DollarSign,
     },
     {
       name: "Caja",
