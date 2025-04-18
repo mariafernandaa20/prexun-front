@@ -140,20 +140,21 @@ export default function GruposPage() {
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Grupos</h1>
-            <Button onClick={() => setIsOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Grupo
-            </Button>
+            <div className="flex gap-4 items-center">
+              <Input
+                placeholder="Buscar grupos..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-sm"
+              />
+              <Button onClick={() => setIsOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Grupo
+              </Button>
+            </div>
           </div>
 
-          <div className="flex items-center">
-            <Input
-              placeholder="Buscar grupos..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-sm"
-            />
-          </div>
+
 
           {isLoading ? (
             <div className="text-center">Cargando...</div>

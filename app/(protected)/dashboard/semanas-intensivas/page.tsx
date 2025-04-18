@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Pencil } from 'lucide-react';
 import { Campus, Grupo, Period } from '@/lib/types';
 import GrupoModal from '../../../../components/dashboard/GrupoModal';
-import { createGrupo, getCampuses, getGrupos, getPeriods, updateGrupo } from '@/lib/api';
+import { createGrupo, getCampuses, getGrupos, getPeriods, getSemanas, updateGrupo } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function GruposPage() {
@@ -72,7 +72,7 @@ export default function GruposPage() {
 
   const fetchGrupos = async () => {
     try {
-      const response = await getGrupos();
+      const response = await getSemanas();
       setGrupos(response);
     } catch (error) {
       console.error('Error fetching grupos:', error);
@@ -139,26 +139,26 @@ export default function GruposPage() {
       <div className="p-4">
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Grupos de semanas intensivas</h1>
-            <Button onClick={() => setIsOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nuevo Grupo de semanas intensivas
-            </Button>
+            <h1 className="text-2xl font-bold">Grupos de semanas intensivas <span className='text-red-500'>Beta</span></h1>
+            <div className="flex gap-4 items-center">
+              <Input
+                placeholder="Buscar grupos..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-sm"
+              />
+              <Button onClick={() => setIsOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nuevo Grupo
+              </Button>
+            </div>
           </div>
 
-          <div className="flex items-center">
-            <Input
-              placeholder="Buscar grupos..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-sm"
-            />
-          </div>
 
           {isLoading ? (
             <div className="text-center">Cargando...</div>
           ) : filteredGrupos.length === 0 ? (
-            <div className="text-center">No se encontraron grupos</div>
+            <div className="text-center">No se encontraron grupos de semanas intensivas</div>
           ) : (
             <div className="flex flex-col gap-6">
               {periods.map((period) => {
