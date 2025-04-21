@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Pencil } from 'lucide-react';
 import { Campus, Grupo, Period } from '@/lib/types';
 import GrupoModal from '../../../../components/dashboard/GrupoModal';
-import { createGrupo, getCampuses, getGrupos, getPeriods, getSemanas, updateGrupo } from '@/lib/api';
+import { createSemanas, getCampuses, getGrupos, getPeriods, getSemanas, updateSemanas } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function GruposPage() {
@@ -53,9 +53,9 @@ export default function GruposPage() {
   const handleSubmit = async (grupo: Grupo) => {
     try {
       if (grupo.id) {
-        await updateGrupo(grupo)
+        await updateSemanas(grupo)
       } else {
-        await createGrupo(grupo)
+        await createSemanas(grupo)
       }
       fetchGrupos()
       setIsOpen(false)
