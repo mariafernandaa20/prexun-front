@@ -19,6 +19,12 @@ export default function GoogleAuth() {
     setSuccessMessage("Inicio de sesión exitoso ✅");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("google_access_token");
+    setAccessToken("");
+    setSuccessMessage("");
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("google_access_token");
     if (token) {
@@ -73,36 +79,54 @@ export default function GoogleAuth() {
 
   return (
     <>
-      <button
-        onClick={handleLogin}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          backgroundColor: "#fff",
-          border: "1px solid #dcdcdc",
-          borderRadius: "5px",
-          padding: "10px 15px",
-          fontSize: "14px",
-          fontWeight: 500,
-          color: "#3c4043",
-          fontFamily: "'Roboto', sans-serif",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-          cursor: "pointer",
-        }}
-      >
-        <img
-          src="https://developers.google.com/identity/images/g-logo.png"
-          alt="Google logo"
-          style={{ width: "18px", height: "18px" }}
-        />
-        <span>Iniciar sesión con Google</span>
-      </button>
+      {!successMessage && (
+        <button
+          onClick={handleLogin}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            backgroundColor: "#fff",
+            border: "1px solid #dcdcdc",
+            borderRadius: "5px",
+            padding: "10px 15px",
+            fontSize: "14px",
+            fontWeight: 500,
+            color: "#3c4043",
+            fontFamily: "'Roboto', sans-serif",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+            cursor: "pointer",
+          }}
+        >
+          <img
+            src="https://developers.google.com/identity/images/g-logo.png"
+            alt="Google logo"
+            style={{ width: "18px", height: "18px" }}
+          />
+          <span>Iniciar sesión con Google</span>
+        </button>
+      )}
 
       {successMessage && (
-        <p style={{ marginTop: "10px", color: "green", fontWeight: "bold" }}>
-          {successMessage}
-        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <p style={{ marginTop: "10px", color: "green", fontWeight: "bold" }}>
+            {successMessage}
+          </p>
+          <button
+            onClick={handleLogout}
+            style={{
+              backgroundColor: "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              padding: "5px 10px",
+              cursor: "pointer",
+              marginTop: "10px",
+            }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
       )}
     </>
   );

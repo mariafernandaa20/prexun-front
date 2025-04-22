@@ -2,10 +2,10 @@
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-// Aquí envolvemos todos los componentes de tu aplicación con el GoogleOAuthProvider
 export function Providers({ children }: { children: React.ReactNode }) {
+  const CLIENTID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   return (
-    <GoogleOAuthProvider clientId="">
+    <GoogleOAuthProvider clientId={CLIENTID}>
       {children}
     </GoogleOAuthProvider>
   );
