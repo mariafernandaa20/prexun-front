@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { Campus, Cohort, Municipio, Carrera, Period, Student, Prepa, Facultad, Promocion, Grupo } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuthStore } from '@/lib/store/AuthStore';
+import { addContactToGoogle } from '@/lib/googleContacts';
+
 import {
   Select,
   SelectContent,
@@ -93,9 +96,9 @@ export function StudentForm({
     fetchCohorts();
   }, [toast]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.firstname || !formData.lastname || !formData.phone) {
       toast({
         title: 'Error de validación',
@@ -104,7 +107,7 @@ export function StudentForm({
       });
       return;
     }
-    
+
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!emailRegex.test(formData.email)) {
       toast({
@@ -114,11 +117,43 @@ export function StudentForm({
       });
       return;
     }
-    
-    // Continuar con el envío del formulario
+
     setIsLoadingButton(true);
-    onSubmit(formData);
-    setIsLoadingButton(false);
+
+    try {
+      await onSubmit(formData); // guarda el estudiante como siempre
+
+      // Aquí se intenta enviar a Google Contacts
+      const accessToken = useAuthStore.getState().accessToken;
+      if (accessToken) {
+        try {
+          await addContactToGoogle(accessToken, {
+            name: `${formData.firstname} ${formData.lastname}`,
+            email: formData.email,
+            phone: formData.phone,
+          });
+
+          toast({
+            title: 'Estudiante sincronizado con Google Contacts',
+            description: `${formData.firstname} fue añadido a tus contactos`,
+          });
+        } catch (err) {
+          toast({
+            title: 'Error al sincronizar con Google Contacts',
+            description: 'El estudiante fue guardado pero no se pudo añadir a tus contactos',
+            variant: 'warning',
+          });
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error al guardar',
+        description: error.message || 'Error inesperado',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingButton(false);
+    }
   };
 
   const handleChange = (

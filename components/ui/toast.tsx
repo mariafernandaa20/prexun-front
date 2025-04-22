@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { warn } from "console"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -32,6 +33,8 @@ const toastVariants = cva(
         default: "border bg-secondary text-white",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
+          warning:
+          "warning group border-warning bg-warning text-warning-foreground",
       },
     },
     defaultVariants: {

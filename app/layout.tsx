@@ -4,7 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/providers/auth-provider";
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/react";
+import { Providers } from "./providers"; // Importamos Providers
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -20,7 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script src="https://analytics.ahrefs.com/analytics.js" data-key="tb4VnCQ9veS+etZWvizOmA" async></script>
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="tb4VnCQ9veS+etZWvizOmA"
+          async
+        ></script>
       </head>
       <body className={inter.className}>
         <ThemeProvider
@@ -29,9 +35,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+          <Providers> {/* Aquí envuelves tu aplicación con Providers */}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </Providers>
           <Toaster />
         </ThemeProvider>
         <Analytics />

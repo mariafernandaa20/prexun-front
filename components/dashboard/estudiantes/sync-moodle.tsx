@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Loader2, CheckCircle, XCircle } from "lucide-react"
 import axiosInstance from "@/lib/api/axiosConfig"
 import { toast } from "@/hooks/use-toast"
+import { addContactToGoogle } from "@/lib/googleContacts"
 
 export default function SyncMoodle() {
     const [cohortStatus, setCohortStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle")
@@ -57,13 +58,7 @@ export default function SyncMoodle() {
         setUserStatus("loading")
         try {
             
-            const usersResponse = await axiosInstance.post("/students/sync-module")
-            console.log(usersResponse.data)
-            setUserStatus("success")
-            toast({
-                title: "Sincronización de usuarios exitosa",
-                description: `Usuarios Creados: ${usersResponse.data.length}`,
-            });
+
 
 
         } catch (error) {

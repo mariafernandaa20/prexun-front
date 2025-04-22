@@ -41,6 +41,8 @@ import {
 import { ThemeToggleSidebar } from "./layout/theme-toggle";
 import Image from "next/image";
 import { Separator } from "./ui/separator";
+import { url } from "inspector";
+import { FcGoogle } from "react-icons/fc";
 
 // This is sample data.
 export const data = {
@@ -210,7 +212,13 @@ export const data = {
       name: "Caja",
       url: "/planteles/caja",
       icon: Wallet,
+
     },
+    {
+      name: "google",
+      url: "/planteles/google",
+      icon: FcGoogle as any,
+    }
   ],
 };
 
