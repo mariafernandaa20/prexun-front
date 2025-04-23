@@ -127,7 +127,7 @@ export function StudentForm({
       if (accessToken) {
         try {
           const grupo = grupos.find(g => g.id === Number(formData.grupo_id));
-          const studentName = `${grupo?.name || ''} ${formData.firstname} ${formData.lastname}`.trim();
+          const studentName = `${grupo?.name || ''} ${formData.lastname} ${formData.firstname}`.trim();
 
           await addContactToGoogle(accessToken, {
             name: studentName,
