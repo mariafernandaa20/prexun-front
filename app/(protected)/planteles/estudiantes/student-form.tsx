@@ -121,16 +121,16 @@ export function StudentForm({
     setIsLoadingButton(true);
 
     try {
-      await onSubmit(formData); // guarda el estudiante como siempre
+      await onSubmit(formData);
 
-      // Aquí se intenta enviar a Google Contacts
       const accessToken = useAuthStore.getState().accessToken;
       if (accessToken) {
         try {
           await addContactToGoogle(accessToken, {
-            name: `${formData.firstname} ${formData.lastname}`,
+            name: `${grupos.find(grupo => grupo.id === formData.grupo_id)?.name || ''} ${formData.firstname} ${formData.lastname}`,
             email: formData.email,
             phone: formData.phone,
+            secondaryPhone: formData.tutor_phone || undefined
           });
 
           toast({
@@ -139,7 +139,7 @@ export function StudentForm({
           });
         } catch (err) {
           toast({
-            title: 'Error al sincronizar con Google Contacts',
+            title: 'Error al sincronizar con Google Contacts', 
             description: 'El estudiante fue guardado pero no se pudo añadir a tus contactos',
             variant: 'warning',
           });

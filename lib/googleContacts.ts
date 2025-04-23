@@ -3,6 +3,7 @@ export async function addContactToGoogle(accessToken: string, contact: {
   name: string;
   email: string;
   phone: string;
+  secondaryPhone: string;
 }) {
   const response = await fetch("https://people.googleapis.com/v1/people:createContact", {
     method: "POST",
@@ -13,8 +14,9 @@ export async function addContactToGoogle(accessToken: string, contact: {
     body: JSON.stringify({
       names: [{ givenName: contact.name }],
       emailAddresses: [{ value: contact.email }],
-      phoneNumbers: [{ value: contact.phone }],
+      phoneNumbers: [{ value: contact.phone  }, {value: contact.secondaryPhone}],
     }),
+    
   });
 
   if (!response.ok) {
