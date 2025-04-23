@@ -126,8 +126,11 @@ export function StudentForm({
       const accessToken = useAuthStore.getState().accessToken;
       if (accessToken) {
         try {
+          const grupo = grupos.find(g => g.id === Number(formData.grupo_id));
+          const studentName = `${grupo?.name || ''} ${formData.firstname} ${formData.lastname}`.trim();
+
           await addContactToGoogle(accessToken, {
-            name: `${grupos.find(grupo => grupo.id === formData.grupo_id)?.name || ''} ${formData.firstname} ${formData.lastname}`,
+            name: studentName,
             email: formData.email,
             phone: formData.phone,
             secondaryPhone: formData.tutor_phone || undefined
@@ -135,7 +138,7 @@ export function StudentForm({
 
           toast({
             title: 'Estudiante sincronizado con Google Contacts',
-            description: `${formData.firstname} fue añadido a tus contactos`,
+            description: `${studentName} fue añadido a tus contactos`,
           });
         } catch (err) {
           toast({
