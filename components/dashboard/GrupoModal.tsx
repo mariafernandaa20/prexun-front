@@ -128,6 +128,7 @@ export default function GrupoModal({
       return;
     }
     const formatTime = (time: string) => {
+      if (!time) return null;
       const [hours, minutes] = time.split(':');
       return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
     };
@@ -164,12 +165,16 @@ export default function GrupoModal({
             {grupo ? 'Editar Grupo' : 'Crear Nuevo Grupo'}
           </DialogTitle>
         </DialogHeader>
-
+        <div className='text-neutral-700 dark:text-neutral-300'>
+          <span className='text-red-500'>*</span> Campos requeridos
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="space-y-2">
-                <Label htmlFor="name">Nombre del Grupo</Label>
+                <Label htmlFor="name">
+                  <span className='text-red-500'>*</span>  Nombre del Grupo
+                </Label>
                 <Input
                   id="name"
                   name="name"
@@ -179,7 +184,9 @@ export default function GrupoModal({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="period_id">Periodo</Label>
+                <Label htmlFor="period_id">
+                  <span className='text-red-500'>*</span> Periodo
+                </Label>
                 <Select
                   onValueChange={handlePeriodChange}
                   value={formData.period_id.toString()}
@@ -198,7 +205,9 @@ export default function GrupoModal({
               </div>
 
               <div>
-                <Label>Planteles</Label>
+                <Label>
+                  <span className='text-red-500'>*</span>  Planteles
+                </Label>
                 <MultiSelect
                   options={campuses.map((campus) => ({
                     value: campus.id.toString(),
@@ -213,7 +222,9 @@ export default function GrupoModal({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="type">Tipo</Label>
+                <Label htmlFor="type">
+                  <span className='text-red-500'>*</span> Tipo
+                </Label>
                 <Select onValueChange={handleTypeChange} value={formData.type}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar tipo" />
@@ -227,7 +238,9 @@ export default function GrupoModal({
             </div>
             <div>
               <div className="space-y-2">
-                <Label htmlFor="capacity">Capacidad</Label>
+                <Label htmlFor="capacity">
+                  <span className='text-red-500'>*</span> Capacidad
+                </Label>
                 <Input
                   id="capacity"
                   name="capacity"
@@ -245,7 +258,6 @@ export default function GrupoModal({
                   type="date"
                   value={formData.start_date}
                   onChange={handleInputChange}
-                  required
                 />
               </div>
               <div className="space-y-2">
@@ -256,7 +268,6 @@ export default function GrupoModal({
                   type="date"
                   value={formData.end_date}
                   onChange={handleInputChange}
-                  required
                 />
               </div>
               <div className="space-y-2">
@@ -267,7 +278,6 @@ export default function GrupoModal({
                   type="time"
                   value={formData.start_time}
                   onChange={handleInputChange}
-                  required
                 />
               </div>
               <div className="space-y-2">
@@ -278,7 +288,6 @@ export default function GrupoModal({
                   type="time"
                   value={formData.end_time}
                   onChange={handleInputChange}
-                  required
                 />
               </div>
             </div>

@@ -11,7 +11,7 @@ import {
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { updateStudent } from '@/lib/api/studentApi'
-import { getGrupos } from '@/lib/api'
+import { getGrupos, getSemanas } from '@/lib/api'
 import {
   Select,
   SelectContent,
@@ -21,11 +21,11 @@ import {
 } from "../ui/select"
 
 interface Student {
-    id: number
-    email: string
-    firstname: string
-    lastname: string
-    grupo_id?: number
+  id: number
+  email: string
+  firstname: string
+  lastname: string
+  grupo_id?: number
 }
 
 interface Grupo {
@@ -35,21 +35,26 @@ interface Grupo {
   students_count?: number
 }
 
-export default function UpdatePersonalInfo({student}: {student: Student}) {
-    const [grupos, setGrupos] = useState<Grupo[]>([])
-    const [formData, setFormData] = useState({
-        id: student.id,
-        email: student.email,
-        firstname: student.firstname,
-        lastname: student.lastname,
-        grupo_id: student.grupo_id || "",
-        })
+export default function UpdatePersonalInfo({ student }: { student: Student }) {
+  const [grupos, setGrupos] = useState<Grupo[]>([])
+  const [semanas, setSemanas] = useState<Grupo[]>([])
+  const [formData, setFormData] = useState({
+    id: student.id,
+    email: student.email,
+    firstname: student.firstname,
+    lastname: student.lastname,
+    grupo_id: student.grupo_id || "",
+    semana_intensiva_id: student.grupo_id || "",
+  })
 
   useEffect(() => {
     const fetchGrupos = async () => {
       try {
-        const response = await getGrupos()
-        setGrupos(response)
+        const grupos = await getGrupos()
+        const semanas = await getSemanas();
+
+        setSemanas(semanas)
+        setGrupos(grupos)
       } catch (error) {
         console.error('Error al cargar grupos:', error)
       }
@@ -138,6 +143,25 @@ export default function UpdatePersonalInfo({student}: {student: Student}) {
                 {grupos.map((grupo) => (
                   <SelectItem key={grupo.id} value={grupo.id?.toString() || ""}>
                     {grupo.name} - {grupo.students_count || 0}/{grupo.capacity}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="semana_intensiva_id">Grupo de Semanas Intensivas</Label>
+            <Select
+              name="semana_intensiva_id"
+              value={formData.semana_intensiva_id as string}
+              onValueChange={(value) => handleSelectChange(value, 'semana_intensiva_id')}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el grupo" />
+              </SelectTrigger>
+              <SelectContent>
+                {semanas.map((semana) => (
+                  <SelectItem key={semana.id} value={semana.id?.toString() || ""}>
+                    {semana.name} - {semana.students_count || 0}/{semana.capacity}
                   </SelectItem>
                 ))}
               </SelectContent>
