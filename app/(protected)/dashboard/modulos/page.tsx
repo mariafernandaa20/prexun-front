@@ -17,6 +17,7 @@ import { toast } from "sonner";
 interface Modulo {
   id: string;
   name: string;
+  moodle_id: string;
 }
 
 export default function ModuloPage() {
@@ -87,6 +88,7 @@ export default function ModuloPage() {
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
+            <TableHead>Moodle ID</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
@@ -95,6 +97,7 @@ export default function ModuloPage() {
           {modules.map((module) => (
             <TableRow key={module.id}>
               <TableCell>{module.id}</TableCell>
+              <TableCell>{module.moodle_id}</TableCell>
               <TableCell>
                 {editingModule?.id === module.id ? (
                   <Input
