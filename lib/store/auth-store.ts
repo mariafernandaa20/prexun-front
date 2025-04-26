@@ -3,19 +3,35 @@
 import { create } from "zustand";
 import { auth } from "@/lib/auth";
 import Cookies from "js-cookie";
-import axios from "axios";
 import axiosInstance from "../api/axiosConfig";
 import { AUTH_ENDPOINTS } from "../api/endpoints";
-import { Campus, User } from "../types";
-import { getUsers } from "../api";
-import { getCampuses } from "../api";
+import { Campus, Grupo, User } from "../types";
+import { getCampuses, getSemanas, getUsers } from "../api";
 
-
-interface AuthState {
+// Interfaces separadas para mejor organización
+interface UserState {
   user: User | null;
+  users: User[];
   loading: boolean;
+}
+
+interface CampusState {
+  campuses: Campus[];
+}
+
+interface GrupoState {
+  semanasIntensivas: Grupo[];
+}
+
+interface TokenState {
+  accessToken: string | null;
+}
+
+interface AuthActions {
   setUser: (user: User | null) => void;
+  setUsers: (users: User[]) => void;
   setLoading: (loading: boolean) => void;
+  setAccessToken: (token: string) => void;
   login: (email: string, password: string) => Promise<User>;
   logout: () => void;
   register: (
@@ -33,23 +49,53 @@ interface AuthState {
   ) => Promise<void>;
   resendVerification: () => Promise<void>;
   checkAuth: () => Promise<void>;
-  users: User[];
-  setUsers: (users: User[]) => void;
-  fetchUsers: () => Promise<void>;
-  campuses: Campus[];
+}
+
+interface DataActions {
   setCampuses: (campuses: Campus[]) => void;
+  fetchUsers: () => Promise<void>;
   fetchCampuses: () => Promise<void>;
+  fetchSemanas: () => Promise<void>;
   initializeApp: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+// Combinamos todas las interfaces
+type AuthState = UserState & CampusState & GrupoState & TokenState & AuthActions & DataActions;
+
+// Helpers para manejo de cookies
+const COOKIE_OPTIONS = {
+  expires: 7, // 7 días
+  path: "/",
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  domain: typeof window !== 'undefined' ? window.location.hostname : '',
+};
+
+const setCookie = (name: string, value: string) => {
+  Cookies.set(name, value, COOKIE_OPTIONS);
+};
+
+const removeCookie = (name: string) => {
+  Cookies.remove(name);
+};
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+  // Estado inicial
   user: null,
-  loading: true,
   users: [],
   campuses: [],
-  setUser: (user) => set({ user }),
-  setLoading: (loading) => set({ loading }),
+  semanasIntensivas: [],
+  accessToken: null,
+  loading: true,
 
+  // Setters simples
+  setUser: (user) => set({ user }),
+  setUsers: (users) => set({ users }),
+  setLoading: (loading) => set({ loading }),
+  setCampuses: (campuses) => set({ campuses }),
+  setAccessToken: (token) => set({ accessToken: token }),
+
+  // Acciones de autenticación
   checkAuth: async () => {
     try {
       const user = await auth.getUser();
@@ -65,33 +111,27 @@ export const useAuthStore = create<AuthState>((set) => ({
       password,
     });
 
-    const user = response.data.user;
-    const token = response.data.token;
+    const { user, token } = response.data;
 
-    Cookies.set("auth-token", token, {
-      expires: 7, // 7 días
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      domain: window.location.hostname,
+    setCookie("auth-token", token);
+    setCookie("user-role", user.role);
+    
+    // También almacenamos el token en el estado
+    set({ 
+      user,
+      accessToken: token 
     });
-
-    Cookies.set("user-role", user.role, {
-      expires: 7,
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      domain: window.location.hostname,
-    });
-
-    set({ user });
+    
     return user;
   },
 
   logout: () => {
-    Cookies.remove("auth-token");
-    Cookies.remove("user-role");
-    set({ user: null });
+    removeCookie("auth-token");
+    removeCookie("user-role");
+    set({ 
+      user: null,
+      accessToken: null
+    });
   },
 
   register: async (
@@ -138,30 +178,58 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  setUsers: (users) => set({ users }),
+  // Acciones para obtener datos
   fetchUsers: async () => {
     try {
-      const response = await getUsers();
-      set({ users: response });
+      const users = await getUsers();
+      set({ users });
     } catch (error) {
       console.error('Error fetching users:', error);
       set({ users: [] });
     }
   },
-  setCampuses: (campuses) => set({ campuses }),
-  fetchCampuses: async () => {
-    const response = await getCampuses();
-    console.log(response);
-    set({ campuses: response });
+
+  fetchSemanas: async () => {
+    try {
+      const semanasIntensivas = await getSemanas();
+      set({ semanasIntensivas });
+    } catch (error) {
+      console.error('Error fetching semanas:', error);
+      set({ semanasIntensivas: [] });
+    }
   },
+
+  fetchCampuses: async () => {
+    try {
+      const campuses = await getCampuses();
+      set({ campuses });
+    } catch (error) {
+      console.error('Error fetching campuses:', error);
+      set({ campuses: [] });
+    }
+  },
+
+  // Inicialización de la aplicación
   initializeApp: async () => {
     try {
+      set({ loading: true });
+      
+      // Intenta recuperar el token si existe en cookies
+      const storedToken = Cookies.get("auth-token");
+      if (storedToken) {
+        set({ accessToken: storedToken });
+      }
+      
       await Promise.all([
-        getUsers().then(users => set({ users })),
-        getCampuses().then(campuses => set({ campuses }))
+        get().fetchUsers(),
+        get().fetchCampuses(),
+        get().fetchSemanas()
       ]);
+      
+      await get().checkAuth();
     } catch (error) {
       console.error('Error initializing app:', error);
+      set({ loading: false });
     }
   }
 }));

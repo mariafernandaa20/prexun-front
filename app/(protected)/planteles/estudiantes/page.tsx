@@ -287,17 +287,17 @@ export default function Page() {
   });
 
   return (
-    <Card>
-      <CardHeader className='sticky top-0 z-8 bg-card'>
-        <div className="flex justify-between mb-6 max-w-[100vw-30rem] ">
+    <Card className="max-w-[100vw] mx-auto">
+      <CardHeader className='sticky top-0 z-10 bg-card'>
+        <div className="flex flex-col lg:flex-row lg:justify-between">
           <h1 className="text-2xl font-bold">Estudiantes</h1>
           <div className="flex flex-col gap-4">
-            <div className="flex gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
               <Input
                 placeholder="Buscar por nombre..."
                 value={searchName}
                 onChange={(e) => setSearchName(e.target.value)}
-                className="w-[200px]"
+                className="w-full lg:w-[200px]"
               />
 
               <MultiSelect
@@ -314,7 +314,7 @@ export default function Page() {
                 value={periodFilter}
                 onValueChange={(value) => setPeriodFilter(value)}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full lg:w-[180px] ">
                   <SelectValue placeholder="Filtrar por periodo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -378,7 +378,7 @@ export default function Page() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto max-w-[calc(100vw-20rem)]">
+        <div className="overflow-x-auto w-full">
           {isLoading ? (
             <div className="text-center py-4">Cargando...</div>
           ) : (
@@ -566,7 +566,7 @@ export default function Page() {
         </div>
       </CardContent>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="min-w-[60rem]">
+        <DialogContent className="lg:min-w-[60rem]">
           <DialogHeader>
             <DialogTitle>
               {selectedStudent ? 'Editar Estudiante' : 'Nuevo Estudiante'}

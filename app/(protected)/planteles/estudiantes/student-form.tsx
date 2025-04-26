@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Campus, Cohort, Municipio, Carrera, Period, Student, Prepa, Facultad, Promocion, Grupo } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuthStore } from '@/lib/store/AuthStore';
 import { addContactToGoogle } from '@/lib/googleContacts';
 
 import {
@@ -17,6 +16,7 @@ import {
 import { Label } from '@/components/ui/label';
 
 import { useToast } from '@/hooks/use-toast';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 interface StudentFormProps {
   student?: Student | null;
@@ -49,6 +49,7 @@ export function StudentForm({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingButton, setIsLoadingButton] = useState(false);
+
   const [formData, setFormData] = useState<Student>({
     id: student?.id || null,
     period_id: student?.period_id || '',
@@ -75,9 +76,15 @@ export function StudentForm({
     how_found_out: student?.how_found_out || '',
     preferred_communication: student?.preferred_communication || '',
     general_book: student?.general_book || 'No entregado',
-    module_book: student?.module_book || 'No entregado' ,
+    module_book: student?.module_book || 'No entregado',
+    semana_intensiva_id: student?.semana_intensiva_id || null,
   });
 
+  const semanasIntensivas = useAuthStore(state => state.semanasIntensivas);
+
+  console.log(semanasIntensivas)
+
+  console.log(semanasIntensivas)
   useEffect(() => {
     const fetchCohorts = async () => {
       try {
@@ -123,7 +130,8 @@ export function StudentForm({
     try {
       await onSubmit(formData);
 
-      const accessToken = useAuthStore.getState().accessToken;
+      const accessToken = useAuthStore(state => state.accessToken);
+
       if (accessToken) {
         try {
           const grupo = grupos.find(g => g.id === Number(formData.grupo_id));
@@ -142,7 +150,7 @@ export function StudentForm({
           });
         } catch (err) {
           toast({
-            title: 'Error al sincronizar con Google Contacts', 
+            title: 'Error al sincronizar con Google Contacts',
             description: 'El estudiante fue guardado pero no se pudo añadir a tus contactos',
             variant: 'warning',
           });
@@ -186,8 +194,8 @@ export function StudentForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4  max-h-[calc(100vh-150px)] overflow-y-auto">
-      <div className="grid grid-cols-3 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-4 flex flex-col max-h-[80vh] lg:min-w-[60rem] overflow-y-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mx-auto overflow-y-auto">
         <div className="space-y-2">
           <Label htmlFor="status">Estatus</Label>
           <Select
@@ -272,6 +280,26 @@ export function StudentForm({
               {grupos.map((grupo) => (
                 <SelectItem key={grupo.id} value={grupo.id as any}>
                   {grupo.name} - {grupo.students_count}/{grupo.capacity}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="grupo_id">Grupo de Semanas Intensivas</Label>
+          <Select
+            name="grupo_id"
+            value={Number(formData.semana_intensiva_id) as any}
+            onValueChange={(value) => handleChange({ name: 'semana_intensiva_id', value: value })}
+            disabled={!!student?.id}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona el grupo" />
+            </SelectTrigger>
+            <SelectContent>
+              {semanasIntensivas && semanasIntensivas.map((semana) => (
+                <SelectItem key={semana.id} value={semana.id as any}>
+                  {semana.name} - {semana.students_count}/{semana.capacity}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -73,6 +73,7 @@ export interface Student {
   module_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';
   transactions?: Transaction[];
   grupo? : Grupo;
+  semana_intensiva_id: number | null;
 }
 
 export interface Cohort {

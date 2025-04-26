@@ -179,17 +179,17 @@ export default function CobrosPage() {
   };
 
   return (
-    <Card>
-      <CardHeader className='sticky top-0 z-8 bg-card'>
-        <div className="flex gap-4 justify-between">
-          <div className='flex gap-4'>
+    <Card className="max-w-[100vw]">
+      <CardHeader className='sticky top-0 z-10 bg-card'>
+        <div className="flex flex-col lg:flex-row gap-4 lg:justify-between">
+          <div className='flex flex-col lg:flex-row gap-4'>
             <Input
               placeholder="Buscar por nombre completo..."
               value={searchStudent}
               onChange={(e) => setSearchStudent(e.target.value)}
               className="w-[300px]"
             />
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full overflow-x-auto">
               <Button
                 variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
                 onClick={() => setSelectedPaymentMethods(['all'])}
@@ -236,7 +236,7 @@ export default function CobrosPage() {
               emptyMessage="No se encontraron columnas"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col lg:flex-row gap-2">
             <AgregarIngreso />
             <Link href="/planteles/cobros/actualizar" className={buttonVariants({variant:'default'})}>Actualizar Folios</Link>
           </div>
