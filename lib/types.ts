@@ -150,6 +150,7 @@ export interface Grupo {
   start_date: string;
   end_date: string;
   students_count?: number;
+  moodle_id: number | null;
 }
 export interface Gasto {
   id?: number;

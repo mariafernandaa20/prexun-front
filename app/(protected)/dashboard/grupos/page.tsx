@@ -96,6 +96,7 @@ export default function GruposPage() {
       <TableHeader>
         <TableRow>
           <TableHead>Nombre</TableHead>
+          <TableHead>Moodle ID</TableHead>
           <TableHead>Tipo</TableHead>
           <TableHead>Capacidad</TableHead>
           <TableHead>Frecuencia</TableHead>
@@ -110,6 +111,7 @@ export default function GruposPage() {
         {grupos.map((grupo) => (
           <TableRow key={grupo.id}>
             <TableCell>{grupo.name}</TableCell>
+            <TableCell>{grupo.moodle_id}</TableCell>
             <TableCell>{grupo.type}</TableCell>
             <TableCell>{grupo.capacity}</TableCell>
             <TableCell>

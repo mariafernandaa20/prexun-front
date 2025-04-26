@@ -17,7 +17,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     initializeApp();
-  }, [user]);
+  }, []);
 
   return (
     <SidebarProvider>

@@ -1,7 +1,7 @@
 "use client";
 
+import { useAuthStore } from "@/lib/store/auth-store";
 import { useEffect, useRef, useState } from "react";
-import { useAuthStore } from "@/lib/store/AuthStore";
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
 const SCOPES = "https://www.googleapis.com/auth/contacts https://www.googleapis.com/auth/userinfo.email";

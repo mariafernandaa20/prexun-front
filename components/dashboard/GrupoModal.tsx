@@ -47,11 +47,12 @@ export default function GrupoModal({
     period_id: 0,
     capacity: 0,
     frequency: [],
-    start_time: '',
-    end_time: '',
-    start_date: '',
-    end_date: '',
+    start_time: null,
+    end_time: null,
+    start_date: null,
+    end_date: null,
     campuses: [],
+    moodle_id: null,
   });
 
   useEffect(() => {
@@ -69,11 +70,12 @@ export default function GrupoModal({
         period_id: 0,
         capacity: 0,
         frequency: [],
-        start_time: '',
-        end_time: '',
-        start_date: '',
-        end_date: '',
+        start_time: null,
+        end_time: null,
+        start_date: null,
+        end_date: null,
         campuses: [],
+        moodle_id: null,
       });
     }
   }, [grupo, isOpen]);
@@ -123,9 +125,11 @@ export default function GrupoModal({
       return;
     }
 
-    if (new Date(formData.end_date) <= new Date(formData.start_date)) {
-      alert('La fecha de fin debe ser posterior a la fecha de inicio');
-      return;
+    if (formData.start_date && formData.end_date) {
+      if (new Date(formData.end_date) <= new Date(formData.start_date)) {
+        alert('La fecha de fin debe ser posterior a la fecha de inicio');
+        return;
+      }
     }
     const formatTime = (time: string) => {
       if (!time) return null;
