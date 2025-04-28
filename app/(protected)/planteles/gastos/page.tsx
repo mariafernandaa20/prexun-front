@@ -194,8 +194,8 @@ export default function GastosPage() {
                     {format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es })}
                   </TableCell>
                 }
-                {visibleColumns.includes('empleado') && <TableCell>{gasto.admin.name}</TableCell>}
-                {visibleColumns.includes('recibe') && <TableCell>{gasto.user.name}</TableCell>}
+                {visibleColumns.includes('empleado') && <TableCell>{gasto?.admin?.name}</TableCell>}
+                {visibleColumns.includes('recibe') && <TableCell>{gasto?.user?.name}</TableCell>}
                 {visibleColumns.includes('concepto') && <TableCell>{gasto.concept}</TableCell>}
                 {visibleColumns.includes('categoria') && <TableCell>{gasto.category}</TableCell>}
                 {visibleColumns.includes('monto') && <TableCell>${gasto.amount}</TableCell>}

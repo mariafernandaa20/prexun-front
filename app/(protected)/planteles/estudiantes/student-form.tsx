@@ -63,7 +63,7 @@ export function StudentForm({
     prepa_id: student?.prepa_id || '',
     municipio_id: student?.municipio_id || '',
     facultad_id: student?.facultad_id || '',
-    carrer_id: student?.carrer_id || '',
+    carrer_id: student?.carrer_id || null,
     type: student?.type || 'preparatoria',
     status: student?.status || 'Activo',
     tutor_name: student?.tutor_name || '',
@@ -175,7 +175,7 @@ export function StudentForm({
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-        carrer_id: '',
+        carrer_id: null,
       }));
     } else {
       setFormData((prev) => ({
@@ -524,7 +524,7 @@ export function StudentForm({
           </>
         )}
         <div className="space-y-2">
-          <Label htmlFor="carrer_id">Preparatoria</Label>
+          <Label htmlFor="prepa_id">Preparatoria</Label>
           <Select
             name="prepa_id"
             value={Number(formData.prepa_id) as any}
