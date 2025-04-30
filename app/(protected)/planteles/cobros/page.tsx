@@ -61,7 +61,7 @@ export default function CobrosPage() {
     currentPage: 1,
     lastPage: 1,
     total: 0,
-    perPage: 200,
+    perPage: 50,
   });
   
   const [loading, setLoading] = useState(false);

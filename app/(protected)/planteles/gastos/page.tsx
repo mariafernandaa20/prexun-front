@@ -9,18 +9,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { GastoModal } from './components/GastoModal'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
 import { Gasto } from '@/lib/types'
 import { createGasto, deleteGasto, getGastos } from '@/lib/api'
-import { Pencil, Trash, Eye, Image } from 'lucide-react'
+import { Pencil, Trash, Eye } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { MultiSelect } from '@/components/multi-select'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { GastoModal } from '../gastos/components/GastoModal'
+import PaginationComponent from '@/components/ui/PaginationComponent'
 
 export default function GastosPage() {
   const [gastos, setGastos] = useState<Gasto[]>([])
@@ -34,6 +35,91 @@ export default function GastosPage() {
   const [selectedImage, setSelectedImage] = useState('')
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
+  // Agregar estados para manejar la paginación
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    perPage: 50,
+  });
+  // Definición de las columnas disponibles con todas sus propiedades
+  const tableColumns = [
+    { 
+      id: 'fecha', 
+      label: 'Fecha', 
+      render: (gasto: Gasto) => format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es })
+    },
+    { 
+      id: 'empleado', 
+      label: 'Empleado', 
+      render: (gasto: Gasto) => gasto?.admin?.name 
+    },
+    { 
+      id: 'recibe', 
+      label: 'Recibe', 
+      render: (gasto: Gasto) => gasto?.user?.name 
+    },
+    { 
+      id: 'concepto', 
+      label: 'Concepto', 
+      render: (gasto: Gasto) => gasto.concept 
+    },
+    { 
+      id: 'categoria', 
+      label: 'Categoria', 
+      render: (gasto: Gasto) => gasto.category 
+    },
+    { 
+      id: 'monto', 
+      label: 'Monto', 
+      render: (gasto: Gasto) => `$${gasto.amount}` 
+    },
+    { 
+      id: 'comprobante', 
+      label: 'Comprobante', 
+      render: (gasto: Gasto) => gasto.image ? (
+        <div className="flex items-center gap-2">
+          <img
+            src={gasto.image as string}
+            alt="Miniatura"
+            className="w-10 h-10 object-cover rounded"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleOpenImage(gasto.image as string)}
+          >
+            <Eye className="w-4 h-4 mr-1" />
+            Ver
+          </Button>
+        </div>
+      ) : null
+    },
+    { 
+      id: 'acciones', 
+      label: 'Acciones', 
+      render: (gasto: Gasto) => (
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleOpenModal(gasto)}
+          >
+            <Pencil />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDeleteGasto(gasto.id)}
+          >
+            <Trash />
+          </Button>
+        </>
+      )
+    },
+  ];
+
+  // Estado para las columnas visibles (IDs)
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     'fecha',
     'empleado',
@@ -45,16 +131,11 @@ export default function GastosPage() {
     'acciones'
   ]);
 
-  const columnOptions = [
-    { label: 'Fecha', value: 'fecha' },
-    { label: 'Empleado', value: 'empleado' },
-    { label: 'Recibe', value: 'recibe' },
-    { label: 'Concepto', value: 'concepto' },
-    { label: 'Categoría', value: 'categoria' },
-    { label: 'Monto', value: 'monto' },
-    { label: 'Comprobante', value: 'comprobante' },
-    { label: 'Acciones', value: 'acciones' }
-  ];
+  // Convertir tableColumns en opciones para el MultiSelect
+  const columnOptions = tableColumns.map(col => ({
+    label: col.label,
+    value: col.id
+  }));
 
   const categories = Array.from(new Set(gastos.map(gasto => gasto.category)))
 
@@ -88,6 +169,12 @@ export default function GastosPage() {
   const fetchGastos = async () => {
     const response = await getGastos(activeCampus.id);
     setGastos(response);
+    setPagination({
+      currentPage: response.current_page,
+      lastPage: response.last_page,
+      total: response.total,
+      perPage: parseInt(pagination.perPage.toString())
+    });
     setFilteredGastos(response);
   };
 
@@ -112,9 +199,14 @@ export default function GastosPage() {
     setVisibleColumns(selected);
   };
 
+  // Filtrar las columnas que son visibles
+  const visibleTableColumns = tableColumns.filter(column => 
+    visibleColumns.includes(column.id)
+  );
+
   return (
     <Card>
-      <CardHeader className='sticky top-0 z-8 bg-card'>
+      <CardHeader className='sticky z-[20] top-0 z-8 bg-card'>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gastos del Plantel</h1>
           <div className='flex items-center gap-2'>
@@ -163,96 +255,46 @@ export default function GastosPage() {
                 emptyMessage="No se encontraron columnas"
               />
             </div>
-            {activeCampus?.latest_cash_register ? (<Button className='mt-6' onClick={() => handleOpenModal()}>Nuevo Gasto</Button>
+            {activeCampus?.latest_cash_register ? (
+              <Button className='mt-6' onClick={() => handleOpenModal()}>Nuevo Gasto</Button>
             ) : null}
           </div>
-
         </div>
       </CardHeader>
 
-
       <CardContent>
-
         <Table>
           <TableHeader>
             <TableRow>
-              {visibleColumns.includes('fecha') && <TableHead>Fecha</TableHead>}
-              {visibleColumns.includes('empleado') && <TableHead>Empleado</TableHead>}
-              {visibleColumns.includes('recibe') && <TableHead>Recibe</TableHead>}
-              {visibleColumns.includes('concepto') && <TableHead>Concepto</TableHead>}
-              {visibleColumns.includes('categoria') && <TableHead>Categoria</TableHead>}
-              {visibleColumns.includes('monto') && <TableHead>Monto</TableHead>}
-              {visibleColumns.includes('comprobante') && <TableHead>Comprobante</TableHead>}
-              {visibleColumns.includes('acciones') && <TableHead>Acciones</TableHead>}
+              {visibleTableColumns.map(column => (
+                <TableHead key={column.id}>{column.label}</TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredGastos.map((gasto) => (
               <TableRow key={gasto.id}>
-                {visibleColumns.includes('fecha') &&
-                  <TableCell>
-                    {format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es })}
+                {visibleTableColumns.map(column => (
+                  <TableCell key={`${gasto.id}-${column.id}`}>
+                    {column.render(gasto)}
                   </TableCell>
-                }
-                {visibleColumns.includes('empleado') && <TableCell>{gasto?.admin?.name}</TableCell>}
-                {visibleColumns.includes('recibe') && <TableCell>{gasto?.user?.name}</TableCell>}
-                {visibleColumns.includes('concepto') && <TableCell>{gasto.concept}</TableCell>}
-                {visibleColumns.includes('categoria') && <TableCell>{gasto.category}</TableCell>}
-                {visibleColumns.includes('monto') && <TableCell>${gasto.amount}</TableCell>}
-                {visibleColumns.includes('comprobante') &&
-                  <TableCell>
-                    {gasto.image && (
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={gasto.image as string}
-                          alt="Miniatura"
-                          className="w-10 h-10 object-cover rounded"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenImage(gasto.image as string)}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Ver
-                        </Button>
-                      </div>
-                    )}
-                  </TableCell>
-                }
-                {visibleColumns.includes('acciones') &&
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenModal(gasto)}
-                    >
-                      <Pencil />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteGasto(gasto.id)}
-                    >
-                      <Trash />
-                    </Button>
-                  </TableCell>
-                }
+                ))}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
-      {
-        activeCampus?.latest_cash_register ? (
-          <GastoModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            gasto={selectedGasto}
-            onSubmit={onSubmit}
-          />) : null
-
-      }
+      <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
+        <PaginationComponent pagination={pagination} setPagination={setPagination} />
+      </CardFooter>
+      {activeCampus?.latest_cash_register ? (
+        <GastoModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          gasto={selectedGasto}
+          onSubmit={onSubmit}
+        />
+      ) : null}
 
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
         <DialogContent className="max-w-3xl">

@@ -1,6 +1,5 @@
-'use client'
-import React, { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+'use client';
+import { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -8,283 +7,354 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { useActiveCampusStore } from '@/lib/store/plantel-store'
-import { Gasto } from '@/lib/types'
-import { createGasto, deleteGasto, getGastos } from '@/lib/api'
-import { Pencil, Trash, Eye } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { MultiSelect } from '@/components/multi-select'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { GastoModal } from '../gastos/components/GastoModal'
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Eye, Share } from 'lucide-react';
+import Link from 'next/link';
 
-export default function GastosPage() {
-  const [gastos, setGastos] = useState<Gasto[]>([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedGasto, setSelectedGasto] = useState<Gasto | null>(null)
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [filteredGastos, setFilteredGastos] = useState<Gasto[]>([])
-  const [imageModalOpen, setImageModalOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState('')
-  const activeCampus = useActiveCampusStore((state) => state.activeCampus);
+import { MultiSelect } from '@/components/multi-select';
+import InvoicePDF from '@/components/invoice_pdf';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { useToast } from '@/hooks/use-toast';
+import axiosInstance from '@/lib/api/axiosConfig';
+import { Transaction, Card as CardType } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import ChargesForm from '@/components/dashboard/estudiantes/charges-form';
+import PaginationComponent from '@/components/ui/PaginationComponent';
 
-  // Definición de las columnas disponibles con todas sus propiedades
-  const tableColumns = [
-    { 
-      id: 'fecha', 
-      label: 'Fecha', 
-      render: (gasto: Gasto) => format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es })
-    },
-    { 
-      id: 'empleado', 
-      label: 'Empleado', 
-      render: (gasto: Gasto) => gasto?.admin?.name 
-    },
-    { 
-      id: 'recibe', 
-      label: 'Recibe', 
-      render: (gasto: Gasto) => gasto?.user?.name 
-    },
-    { 
-      id: 'concepto', 
-      label: 'Concepto', 
-      render: (gasto: Gasto) => gasto.concept 
-    },
-    { 
-      id: 'categoria', 
-      label: 'Categoria', 
-      render: (gasto: Gasto) => gasto.category 
-    },
-    { 
-      id: 'monto', 
-      label: 'Monto', 
-      render: (gasto: Gasto) => `$${gasto.amount}` 
-    },
-    { 
-      id: 'comprobante', 
-      label: 'Comprobante', 
-      render: (gasto: Gasto) => gasto.image ? (
-        <div className="flex items-center gap-2">
-          <img
-            src={gasto.image as string}
-            alt="Miniatura"
-            className="w-10 h-10 object-cover rounded"
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenImage(gasto.image as string)}
-          >
-            <Eye className="w-4 h-4 mr-1" />
-            Ver
-          </Button>
-        </div>
-      ) : null
-    },
-    { 
-      id: 'acciones', 
-      label: 'Acciones', 
-      render: (gasto: Gasto) => (
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenModal(gasto)}
-          >
-            <Pencil />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDeleteGasto(gasto.id)}
-          >
-            <Trash />
-          </Button>
-        </>
-      )
-    },
-  ];
+// Constants
+const COLUMN_OPTIONS = [
+  { value: 'student', label: 'Estudiante' },
+  { value: 'amount', label: 'Monto' },
+  { value: 'paymentMethod', label: 'Método' },
+  { value: 'payment_date', label: 'Fecha de pago' },
+  { value: 'date', label: 'Fecha' },
+  { value: 'notes', label: 'Notas' },
+  { value: 'paid', label: 'Pagado' },
+  { value: 'limit_date', label: 'Fecha límite de pago' },
+  { value: 'actions', label: 'Acciones' }
+];
 
-  // Estado para las columnas visibles (IDs)
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([
-    'fecha',
-    'empleado',
-    'recibe',
-    'concepto',
-    'categoria',
-    'monto',
-    'comprobante',
-    'acciones'
-  ]);
+const DEFAULT_VISIBLE_COLUMNS = ['student', 'amount', 'paymentMethod', 'date', 'notes', 'paid', 'limit_date', 'actions', 'folio'];
 
-  // Convertir tableColumns en opciones para el MultiSelect
-  const columnOptions = tableColumns.map(col => ({
-    label: col.label,
-    value: col.id
-  }));
+const PAYMENT_METHOD_LABELS = {
+  cash: 'Efectivo',
+  transfer: 'Transferencia',
+  card: 'Tarjeta'
+};
 
-  const categories = Array.from(new Set(gastos.map(gasto => gasto.category)))
+const TransactionActions: React.FC<{
+  transaction: Transaction;
+  cards: CardType[];
+  onTransactionUpdate: (updatedTransaction: Transaction) => void;
+}> = ({ transaction, onTransactionUpdate, cards }) => {
+  const [formData, setFormData] = useState<Transaction>({
+    ...transaction,
+    denominations: {},
+    notes: transaction.notes || '',
+    payment_date: transaction.payment_date || new Date().toISOString().split('T')[0],
+    card_id: transaction.card_id || null,
+    image: transaction.image || null,
+  });
 
-  const handleOpenModal = (gasto?: Gasto) => {
-    setSelectedGasto(gasto || null)
-    setIsModalOpen(true)
-  }
+  const handleMarkAsPaid = async () => {
+    try {
+      await axiosInstance.put(`/charges/${transaction.id}`, {
+        ...formData,
+        paid: 1
+      });
+      onTransactionUpdate({
+        ...transaction,
+        paid: 1,
+        payment_date: formData.payment_date,
+        notes: formData.notes
+      });
+      setFormData({
+        ...transaction,
+        denominations: {},
+        notes: '',
+        payment_date: new Date().toISOString().split('T')[0],
+        image: null,
+      });
+    } catch (error) {
+      console.error('Error marking transaction as paid:', error);
+    }
+  };
+
+  if (transaction.paid !== 0) return null;
+
+  return (
+    <ChargesForm
+      campusId={transaction.campus_id}
+      cards={cards}
+      fetchStudents={handleMarkAsPaid}
+      student_id={transaction.student_id}
+      transaction={transaction}
+      formData={formData}
+      setFormData={setFormData}
+      onTransactionUpdate={onTransactionUpdate}
+      mode="update"
+      student={null}
+      icon={false}
+    />
+  );
+};
+
+export default function CobrosPage() {
+  // State
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [searchStudent, setSearchStudent] = useState('');
+  const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_VISIBLE_COLUMNS);
+  const [expirationDate, setExpirationDate] = useState('');
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
+  const [cards, setCards] = useState<CardType[]>([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    perPage: 50
+  });
+
+  // Hooks
+  const { activeCampus } = useActiveCampusStore();
+  const { toast } = useToast();
+
+  // API interactions
+  const fetchTransactions = async (page = 1) => {
+    if (!activeCampus) return;
+    try {
+      const params = {
+        campus_id: activeCampus?.id,
+        expiration_date: expirationDate || null,
+        page: page,
+        per_page: Number(pagination.perPage),
+      };
+
+      const response = await axiosInstance.get('/charges/not-paid', { params });
+      setTransactions(response.data.data);
+      setPagination({
+        currentPage: response.data.current_page,
+        lastPage: response.data.last_page,
+        total: response.data.total,
+        perPage: response.data.per_page
+      });
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+    }
+  };
+
+   useEffect(() => {
+    if (!activeCampus) return;
+    fetchTransactions(pagination.currentPage);
+  }, [activeCampus, pagination.currentPage, pagination.perPage]);
+
+  // Event handlers
+  const handleStudentSelect = (values: string[]) => {
+    setSelectedStudents(values);
+  };
+
+  const handleColumnSelect = (values: string[]) => {
+    setVisibleColumns(values);
+  };
 
   const handleOpenImage = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setImageModalOpen(true);
-  }
-
-  const onSubmit = async (data: Gasto) => {
-    await createGasto(data as Gasto & { image?: File });
-    setIsModalOpen(false);
-    fetchGastos();
   };
 
-  const handleDeleteGasto = async (id: number) => {
-    await deleteGasto(id.toString());
-    fetchGastos();
+  const handleShare = (transaction: Transaction) => {
+    const url = `https://admin.prexun.com/recibo/${transaction.uuid}`;
+    navigator.clipboard.writeText(url);
+    toast({
+      title: 'Enlace copiado al portapapeles',
+      description: 'Puedes compartir este enlace con tus estudiantes',
+      variant: 'default'
+    });
   };
+  // Derived data
+  const filteredTransactions = transactions?.filter((transaction) => {
+    if (!transaction || !transaction.student) return false;
+    
+    // Filter by search terms
+    const studentFullName = `${transaction.student.username || ''} ${transaction.student.firstname || ''} ${transaction.student.lastname || ''}`.toLowerCase();
+    const searchTerms = searchStudent.toLowerCase().split(' ');
+    const matchesSearch = searchTerms.every((term) => studentFullName.includes(term));
 
-  useEffect(() => {
-    if (!activeCampus) return
+    // Filter by selected students
+    const matchesStudent = selectedStudents.includes('all') ||
+      selectedStudents.includes(transaction.student.id || '');
 
-    fetchGastos();
-  }, [activeCampus]);
+    return matchesSearch && matchesStudent;
+  }) || [];
 
-  const fetchGastos = async () => {
-    const response = await getGastos(activeCampus.id);
-    setGastos(response);
-    setFilteredGastos(response);
-  };
+  const uniqueStudents = transactions?.length ? transactions
+    .map(t => ({
+      value: t.student?.id || '',
+      label: `${t.student?.firstname} ${t.student?.lastname}`,
+    }))
+    .filter((student, index, self) =>
+      index === self.findIndex(s => s.value === student.value)
+    ) : [];
 
-  useEffect(() => {
-    let filtered = [...gastos];
-
-    if (startDate && endDate) {
-      filtered = filtered.filter(gasto => {
-        const gastoDate = new Date(gasto.date);
-        return gastoDate >= new Date(startDate) && gastoDate <= new Date(endDate);
-      });
-    }
-
-    if (selectedCategory && selectedCategory !== 'all') {
-      filtered = filtered.filter(gasto => gasto.category === selectedCategory);
-    }
-
-    setFilteredGastos(filtered);
-  }, [startDate, endDate, selectedCategory, gastos, activeCampus]);
-
-  const handleColumnSelect = (selected: string[]) => {
-    setVisibleColumns(selected);
-  };
-
-  // Filtrar las columnas que son visibles
-  const visibleTableColumns = tableColumns.filter(column => 
-    visibleColumns.includes(column.id)
+  // Component rendering helpers
+  const renderTableHeaders = () => (
+    <TableHeader>
+      <TableRow>
+        {visibleColumns.includes('folio') && <TableHead>Folio</TableHead>}
+        {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
+        {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
+        {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
+        {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
+        {visibleColumns.includes('payment_date') && <TableHead>Fecha de pago</TableHead>}
+        {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
+        {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
+        {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
+        <TableHead>Comprobante</TableHead>
+        {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
+      </TableRow>
+    </TableHeader>
   );
 
+  const renderTransactionRow = (transaction: Transaction) => (
+    <TableRow key={transaction.id}>
+      {visibleColumns.includes('folio') && (
+        <TableCell>{transaction.folio}</TableCell>
+      )}
+      {visibleColumns.includes('student') && (
+        <TableCell>
+          {transaction.student?.firstname} {transaction.student?.lastname}
+        </TableCell>
+      )}
+      {visibleColumns.includes('amount') && (
+        <TableCell>${transaction.amount}</TableCell>
+      )}
+      {visibleColumns.includes('paymentMethod') && (
+        <TableCell>
+          {PAYMENT_METHOD_LABELS[transaction.payment_method as keyof typeof PAYMENT_METHOD_LABELS] || transaction.payment_method}
+        </TableCell>
+      )}
+      {visibleColumns.includes('paid') && (
+        <TableCell>{transaction.paid ? 'Si' : 'No'}</TableCell>
+      )}
+      {visibleColumns.includes('payment_date') && (
+        <TableCell>{transaction.payment_date}</TableCell>
+      )}
+      {visibleColumns.includes('date') && (
+        <TableCell>{transaction.created_at}</TableCell>
+      )}
+      {visibleColumns.includes('notes') && (
+        <TableCell>{transaction.notes}</TableCell>
+      )}
+      {visibleColumns.includes('limit_date') && (
+        <TableCell>
+          {transaction.expiration_date ? transaction.expiration_date : 'No límite de pago'}
+        </TableCell>
+      )}
+      <TableCell>
+        {transaction.image && (
+          <div className="flex items-center gap-2">
+            <img
+              src={transaction.image as string}
+              alt="Miniatura"
+              className="w-10 h-10 object-cover rounded"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenImage(transaction.image as string)}
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              Ver
+            </Button>
+          </div>
+        )}
+      </TableCell>
+      {visibleColumns.includes('actions') && (
+        <TableCell className="p-4 flex items-center justify-right gap-2">
+          <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
+            <Share className="w-4 h-4 mr-2" />
+          </Button>
+          <InvoicePDF icon={true} invoice={transaction} />
+          <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
+            <Eye className="w-4 h-4 mr-2" />
+          </Link>
+          <TransactionActions
+            cards={cards}
+            transaction={transaction}
+            onTransactionUpdate={() => { }}
+          />
+        </TableCell>
+      )}
+    </TableRow>
+  );
+
+  // Main render
   return (
     <Card>
-      <CardHeader className='sticky top-0 z-8 bg-card'>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Gastos del Plantel</h1>
-          <div className='flex items-center gap-2'>
-            <div className="flex flex-col">
-              <label>Fecha Inicio</label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label>Fecha Fin</label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label>Categoría</label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col">
-              <label>Columnas</label>
-              <MultiSelect
-                options={columnOptions}
-                title="Columnas"
-                selectedValues={visibleColumns}
-                hiddeBadages
-                onSelectedChange={handleColumnSelect}
-                placeholder="Seleccionar columnas"
-                searchPlaceholder="Buscar columna..."
-                emptyMessage="No se encontraron columnas"
-              />
-            </div>
-            {activeCampus?.latest_cash_register ? (
-              <Button className='mt-6' onClick={() => handleOpenModal()}>Nuevo Gasto</Button>
-            ) : null}
+      <CardHeader className='sticky z-[20] top-0 z-8 bg-card'>
+        <div className="flex gap-4 justify-between">
+          <div className='flex gap-4'>
+            <Input
+              placeholder="Buscar por nombre completo..."
+              value={searchStudent}
+              onChange={(e) => setSearchStudent(e.target.value)}
+              className="w-[300px]"
+            />
+            <Input
+              type="date"
+              value={expirationDate}
+              onChange={(e) => setExpirationDate(e.target.value)}
+              className="w-[200px]"
+            />
+            <MultiSelect
+              options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
+              hiddeBadages={true}
+              selectedValues={selectedStudents}
+              onSelectedChange={handleStudentSelect}
+              title="Estudiantes"
+              placeholder="Seleccionar estudiantes"
+              searchPlaceholder="Buscar estudiante..."
+              emptyMessage="No se encontraron estudiantes"
+            />
+            <MultiSelect
+              options={COLUMN_OPTIONS}
+              hiddeBadages={true}
+              selectedValues={visibleColumns}
+              onSelectedChange={handleColumnSelect}
+              title="Columnas"
+              placeholder="Seleccionar columnas"
+              searchPlaceholder="Buscar columna..."
+              emptyMessage="No se encontraron columnas"
+            />
           </div>
         </div>
       </CardHeader>
 
       <CardContent>
         <Table>
-          <TableHeader>
-            <TableRow>
-              {visibleTableColumns.map(column => (
-                <TableHead key={column.id}>{column.label}</TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
+          {renderTableHeaders()}
           <TableBody>
-            {filteredGastos.map((gasto) => (
-              <TableRow key={gasto.id}>
-                {visibleTableColumns.map(column => (
-                  <TableCell key={`${gasto.id}-${column.id}`}>
-                    {column.render(gasto)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
+            {filteredTransactions.map(renderTransactionRow)}
           </TableBody>
         </Table>
-      </CardContent>
-      
-      {activeCampus?.latest_cash_register ? (
-        <GastoModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          gasto={selectedGasto}
-          onSubmit={onSubmit}
-        />
-      ) : null}
 
-      <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-        <DialogContent className="max-w-3xl">
-          <img src={selectedImage} alt="Comprobante" className="w-full" />
-        </DialogContent>
-      </Dialog>
+        <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
+          <DialogContent className="max-w-3xl">
+            <img src={selectedImage} alt="Comprobante" className="w-full" />
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+
+      <CardFooter>
+        <PaginationComponent pagination={pagination} setPagination={setPagination} />
+      </CardFooter>
     </Card>
-  )
+  );
 }
