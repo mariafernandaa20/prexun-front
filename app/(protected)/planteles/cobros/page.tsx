@@ -39,6 +39,7 @@ import AgregarIngreso from './AgregarIngreso';
 import EditarFolio from './EditarFolio';
 import ActualizarFolios from './actualizar/ActualizarFolios';
 import { useAuthStore } from '@/lib/store/auth-store';
+import PaginationComponent from '@/components/ui/PaginationComponent';
 
 export default function CobrosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -48,6 +49,9 @@ export default function CobrosPage() {
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'payment_date', 'notes', 'paid', 'actions', 'folio']);
+  
+  // Estado para almacenar todas las columnas disponibles (incluidas las dinámicas)
+  const [availableColumnIds, setAvailableColumnIds] = useState<string[]>([]);
   const { activeCampus } = useActiveCampusStore();
   const { user } = useAuthStore();
   const { toast } = useToast();
@@ -57,28 +61,212 @@ export default function CobrosPage() {
     currentPage: 1,
     lastPage: 1,
     total: 0,
-    perPage: 200
+    perPage: 200,
   });
   
   const [loading, setLoading] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState("50");
+
+  // Definición de columnas conocidas
+  const commonColumnDefinitions = [
+    { 
+      id: 'id', 
+      label: 'ID', 
+      render: (transaction: Transaction) => transaction.id 
+    },
+    { 
+      id: 'folio', 
+      label: 'Folio', 
+      render: (transaction: Transaction) => transaction.folio 
+    },
+    { 
+      id: 'folio_new', 
+      label: 'Nuevo Folio', 
+      render: (transaction: Transaction) => transaction.folio_new 
+    },
+    { 
+      id: 'student', 
+      label: 'Estudiante', 
+      render: (transaction: Transaction) => 
+        `${transaction.student?.firstname} ${transaction.student?.lastname}` 
+    },
+    { 
+      id: 'amount', 
+      label: 'Monto', 
+      render: (transaction: Transaction) => `${transaction.amount}` 
+    },
+    { 
+      id: 'paymentMethod', 
+      label: 'Método', 
+      render: (transaction: Transaction) => {
+        if (transaction.payment_method === 'cash') return 'Efectivo';
+        if (transaction.payment_method === 'transfer') return 'Transferencia';
+        if (transaction.payment_method === 'card') return 'Tarjeta';
+        return transaction.payment_method;
+      } 
+    },
+    { 
+      id: 'paid', 
+      label: 'Pagado', 
+      render: (transaction: Transaction) => transaction.paid ? 'Si' : 'No' 
+    },
+    { 
+      id: 'payment_date', 
+      label: 'Fecha de pago', 
+      render: (transaction: Transaction) => transaction.payment_date 
+    },
+    { 
+      id: 'date', 
+      label: 'Fecha', 
+      render: (transaction: Transaction) => 
+        new Date(transaction.created_at).toLocaleDateString() 
+    },
+    { 
+      id: 'notes', 
+      label: 'Notas', 
+      render: (transaction: Transaction) => transaction.notes 
+    },
+    { 
+      id: 'limit_date', 
+      label: 'Fecha límite de pago', 
+      render: (transaction: Transaction) => 
+        transaction.expiration_date 
+          ? new Date(transaction.expiration_date).toLocaleDateString() 
+          : 'No límite de pago'
+    },
+    { 
+      id: 'comprobante', 
+      label: 'Comprobante', 
+      render: (transaction: Transaction) => (
+        transaction.image ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={transaction.image as string}
+              alt="Miniatura"
+              className="w-10 h-10 object-cover rounded"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenImage(transaction.image as string)}
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              Ver
+            </Button>
+          </div>
+        ) : null
+      ),
+      alwaysVisible: true // Esta columna siempre se muestra
+    },
+    { 
+      id: 'actions', 
+      label: 'Acciones', 
+      render: (transaction: Transaction) => (
+        <div className="p-4 flex items-center justify-right gap-2">
+          <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
+            <Share className="w-4 h-4 mr-2" />
+          </Button>
+          <InvoicePDF icon={true} invoice={transaction} />
+          <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
+            <Eye className="w-4 h-4 mr-2" />
+          </Link>
+          {(user?.role === 'super_admin' || user?.role === 'contador') && 
+            <EditarFolio 
+              transaction={transaction} 
+              onSuccess={() => fetchTransactions(pagination.currentPage)} 
+            />
+          }
+        </div>
+      )
+    },
+  ];
+  
+  // Función para generar definiciones de columnas dinámicas basadas en los datos recibidos
+  const generateDynamicColumns = (transactions: Transaction[]) => {
+    if (!transactions.length) return [];
+    
+    // Extraer todas las claves de la primera transacción
+    const sampleTransaction = transactions[0];
+    const allKeys = Object.keys(sampleTransaction);
+    
+    // Crear columnas dinámicas para las propiedades que no están en las columnas predefinidas
+    const knownColumnIds = commonColumnDefinitions.map(col => col.id);
+    const dynamicColumns = allKeys
+      .filter(key => 
+        // Excluir propiedades que ya tenemos definidas o que son objetos complejos
+        !knownColumnIds.includes(key) && 
+        typeof sampleTransaction[key as keyof Transaction] !== 'object' &&
+        key !== 'student' && // Ya manejamos student en una columna personalizada
+        key !== 'image' && // Ya manejamos image en la columna comprobante
+        key !== 'uuid' && // No necesitamos mostrar el UUID
+        key !== 'created_at' && // Ya manejamos created_at en la columna date
+        key !== 'payment_method' // Ya manejamos payment_method en la columna paymentMethod
+      )
+      .map(key => ({
+        id: key,
+        label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '), // Formato más legible
+        render: (transaction: Transaction) => {
+          const value = transaction[key as keyof Transaction];
+          
+          // Formatear valores según su tipo
+          if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+          if (value instanceof Date) return value.toLocaleDateString();
+          if (value === null || value === undefined) return '-';
+          
+          return String(value);
+        }
+      }));
+      
+    return dynamicColumns;
+  };
+  
+  // Combinar columnas conocidas con columnas dinámicas
+  const [columnDefinitions, setColumnDefinitions] = useState<Array<any>>(commonColumnDefinitions);
 
   useEffect(() => {
     if (!activeCampus) return;
     fetchTransactions(pagination.currentPage);
-  }, [activeCampus, pagination.currentPage, itemsPerPage]);
-
+  }, [activeCampus, pagination.currentPage, pagination.perPage]);
+  
+  // Actualizar las definiciones de columnas cuando se carguen las transacciones
+  useEffect(() => {
+    if (transactions.length > 0) {
+      const dynamicCols = generateDynamicColumns(transactions);
+      const allColumns = [...commonColumnDefinitions, ...dynamicCols];
+      setColumnDefinitions(allColumns);
+      
+      // Actualizar el listado de IDs de columnas disponibles
+      const allColumnIds = allColumns.map(col => col.id);
+      setAvailableColumnIds(allColumnIds);
+      
+      // Añadir columnas dinámicas nuevas al listado de columnas visibles si no están ya
+      const newColumnIds = dynamicCols.map(col => col.id);
+      const newVisibleColumnIds = [...visibleColumns];
+      
+      let hasNewColumns = false;
+      newColumnIds.forEach(id => {
+        if (!visibleColumns.includes(id)) {
+          newVisibleColumnIds.push(id);
+          hasNewColumns = true;
+        }
+      });
+      
+      if (hasNewColumns) {
+        setVisibleColumns(newVisibleColumnIds);
+      }
+    }
+  }, [transactions]);
+  
   const fetchTransactions = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await getCharges(Number(activeCampus.id), page, parseInt(itemsPerPage));
+      const response = await getCharges(Number(activeCampus.id), page, parseInt(pagination.perPage.toString()));
       
       setTransactions(response.data);
       setPagination({
         currentPage: response.current_page,
         lastPage: response.last_page,
         total: response.total,
-        perPage: parseInt(itemsPerPage)
+        perPage: parseInt(pagination.perPage.toString())
       });
 
     } catch (error) {
@@ -86,17 +274,6 @@ export default function CobrosPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage > 0 && newPage <= pagination.lastPage) {
-      setPagination(prev => ({...prev, currentPage: newPage}));
-    }
-  };
-
-  const handleItemsPerPageChange = (value: string) => {
-    setItemsPerPage(value);
-    setPagination(prev => ({...prev, currentPage: 1}));
   };
 
   const handlePaymentMethodChange = (value: string) => {
@@ -117,7 +294,11 @@ export default function CobrosPage() {
   };
 
   const handleColumnSelect = (values: string[]) => {
-    setVisibleColumns(values);
+    // Validar que todas las columnas seleccionadas existan en las columnas disponibles
+    const validValues = values.filter(value => 
+      availableColumnIds.includes(value) || value === 'all'
+    );
+    setVisibleColumns(validValues);
   };
   
   const handleOpenImage = (imageUrl: string) => {
@@ -153,19 +334,10 @@ export default function CobrosPage() {
       index === self.findIndex(s => s.value === student.value)
     );
 
-  const columnOptions = [
-    { value: 'id', label: 'ID' },
-    { value: 'student', label: 'Estudiante' },
-    { value: 'amount', label: 'Monto' },
-    { value: 'paymentMethod', label: 'Método' },
-    { value: 'payment_date', label: 'Fecha de pago' },
-    { value: 'date', label: 'Fecha' },
-    { value: 'notes', label: 'Notas' },
-    { value: 'paid', label: 'Pagado' },
-    { value: 'folio', label: 'Folio' },
-    { value: 'limit_date', label: 'Fecha límite de pago' },
-    { value: 'actions', label: 'Acciones' }
-  ];
+  // Usar las definiciones de columnas para crear las opciones de columnas
+  const columnOptions = columnDefinitions
+    .filter(col => !col.alwaysVisible) // Excluimos columnas que siempre se muestran
+    .map(col => ({ value: col.id, label: col.label }));
 
   const handleShare = (transaction: Transaction) => {
     const url = `https://admin.prexun.com/recibo/${transaction.uuid}`;
@@ -176,6 +348,13 @@ export default function CobrosPage() {
       description: 'Puedes compartir este enlace con tus estudiantes',
       variant: 'default'
     });
+  };
+
+  // Obtiene las columnas visibles más las que siempre deben mostrarse
+  const getVisibleColumns = () => {
+    return columnDefinitions.filter(col => 
+      visibleColumns.includes(col.id) || col.alwaysVisible
+    );
   };
 
   return (
@@ -252,114 +431,25 @@ export default function CobrosPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {visibleColumns.includes('id') && <TableHead>ID</TableHead>}
-                {visibleColumns.includes('folio') && <TableHead>Folio</TableHead>}
-                {visibleColumns.includes('folio') && <TableHead>Nuevo Folio</TableHead>}
-                {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
-                {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
-                {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
-                {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
-                {visibleColumns.includes('payment_date') && <TableHead>Fecha de pago</TableHead>}
-                {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
-                {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
-                {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
-                <TableHead>Comprobante</TableHead>
-                {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
+                {getVisibleColumns().map(column => (
+                  <TableHead key={column.id}>{column.label}</TableHead>
+                ))}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
-                    {visibleColumns.includes('id') && (
-                      <TableCell>
-                        {transaction.id}
+                    {getVisibleColumns().map(column => (
+                      <TableCell key={`${transaction.id}-${column.id}`}>
+                        {column.render(transaction)}
                       </TableCell>
-                    )}
-                    {visibleColumns.includes('folio') && (
-                      <TableCell>
-                        {transaction.folio}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes('folio') && (
-                      <TableCell>
-                        {transaction.folio_new}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes('student') && (
-                      <TableCell>
-                        {transaction.student?.firstname} {transaction.student?.lastname}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes('amount') && (
-                      <TableCell>${transaction.amount}</TableCell>
-                    )}
-                    {visibleColumns.includes('paymentMethod') && (
-                      <TableCell>
-                        {transaction.payment_method === 'cash' && 'Efectivo'}
-                        {transaction.payment_method === 'transfer' && 'Transferencia'}
-                        {transaction.payment_method === 'card' && 'Tarjeta'}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes('paid') && (
-                      <TableCell>
-                        {transaction.paid ? 'Si' : 'No'}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes('payment_date') && (
-                      <TableCell>
-                        {transaction.payment_date}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes('date') && (
-                      <TableCell>
-                        {new Date(transaction.created_at).toLocaleDateString()}
-                      </TableCell>
-                    )}
-                    {visibleColumns.includes('notes') && (
-                      <TableCell>{transaction.notes}</TableCell>
-                    )}
-                    {visibleColumns.includes('limit_date') && (
-                      <TableCell>
-                        {transaction.expiration_date ? new Date(transaction.expiration_date).toLocaleDateString() : 'No límite de pago'}
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      {transaction.image && (
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={transaction.image as string}
-                            alt="Miniatura"
-                            className="w-10 h-10 object-cover rounded"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenImage(transaction.image as string)}
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            Ver
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                    {visibleColumns.includes('actions') && (
-                      <TableCell className="p-4 flex items-center justify-right gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
-                          <Share className="w-4 h-4 mr-2" />
-                        </Button>
-                        <InvoicePDF icon={true} invoice={transaction} />
-                        <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
-                          <Eye className="w-4 h-4 mr-2" />
-                        </Link>
-                        {(user?.role === 'super_admin' || user?.role === 'contador') && <EditarFolio transaction={transaction} onSuccess={() => fetchTransactions(pagination.currentPage)} />}
-                      </TableCell>
-                    )}
+                    ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={visibleColumns.length + 1} className="text-center py-4">
+                  <TableCell colSpan={getVisibleColumns().length} className="text-center py-4">
                     No se encontraron transacciones
                   </TableCell>
                 </TableRow>
@@ -376,74 +466,7 @@ export default function CobrosPage() {
       
       {/* Paginación */}
       <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-          <div className="text-sm text-muted-foreground">
-            Mostrando {Math.min(pagination.total, (pagination.currentPage - 1) * pagination.perPage + 1)} a {Math.min(pagination.total, pagination.currentPage * pagination.perPage)} de {pagination.total} transacciones
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Label htmlFor="itemsPerPage" className="text-sm">
-              Ítems por página:
-            </Label>
-            <Select value={itemsPerPage} onValueChange={handleItemsPerPageChange}>
-              <SelectTrigger id="itemsPerPage" className="w-[80px]">
-                <SelectValue placeholder="200" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-                <SelectItem value="200">200</SelectItem>
-                <SelectItem value="500">500</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <div className="flex items-center gap-1">
-            {Array.from({ length: Math.min(5, pagination.lastPage) }, (_, i) => {
-              // Determine which page numbers to show based on current page
-              let pageNum;
-              if (pagination.lastPage <= 5) {
-                pageNum = i + 1;
-              } else if (pagination.currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (pagination.currentPage >= pagination.lastPage - 2) {
-                pageNum = pagination.lastPage - 4 + i;
-              } else {
-                pageNum = pagination.currentPage - 2 + i;
-              }
-              
-              return (
-                <Button
-                  key={pageNum}
-                  variant={pagination.currentPage === pageNum ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handlePageChange(pageNum)}
-                  className="w-8 h-8 p-0"
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage === pagination.lastPage}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+        <PaginationComponent pagination={pagination} setPagination={setPagination} />
       </CardFooter>
     </Card>
   );

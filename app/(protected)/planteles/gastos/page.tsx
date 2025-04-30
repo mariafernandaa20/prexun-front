@@ -251,7 +251,7 @@ export default function GastosPage() {
             gasto={selectedGasto}
             onSubmit={onSubmit}
           />) : null
-        
+
       }
 
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
