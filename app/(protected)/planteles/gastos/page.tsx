@@ -205,11 +205,11 @@ export default function GastosPage() {
   );
 
   return (
-    <Card>
+    <Card className='w-full'>
       <CardHeader className='sticky z-[20] top-0 z-8 bg-card'>
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col lg:flex-row justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gastos del Plantel</h1>
-          <div className='flex items-center gap-2'>
+          <div className='flex flex-col lg:flex-row items-center gap-2'>
             <div className="flex flex-col">
               <label>Fecha Inicio</label>
               <Input
@@ -261,7 +261,7 @@ export default function GastosPage() {
           </div>
         </div>
       </CardHeader>
-
+      <div className="max-w-[90vw] mx-auto overflow-hidden">
       <CardContent>
         <Table>
           <TableHeader>
@@ -284,6 +284,7 @@ export default function GastosPage() {
           </TableBody>
         </Table>
       </CardContent>
+</div>
       <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
         <PaginationComponent pagination={pagination} setPagination={setPagination} />
       </CardFooter>

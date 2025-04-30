@@ -49,13 +49,13 @@ export default function CobrosPage() {
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'payment_date', 'notes', 'paid', 'actions', 'folio']);
-  
+
   // Estado para almacenar todas las columnas disponibles (incluidas las dinámicas)
   const [availableColumnIds, setAvailableColumnIds] = useState<string[]>([]);
   const { activeCampus } = useActiveCampusStore();
   const { user } = useAuthStore();
   const { toast } = useToast();
-  
+
   // Agregar estados para manejar la paginación
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -63,79 +63,79 @@ export default function CobrosPage() {
     total: 0,
     perPage: 50,
   });
-  
+
   const [loading, setLoading] = useState(false);
 
   // Definición de columnas conocidas
   const commonColumnDefinitions = [
-    { 
-      id: 'id', 
-      label: 'ID', 
-      render: (transaction: Transaction) => transaction.id 
+    {
+      id: 'id',
+      label: 'ID',
+      render: (transaction: Transaction) => transaction.id
     },
-    { 
-      id: 'folio', 
-      label: 'Folio', 
-      render: (transaction: Transaction) => transaction.folio 
+    {
+      id: 'folio',
+      label: 'Folio',
+      render: (transaction: Transaction) => transaction.folio
     },
-    { 
-      id: 'folio_new', 
-      label: 'Nuevo Folio', 
-      render: (transaction: Transaction) => transaction.folio_new 
+    {
+      id: 'folio_new',
+      label: 'Nuevo Folio',
+      render: (transaction: Transaction) => transaction.folio_new
     },
-    { 
-      id: 'student', 
-      label: 'Estudiante', 
-      render: (transaction: Transaction) => 
-        `${transaction.student?.firstname} ${transaction.student?.lastname}` 
+    {
+      id: 'student',
+      label: 'Estudiante',
+      render: (transaction: Transaction) =>
+        `${transaction.student?.firstname} ${transaction.student?.lastname}`
     },
-    { 
-      id: 'amount', 
-      label: 'Monto', 
-      render: (transaction: Transaction) => `${transaction.amount}` 
+    {
+      id: 'amount',
+      label: 'Monto',
+      render: (transaction: Transaction) => `${transaction.amount}`
     },
-    { 
-      id: 'paymentMethod', 
-      label: 'Método', 
+    {
+      id: 'paymentMethod',
+      label: 'Método',
       render: (transaction: Transaction) => {
         if (transaction.payment_method === 'cash') return 'Efectivo';
         if (transaction.payment_method === 'transfer') return 'Transferencia';
         if (transaction.payment_method === 'card') return 'Tarjeta';
         return transaction.payment_method;
-      } 
+      }
     },
-    { 
-      id: 'paid', 
-      label: 'Pagado', 
-      render: (transaction: Transaction) => transaction.paid ? 'Si' : 'No' 
+    {
+      id: 'paid',
+      label: 'Pagado',
+      render: (transaction: Transaction) => transaction.paid ? 'Si' : 'No'
     },
-    { 
-      id: 'payment_date', 
-      label: 'Fecha de pago', 
-      render: (transaction: Transaction) => transaction.payment_date 
+    {
+      id: 'payment_date',
+      label: 'Fecha de pago',
+      render: (transaction: Transaction) => transaction.payment_date
     },
-    { 
-      id: 'date', 
-      label: 'Fecha', 
-      render: (transaction: Transaction) => 
-        new Date(transaction.created_at).toLocaleDateString() 
+    {
+      id: 'date',
+      label: 'Fecha',
+      render: (transaction: Transaction) =>
+        new Date(transaction.created_at).toLocaleDateString()
     },
-    { 
-      id: 'notes', 
-      label: 'Notas', 
-      render: (transaction: Transaction) => transaction.notes 
+    {
+      id: 'notes',
+      label: 'Notas',
+      render: (transaction: Transaction) => transaction.notes
     },
-    { 
-      id: 'limit_date', 
-      label: 'Fecha límite de pago', 
-      render: (transaction: Transaction) => 
-        transaction.expiration_date 
-          ? new Date(transaction.expiration_date).toLocaleDateString() 
+    {
+      id: 'limit_date',
+      label: 'Fecha límite de pago',
+      render: (transaction: Transaction) =>
+        transaction.expiration_date
+          ? new Date(transaction.expiration_date).toLocaleDateString()
           : 'No límite de pago'
     },
-    { 
-      id: 'comprobante', 
-      label: 'Comprobante', 
+    {
+      id: 'comprobante',
+      label: 'Comprobante',
       render: (transaction: Transaction) => (
         transaction.image ? (
           <div className="flex items-center gap-2">
@@ -157,9 +157,9 @@ export default function CobrosPage() {
       ),
       alwaysVisible: true // Esta columna siempre se muestra
     },
-    { 
-      id: 'actions', 
-      label: 'Acciones', 
+    {
+      id: 'actions',
+      label: 'Acciones',
       render: (transaction: Transaction) => (
         <div className="p-4 flex items-center justify-right gap-2">
           <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
@@ -169,31 +169,31 @@ export default function CobrosPage() {
           <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
             <Eye className="w-4 h-4 mr-2" />
           </Link>
-          {(user?.role === 'super_admin' || user?.role === 'contador') && 
-            <EditarFolio 
-              transaction={transaction} 
-              onSuccess={() => fetchTransactions(pagination.currentPage)} 
+          {(user?.role === 'super_admin' || user?.role === 'contador') &&
+            <EditarFolio
+              transaction={transaction}
+              onSuccess={() => fetchTransactions(pagination.currentPage)}
             />
           }
         </div>
       )
     },
   ];
-  
+
   // Función para generar definiciones de columnas dinámicas basadas en los datos recibidos
   const generateDynamicColumns = (transactions: Transaction[]) => {
     if (!transactions.length) return [];
-    
+
     // Extraer todas las claves de la primera transacción
     const sampleTransaction = transactions[0];
     const allKeys = Object.keys(sampleTransaction);
-    
+
     // Crear columnas dinámicas para las propiedades que no están en las columnas predefinidas
     const knownColumnIds = commonColumnDefinitions.map(col => col.id);
     const dynamicColumns = allKeys
-      .filter(key => 
+      .filter(key =>
         // Excluir propiedades que ya tenemos definidas o que son objetos complejos
-        !knownColumnIds.includes(key) && 
+        !knownColumnIds.includes(key) &&
         typeof sampleTransaction[key as keyof Transaction] !== 'object' &&
         key !== 'student' && // Ya manejamos student en una columna personalizada
         key !== 'image' && // Ya manejamos image en la columna comprobante
@@ -206,19 +206,19 @@ export default function CobrosPage() {
         label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '), // Formato más legible
         render: (transaction: Transaction) => {
           const value = transaction[key as keyof Transaction];
-          
+
           // Formatear valores según su tipo
           if (typeof value === 'boolean') return value ? 'Sí' : 'No';
           if (value instanceof Date) return value.toLocaleDateString();
           if (value === null || value === undefined) return '-';
-          
+
           return String(value);
         }
       }));
-      
+
     return dynamicColumns;
   };
-  
+
   // Combinar columnas conocidas con columnas dinámicas
   const [columnDefinitions, setColumnDefinitions] = useState<Array<any>>(commonColumnDefinitions);
 
@@ -226,22 +226,22 @@ export default function CobrosPage() {
     if (!activeCampus) return;
     fetchTransactions(pagination.currentPage);
   }, [activeCampus, pagination.currentPage, pagination.perPage]);
-  
+
   // Actualizar las definiciones de columnas cuando se carguen las transacciones
   useEffect(() => {
     if (transactions.length > 0) {
       const dynamicCols = generateDynamicColumns(transactions);
       const allColumns = [...commonColumnDefinitions, ...dynamicCols];
       setColumnDefinitions(allColumns);
-      
+
       // Actualizar el listado de IDs de columnas disponibles
       const allColumnIds = allColumns.map(col => col.id);
       setAvailableColumnIds(allColumnIds);
-      
+
       // Añadir columnas dinámicas nuevas al listado de columnas visibles si no están ya
       const newColumnIds = dynamicCols.map(col => col.id);
       const newVisibleColumnIds = [...visibleColumns];
-      
+
       let hasNewColumns = false;
       newColumnIds.forEach(id => {
         if (!visibleColumns.includes(id)) {
@@ -249,18 +249,18 @@ export default function CobrosPage() {
           hasNewColumns = true;
         }
       });
-      
+
       if (hasNewColumns) {
         setVisibleColumns(newVisibleColumnIds);
       }
     }
   }, [transactions]);
-  
+
   const fetchTransactions = async (page = 1) => {
     try {
       setLoading(true);
       const response = await getCharges(Number(activeCampus.id), page, parseInt(pagination.perPage.toString()));
-      
+
       setTransactions(response.data);
       setPagination({
         currentPage: response.current_page,
@@ -295,17 +295,17 @@ export default function CobrosPage() {
 
   const handleColumnSelect = (values: string[]) => {
     // Validar que todas las columnas seleccionadas existan en las columnas disponibles
-    const validValues = values.filter(value => 
+    const validValues = values.filter(value =>
       availableColumnIds.includes(value) || value === 'all'
     );
     setVisibleColumns(validValues);
   };
-  
+
   const handleOpenImage = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setImageModalOpen(true);
   };
-  
+
   const filteredTransactions = transactions.filter((transaction) => {
     const studentFullName =
       `${transaction.student?.username} ${transaction.student?.firstname} ${transaction.student?.lastname}`.toLowerCase();
@@ -352,13 +352,13 @@ export default function CobrosPage() {
 
   // Obtiene las columnas visibles más las que siempre deben mostrarse
   const getVisibleColumns = () => {
-    return columnDefinitions.filter(col => 
+    return columnDefinitions.filter(col =>
       visibleColumns.includes(col.id) || col.alwaysVisible
     );
   };
 
   return (
-    <Card className="max-w-[100vw]">
+    <Card className="w-full">
       <CardHeader className='sticky top-0 z-10 bg-card'>
         <div className="flex flex-col lg:flex-row gap-4 lg:justify-between">
           <div className='flex flex-col lg:flex-row gap-4'>
@@ -417,53 +417,53 @@ export default function CobrosPage() {
           </div>
           <div className="flex flex-col lg:flex-row gap-2">
             <AgregarIngreso />
-            <Link href="/planteles/cobros/actualizar" className={buttonVariants({variant:'default'})}>Actualizar Folios</Link>
+            <Link href="/planteles/cobros/actualizar" className={buttonVariants({ variant: 'default' })}>Actualizar Folios</Link>
           </div>
         </div>
       </CardHeader>
-
-      <CardContent>
-        {loading ? (
-          <div className="flex justify-center items-center h-40">
-            <p>Cargando transacciones...</p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {getVisibleColumns().map(column => (
-                  <TableHead key={column.id}>{column.label}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTransactions.length > 0 ? (
-                filteredTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    {getVisibleColumns().map(column => (
-                      <TableCell key={`${transaction.id}-${column.id}`}>
-                        {column.render(transaction)}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
+      <div className="max-w-[90vw] mx-auto overflow-hidden">
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center items-center h-40">
+              <p>Cargando transacciones...</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={getVisibleColumns().length} className="text-center py-4">
-                    No se encontraron transacciones
-                  </TableCell>
+                  {getVisibleColumns().map(column => (
+                    <TableHead key={column.id}>{column.label}</TableHead>
+                  ))}
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-        <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh] h-full overflow-y-scroll">
-            <img src={selectedImage} alt="Comprobante" className="w-full" />
-          </DialogContent>
-        </Dialog>
-      </CardContent>
-      
+              </TableHeader>
+              <TableBody>
+                {filteredTransactions.length > 0 ? (
+                  filteredTransactions.map((transaction) => (
+                    <TableRow key={transaction.id}>
+                      {getVisibleColumns().map(column => (
+                        <TableCell key={`${transaction.id}-${column.id}`}>
+                          {column.render(transaction)}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={getVisibleColumns().length} className="text-center py-4">
+                      No se encontraron transacciones
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </div>
+      <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] h-full overflow-y-scroll">
+          <img src={selectedImage} alt="Comprobante" className="w-full" />
+        </DialogContent>
+      </Dialog>
       {/* Paginación */}
       <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
         <PaginationComponent pagination={pagination} setPagination={setPagination} />

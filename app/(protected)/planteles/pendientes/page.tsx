@@ -150,7 +150,7 @@ export default function CobrosPage() {
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     if (!activeCampus) return;
     fetchTransactions(pagination.currentPage);
   }, [activeCampus, pagination.currentPage, pagination.perPage]);
@@ -181,7 +181,7 @@ export default function CobrosPage() {
   // Derived data
   const filteredTransactions = transactions?.filter((transaction) => {
     if (!transaction || !transaction.student) return false;
-    
+
     // Filter by search terms
     const studentFullName = `${transaction.student.username || ''} ${transaction.student.firstname || ''} ${transaction.student.lastname || ''}`.toLowerCase();
     const searchTerms = searchStudent.toLowerCase().split(' ');
@@ -295,12 +295,12 @@ export default function CobrosPage() {
     </TableRow>
   );
 
-  // Main render
   return (
-    <Card>
-      <CardHeader className='sticky z-[20] top-0 z-8 bg-card'>
-        <div className="flex gap-4 justify-between">
-          <div className='flex gap-4'>
+    <Card className="w-full">
+      {/* Header fijo */}
+      <CardHeader className="sticky top-0 z-20 bg-card border-b">
+        <div className="flex flex-col lg:flex-row gap-4 justify-between">
+          <div className="flex flex-col lg:flex-row gap-4 flex-wrap">
             <Input
               placeholder="Buscar por nombre completo..."
               value={searchStudent}
@@ -337,22 +337,28 @@ export default function CobrosPage() {
         </div>
       </CardHeader>
 
-      <CardContent>
-        <Table>
-          {renderTableHeaders()}
-          <TableBody>
-            {filteredTransactions.map(renderTransactionRow)}
-          </TableBody>
-        </Table>
+      {/* Contenedor con scroll */}
+      <div className="max-w-[90vw] mx-auto overflow-hidden">
+        <CardContent className="px-0">
+          <div className="overflow-x-auto w-full">
+            <Table>
+              {renderTableHeaders()}
+              <TableBody>
+                {filteredTransactions.map(renderTransactionRow)}
+              </TableBody>
+            </Table>
+          </div>
 
-        <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-          <DialogContent className="max-w-3xl">
-            <img src={selectedImage} alt="Comprobante" className="w-full" />
-          </DialogContent>
-        </Dialog>
-      </CardContent>
+          <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
+            <DialogContent className="max-w-3xl">
+              <img src={selectedImage} alt="Comprobante" className="w-full" />
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </div>
 
-      <CardFooter>
+      {/* Footer fijo */}
+      <CardFooter className="border-t p-4">
         <PaginationComponent pagination={pagination} setPagination={setPagination} />
       </CardFooter>
     </Card>
