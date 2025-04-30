@@ -44,39 +44,39 @@ export default function GastosPage() {
   });
   // Definición de las columnas disponibles con todas sus propiedades
   const tableColumns = [
-    { 
-      id: 'fecha', 
-      label: 'Fecha', 
+    {
+      id: 'fecha',
+      label: 'Fecha',
       render: (gasto: Gasto) => format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es })
     },
-    { 
-      id: 'empleado', 
-      label: 'Empleado', 
-      render: (gasto: Gasto) => gasto?.admin?.name 
+    {
+      id: 'empleado',
+      label: 'Empleado',
+      render: (gasto: Gasto) => gasto?.admin?.name
     },
-    { 
-      id: 'recibe', 
-      label: 'Recibe', 
-      render: (gasto: Gasto) => gasto?.user?.name 
+    {
+      id: 'recibe',
+      label: 'Recibe',
+      render: (gasto: Gasto) => gasto?.user?.name
     },
-    { 
-      id: 'concepto', 
-      label: 'Concepto', 
-      render: (gasto: Gasto) => gasto.concept 
+    {
+      id: 'concepto',
+      label: 'Concepto',
+      render: (gasto: Gasto) => gasto.concept
     },
-    { 
-      id: 'categoria', 
-      label: 'Categoria', 
-      render: (gasto: Gasto) => gasto.category 
+    {
+      id: 'categoria',
+      label: 'Categoria',
+      render: (gasto: Gasto) => gasto.category
     },
-    { 
-      id: 'monto', 
-      label: 'Monto', 
-      render: (gasto: Gasto) => `$${gasto.amount}` 
+    {
+      id: 'monto',
+      label: 'Monto',
+      render: (gasto: Gasto) => `$${gasto.amount}`
     },
-    { 
-      id: 'comprobante', 
-      label: 'Comprobante', 
+    {
+      id: 'comprobante',
+      label: 'Comprobante',
       render: (gasto: Gasto) => gasto.image ? (
         <div className="flex items-center gap-2">
           <img
@@ -95,9 +95,9 @@ export default function GastosPage() {
         </div>
       ) : null
     },
-    { 
-      id: 'acciones', 
-      label: 'Acciones', 
+    {
+      id: 'acciones',
+      label: 'Acciones',
       render: (gasto: Gasto) => (
         <>
           <Button
@@ -200,7 +200,7 @@ export default function GastosPage() {
   };
 
   // Filtrar las columnas que son visibles
-  const visibleTableColumns = tableColumns.filter(column => 
+  const visibleTableColumns = tableColumns.filter(column =>
     visibleColumns.includes(column.id)
   );
 
@@ -262,29 +262,29 @@ export default function GastosPage() {
         </div>
       </CardHeader>
       <div className="max-w-[90vw] mx-auto overflow-hidden">
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {visibleTableColumns.map(column => (
-                <TableHead key={column.id}>{column.label}</TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredGastos.map((gasto) => (
-              <TableRow key={gasto.id}>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
                 {visibleTableColumns.map(column => (
-                  <TableCell key={`${gasto.id}-${column.id}`}>
-                    {column.render(gasto)}
-                  </TableCell>
+                  <TableHead key={column.id}>{column.label}</TableHead>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-</div>
+            </TableHeader>
+            <TableBody>
+              {filteredGastos.map((gasto) => (
+                <TableRow key={gasto.id}>
+                  {visibleTableColumns.map(column => (
+                    <TableCell key={`${gasto.id}-${column.id}`}>
+                      {column.render(gasto)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </div>
       <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
         <PaginationComponent pagination={pagination} setPagination={setPagination} />
       </CardFooter>

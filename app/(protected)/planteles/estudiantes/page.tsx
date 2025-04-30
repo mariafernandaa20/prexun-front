@@ -287,9 +287,9 @@ export default function Page() {
   });
 
   return (
-    <Card className="max-w-[100vw] mx-auto">
-      <CardHeader className='sticky top-0 z-10 bg-card'>
-        <div className="flex flex-col lg:flex-row lg:justify-between">
+    <Card className="w-full">
+      <CardHeader className='sticky z-[20] top-0 z-8 bg-card'>
+        <div className="flex flex-col lg:flex-row justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Estudiantes</h1>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col lg:flex-row gap-4">
@@ -377,194 +377,196 @@ export default function Page() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto w-full">
-          {isLoading ? (
-            <div className="text-center py-4">Cargando...</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {visibleColumns.includes('matricula') && (
-                    <TableHead>Matrícula</TableHead>
-                  )}
-                  {visibleColumns.includes('firstname') && (
-                    <TableHead>Nombre</TableHead>
-                  )}
-                  {visibleColumns.includes('lastname') && (
-                    <TableHead>Apellido</TableHead>
-                  )}
-                  {visibleColumns.includes('created_at') && (
-                    <TableHead>Fecha de Inscripción</TableHead>
-                  )}
-                  {visibleColumns.includes('email') && (
-                    <TableHead>Email</TableHead>
-                  )}
-                  {visibleColumns.includes('phone') && (
-                    <TableHead>Teléfono</TableHead>
-                  )}
-                  {visibleColumns.includes('type') && (
-                    <TableHead>Curso</TableHead>
-                  )}
-                  {visibleColumns.includes('period') && (
-                    <TableHead>Periodo</TableHead>
-                  )}
-
-                  {visibleColumns.includes('carrera') && (
-                    <TableHead>Carrera</TableHead>
-                  )}
-                  {visibleColumns.includes('facultad') && (
-                    <TableHead>Facultad</TableHead>
-                  )}
-                  {visibleColumns.includes('prepa') && (
-                    <TableHead>Preparatoria</TableHead>
-                  )}
-                  {visibleColumns.includes('municipio') && (
-                    <TableHead>Municipio</TableHead>
-                  )}
-                  {visibleColumns.includes('tutor_name') && (
-                    <TableHead>Tutor</TableHead>
-                  )}
-                  {visibleColumns.includes('tutor_phone') && (
-                    <TableHead>Teléfono del Tutor</TableHead>
-                  )}
-                  {visibleColumns.includes('tutor_relationship') && (
-                    <TableHead>Relación con el Tutor</TableHead>
-                  )}
-                  {visibleColumns.includes('preferred_communication') && (
-                    <TableHead>Medio de Comunicación</TableHead>
-                  )}
-                  {visibleColumns.includes('status') && (
-                    <TableHead>Estado</TableHead>
-                  )}
-                  {visibleColumns.includes('health_conditions') && (
-                    <TableHead>Condiciones de Salud</TableHead>
-                  )}
-                  {visibleColumns.includes('how_found_out') && (
-                    <TableHead>Cómo se Enteró</TableHead>
-                  )}
-                  {visibleColumns.includes('preferred_communication') && (
-                    <TableHead>Medio de Comunicación</TableHead>
-                  )}
-                  {visibleColumns.includes('actions') && (
-                    <TableHead>Acciones</TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents.map((student) => (
-                  <TableRow key={student.id}>
+      <div className="max-w-[90vw] mx-auto overflow-hidden">
+        <CardContent>
+          <div className="overflow-x-auto w-full">
+            {isLoading ? (
+              <div className="text-center py-4">Cargando...</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
                     {visibleColumns.includes('matricula') && (
-                      <TableCell>{student.id}</TableCell>
+                      <TableHead>Matrícula</TableHead>
                     )}
                     {visibleColumns.includes('firstname') && (
-                      <TableCell>{student.firstname}</TableCell>
+                      <TableHead>Nombre</TableHead>
                     )}
                     {visibleColumns.includes('lastname') && (
-                      <TableCell>{student.lastname}</TableCell>
+                      <TableHead>Apellido</TableHead>
                     )}
                     {visibleColumns.includes('created_at') && (
-                      <TableCell>
-                        {new Date(student.created_at).toLocaleDateString()}
-                      </TableCell>
+                      <TableHead>Fecha de Inscripción</TableHead>
                     )}
                     {visibleColumns.includes('email') && (
-                      <TableCell>{student.email}</TableCell>
+                      <TableHead>Email</TableHead>
                     )}
                     {visibleColumns.includes('phone') && (
-                      <TableCell>{student.phone}</TableCell>
+                      <TableHead>Teléfono</TableHead>
                     )}
                     {visibleColumns.includes('type') && (
-                      <TableCell>{student.type}</TableCell>
+                      <TableHead>Curso</TableHead>
                     )}
                     {visibleColumns.includes('period') && (
-                      <TableCell>{student.period.name}</TableCell>
+                      <TableHead>Periodo</TableHead>
                     )}
+
                     {visibleColumns.includes('carrera') && (
-                      <TableCell>{student?.carrera?.name}</TableCell>
+                      <TableHead>Carrera</TableHead>
                     )}
                     {visibleColumns.includes('facultad') && (
-                      <TableCell>{student?.facultad?.name}</TableCell>
+                      <TableHead>Facultad</TableHead>
                     )}
                     {visibleColumns.includes('prepa') && (
-                      <TableCell>{student?.prepa?.name}</TableCell>
+                      <TableHead>Preparatoria</TableHead>
                     )}
                     {visibleColumns.includes('municipio') && (
-                      <TableCell>{student?.municipio?.name}</TableCell>
+                      <TableHead>Municipio</TableHead>
                     )}
                     {visibleColumns.includes('tutor_name') && (
-                      <TableCell>{student.tutor_name}</TableCell>
+                      <TableHead>Tutor</TableHead>
                     )}
                     {visibleColumns.includes('tutor_phone') && (
-                      <TableCell>{student.tutor_phone}</TableCell>
+                      <TableHead>Teléfono del Tutor</TableHead>
                     )}
                     {visibleColumns.includes('tutor_relationship') && (
-                      <TableCell>{student.tutor_relationship}</TableCell>
+                      <TableHead>Relación con el Tutor</TableHead>
                     )}
                     {visibleColumns.includes('preferred_communication') && (
-                      <TableCell>{student.preferred_communication}</TableCell>
+                      <TableHead>Medio de Comunicación</TableHead>
                     )}
                     {visibleColumns.includes('status') && (
-                      <TableCell>{student.status}</TableCell>
+                      <TableHead>Estado</TableHead>
                     )}
                     {visibleColumns.includes('health_conditions') && (
-                      <TableCell>{student.health_conditions}</TableCell>
+                      <TableHead>Condiciones de Salud</TableHead>
                     )}
                     {visibleColumns.includes('how_found_out') && (
-                      <TableCell>{student.how_found_out}</TableCell>
+                      <TableHead>Cómo se Enteró</TableHead>
                     )}
                     {visibleColumns.includes('preferred_communication') && (
-                      <TableCell>{student.preferred_communication}</TableCell>
+                      <TableHead>Medio de Comunicación</TableHead>
                     )}
                     {visibleColumns.includes('actions') && (
-                      <TableCell className="p-4">
-                        <div className="flex gap-2">
-                          {/* <ChargesForm
+                      <TableHead>Acciones</TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredStudents.map((student) => (
+                    <TableRow key={student.id}>
+                      {visibleColumns.includes('matricula') && (
+                        <TableCell>{student.id}</TableCell>
+                      )}
+                      {visibleColumns.includes('firstname') && (
+                        <TableCell>{student.firstname}</TableCell>
+                      )}
+                      {visibleColumns.includes('lastname') && (
+                        <TableCell>{student.lastname}</TableCell>
+                      )}
+                      {visibleColumns.includes('created_at') && (
+                        <TableCell>
+                          {new Date(student.created_at).toLocaleDateString()}
+                        </TableCell>
+                      )}
+                      {visibleColumns.includes('email') && (
+                        <TableCell>{student.email}</TableCell>
+                      )}
+                      {visibleColumns.includes('phone') && (
+                        <TableCell>{student.phone}</TableCell>
+                      )}
+                      {visibleColumns.includes('type') && (
+                        <TableCell>{student.type}</TableCell>
+                      )}
+                      {visibleColumns.includes('period') && (
+                        <TableCell>{student.period.name}</TableCell>
+                      )}
+                      {visibleColumns.includes('carrera') && (
+                        <TableCell>{student?.carrera?.name}</TableCell>
+                      )}
+                      {visibleColumns.includes('facultad') && (
+                        <TableCell>{student?.facultad?.name}</TableCell>
+                      )}
+                      {visibleColumns.includes('prepa') && (
+                        <TableCell>{student?.prepa?.name}</TableCell>
+                      )}
+                      {visibleColumns.includes('municipio') && (
+                        <TableCell>{student?.municipio?.name}</TableCell>
+                      )}
+                      {visibleColumns.includes('tutor_name') && (
+                        <TableCell>{student.tutor_name}</TableCell>
+                      )}
+                      {visibleColumns.includes('tutor_phone') && (
+                        <TableCell>{student.tutor_phone}</TableCell>
+                      )}
+                      {visibleColumns.includes('tutor_relationship') && (
+                        <TableCell>{student.tutor_relationship}</TableCell>
+                      )}
+                      {visibleColumns.includes('preferred_communication') && (
+                        <TableCell>{student.preferred_communication}</TableCell>
+                      )}
+                      {visibleColumns.includes('status') && (
+                        <TableCell>{student.status}</TableCell>
+                      )}
+                      {visibleColumns.includes('health_conditions') && (
+                        <TableCell>{student.health_conditions}</TableCell>
+                      )}
+                      {visibleColumns.includes('how_found_out') && (
+                        <TableCell>{student.how_found_out}</TableCell>
+                      )}
+                      {visibleColumns.includes('preferred_communication') && (
+                        <TableCell>{student.preferred_communication}</TableCell>
+                      )}
+                      {visibleColumns.includes('actions') && (
+                        <TableCell className="p-4">
+                          <div className="flex gap-2">
+                            {/* <ChargesForm
                           campusId={Number(activeCampus?.id)}
                           fetchStudents={fetchStudents}
                           student={student}
                         /> */}
-                          <a className={buttonVariants({ variant: 'ghost' })} href={`https://wa.me/${student.phone}`} target="_blank" rel="noreferrer">
-                            <FaWhatsapp />
+                            <a className={buttonVariants({ variant: 'ghost' })} href={`https://wa.me/${student.phone}`} target="_blank" rel="noreferrer">
+                              <FaWhatsapp />
 
-                          </a>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenEditModal(student)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Link className={buttonVariants({ variant: 'ghost' })} href={`/planteles/estudiantes/${student.id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                          {/* <Button
+                            </a>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenEditModal(student)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Link className={buttonVariants({ variant: 'ghost' })} href={`/planteles/estudiantes/${student.id}`}>
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                            {/* <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDelete(student.id!)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button> */}
-                          {user?.role === 'super_admin' && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className='text-red-500 hover:text-red-700'
-                              onClick={() => handleDeleteForever(student.id!)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-      </CardContent>
+                            {user?.role === 'super_admin' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className='text-red-500 hover:text-red-700'
+                                onClick={() => handleDeleteForever(student.id!)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </CardContent>
+      </div>
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="lg:min-w-[60rem]">
           <DialogHeader>

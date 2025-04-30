@@ -359,41 +359,63 @@ export default function CobrosPage() {
 
   return (
     <Card className="w-full">
-      <CardHeader className='sticky top-0 z-10 bg-card'>
-        <div className="flex flex-col lg:flex-row gap-4 lg:justify-between">
-          <div className='flex flex-col lg:flex-row gap-4'>
+      <CardHeader className='sticky top-0 z-10 bg-card px-2 sm:px-6'>
+        <div className="flex flex-col space-y-4">
+          {/* Primera fila: Search + Botones de acción */}
+          <div className='flex flex-col sm:flex-row justify-between gap-4'>
             <Input
               placeholder="Buscar por nombre completo..."
               value={searchStudent}
               onChange={(e) => setSearchStudent(e.target.value)}
-              className="w-[300px]"
+              className="w-full sm:w-[300px]"
             />
-            <div className="flex gap-2 w-full overflow-x-auto">
-              <Button
-                variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
-                onClick={() => setSelectedPaymentMethods(['all'])}
-              >
-                Todos los métodos
-              </Button>
-              <Button
-                variant={selectedPaymentMethods.includes('cash') ? 'default' : 'outline'}
-                onClick={() => handlePaymentMethodChange('cash')}
-              >
-                Efectivo
-              </Button>
-              <Button
-                variant={selectedPaymentMethods.includes('transfer') ? 'default' : 'outline'}
-                onClick={() => handlePaymentMethodChange('transfer')}
-              >
-                Transferencia
-              </Button>
-              <Button
-                variant={selectedPaymentMethods.includes('card') ? 'default' : 'outline'}
-                onClick={() => handlePaymentMethodChange('card')}
-              >
-                Tarjeta
-              </Button>
+            <div className="flex flex-wrap sm:flex-nowrap gap-2">
+              <AgregarIngreso />
+              <Link href="/planteles/cobros/actualizar" className={buttonVariants({ variant: 'default' })}>
+                <span className="hidden sm:inline">Actualizar Folios</span>
+                <span className="sm:hidden">Actualizar</span>
+              </Link>
             </div>
+          </div>
+
+          {/* Segunda fila: Filtros de métodos de pago */}
+          <div className="flex gap-2 w-full overflow-x-auto pb-2">
+            <Button
+              variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
+              onClick={() => setSelectedPaymentMethods(['all'])}
+              className="whitespace-nowrap"
+              size="sm"
+            >
+              Todos
+            </Button>
+            <Button
+              variant={selectedPaymentMethods.includes('cash') ? 'default' : 'outline'}
+              onClick={() => handlePaymentMethodChange('cash')}
+              className="whitespace-nowrap"
+              size="sm"
+            >
+              Efectivo
+            </Button>
+            <Button
+              variant={selectedPaymentMethods.includes('transfer') ? 'default' : 'outline'}
+              onClick={() => handlePaymentMethodChange('transfer')}
+              className="whitespace-nowrap"
+              size="sm"
+            >
+              Transferencia
+            </Button>
+            <Button
+              variant={selectedPaymentMethods.includes('card') ? 'default' : 'outline'}
+              onClick={() => handlePaymentMethodChange('card')}
+              className="whitespace-nowrap"
+              size="sm"
+            >
+              Tarjeta
+            </Button>
+          </div>
+
+          {/* Tercera fila: MultiSelect */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <MultiSelect
               options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
               hiddeBadages={true}
@@ -415,55 +437,58 @@ export default function CobrosPage() {
               emptyMessage="No se encontraron columnas"
             />
           </div>
-          <div className="flex flex-col lg:flex-row gap-2">
-            <AgregarIngreso />
-            <Link href="/planteles/cobros/actualizar" className={buttonVariants({ variant: 'default' })}>Actualizar Folios</Link>
-          </div>
         </div>
       </CardHeader>
-      <div className="max-w-[90vw] mx-auto overflow-hidden">
-        <CardContent>
+
+      {/* Tabla */}
+      <div className="max-w-[90vw] mx-auto overflow-x-auto">
+        <CardContent className="px-2 sm:px-6">
           {loading ? (
             <div className="flex justify-center items-center h-40">
               <p>Cargando transacciones...</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {getVisibleColumns().map(column => (
-                    <TableHead key={column.id}>{column.label}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      {getVisibleColumns().map(column => (
-                        <TableCell key={`${transaction.id}-${column.id}`}>
-                          {column.render(transaction)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={getVisibleColumns().length} className="text-center py-4">
-                      No se encontraron transacciones
-                    </TableCell>
+                    {getVisibleColumns().map(column => (
+                      <TableHead key={column.id}>{column.label}</TableHead>
+                    ))}
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredTransactions.length > 0 ? (
+                    filteredTransactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        {getVisibleColumns().map(column => (
+                          <TableCell key={`${transaction.id}-${column.id}`}>
+                            {column.render(transaction)}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={getVisibleColumns().length} className="text-center py-4">
+                        No se encontraron transacciones
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </div>
+
+      {/* Modal de imagen */}
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] h-full overflow-y-scroll">
+        <DialogContent className="max-w-3xl max-h-[80vh] h-full overflow-y-auto">
           <img src={selectedImage} alt="Comprobante" className="w-full" />
         </DialogContent>
       </Dialog>
+
       {/* Paginación */}
       <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
         <PaginationComponent pagination={pagination} setPagination={setPagination} />
