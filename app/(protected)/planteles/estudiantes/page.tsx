@@ -20,7 +20,7 @@ import {
   getGrupos,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Pencil, Trash2, Filter, Eye } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Filter, Eye, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { StudentForm } from './student-form';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import {
@@ -47,10 +47,16 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { MultiSelect } from '@/components/multi-select';
-import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { getColumnDefinitions, getColumnOptions } from './columns';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -74,6 +80,11 @@ export default function Page() {
   const { activeCampus } = useActiveCampusStore();
   const { user } = useAuthStore();
   const { toast } = useToast();
+
+  // Estados para las acciones en masa
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 
   const handleOpenEditModal = (student: Student) => {
     setSelectedStudent(student);
@@ -150,7 +161,6 @@ export default function Page() {
   };
 
   const getData = async () => {
-    const responseCohorts = await getCohorts();
     const responseMunicipios = await getMunicipios();
     const responsePrepas = await getPrepas();
     const responseFacultades = await getFacultades();
@@ -176,8 +186,6 @@ export default function Page() {
     setSelectedStudent(null);
     setIsModalOpen(true);
   };
-
-
 
   useEffect(() => {
     if (!activeCampus) return;
@@ -212,7 +220,6 @@ export default function Page() {
       });
     }
   };
-
 
   const handleSubmit = async (formData: Student) => {
     try {
@@ -256,6 +263,160 @@ export default function Page() {
     () => columnDefinitions.filter(col => visibleColumns.includes(col.id)),
     [columnDefinitions, visibleColumns]
   );
+
+  // Maneja la selección individual de estudiantes
+  const handleSelectStudent = (studentId: string) => {
+    setSelectedStudents(prev => {
+      if (prev.includes(studentId)) {
+        return prev.filter(id => id !== studentId);
+      } else {
+        return [...prev, studentId];
+      }
+    });
+  };
+
+  // Maneja la selección de todos los estudiantes
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedStudents([]);
+    } else {
+      setSelectedStudents(filteredStudents.map(student => student.id));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // Actualiza el estado selectAll cuando cambian los estudiantes seleccionados
+  useEffect(() => {
+    if (filteredStudents.length > 0 && selectedStudents.length === filteredStudents.length) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedStudents, filteredStudents]);
+
+  // Funciones para acciones en masa
+  const handleBulkDelete = async () => {
+    if (selectedStudents.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Seleccione al menos un estudiante',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`¿Está seguro de eliminar ${selectedStudents.length} estudiante(s)?`)) return;
+
+    try {
+      setIsBulkActionLoading(true);
+      // Aquí implementarías una función en el backend para eliminar múltiples estudiantes
+      // Ejemplo: await deleteManyStudents(selectedStudents);
+
+      // Por ahora, eliminamos uno por uno:
+      for (const id of selectedStudents) {
+        await deleteStudent(id);
+      }
+
+      await fetchStudents();
+      setSelectedStudents([]);
+      toast({
+        title: 'Acción completada',
+        description: `${selectedStudents.length} estudiante(s) eliminados correctamente`
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al eliminar estudiantes',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkUpdatePeriod = async (periodId: string) => {
+    if (selectedStudents.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Seleccione al menos un estudiante',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`¿Está seguro de actualizar el periodo de ${selectedStudents.length} estudiante(s)?`)) return;
+
+    try {
+      setIsBulkActionLoading(true);
+      // Aquí implementarías una función en el backend para actualizar periodos
+      // Ejemplo: await updateManyStudentsPeriod(selectedStudents, periodId);
+
+      // Por ahora, actualizamos uno por uno (esto deberías reemplazarlo con una API optimizada para operaciones en masa):
+      for (const studentId of selectedStudents) {
+        const student = students.find(s => s.id === studentId);
+        if (student) {
+          await updateStudent({
+            ...student,
+            period: {
+              ...student.period,
+              id: periodId
+            }
+          });
+        }
+      }
+
+      await fetchStudents();
+      setSelectedStudents([]);
+      toast({
+        title: 'Acción completada',
+        description: `${selectedStudents.length} estudiante(s) actualizados correctamente`
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al actualizar estudiantes',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkActionLoading(false);
+    }
+  };
+
+  // Función para enviar WhatsApp a los seleccionados
+  const handleBulkWhatsApp = () => {
+    if (selectedStudents.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Seleccione al menos un estudiante',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Obtener números de teléfono de los estudiantes seleccionados
+    const selectedPhones = filteredStudents
+      .filter(student => selectedStudents.includes(student.id))
+      .map(student => student.phone)
+      .filter(phone => phone && phone.trim() !== '');
+
+    if (selectedPhones.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Los estudiantes seleccionados no tienen números de teléfono válidos',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Abrir WhatsApp Web con los números seleccionados
+    const message = encodeURIComponent('Mensaje para estudiantes');
+    window.open(`https://wa.me/${selectedPhones[0]}?text=${message}`, '_blank');
+
+    toast({
+      title: 'WhatsApp iniciado',
+      description: `Se abrió WhatsApp para ${selectedPhones.length} contacto(s)`
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -349,15 +510,76 @@ export default function Page() {
               )}
             </div>
           </div>
+
+          {/* Menú de acciones en masa */}
+          {selectedStudents.length > 0 && (
+            <div className="flex items-center justify-between mt-2 p-2 bg-muted/50 rounded-md">
+              <div className="flex items-center">
+                <span>{selectedStudents.length} estudiante(s) seleccionado(s)</span>
+              </div>
+              <div className="flex gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={isBulkActionLoading}>
+                      Acciones en masa <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleBulkDelete}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar seleccionados
+                    </DropdownMenuItem>
+                    {periods.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="w-full flex items-center px-2 py-1.5 text-sm">
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Cambiar periodo
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {periods.map((period) => (
+                            <DropdownMenuItem
+                              key={period.id}
+                              onClick={() => handleBulkUpdatePeriod(period.id)}
+                            >
+                              {period.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                    <DropdownMenuItem onClick={handleBulkWhatsApp}>
+                      <FaWhatsapp className="mr-2 h-4 w-4" />
+                      Enviar WhatsApp
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button
+                  variant="ghost"
+                  onClick={() => setSelectedStudents([])}
+                  disabled={isBulkActionLoading}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading || isBulkActionLoading ? (
             <div className="text-center py-4">Cargando...</div>
           ) : (
             <div className="h-full overflow-x-auto max-w-[80vw]">
               <Table>
                 <TableHeader className="sticky top-0 z-10 bg-card">
                   <TableRow>
+                    {/* Columna de checkbox para selección */}
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={selectAll && filteredStudents.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Seleccionar todos"
+                      />
+                    </TableHead>
                     {visibleColumnDefs.map((column) => (
                       <TableHead
                         key={column.id}
@@ -372,7 +594,7 @@ export default function Page() {
                   {filteredStudents.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={visibleColumnDefs.length}
+                        colSpan={visibleColumnDefs.length + 1}
                         className="text-center h-32"
                       >
                         No se encontraron estudiantes
@@ -381,6 +603,14 @@ export default function Page() {
                   ) : (
                     filteredStudents.map((student) => (
                       <TableRow key={student.id}>
+                        {/* Celda de checkbox para selección */}
+                        <TableCell className="w-12">
+                          <Checkbox
+                            checked={selectedStudents.includes(student.id)}
+                            onCheckedChange={() => handleSelectStudent(student.id)}
+                            aria-label={`Seleccionar ${student.firstname} ${student.lastname}`}
+                          />
+                        </TableCell>
                         {visibleColumnDefs.map((column) => (
                           <TableCell
                             key={`${student.id}-${column.id}`}
