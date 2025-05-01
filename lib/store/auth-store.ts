@@ -5,8 +5,8 @@ import { auth } from "@/lib/auth";
 import Cookies from "js-cookie";
 import axiosInstance from "../api/axiosConfig";
 import { AUTH_ENDPOINTS } from "../api/endpoints";
-import { Campus, Grupo, User } from "../types";
-import { getCampuses, getSemanas, getUsers } from "../api";
+import { Campus, Carrera, Grupo, Promocion, User } from "../types";
+import { getCampuses, getCarreras, getFacultades, getGrupos, getPeriods, getSemanas, getUsers } from "../api";
 
 // Interfaces separadas para mejor organización
 interface UserState {
@@ -25,6 +25,16 @@ interface GrupoState {
 
 interface TokenState {
   accessToken: string | null;
+}
+
+interface AppState {
+  periods: any,
+  municipios: any,
+  prepas: any,
+  facultades: any,
+  carreras: Carrera[],
+  promos: Promocion[],
+  grupos: Grupo[],
 }
 
 interface AuthActions {
@@ -56,11 +66,15 @@ interface DataActions {
   fetchUsers: () => Promise<void>;
   fetchCampuses: () => Promise<void>;
   fetchSemanas: () => Promise<void>;
+  fetchPeriods: () => Promise<void>;
+  fetchCarreras: () => Promise<void>;
+  fetchGrupos: () => Promise<void>;
+  fetchFacultades: () => Promise<void>;
   initializeApp: () => Promise<void>;
 }
 
 // Combinamos todas las interfaces
-type AuthState = UserState & CampusState & GrupoState & TokenState & AuthActions & DataActions;
+type AuthState = UserState & CampusState & GrupoState & TokenState & AuthActions & DataActions & AppState;
 
 // Helpers para manejo de cookies
 const COOKIE_OPTIONS = {
@@ -87,6 +101,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   semanasIntensivas: [],
   accessToken: null,
   loading: true,
+  periods: [],
+  municipios: [],
+  prepas: [],
+  facultades: [],
+  carreras: [],
+  promos: [],
+  grupos: [],
 
   // Setters simples
   setUser: (user) => set({ user }),
@@ -94,6 +115,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setLoading: (loading) => set({ loading }),
   setCampuses: (campuses) => set({ campuses }),
   setAccessToken: (token) => set({ accessToken: token }),
+  setSemanas: (semanas) => set({ semanasIntensivas: semanas }),
+  setPeriods: (periods) => set({ periods }),
+  setMunicipios: (municipios) => set({ municipios }),
+  setPrepas: (prepas) => set({ prepas }),
+  setFacultades: (facultades) => set({ facultades }),
+  setCarreras: (carreras) => set({ carreras }),
+  setPromos: (promos) => set({ promos }),
+  setGrupos: (grupos) => set({ grupos }),
 
   // Acciones de autenticación
   checkAuth: async () => {
@@ -115,20 +144,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     setCookie("auth-token", token);
     setCookie("user-role", user.role);
-    
+
     // También almacenamos el token en el estado
-    set({ 
+    set({
       user,
-      accessToken: token 
+      accessToken: token
     });
-    
+
     return user;
   },
 
   logout: () => {
     removeCookie("auth-token");
     removeCookie("user-role");
-    set({ 
+    set({
       user: null,
       accessToken: null
     });
@@ -209,23 +238,66 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  fetchPeriods: async () => {
+    try {
+      const periods = await getPeriods();
+      set({ periods });
+    } catch (error) {
+      console.error('Error fetching periods:', error);
+      set({ periods: [] });
+    }
+  },
+
+  fetchGrupos: async () => {
+    try {
+      const grupos = await getGrupos();
+      set({ grupos });
+    } catch (error) {
+      console.error('Error fetching periods:', error);
+      set({ grupos: [] });
+    }
+  },
+
+  fetchCarreras: async () => {
+    try {
+      const carreras = await getCarreras();
+      set({ carreras });
+    } catch (error) {
+      console.error('Error fetching periods:', error);
+      set({ carreras: [] });
+    }
+  },
+  fetchFacultades: async () => {
+    try {
+      const facultades = await getFacultades();
+      set({ facultades });
+    } catch (error) {
+      console.error('Error fetching periods:', error);
+      set({ facultades: [] });
+    }
+  },
+
   // Inicialización de la aplicación
   initializeApp: async () => {
     try {
       set({ loading: true });
-      
+
       // Intenta recuperar el token si existe en cookies
       const storedToken = Cookies.get("auth-token");
       if (storedToken) {
         set({ accessToken: storedToken });
       }
-      
+
       await Promise.all([
         get().fetchUsers(),
         get().fetchCampuses(),
-        get().fetchSemanas()
+        get().fetchSemanas(),
+        get().fetchPeriods(),
+        get().fetchGrupos(),
+        get().fetchCarreras(),
+        get().fetchFacultades(),
       ]);
-      
+
       await get().checkAuth();
     } catch (error) {
       console.error('Error initializing app:', error);

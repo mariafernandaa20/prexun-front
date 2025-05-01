@@ -23,13 +23,9 @@ interface StudentFormProps {
   onSubmit: (data: Student) => void;
   onCancel: () => void;
   campusId: number;
-  periods: Period[];
   municipios: Municipio[];
   prepas: Prepa[];
-  facultades: Facultad[];
-  carreras: Carrera[];
   promos: Promocion[];
-  grupos: Grupo[];
 }
 
 export function StudentForm({
@@ -37,18 +33,15 @@ export function StudentForm({
   onSubmit,
   onCancel,
   campusId,
-  periods,
   municipios,
   prepas,
-  facultades,
-  carreras,
   promos,
-  grupos,
 }: StudentFormProps) {
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingButton, setIsLoadingButton] = useState(false);
+  const { periods, grupos, carreras, facultades } = useAuthStore();
 
   const [formData, setFormData] = useState<Student>({
     id: student?.id || null,

@@ -2,38 +2,21 @@
 import { FaWhatsapp } from "react-icons/fa6";
 
 import React, { useEffect, useState } from 'react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Grupo, Period, Promocion, Student } from '@/lib/types';
 import {
   getStudents,
   createStudent,
   updateStudent,
   deleteStudent,
-  getPeriods,
   getPromos,
   getGrupos,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Pencil, Trash2, Filter, Eye, ChevronDown, CheckCircle2 } from 'lucide-react';
-import { StudentForm } from './student-form';
+import { PlusCircle, Pencil, Trash2, Filter, ChevronDown, } from 'lucide-react';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
+
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  getCarreras,
-  getCohorts,
   getFacultades,
   getMunicipios,
   getPrepas,
@@ -57,17 +40,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { StudentsTable } from "./StudentsTable";
+import { StudentDialog } from "./StudentDialog";
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
   const [municipios, setMunicipios] = useState<Array<{ id: string; name: string }>>([]);
   const [prepas, setPrepas] = useState<Array<{ id: string; name: string }>>([]);
   const [facultades, setFacultades] = useState<Array<{ id: string; name: string }>>([]);
-  const [carreras, setCarreras] = useState<Array<{ id: string; name: string; facultad_id: string }>>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [periods, setPeriods] = useState<Period[]>([]);
   const [typeFilter, setTypeFilter] = useState<'all' | 'preparatoria' | 'facultad'>('all');
   const [periodFilter, setPeriodFilter] = useState<string>('all');
   const [searchName, setSearchName] = useState('');
@@ -78,7 +61,7 @@ export default function Page() {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
   const { activeCampus } = useActiveCampusStore();
-  const { user } = useAuthStore();
+  const { user,periods } = useAuthStore();
   const { toast } = useToast();
 
   // Estados para las acciones en masa
@@ -163,18 +146,9 @@ export default function Page() {
   const getData = async () => {
     const responseMunicipios = await getMunicipios();
     const responsePrepas = await getPrepas();
-    const responseFacultades = await getFacultades();
-    const responseCarreras = await getCarreras();
 
     setMunicipios(responseMunicipios);
     setPrepas(responsePrepas);
-    setFacultades(responseFacultades);
-    setCarreras(responseCarreras);
-  };
-
-  const fetchPeriods = async () => {
-    const response = await getPeriods();
-    setPeriods(response);
   };
 
   const fetchPromos = async () => {
@@ -191,7 +165,6 @@ export default function Page() {
     if (!activeCampus) return;
 
     fetchStudents();
-    fetchPeriods();
     fetchPromos();
     fetchGrupos();
     try {
@@ -275,7 +248,6 @@ export default function Page() {
     });
   };
 
-  // Maneja la selección de todos los estudiantes
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedStudents([]);
@@ -309,10 +281,6 @@ export default function Page() {
 
     try {
       setIsBulkActionLoading(true);
-      // Aquí implementarías una función en el backend para eliminar múltiples estudiantes
-      // Ejemplo: await deleteManyStudents(selectedStudents);
-
-      // Por ahora, eliminamos uno por uno:
       for (const id of selectedStudents) {
         await deleteStudent(id);
       }
@@ -348,10 +316,6 @@ export default function Page() {
 
     try {
       setIsBulkActionLoading(true);
-      // Aquí implementarías una función en el backend para actualizar periodos
-      // Ejemplo: await updateManyStudentsPeriod(selectedStudents, periodId);
-
-      // Por ahora, actualizamos uno por uno (esto deberías reemplazarlo con una API optimizada para operaciones en masa):
       for (const studentId of selectedStudents) {
         const student = students.find(s => s.id === studentId);
         if (student) {
@@ -569,88 +533,12 @@ export default function Page() {
             <div className="text-center py-4">Cargando...</div>
           ) : (
             <div className="h-full overflow-x-auto max-w-[80vw]">
-              <Table>
-                <TableHeader className="sticky top-0 z-10 bg-card">
-                  <TableRow>
-                    {/* Columna de checkbox para selección */}
-                    <TableHead className="w-12">
-                      <Checkbox
-                        checked={selectAll && filteredStudents.length > 0}
-                        onCheckedChange={handleSelectAll}
-                        aria-label="Seleccionar todos"
-                      />
-                    </TableHead>
-                    {visibleColumnDefs.map((column) => (
-                      <TableHead
-                        key={column.id}
-                        className="bg-card whitespace-nowrap"
-                      >
-                        {column.label}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredStudents.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={visibleColumnDefs.length + 1}
-                        className="text-center h-32"
-                      >
-                        No se encontraron estudiantes
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredStudents.map((student) => (
-                      <TableRow key={student.id}>
-                        {/* Celda de checkbox para selección */}
-                        <TableCell className="w-12">
-                          <Checkbox
-                            checked={selectedStudents.includes(student.id)}
-                            onCheckedChange={() => handleSelectStudent(student.id)}
-                            aria-label={`Seleccionar ${student.firstname} ${student.lastname}`}
-                          />
-                        </TableCell>
-                        {visibleColumnDefs.map((column) => (
-                          <TableCell
-                            key={`${student.id}-${column.id}`}
-                            className="whitespace-nowrap"
-                          >
-                            {column.render(student, user, handleOpenEditModal, handleDeleteForever)}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+              <StudentsTable filteredStudents={filteredStudents} isLoading={isLoading} isBulkActionLoading={isBulkActionLoading} visibleColumnDefs={visibleColumnDefs} selectedStudents={selectedStudents} selectAll={selectAll} handleSelectAll={handleSelectAll} handleSelectStudent={handleSelectStudent} user={user} handleOpenEditModal={handleOpenEditModal} handleDeleteForever={handleDeleteForever} />
             </div>
           )}
         </CardContent>
       </Card>
-
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="lg:min-w-[60rem] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedStudent ? 'Editar Estudiante' : 'Nuevo Estudiante'}
-            </DialogTitle>
-          </DialogHeader>
-          <StudentForm
-            campusId={activeCampus?.id}
-            student={selectedStudent}
-            onSubmit={handleSubmit}
-            onCancel={() => setIsModalOpen(false)}
-            periods={periods}
-            municipios={municipios}
-            prepas={prepas}
-            facultades={facultades}
-            carreras={carreras}
-            promos={promos}
-            grupos={grupos}
-          />
-        </DialogContent>
-      </Dialog>
+      <StudentDialog isOpen={isModalOpen} setIsOpen={setIsModalOpen} selectedStudent={selectedStudent} onSubmit={handleSubmit} municipios={municipios} prepas={prepas} promos={promos} />
     </div>
   );
 }
