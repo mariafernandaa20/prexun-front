@@ -31,6 +31,7 @@ interface MultiSelectProps {
   emptyMessage?: string;
   searchPlaceholder?: string;
   hiddeBadages?: boolean;
+  className?: string;
 }
 
 export function MultiSelect({
@@ -39,6 +40,7 @@ export function MultiSelect({
   hiddeBadages = false,
   onSelectedChange,
   title,
+  className,
   placeholder = 'Seleccionar...',
   emptyMessage = 'No se encontraron elementos',
   searchPlaceholder = 'Buscar...',
@@ -61,7 +63,7 @@ export function MultiSelect({
   };
 
   return (
-    <div className="flex flex-col space-y-2">
+    <div className={`${cn(className, 'flex flex-col space-y-2')}`}>
       {!hiddeBadages && (
         <div className="flex flex-wrap gap-2">
           {selectedValues.map((selectedValue) => {

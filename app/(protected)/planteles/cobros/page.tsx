@@ -98,7 +98,6 @@ export default function CobrosPage() {
       id: 'paymentMethod',
       label: 'Método',
       render: (transaction: Transaction) => {
-        if (transaction.payment_method === 'cash') return 'Efectivo';
         if (transaction.payment_method === 'transfer') return 'Transferencia';
         if (transaction.payment_method === 'card') return 'Tarjeta';
         return transaction.payment_method;
@@ -358,102 +357,93 @@ export default function CobrosPage() {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className='sticky top-0 z-10 bg-card px-2 sm:px-6'>
-        <div className="flex flex-col space-y-4">
-          {/* Primera fila: Search + Botones de acción */}
-          <div className='flex flex-col sm:flex-row justify-between gap-4'>
-            <Input
-              placeholder="Buscar por nombre completo..."
-              value={searchStudent}
-              onChange={(e) => setSearchStudent(e.target.value)}
-              className="w-full sm:w-[300px]"
-            />
-            <div className="flex flex-wrap sm:flex-nowrap gap-2">
-              <AgregarIngreso />
-              <Link href="/planteles/cobros/actualizar" className={buttonVariants({ variant: 'default' })}>
-                <span className="hidden sm:inline">Actualizar Folios</span>
-                <span className="sm:hidden">Actualizar</span>
-              </Link>
+    <div>
+      <Card className="w-full overflow-hidden">
+        <CardHeader className='sticky top-0 z-20 bg-card'>
+          <div className="flex flex-col space-y-4">
+            {/* Primera fila: Search + Botones de acción */}
+            <div className="flex flex-col lg:flex-row justify-between items-center mb-4">
+              <Input
+                placeholder="Buscar por nombre completo..."
+                value={searchStudent}
+                onChange={(e) => setSearchStudent(e.target.value)}
+                className="w-full"
+              />
+              <div className="flex flex-wrap sm:flex-nowrap gap-2">
+                <AgregarIngreso />
+                <Link href="/planteles/cobros/actualizar" className={buttonVariants({ variant: 'default' })}>
+                  <span className="hidden sm:inline">Actualizar Folios</span>
+                  <span className="sm:hidden">Actualizar</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Segunda fila: Filtros de métodos de pago */}
+            <div className="flex gap-2 w-full overflow-x-auto pb-2">
+              <Button
+                variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
+                onClick={() => setSelectedPaymentMethods(['all'])}
+                className="whitespace-nowrap"
+                size="sm"
+              >
+                Todos
+              </Button>
+              <Button
+                variant={selectedPaymentMethods.includes('transfer') ? 'default' : 'outline'}
+                onClick={() => handlePaymentMethodChange('transfer')}
+                className="whitespace-nowrap"
+                size="sm"
+              >
+                Transferencia
+              </Button>
+              <Button
+                variant={selectedPaymentMethods.includes('card') ? 'default' : 'outline'}
+                onClick={() => handlePaymentMethodChange('card')}
+                className="whitespace-nowrap"
+                size="sm"
+              >
+                Tarjeta
+              </Button>
+            </div>
+
+            {/* Tercera fila: MultiSelect */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <MultiSelect
+                options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
+                hiddeBadages={true}
+                selectedValues={selectedStudents}
+                onSelectedChange={handleStudentSelect}
+                title="Estudiantes"
+                placeholder="Seleccionar estudiantes"
+                searchPlaceholder="Buscar estudiante..."
+                emptyMessage="No se encontraron estudiantes"
+              />
+              <MultiSelect
+                options={columnOptions}
+                hiddeBadages={true}
+                selectedValues={visibleColumns}
+                onSelectedChange={handleColumnSelect}
+                title="Columnas"
+                placeholder="Seleccionar columnas"
+                searchPlaceholder="Buscar columna..."
+                emptyMessage="No se encontraron columnas"
+              />
             </div>
           </div>
+        </CardHeader>
 
-          {/* Segunda fila: Filtros de métodos de pago */}
-          <div className="flex gap-2 w-full overflow-x-auto pb-2">
-            <Button
-              variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
-              onClick={() => setSelectedPaymentMethods(['all'])}
-              className="whitespace-nowrap"
-              size="sm"
-            >
-              Todos
-            </Button>
-            <Button
-              variant={selectedPaymentMethods.includes('cash') ? 'default' : 'outline'}
-              onClick={() => handlePaymentMethodChange('cash')}
-              className="whitespace-nowrap"
-              size="sm"
-            >
-              Efectivo
-            </Button>
-            <Button
-              variant={selectedPaymentMethods.includes('transfer') ? 'default' : 'outline'}
-              onClick={() => handlePaymentMethodChange('transfer')}
-              className="whitespace-nowrap"
-              size="sm"
-            >
-              Transferencia
-            </Button>
-            <Button
-              variant={selectedPaymentMethods.includes('card') ? 'default' : 'outline'}
-              onClick={() => handlePaymentMethodChange('card')}
-              className="whitespace-nowrap"
-              size="sm"
-            >
-              Tarjeta
-            </Button>
-          </div>
-
-          {/* Tercera fila: MultiSelect */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <MultiSelect
-              options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
-              hiddeBadages={true}
-              selectedValues={selectedStudents}
-              onSelectedChange={handleStudentSelect}
-              title="Estudiantes"
-              placeholder="Seleccionar estudiantes"
-              searchPlaceholder="Buscar estudiante..."
-              emptyMessage="No se encontraron estudiantes"
-            />
-            <MultiSelect
-              options={columnOptions}
-              hiddeBadages={true}
-              selectedValues={visibleColumns}
-              onSelectedChange={handleColumnSelect}
-              title="Columnas"
-              placeholder="Seleccionar columnas"
-              searchPlaceholder="Buscar columna..."
-              emptyMessage="No se encontraron columnas"
-            />
-          </div>
-        </div>
-      </CardHeader>
-
-      {/* Tabla */}
-      <div className="max-w-[90vw] mx-auto overflow-x-auto">
-        <CardContent className="px-2 sm:px-6">
+        {/* Tabla con contenedor mejorado */}
+        <CardContent>
           {loading ? (
-            <div className="flex justify-center items-center h-40">
-              <p>Cargando transacciones...</p>
-            </div>
+            <div className="text-center py-4">Cargando...</div>
+
           ) : (
-            <div className="overflow-x-auto">
+            <div className="h-full overflow-x-auto max-w-[80vw]">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 z-10 bg-card">
                   <TableRow>
                     {getVisibleColumns().map(column => (
-                      <TableHead key={column.id}>{column.label}</TableHead>
+                      <TableHead key={column.id} className="whitespace-nowrap">{column.label}</TableHead>
                     ))}
                   </TableRow>
                 </TableHeader>
@@ -462,7 +452,7 @@ export default function CobrosPage() {
                     filteredTransactions.map((transaction) => (
                       <TableRow key={transaction.id}>
                         {getVisibleColumns().map(column => (
-                          <TableCell key={`${transaction.id}-${column.id}`}>
+                          <TableCell key={`${transaction.id}-${column.id}`} className="whitespace-nowrap">
                             {column.render(transaction)}
                           </TableCell>
                         ))}
@@ -480,19 +470,17 @@ export default function CobrosPage() {
             </div>
           )}
         </CardContent>
-      </div>
 
-      {/* Modal de imagen */}
+        {/* Paginación */}
+        <CardFooter>
+          <PaginationComponent pagination={pagination} setPagination={setPagination} />
+        </CardFooter>
+      </Card>
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] h-full overflow-y-auto">
           <img src={selectedImage} alt="Comprobante" className="w-full" />
         </DialogContent>
       </Dialog>
-
-      {/* Paginación */}
-      <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
-        <PaginationComponent pagination={pagination} setPagination={setPagination} />
-      </CardFooter>
-    </Card>
+    </div>
   );
 }

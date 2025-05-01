@@ -424,6 +424,7 @@ export default function Page() {
                 />
 
                 <MultiSelect
+                  className="w-full lg:w-[200px]"
                   options={columnOptions}
                   hiddeBadages={true}
                   selectedValues={visibleColumns}
