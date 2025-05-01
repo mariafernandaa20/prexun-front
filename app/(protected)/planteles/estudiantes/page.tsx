@@ -50,6 +50,7 @@ import { MultiSelect } from '@/components/multi-select';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAuthStore } from '@/lib/store/auth-store';
+import { getColumnDefinitions, getColumnOptions } from './columns';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -74,171 +75,36 @@ export default function Page() {
   const { user } = useAuthStore();
   const { toast } = useToast();
 
-  // Definición de columnas
-  const columnDefinitions = [
-    {
-      id: 'matricula',
-      label: 'Matrícula',
-      defaultVisible: false,
-      render: (student: Student) => student.id
-    },
-    {
-      id: 'created_at',
-      label: 'Fecha de Inscripción',
-      defaultVisible: false,
-      render: (student: Student) => new Date(student.created_at).toLocaleDateString()
-    },
-    {
-      id: 'firstname',
-      label: 'Nombre',
-      defaultVisible: true,
-      render: (student: Student) => student.firstname
-    },
-    {
-      id: 'lastname',
-      label: 'Apellido',
-      defaultVisible: true,
-      render: (student: Student) => student.lastname
-    },
-    {
-      id: 'email',
-      label: 'Email',
-      defaultVisible: true,
-      render: (student: Student) => student.email
-    },
-    {
-      id: 'phone',
-      label: 'Teléfono',
-      defaultVisible: true,
-      render: (student: Student) => student.phone
-    },
-    {
-      id: 'type',
-      label: 'Curso',
-      defaultVisible: false,
-      render: (student: Student) => student.type
-    },
-    {
-      id: 'period',
-      label: 'Periodo',
-      defaultVisible: false,
-      render: (student: Student) => student.period.name
-    },
-    {
-      id: 'carrera',
-      label: 'Carrera',
-      defaultVisible: false,
-      render: (student: Student) => student?.carrera?.name || '-'
-    },
-    {
-      id: 'facultad',
-      label: 'Facultad',
-      defaultVisible: false,
-      render: (student: Student) => student?.facultad?.name || '-'
-    },
-    {
-      id: 'prepa',
-      label: 'Preparatoria',
-      defaultVisible: false,
-      render: (student: Student) => student?.prepa?.name || '-'
-    },
-    {
-      id: 'municipio',
-      label: 'Municipio',
-      defaultVisible: false,
-      render: (student: Student) => student?.municipio?.name || '-'
-    },
-    {
-      id: 'tutor_name',
-      label: 'Tutor',
-      defaultVisible: false,
-      render: (student: Student) => student.tutor_name || '-'
-    },
-    {
-      id: 'tutor_phone',
-      label: 'Teléfono del Tutor',
-      defaultVisible: false,
-      render: (student: Student) => student.tutor_phone || '-'
-    },
-    {
-      id: 'tutor_relationship',
-      label: 'Relación con el Tutor',
-      defaultVisible: false,
-      render: (student: Student) => student.tutor_relationship || '-'
-    },
-    {
-      id: 'status',
-      label: 'Estado',
-      defaultVisible: false,
-      render: (student: Student) => student.status || '-'
-    },
-    {
-      id: 'health_conditions',
-      label: 'Condiciones de Salud',
-      defaultVisible: false,
-      render: (student: Student) => student.health_conditions || '-'
-    },
-    {
-      id: 'how_found_out',
-      label: 'Cómo se Enteró',
-      defaultVisible: false,
-      render: (student: Student) => student.how_found_out || '-'
-    },
-    {
-      id: 'preferred_communication',
-      label: 'Medio de Comunicación',
-      defaultVisible: false,
-      render: (student: Student) => student.preferred_communication || '-'
-    },
-    {
-      id: 'actions',
-      label: 'Acciones',
+  const handleOpenEditModal = (student: Student) => {
+    setSelectedStudent(student);
+    setIsModalOpen(true);
+  };
 
-      defaultVisible: true,
-      render: (student: Student) => (
-        <div className="flex gap-2">
-          <a
-            className={buttonVariants({ variant: 'ghost' })}
-            href={`https://wa.me/${student.phone}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <FaWhatsapp />
-          </a>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleOpenEditModal(student)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Link
-            className={buttonVariants({ variant: 'ghost' })}
-            href={`/planteles/estudiantes/${student.id}`}
-          >
-            <Eye className="h-4 w-4" />
-          </Link>
-          {user?.role === 'super_admin' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className='text-red-500 hover:text-red-700'
-              onClick={() => handleDeleteForever(student.id!)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      )
-    },
-  ];
+  const handleDeleteForever = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este estudiante permanentemente?')) return;
 
-  // Para el selector de columnas
-  const columnOptions = columnDefinitions.map(col => ({
-    value: col.id,
-    label: col.label,
-    defaultVisible: col.defaultVisible
-  }));
+    try {
+      await deleteStudent(id, true);
+      await fetchStudents();
+      toast({ title: 'Estudiante eliminado correctamente' });
+    } catch (error: any) {
+      toast({
+        title: 'Error al eliminar estudiante',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const columnDefinitions = React.useMemo(
+    () => getColumnDefinitions(user, handleOpenEditModal, handleDeleteForever),
+    [user]
+  );
+
+  const columnOptions = React.useMemo(
+    () => getColumnOptions(columnDefinitions),
+    [columnDefinitions]
+  );
 
   const [visibleColumns, setVisibleColumns] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -311,10 +177,7 @@ export default function Page() {
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (student: Student) => {
-    setSelectedStudent(student);
-    setIsModalOpen(true);
-  };
+
 
   useEffect(() => {
     if (!activeCampus) return;
@@ -350,21 +213,6 @@ export default function Page() {
     }
   };
 
-  const handleDeleteForever = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este estudiante permanentemente?')) return;
-
-    try {
-      await deleteStudent(id, true);
-      await fetchStudents();
-      toast({ title: 'Estudiante eliminado correctamente' });
-    } catch (error: any) {
-      toast({
-        title: 'Error al eliminar estudiante',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const handleSubmit = async (formData: Student) => {
     try {
@@ -403,9 +251,10 @@ export default function Page() {
     );
   });
 
-  // Obtener solo las columnas visibles
-  const visibleColumnDefs = columnDefinitions.filter(col =>
-    visibleColumns.includes(col.id)
+  // Obtener solo las definiciones de columnas visibles
+  const visibleColumnDefs = React.useMemo(
+    () => columnDefinitions.filter(col => visibleColumns.includes(col.id)),
+    [columnDefinitions, visibleColumns]
   );
 
   return (
@@ -537,7 +386,7 @@ export default function Page() {
                             key={`${student.id}-${column.id}`}
                             className="whitespace-nowrap"
                           >
-                            {column.render(student)}
+                            {column.render(student, user, handleOpenEditModal, handleDeleteForever)}
                           </TableCell>
                         ))}
                       </TableRow>
