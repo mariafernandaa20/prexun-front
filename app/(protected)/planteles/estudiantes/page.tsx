@@ -9,15 +9,14 @@ import {
   createStudent,
   updateStudent,
   deleteStudent,
+  bulkDeleteStudents,
   getPromos,
-  getGrupos,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Pencil, Trash2, Filter, ChevronDown, } from 'lucide-react';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 import {
-  getFacultades,
   getMunicipios,
   getPrepas,
 } from '@/lib/api';
@@ -30,10 +29,9 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { MultiSelect } from '@/components/multi-select';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { getColumnDefinitions, getColumnOptions } from './columns';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,12 +40,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StudentsTable } from "./StudentsTable";
 import { StudentDialog } from "./StudentDialog";
+import PaginationComponent from "@/components/ui/PaginationComponent";
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
   const [municipios, setMunicipios] = useState<Array<{ id: string; name: string }>>([]);
   const [prepas, setPrepas] = useState<Array<{ id: string; name: string }>>([]);
-  const [facultades, setFacultades] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,16 +56,20 @@ export default function Page() {
   const [searchPhone, setSearchPhone] = useState('');
   const [searchMatricula, setSearchMatricula] = useState<number | null>(null);
   const [promos, setPromos] = useState<Promocion[]>([]);
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
   const { activeCampus } = useActiveCampusStore();
   const { user,periods } = useAuthStore();
-  const { toast } = useToast();
-
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    perPage: 50,
+  });
   // Estados para las acciones en masa
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleOpenEditModal = (student: Student) => {
     setSelectedStudent(student);
@@ -127,6 +129,12 @@ export default function Page() {
       setIsLoading(true);
       const response = await getStudents(activeCampus?.id);
       setStudents(response);
+      setPagination({
+        currentPage: 1,
+        lastPage: 1,
+        total: response.length,
+        perPage: 50,
+      });
     } catch (error: any) {
       toast({
         title: 'Error al cargar estudiantes',
@@ -136,11 +144,6 @@ export default function Page() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const fetchGrupos = async () => {
-    const response = await getGrupos();
-    setGrupos(response);
   };
 
   const getData = async () => {
@@ -166,7 +169,6 @@ export default function Page() {
 
     fetchStudents();
     fetchPromos();
-    fetchGrupos();
     try {
       getData();
     } catch (error) {
@@ -177,22 +179,6 @@ export default function Page() {
       });
     }
   }, [activeCampus]);
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Está seguro de eliminar este estudiante?')) return;
-
-    try {
-      await deleteStudent(id);
-      await fetchStudents();
-      toast({ title: 'Estudiante eliminado correctamente' });
-    } catch (error: any) {
-      toast({
-        title: 'Error al eliminar estudiante',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const handleSubmit = async (formData: Student) => {
     try {
@@ -301,6 +287,38 @@ export default function Page() {
       setIsBulkActionLoading(false);
     }
   };
+  
+  const handleBulkDeleteForever = async () => {
+    if (selectedStudents.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Seleccione al menos un estudiante',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`¿Está seguro de eliminar permanentemente ${selectedStudents.length} estudiante(s)? Esta acción no se puede deshacer.`)) return;
+
+    try {
+      setIsBulkActionLoading(true);
+      await bulkDeleteStudents(selectedStudents, true);
+      await fetchStudents();
+      setSelectedStudents([]);
+      toast({
+        title: 'Acción completada',
+        description: `${selectedStudents.length} estudiante(s) eliminados permanentemente`
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al eliminar estudiantes',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkActionLoading(false);
+    }
+  };
 
   const handleBulkUpdatePeriod = async (periodId: string) => {
     if (selectedStudents.length === 0) {
@@ -346,47 +364,11 @@ export default function Page() {
     }
   };
 
-  // Función para enviar WhatsApp a los seleccionados
-  const handleBulkWhatsApp = () => {
-    if (selectedStudents.length === 0) {
-      toast({
-        title: 'Error',
-        description: 'Seleccione al menos un estudiante',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Obtener números de teléfono de los estudiantes seleccionados
-    const selectedPhones = filteredStudents
-      .filter(student => selectedStudents.includes(student.id))
-      .map(student => student.phone)
-      .filter(phone => phone && phone.trim() !== '');
-
-    if (selectedPhones.length === 0) {
-      toast({
-        title: 'Error',
-        description: 'Los estudiantes seleccionados no tienen números de teléfono válidos',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Abrir WhatsApp Web con los números seleccionados
-    const message = encodeURIComponent('Mensaje para estudiantes');
-    window.open(`https://wa.me/${selectedPhones[0]}?text=${message}`, '_blank');
-
-    toast({
-      title: 'WhatsApp iniciado',
-      description: `Se abrió WhatsApp para ${selectedPhones.length} contacto(s)`
-    });
-  };
-
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
         <CardHeader className='sticky top-0 z-20 bg-card'>
-          <div className="flex flex-col lg:flex-row justify-between items-center mb-4">
+          <div className="flex flex-col lg:flex-row justify-between items-center mb-4 max-w-[80vw] overflow-x-auto">
             <h1 className="text-2xl font-bold mb-4 lg:mb-0">Estudiantes</h1>
             <div className="flex flex-col gap-4 w-full lg:w-auto">
               <div className="flex flex-wrap gap-2 lg:flex-nowrap">
@@ -493,27 +475,9 @@ export default function Page() {
                       <Trash2 className="mr-2 h-4 w-4" />
                       Eliminar seleccionados
                     </DropdownMenuItem>
-                    {periods.length > 0 && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="w-full flex items-center px-2 py-1.5 text-sm">
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Cambiar periodo
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          {periods.map((period) => (
-                            <DropdownMenuItem
-                              key={period.id}
-                              onClick={() => handleBulkUpdatePeriod(period.id)}
-                            >
-                              {period.name}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                    <DropdownMenuItem onClick={handleBulkWhatsApp}>
-                      <FaWhatsapp className="mr-2 h-4 w-4" />
-                      Enviar WhatsApp
+                    <DropdownMenuItem onClick={handleBulkDeleteForever}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar permanentemente
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -533,10 +497,13 @@ export default function Page() {
             <div className="text-center py-4">Cargando...</div>
           ) : (
             <div className="h-full overflow-x-auto max-w-[80vw]">
-              <StudentsTable filteredStudents={filteredStudents} isLoading={isLoading} isBulkActionLoading={isBulkActionLoading} visibleColumnDefs={visibleColumnDefs} selectedStudents={selectedStudents} selectAll={selectAll} handleSelectAll={handleSelectAll} handleSelectStudent={handleSelectStudent} user={user} handleOpenEditModal={handleOpenEditModal} handleDeleteForever={handleDeleteForever} />
+              <StudentsTable filteredStudents={filteredStudents} visibleColumnDefs={visibleColumnDefs} selectedStudents={selectedStudents} selectAll={selectAll} handleSelectAll={handleSelectAll} handleSelectStudent={handleSelectStudent} user={user} handleOpenEditModal={handleOpenEditModal} handleDeleteForever={handleDeleteForever} />
             </div>
           )}
         </CardContent>
+        <CardFooter>
+          <PaginationComponent pagination={pagination} setPagination={setPagination} />
+        </CardFooter>
       </Card>
       <StudentDialog isOpen={isModalOpen} setIsOpen={setIsModalOpen} selectedStudent={selectedStudent} onSubmit={handleSubmit} municipios={municipios} prepas={prepas} promos={promos} />
     </div>

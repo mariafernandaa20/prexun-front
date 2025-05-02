@@ -50,13 +50,11 @@ export default function CobrosPage() {
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'payment_date', 'notes', 'paid', 'actions', 'folio']);
 
-  // Estado para almacenar todas las columnas disponibles (incluidas las dinámicas)
   const [availableColumnIds, setAvailableColumnIds] = useState<string[]>([]);
   const { activeCampus } = useActiveCampusStore();
   const { user } = useAuthStore();
   const { toast } = useToast();
 
-  // Agregar estados para manejar la paginación
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
@@ -66,7 +64,6 @@ export default function CobrosPage() {
 
   const [loading, setLoading] = useState(false);
 
-  // Definición de columnas conocidas
   const commonColumnDefinitions = [
     {
       id: 'id',

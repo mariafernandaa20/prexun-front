@@ -132,6 +132,17 @@ export const deleteStudent = async (id: string, permanent: boolean = false) => {
   return response.data;
 };
 
+export const bulkDeleteStudents = async (studentIds: string[], permanent: boolean = false) => {
+  const response = await axiosInstance.post(
+    '/students/bulk-destroy',
+    {
+      student_ids: studentIds,
+      permanent
+    }
+  );
+  return response.data;
+};
+
 export const getStudentsByCohort = async (cohortId: string) => {
   const endpoint = API_ENDPOINTS.STUDENTS_BY_COHORT.replace(
     ":cohortId",

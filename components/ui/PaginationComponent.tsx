@@ -29,7 +29,7 @@ export default function PaginationComponent({ pagination, setPagination }: Pagin
     <div className="flex w-full items-center justify-between">
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
         <div className="text-sm text-muted-foreground">
-          Showing {startItem} to {endItem} of {pagination.total} transactions
+          Showing {startItem} to {endItem} of {pagination.total} items
         </div>
 
         <div className="flex items-center gap-2">

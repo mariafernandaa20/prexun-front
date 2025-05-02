@@ -3,8 +3,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const StudentsTable = ({
   filteredStudents,
-  isLoading,
-  isBulkActionLoading,
   visibleColumnDefs,
   selectedStudents,
   selectAll,
