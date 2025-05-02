@@ -75,9 +75,9 @@ export const deleteCampus = async (id: number) => {
   return response.data;
 };
 
-export const getStudents = async (campus_id: number) => {
+export const getStudents = async ({params}) => {
   const response = await axiosInstance.get(
-    `${API_ENDPOINTS.STUDENTS}/${campus_id}`
+    API_ENDPOINTS.STUDENTS, {params}
   );
   return response.data;
 };

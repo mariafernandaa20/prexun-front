@@ -1,9 +1,7 @@
 'use client';
-import { FaWhatsapp } from "react-icons/fa6";
-
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Grupo, Period, Promocion, Student } from '@/lib/types';
+import { Promocion, Student } from '@/lib/types';
 import {
   getStudents,
   createStudent,
@@ -13,7 +11,7 @@ import {
   getPromos,
 } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Pencil, Trash2, Filter, ChevronDown, } from 'lucide-react';
+import { PlusCircle, Trash2, Filter, ChevronDown, } from 'lucide-react';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 import {
@@ -50,7 +48,8 @@ export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [typeFilter, setTypeFilter] = useState<'all' | 'preparatoria' | 'facultad'>('all');
-  const [periodFilter, setPeriodFilter] = useState<string>('all');
+  const [periodFilter, setPeriodFilter] = useState<string>();
+
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
@@ -58,14 +57,14 @@ export default function Page() {
   const [promos, setPromos] = useState<Promocion[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
   const { activeCampus } = useActiveCampusStore();
-  const { user,periods } = useAuthStore();
+  const { user, periods } = useAuthStore();
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
     total: 0,
     perPage: 50,
   });
-  // Estados para las acciones en masa
+
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
@@ -125,15 +124,28 @@ export default function Page() {
   };
 
   const fetchStudents = async () => {
+    // Enviamos todos los parámetros de filtro al backend para que realice el filtrado
+    const params = {
+      campus_id: activeCampus?.id,
+      page: pagination.currentPage,
+      perPage: pagination.perPage,
+      search: searchName,
+      searchDate: searchDate,
+      searchPhone: searchPhone,
+      searchMatricula: searchMatricula,
+      type: typeFilter !== 'all' ? typeFilter : undefined,
+      period: periodFilter,
+    }
+
     try {
       setIsLoading(true);
-      const response = await getStudents(activeCampus?.id);
-      setStudents(response);
+      const response = await getStudents({ params });
+      setStudents(response.data);
       setPagination({
-        currentPage: 1,
-        lastPage: 1,
-        total: response.length,
-        perPage: 50,
+        currentPage: pagination.currentPage,
+        lastPage: response.last_page || 1,
+        total: response.total || response.length,
+        perPage: pagination.perPage,
       });
     } catch (error: any) {
       toast({
@@ -178,7 +190,11 @@ export default function Page() {
         variant: 'destructive',
       });
     }
-  }, [activeCampus]);
+  }, [activeCampus,]);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [pagination.currentPage, pagination.perPage, searchName, searchDate, searchPhone, searchMatricula, typeFilter, periodFilter]);
 
   const handleSubmit = async (formData: Student) => {
     try {
@@ -200,22 +216,7 @@ export default function Page() {
     }
   };
 
-  const filteredStudents = students.filter((student) => {
-    const matchesType = typeFilter === 'all' || student.type === typeFilter;
-    const matchesPeriod = periodFilter === 'all' || student.period.id === periodFilter;
-    const matchesName =
-      student.firstname.toLowerCase().includes(searchName.toLowerCase()) ||
-      student.lastname.toLowerCase().includes(searchName.toLowerCase());
-    const matchesDate =
-      !searchDate ||
-      new Date(student.created_at).toLocaleDateString().includes(searchDate);
-    const matchesPhone = !searchPhone || student.phone.includes(searchPhone);
-    const matchesMatricula = !searchMatricula || String(student.id).includes(String(searchMatricula));
-
-    return (
-      matchesType && matchesPeriod && matchesName && matchesDate && matchesPhone && matchesMatricula
-    );
-  });
+  // Ahora usamos los filtros del backend directamente en lugar de filtrar localmente
 
   // Obtener solo las definiciones de columnas visibles
   const visibleColumnDefs = React.useMemo(
@@ -238,20 +239,25 @@ export default function Page() {
     if (selectAll) {
       setSelectedStudents([]);
     } else {
-      setSelectedStudents(filteredStudents.map(student => student.id));
+      setSelectedStudents(students.map(student => student.id));
     }
     setSelectAll(!selectAll);
   };
 
   // Actualiza el estado selectAll cuando cambian los estudiantes seleccionados
   useEffect(() => {
-    if (filteredStudents.length > 0 && selectedStudents.length === filteredStudents.length) {
+    if (students.length > 0 && selectedStudents.length === students.length) {
       setSelectAll(true);
     } else {
       setSelectAll(false);
     }
-  }, [selectedStudents, filteredStudents]);
+  }, [selectedStudents, students]);
 
+  useEffect(() => {
+    if (periods && periods.length > 0) {
+      setPeriodFilter(periods[periods.length - 1].id);
+    }
+  }, [periods]);
   // Funciones para acciones en masa
   const handleBulkDelete = async () => {
     if (selectedStudents.length === 0) {
@@ -287,7 +293,7 @@ export default function Page() {
       setIsBulkActionLoading(false);
     }
   };
-  
+
   const handleBulkDeleteForever = async () => {
     if (selectedStudents.length === 0) {
       toast({
@@ -320,50 +326,6 @@ export default function Page() {
     }
   };
 
-  const handleBulkUpdatePeriod = async (periodId: string) => {
-    if (selectedStudents.length === 0) {
-      toast({
-        title: 'Error',
-        description: 'Seleccione al menos un estudiante',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!confirm(`¿Está seguro de actualizar el periodo de ${selectedStudents.length} estudiante(s)?`)) return;
-
-    try {
-      setIsBulkActionLoading(true);
-      for (const studentId of selectedStudents) {
-        const student = students.find(s => s.id === studentId);
-        if (student) {
-          await updateStudent({
-            ...student,
-            period: {
-              ...student.period,
-              id: periodId
-            }
-          });
-        }
-      }
-
-      await fetchStudents();
-      setSelectedStudents([]);
-      toast({
-        title: 'Acción completada',
-        description: `${selectedStudents.length} estudiante(s) actualizados correctamente`
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error al actualizar estudiantes',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsBulkActionLoading(false);
-    }
-  };
-
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
@@ -378,7 +340,6 @@ export default function Page() {
                   onChange={(e) => setSearchName(e.target.value)}
                   className="w-full lg:w-[200px]"
                 />
-
                 <MultiSelect
                   className="w-full lg:w-[200px]"
                   options={columnOptions}
@@ -398,7 +359,6 @@ export default function Page() {
                     <SelectValue placeholder="Filtrar por periodo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los periodos</SelectItem>
                     {periods.map((period) => (
                       <SelectItem key={period.id} value={period.id}>
                         {period.name}
@@ -497,7 +457,7 @@ export default function Page() {
             <div className="text-center py-4">Cargando...</div>
           ) : (
             <div className="h-full overflow-x-auto max-w-[80vw]">
-              <StudentsTable filteredStudents={filteredStudents} visibleColumnDefs={visibleColumnDefs} selectedStudents={selectedStudents} selectAll={selectAll} handleSelectAll={handleSelectAll} handleSelectStudent={handleSelectStudent} user={user} handleOpenEditModal={handleOpenEditModal} handleDeleteForever={handleDeleteForever} />
+              <StudentsTable students={students} visibleColumnDefs={visibleColumnDefs} selectedStudents={selectedStudents} selectAll={selectAll} handleSelectAll={handleSelectAll} handleSelectStudent={handleSelectStudent} user={user} handleOpenEditModal={handleOpenEditModal} handleDeleteForever={handleDeleteForever} />
             </div>
           )}
         </CardContent>

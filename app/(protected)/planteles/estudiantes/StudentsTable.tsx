@@ -2,7 +2,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const StudentsTable = ({
-  filteredStudents,
+  students,
   visibleColumnDefs,
   selectedStudents,
   selectAll,
@@ -19,7 +19,7 @@ export const StudentsTable = ({
           <TableRow>
             <TableHead className="w-12">
               <Checkbox
-                checked={selectAll && filteredStudents.length > 0}
+                checked={selectAll && students.length > 0}
                 onCheckedChange={handleSelectAll}
                 aria-label="Seleccionar todos"
               />
@@ -32,14 +32,14 @@ export const StudentsTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredStudents.length === 0 ? (
+          {students.length === 0 ? (
             <TableRow>
               <TableCell colSpan={visibleColumnDefs.length + 1} className="text-center h-32">
                 No se encontraron estudiantes
               </TableCell>
             </TableRow>
           ) : (
-            filteredStudents.map((student) => (
+            students.map((student) => (
               <TableRow key={student.id}>
                 <TableCell className="w-12">
                   <Checkbox
