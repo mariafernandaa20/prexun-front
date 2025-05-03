@@ -22,6 +22,7 @@ import { MultiSelect } from '@/components/multi-select'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { GastoModal } from '../gastos/components/GastoModal'
 import PaginationComponent from '@/components/ui/PaginationComponent'
+import { usePagination } from '@/hooks/usePagination'
 
 export default function GastosPage() {
   const [gastos, setGastos] = useState<Gasto[]>([])
@@ -35,14 +36,8 @@ export default function GastosPage() {
   const [selectedImage, setSelectedImage] = useState('')
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
-  // Agregar estados para manejar la paginación
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    lastPage: 1,
-    total: 0,
-    perPage: 50,
-  });
-  // Definición de las columnas disponibles con todas sus propiedades
+  const { pagination, setPagination } = usePagination();
+
   const tableColumns = [
     {
       id: 'fecha',

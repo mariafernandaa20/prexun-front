@@ -26,6 +26,7 @@ import { Transaction, Card as CardType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form';
 import PaginationComponent from '@/components/ui/PaginationComponent';
+import { usePagination } from '@/hooks/usePagination';
 
 // Constants
 const COLUMN_OPTIONS = [
@@ -115,18 +116,10 @@ export default function CobrosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [cards, setCards] = useState<CardType[]>([]);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    lastPage: 1,
-    total: 0,
-    perPage: 50
-  });
-
-  // Hooks
+  const { pagination, setPagination } = usePagination();
   const { activeCampus } = useActiveCampusStore();
   const { toast } = useToast();
 
-  // API interactions
   const fetchTransactions = async (page = 1) => {
     if (!activeCampus) return;
     try {

@@ -40,6 +40,7 @@ import EditarFolio from './EditarFolio';
 import ActualizarFolios from './actualizar/ActualizarFolios';
 import { useAuthStore } from '@/lib/store/auth-store';
 import PaginationComponent from '@/components/ui/PaginationComponent';
+import { usePagination } from '@/hooks/usePagination';
 
 export default function CobrosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -55,12 +56,8 @@ export default function CobrosPage() {
   const { user } = useAuthStore();
   const { toast } = useToast();
 
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    lastPage: 1,
-    total: 0,
-    perPage: 50,
-  });
+  const {pagination, setPagination} = usePagination();
+
 
   const [loading, setLoading] = useState(false);
 
