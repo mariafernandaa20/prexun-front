@@ -48,8 +48,8 @@ export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [typeFilter, setTypeFilter] = useState<'all' | 'preparatoria' | 'facultad'>('all');
+  const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [periodFilter, setPeriodFilter] = useState<string>();
-
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
@@ -57,7 +57,7 @@ export default function Page() {
   const [promos, setPromos] = useState<Promocion[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
   const { activeCampus } = useActiveCampusStore();
-  const { user, periods } = useAuthStore();
+  const { user, periods, grupos } = useAuthStore();
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
@@ -124,7 +124,6 @@ export default function Page() {
   };
 
   const fetchStudents = async () => {
-    // Enviamos todos los parámetros de filtro al backend para que realice el filtrado
     const params = {
       campus_id: activeCampus?.id,
       page: pagination.currentPage,
@@ -134,6 +133,7 @@ export default function Page() {
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
       type: typeFilter !== 'all' ? typeFilter : undefined,
+      grupo: grupoFilter ? grupoFilter : undefined,
       period: periodFilter,
     }
 
@@ -194,7 +194,7 @@ export default function Page() {
 
   useEffect(() => {
     fetchStudents();
-  }, [pagination.currentPage, pagination.perPage, searchName, searchDate, searchPhone, searchMatricula, typeFilter, periodFilter]);
+  }, [pagination.currentPage, pagination.perPage, searchName, searchDate, searchPhone, searchMatricula, typeFilter, periodFilter, grupoFilter]);
 
   const handleSubmit = async (formData: Student) => {
     try {
@@ -216,15 +216,11 @@ export default function Page() {
     }
   };
 
-  // Ahora usamos los filtros del backend directamente en lugar de filtrar localmente
-
-  // Obtener solo las definiciones de columnas visibles
   const visibleColumnDefs = React.useMemo(
     () => columnDefinitions.filter(col => visibleColumns.includes(col.id)),
     [columnDefinitions, visibleColumns]
   );
 
-  // Maneja la selección individual de estudiantes
   const handleSelectStudent = (studentId: string) => {
     setSelectedStudents(prev => {
       if (prev.includes(studentId)) {
@@ -244,7 +240,6 @@ export default function Page() {
     setSelectAll(!selectAll);
   };
 
-  // Actualiza el estado selectAll cuando cambian los estudiantes seleccionados
   useEffect(() => {
     if (students.length > 0 && selectedStudents.length === students.length) {
       setSelectAll(true);
@@ -258,7 +253,7 @@ export default function Page() {
       setPeriodFilter(periods[periods.length - 1].id);
     }
   }, [periods]);
-  // Funciones para acciones en masa
+
   const handleBulkDelete = async () => {
     if (selectedStudents.length === 0) {
       toast({
@@ -330,26 +325,15 @@ export default function Page() {
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
         <CardHeader className='sticky top-0 z-20 bg-card'>
-          <div className="flex flex-col lg:flex-row justify-between items-center mb-4 max-w-[80vw] overflow-x-auto">
+          <div className="flex flex-col lg:flex-row justify-between mb-4 max-w-[80vw] overflow-x-auto">
             <h1 className="text-2xl font-bold mb-4 lg:mb-0">Estudiantes</h1>
             <div className="flex flex-col gap-4 w-full lg:w-auto">
-              <div className="flex flex-wrap gap-2 lg:flex-nowrap">
+              <div className="flex flex-wrap gap-2">
                 <Input
                   placeholder="Buscar por nombre..."
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
                   className="w-full lg:w-[200px]"
-                />
-                <MultiSelect
-                  className="w-full lg:w-[200px]"
-                  options={columnOptions}
-                  hiddeBadages={true}
-                  selectedValues={visibleColumns}
-                  onSelectedChange={handleColumnSelect}
-                  title="Columnas"
-                  placeholder="Seleccionar columnas"
-                  searchPlaceholder="Buscar columna..."
-                  emptyMessage="No se encontraron columnas"
                 />
                 <Select
                   value={periodFilter}
@@ -364,6 +348,22 @@ export default function Page() {
                         {period.name}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={grupoFilter}
+                  onValueChange={(value) =>
+                    setGrupoFilter(value)
+                  }
+                >
+                  <SelectTrigger className="w-full lg:w-[180px]">
+                    <SelectValue placeholder="Filtrar por grupo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={undefined}>Todos</SelectItem>
+                    {grupos.map((grupo, i) => {
+                      return <SelectItem key={i} value={(grupo.id).toString()}>{grupo.name}</SelectItem>
+                    })}
                   </SelectContent>
                 </Select>
                 <Button onClick={handleOpenCreateModal} className="whitespace-nowrap">
@@ -412,6 +412,17 @@ export default function Page() {
                       <SelectItem value="facultad">Facultad</SelectItem>
                     </SelectContent>
                   </Select>
+                  <MultiSelect
+                    className="w-full lg:w-[200px]"
+                    options={columnOptions}
+                    hiddeBadages={true}
+                    selectedValues={visibleColumns}
+                    onSelectedChange={handleColumnSelect}
+                    title="Columnas"
+                    placeholder="Seleccionar columnas"
+                    searchPlaceholder="Buscar columna..."
+                    emptyMessage="No se encontraron columnas"
+                  />
                 </div>
               )}
             </div>

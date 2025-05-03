@@ -69,6 +69,12 @@ export const getColumnDefinitions = (
     render: (student: Student) => student.period.name
   },
   {
+    id: 'grupo',
+    label: 'Grupo',
+    defaultVisible: true,
+    render: (student: Student) => student.grupo.name
+  },
+  {
     id: 'carrera',
     label: 'Carrera',
     defaultVisible: false,
