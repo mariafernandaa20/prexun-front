@@ -233,29 +233,30 @@ export default function Page() {
         <CardHeader className='sticky top-0 z-20 bg-card'>
           <div className="flex flex-col lg:flex-row justify-between mb-4 max-w-[80vw] overflow-x-auto">
             <h1 className="text-2xl font-bold mb-4 lg:mb-0">Estudiantes</h1>
-            <Filters
-              periods={periods}
-              grupos={grupos}
-              visibleColumns={visibleColumns}
-              setPeriodFilter={setPeriodFilter}
-              setGrupoFilter={setGrupoFilter}
-              setSearchName={setSearchName}
-              setSearchDate={setSearchDate}
-              setSearchPhone={setSearchPhone}
-              setSearchMatricula={setSearchMatricula}
-              handleColumnSelect={handleColumnSelect}
-            >
-              <MultiSelect
-                className="w-full lg:w-[200px]"
-                options={columnOptions}
-                hiddeBadages={true}
-                selectedValues={visibleColumns}
-                onSelectedChange={handleColumnSelect}
-                title="Columnas"
-                placeholder="Seleccionar columnas"
-                searchPlaceholder="Buscar columna..."
-                emptyMessage="No se encontraron columnas"
-              /></Filters>
+            <div className="flex flex-col lg:flex-row gap-2">
+              <Filters
+                periods={periods}
+                grupos={grupos}
+                setPeriodFilter={setPeriodFilter}
+                setGrupoFilter={setGrupoFilter}
+                setSearchName={setSearchName}
+                setSearchDate={setSearchDate}
+                setSearchPhone={setSearchPhone}
+                setSearchMatricula={setSearchMatricula}
+              >
+                <MultiSelect
+                  className="w-full lg:w-[200px]"
+                  options={columnOptions}
+                  hiddeBadages={true}
+                  selectedValues={visibleColumns}
+                  onSelectedChange={handleColumnSelect}
+                  title="Columnas"
+                  placeholder="Seleccionar columnas"
+                  searchPlaceholder="Buscar columna..."
+                  emptyMessage="No se encontraron columnas"
+                />
+              </Filters>
+            </div>
           </div>
 
           {/* Menú de acciones en masa */}
