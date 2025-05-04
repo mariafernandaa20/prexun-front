@@ -103,7 +103,7 @@ export default function PromocionModal({
         </DialogHeader>
         <form
           onSubmit={handleSubmit}
-          className={`grid gap-4 ${formData.type === 'Parcialidad' ? 'grid-cols-3' : 'grid-cols-2'
+          className={`grid gap-2 ${formData.type === 'Parcialidad' ? 'grid-cols-3' : 'grid-cols-2'
             }`}
         >
           <div>

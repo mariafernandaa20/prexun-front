@@ -92,7 +92,7 @@ export default function DashboardMetrics() {
         {data && (
           <>
             {/* Tarjetas de resumen */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-8">
               <Card className="p-4">
                 <h3 className="font-bold text-neutral-700 dark:text-neutral-300">Ingresos</h3>
                 <p className="text-2xl font-bold text-green-600">
@@ -135,7 +135,7 @@ export default function DashboardMetrics() {
             </div>
 
             {/* Gráficas */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
               {/* Gráfica de Ingresos Diarios */}
               <Card className="p-4">
                 <h3 className="font-bold mb-4">Ingresos Diarios</h3>

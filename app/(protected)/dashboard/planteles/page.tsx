@@ -298,7 +298,7 @@ export default function Page() {
                   </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="grid grid-cols-2 w-full gap-4 max-h-[80vh] overflow-y-auto">
+                <form onSubmit={handleSubmit} className="grid grid-cols-2 w-full gap-2 max-h-[80vh] overflow-y-auto">
                   <div>
                     <Label htmlFor="name">Nombre del Plantel</Label>
                     <Input

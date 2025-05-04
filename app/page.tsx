@@ -131,7 +131,7 @@ export default function Home() {
               </p>
               <div className="space-y-6">
                 {benefits.map((benefit, index) => (
-                  <div key={index} className="flex gap-4">
+                  <div key={index} className="flex gap-2">
                     <CheckCircle2 className="w-6 h-6 text-[#131f46] flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="font-medium text-lg">{benefit.title}</h3>

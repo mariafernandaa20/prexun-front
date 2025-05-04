@@ -221,7 +221,7 @@ export default function CobrosPage() {
         <TableCell>{transaction.folio}</TableCell>
       )}
       {visibleColumns.includes('student') && (
-        <TableCell>
+        <TableCell className='text-nowrap'>
           {transaction.student?.firstname} {transaction.student?.lastname}
         </TableCell>
       )}
@@ -237,16 +237,16 @@ export default function CobrosPage() {
         <TableCell>{transaction.paid ? 'Si' : 'No'}</TableCell>
       )}
       {visibleColumns.includes('payment_date') && (
-        <TableCell>{transaction.payment_date}</TableCell>
+        <TableCell className='text-nowrap'>{transaction.payment_date}</TableCell>
       )}
       {visibleColumns.includes('date') && (
-        <TableCell>{transaction.created_at}</TableCell>
+        <TableCell >{transaction.created_at}</TableCell>
       )}
       {visibleColumns.includes('notes') && (
         <TableCell>{transaction.notes}</TableCell>
       )}
       {visibleColumns.includes('limit_date') && (
-        <TableCell>
+        <TableCell className='text-nowrap'>
           {transaction.expiration_date ? transaction.expiration_date : 'No límite de pago'}
         </TableCell>
       )}
@@ -270,7 +270,7 @@ export default function CobrosPage() {
         )}
       </TableCell>
       {visibleColumns.includes('actions') && (
-        <TableCell className="p-4 flex items-center justify-right gap-2">
+        <TableCell className="flex items-center justify-right gap-2">
           <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
             <Share className="w-4 h-4 mr-2" />
           </Button>
@@ -292,8 +292,8 @@ export default function CobrosPage() {
     <Card className="w-full">
       {/* Header fijo */}
       <CardHeader className="sticky top-0 z-20 bg-card border-b">
-        <div className="flex flex-col lg:flex-row gap-4 justify-between">
-          <div className="flex flex-col lg:flex-row gap-4 flex-wrap">
+        <div className="flex flex-col lg:flex-row gap-2 justify-between">
+          <div className="flex flex-col lg:flex-row gap-2 flex-wrap">
             <Input
               placeholder="Buscar por nombre completo..."
               value={searchStudent}

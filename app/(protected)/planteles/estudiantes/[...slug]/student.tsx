@@ -214,7 +214,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 <CardHeader className='sticky top-0 z-8 bg-card'>
                     <div className='flex justify-between items-center'>
                         <h1 className="text-2xl font-bold">{student.firstname} {student.lastname}</h1>
-                        <div className='flex gap-4'>
+                        <div className='flex gap-2'>
                             <Purchace
                                 campusId={campusId}
                                 studentId={student.id}
@@ -225,7 +225,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                         <div className="space-y-2">
                             <h3 className="font-semibold">Información Personal</h3>
                             <p><span className="text-muted-foreground">ID:</span> {student.id}</p>

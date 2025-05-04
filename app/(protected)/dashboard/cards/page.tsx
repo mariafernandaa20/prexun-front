@@ -204,7 +204,7 @@ const CardManagement = () => {
                             <DialogHeader>
                                 <DialogTitle>Add New Card</DialogTitle>
                             </DialogHeader>
-                            <div className="grid gap-4 py-4">
+                            <div className="grid gap-2 py-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="name">Nombre</Label>
                                     <Input
@@ -235,7 +235,7 @@ const CardManagement = () => {
                                         placeholder="Clabe interbancaria"
                                     />
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
                                     <Label htmlFor="sat">SAT</Label>
                                     <Checkbox 
                                         id="sat" 
@@ -330,7 +330,7 @@ const CardManagement = () => {
                             <DialogHeader>
                                 <DialogTitle>Edit Card</DialogTitle>
                             </DialogHeader>
-                            <div className="grid gap-4 py-4">
+                            <div className="grid gap-2 py-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="edit-name">Nombre</Label>
                                     <Input
@@ -359,7 +359,7 @@ const CardManagement = () => {
                                         placeholder="Clabe interbancaria"
                                     />
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
                                     <Label htmlFor="edit-sat">SAT</Label>
                                     <Checkbox 
                                         id="edit-sat" 

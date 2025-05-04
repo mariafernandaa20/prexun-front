@@ -125,13 +125,13 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-2 py-4">
             <div>
               <Label htmlFor="amount" className="text-right text-lg">
                 Monto {caja ? 'Final' : 'Inicial'}
               </Label>
               <div className="space-y-2 col-span-3">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {['1000', '500', '200', '100', '50', '20', '10', '5', '2', '1'].map(
                     (denom) => (
                       <div key={denom} className="space-y-1">
@@ -164,7 +164,7 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
                     Siguiente día
                   </Label>
                   <div className="space-y-2 col-span-3">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {['1000', '500', '200', '100', '50', '20', '10', '5', '2', '1'].map(
                         (denom) => (
                           <div key={denom} className="space-y-1">

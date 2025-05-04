@@ -56,7 +56,7 @@ export default function CobrosPage() {
   const { user } = useAuthStore();
   const { toast } = useToast();
 
-  const {pagination, setPagination} = usePagination();
+  const { pagination, setPagination } = usePagination();
 
 
   const [loading, setLoading] = useState(false);
@@ -154,7 +154,7 @@ export default function CobrosPage() {
       id: 'actions',
       label: 'Acciones',
       render: (transaction: Transaction) => (
-        <div className="p-4 flex items-center justify-right gap-2">
+        <div className="flex items-center justify-right gap-2">
           <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
             <Share className="w-4 h-4 mr-2" />
           </Button>
@@ -401,7 +401,7 @@ export default function CobrosPage() {
             </div>
 
             {/* Tercera fila: MultiSelect */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <MultiSelect
                 options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
                 hiddeBadages={true}
@@ -454,7 +454,7 @@ export default function CobrosPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={getVisibleColumns().length} className="text-center py-4">
+                      <TableCell colSpan={getVisibleColumns().length}>
                         No se encontraron transacciones
                       </TableCell>
                     </TableRow>

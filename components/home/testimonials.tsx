@@ -80,7 +80,7 @@ export function TestimonialsSection() {
                     </div>
                   </div>
                   <p className="text-left text-gray-600">{testimonial.content}</p>
-                  <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
                     <button className="hover:text-gray-700">Me gusta</button>
                     <button className="hover:text-gray-700">Comentar</button>
                     <button className="hover:text-gray-700">Compartir</button>

@@ -2,7 +2,7 @@ export default function CohertsPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Cohortes</h1>
-      <div className="grid gap-4">
+      <div className="grid gap-2">
         {/* Example data */}
         {[
           { id: 1, nombre: "2024-A", estudiantes: 25, fechaInicio: "2024-01-15", estado: "En curso" },

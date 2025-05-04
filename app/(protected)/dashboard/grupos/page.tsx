@@ -142,7 +142,7 @@ export default function GruposPage() {
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Grupos</h1>
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-2 items-center">
               <Input
                 placeholder="Buscar grupos..."
                 value={search}

@@ -75,8 +75,8 @@ export default function EditarFolio({ transaction, onSuccess }: EditarFolioProps
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid gap-2 py-4">
+            <div className="grid grid-cols-4 items-center gap-2">
               <Label htmlFor="folio" className="text-right">
                 Folio
               </Label>

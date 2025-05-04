@@ -280,7 +280,7 @@ export default function GastosPage() {
           </Table>
         </CardContent>
       </div>
-      <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-4">
+      <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-2">
         <PaginationComponent pagination={pagination} setPagination={setPagination} />
       </CardFooter>
       {activeCampus?.latest_cash_register ? (

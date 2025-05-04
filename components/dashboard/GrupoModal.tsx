@@ -173,7 +173,7 @@ export default function GrupoModal({
           <span className='text-red-500'>*</span> Campos requeridos
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="space-y-2">
                 <Label htmlFor="name">
@@ -299,7 +299,7 @@ export default function GrupoModal({
 
           <div className="space-y-2">
             <Label>Frecuencia</Label>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2">
               {days.map((day) => (
                 <div key={day} className="flex items-center space-x-2">
                   <Checkbox

@@ -75,7 +75,7 @@ export default function ModuloPage() {
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-5">Gestión de Módulos</h1>
       
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-2 mb-6">
         <Input
           placeholder="Nombre del nuevo módulo"
           value={newModuleName}

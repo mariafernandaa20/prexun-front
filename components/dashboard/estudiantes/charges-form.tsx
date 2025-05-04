@@ -155,7 +155,7 @@ export default function ChargesForm({
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="space-y-2">
                 <Label>Fecha de pago</Label>
                 <Input
@@ -277,7 +277,7 @@ export default function ChargesForm({
             {/* {formData.payment_method === 'cash' && (
               <div className="space-y-2">
                 <Label>Denominaciones</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {['1000', '500', '200', '100', '50', '20', '10', '5'].map(
                     (denom) => (
                       <div key={denom} className="space-y-1">

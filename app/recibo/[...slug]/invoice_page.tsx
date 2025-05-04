@@ -49,7 +49,7 @@ export function InvoiceClient({ invoice }) {
             <div className="px-4 py-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 bg-white w-full max-w-4xl border border-gray-400 my-4 lg:my-8">
                 <div className="w-full mx-auto">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between mb-6 lg:mb-8 gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-between mb-6 lg:mb-8 gap-2">
                         <div className="flex items-center">
                             <Image src="/logo-horizontal.png" alt="Prexun" width={120} height={40} className="w-32 md:w-40 lg:w-150 h-auto" />
                         </div>
@@ -142,15 +142,15 @@ export function InvoiceClient({ invoice }) {
                     {/* Totals */}
                     <div className="flex justify-end mb-6 lg:mb-8">
                         <div className="text-right w-full sm:w-1/2 md:w-1/3">
-                            <div className="flex justify-between font-bold gap-4">
+                            <div className="flex justify-between font-bold gap-2">
                                 <span>SubTotal</span>
                                 <span>MX${(invoice.amount / 1.16).toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between font-bold gap-4">
+                            <div className="flex justify-between font-bold gap-2">
                                 <span>IVA</span>
                                 <span>MX${(invoice.amount - (invoice.amount / 1.16)).toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between font-bold gap-4 text-sm md:text-base">
+                            <div className="flex justify-between font-bold gap-2 text-sm md:text-base">
                                 <span>Total</span>
                                 <span>MX${Number(invoice.amount).toFixed(2)}</span>
                             </div>
@@ -192,7 +192,7 @@ export function InvoiceClient({ invoice }) {
                                 10. Si por alguna situación esporádica el Estado suspende las clases presenciales, las clases serán en línea.
                             </p>
                         </div>
-                        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
                             <a href="https://asesoriasprexun.com/terminos-y-condiciones/" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
                                 Términos y Condiciones
                             </a>
