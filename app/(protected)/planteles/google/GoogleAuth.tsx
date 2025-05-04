@@ -13,7 +13,6 @@ export default function GoogleAuth() {
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const handleAuth = (token: string) => {
-    console.log("Token recibido:", token);
     setAccessToken(token);
     localStorage.setItem("google_access_token", token);
     setSuccessMessage("Inicio de sesión exitoso ✅");

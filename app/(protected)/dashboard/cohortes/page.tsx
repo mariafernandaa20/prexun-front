@@ -33,7 +33,6 @@ export default function CohortesPage() {
         setGenerating(true);
         try {
             const response = await axiosInstance.post('/cohortes/generate');
-            console.log(response.data.message);
             fetchCohortes();
         } catch (error) {
             console.error('Error generating cohortes:', error);
@@ -43,17 +42,13 @@ export default function CohortesPage() {
     };
 
     const syncWithMoodle = async () => {
-        setSyncing(true); // Deshabilitar el botón mientras se sincroniza
+        setSyncing(true);
         try {
             const response = await axiosInstance.post('/cohorts/sync');
-            console.log(response.data.message); // Mostrar mensaje de éxito
-            // Puedes opcionalmente recargar la lista de cohorts después de la sincronización
-            // fetchCohortes();  // Si quieres que se actualice la tabla inmediatamente
         } catch (error) {
             console.error('Error syncing with Moodle:', error);
-            // Manejar el error, por ejemplo, mostrar un mensaje al usuario
         } finally {
-            setSyncing(false); // Habilitar el botón después de la sincronización
+            setSyncing(false);
         }
     };
 

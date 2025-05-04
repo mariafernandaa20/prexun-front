@@ -16,8 +16,6 @@ export default function SyncMoodle() {
         setCohortStatus("loading")
         try {
             const response = await axiosInstance.post("/cohorts/sync-all");
-
-            console.log(response.data);
             setCohortStatus("success");
             toast({
                 title: "Sincronización de Cohorts exitosa",
@@ -39,10 +37,8 @@ export default function SyncMoodle() {
                 const moodleErrors = error.response.data.errors;
                 errorMessage = "Errores de Moodle (Cohorts):\n" + moodleErrors.join("\n");
             } else if (error.response && error.response.data && error.response.data.message) {
-                //Errores del Backend
                 errorMessage = error.response.data.message
             }
-
             toast({
                 title: "Error de sincronización de Cohorts",
                 description: errorMessage,
@@ -57,10 +53,6 @@ export default function SyncMoodle() {
     const handleSyncUsers = async () => {
         setUserStatus("loading")
         try {
-            
-
-
-
         } catch (error) {
             setUserStatus("error")
             console.log(error)

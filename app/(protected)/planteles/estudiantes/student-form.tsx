@@ -75,10 +75,6 @@ export function StudentForm({
   });
 
   const semanasIntensivas = useAuthStore(state => state.semanasIntensivas);
-
-  console.log(semanasIntensivas)
-
-  console.log(semanasIntensivas)
   useEffect(() => {
     const fetchCohorts = async () => {
       try {

@@ -1,17 +1,10 @@
 'use client'
-
-import { useState } from 'react'
-import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Image from "next/image";
-import dayjs from 'dayjs';
 import InvoicePDF from '@/components/invoice_pdf';
-import { FormattedDate, formatTime } from '@/lib/utils';
 import { PaymentMethod } from '@/lib/types';
 
 export function InvoiceClient({ invoice }) {
-
-    console.log(invoice);
 
     const invoiceNumber = ({ folio }) => {
         if (!folio) return 'No pagado';

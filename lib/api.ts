@@ -540,8 +540,6 @@ export const openCaja = async (
   initialAmountCash: Denomination,
   notes: string
 ): Promise<Caja> => {
-
-  console.log(initialAmount, initialAmountCash);
   const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CAJA, {
     campus_id: campusId,
     initial_amount: initialAmount,
@@ -561,9 +559,6 @@ export const closeCaja = async (
   next_day_cash: Denomination,
   notes: string  
 ): Promise<Caja> => {
-
-  console.log(finalAmount, finalAmountCash);
-
   const response = await axiosInstance.put(`${API_ENDPOINTS.UPDATE_CAJA}/${cajaId}`, {
     final_amount: finalAmount,
     final_amount_cash: finalAmountCash,

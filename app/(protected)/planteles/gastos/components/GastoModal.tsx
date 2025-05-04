@@ -75,7 +75,6 @@ export function GastoModal({
   const formData = watch();
 
   const handleChange = (e: { name: keyof Gasto; value: any }) => {
-    console.log(e);
     setValue(e.name, e.value);
   };
 
