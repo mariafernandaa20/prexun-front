@@ -26,7 +26,7 @@ export default function PaginationComponent({ pagination, setPagination }: Pagin
   const endItem = Math.min(pagination.total, pagination.currentPage * pagination.perPage)
 
   return (
-    <div className="flex w-full items-center justify-between">
+    <div className="flex flex-col lg:flex-row w-full items-center justify-between">
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
         <div className="text-sm text-muted-foreground">
           Showing {startItem} to {endItem} of {pagination.total} items
@@ -54,7 +54,7 @@ export default function PaginationComponent({ pagination, setPagination }: Pagin
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 pt-2 lg:pt-0">
         <Button
           variant="outline"
           size="sm"

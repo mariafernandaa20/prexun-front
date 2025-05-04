@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
+import SearchableSelect from '@/components/SearchableSelect';
 
 interface StudentFormProps {
   student?: Student | null;
@@ -277,6 +278,13 @@ export function StudentForm({
               ))}
             </SelectContent>
           </Select>
+          <SearchableSelect
+            options={grupos.map(grupo => ({ value: (grupo.id).toString(), label: grupo.name }))}
+            value={undefined}
+            placeholder="Filtrar por periodo"
+            onChange={(value) => handleChange({ name: 'grupo_id', value: value })}
+            searchable={false}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="grupo_id">Grupo de Semanas Intensivas</Label>
