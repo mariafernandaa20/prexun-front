@@ -25,6 +25,8 @@ import PaginationComponent from "@/components/ui/PaginationComponent";
 import BulkActions from './BulkActions';
 import Filters from './Filters';
 import { usePagination } from '@/hooks/usePagination';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -232,7 +234,14 @@ export default function Page() {
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
         <CardHeader className='sticky top-0 z-20 bg-card'>
           <div className="flex flex-col lg:flex-row justify-between mb-4 max-w-[80vw] overflow-x-auto">
-            <h1 className="text-2xl font-bold mb-4 lg:mb-0">Estudiantes</h1>
+            <div>
+            <div className='flex items-center justify-between gap-2 mb-4 lg:mb-0'>
+              <h1 className="text-2xl font-bold">Estudiantes</h1>
+              <Button size='icon' onClick={() => setIsModalOpen(true)} title='Nuevo Estudiante'>
+                <Plus />
+              </Button>
+            </div>
+            </div>
             <div className="flex flex-col lg:flex-row gap-2">
               <Filters
                 periods={periods}

@@ -35,7 +35,6 @@ const Filters: React.FC<FiltersProps> = ({
   const [dateInput, setDateInput] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
   const [matriculaInput, setMatriculaInput] = useState<string>('');
-  const [grupoSearch, setGrupoSearch] = useState('');
 
   const debouncedName = useDebounce(nameInput, 500);
   const debouncedDate = useDebounce(dateInput, 500);
@@ -58,74 +57,84 @@ const Filters: React.FC<FiltersProps> = ({
     setSearchMatricula(debouncedMatricula ? Number(debouncedMatricula) : null);
   }, [debouncedMatricula, setSearchMatricula]);
 
-  // Filter groups based on search
-  const filteredGrupos = grupos.filter(grupo =>
-    grupo.name.toLowerCase().includes(grupoSearch.toLowerCase())
-  );
-
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
-        <Input
-          placeholder="Buscar por nombre..."
-          value={nameInput}
-          onChange={(e) => setNameInput(e.target.value)}
-          className="w-full sm:w-[180px] md:w-[200px] xl:w-[250px]"
-        />
-        <SearchableSelect
-          options={periods.map(period => ({ value: period.id, label: period.name }))}
-          value={undefined}
-          placeholder="Filtrar por periodo"
-          onChange={setPeriodFilter}
-          searchable={false}
-        />
-        <SearchableSelect
-          options={grupos.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
-          value={undefined}
-          placeholder="Filtrar por grupo"
-          onChange={val => setGrupoFilter(val)}
-          searchable={true}
-          showAllOption={true}
-          allOptionLabel="Todos"
-        />
-        <button
-          onClick={() => setShowAllFilters(!showAllFilters)}
-          className="whitespace-nowrap flex items-center gap-1 text-sm md:text-base px-3 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-        >
-          {showAllFilters ? (
-            <><ChevronUp className="h-4 w-4" /> Ocultar</>
-          ) : (
-            <><ChevronDown className="h-4 w-4" /> Mostrar</>
-          )}
-           más filtros
-        </button>
-      </div>
-      {showAllFilters && (
-        <div className="flex flex-col sm:flex-row flex-wrap md:flex-nowrap gap-2 sm:gap-3 mt-1">
+    <div className="flex flex-col gap-2 w-full max-w-[800px]">
+      <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <Input
-            type="date"
-            value={dateInput}
-            onChange={(e) => setDateInput(e.target.value)}
-            className="w-full sm:w-[180px] md:w-[200px] xl:w-[250px]"
+            placeholder="Buscar por nombre..."
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            className="w-full"
           />
-          <Input
-            placeholder="Buscar por teléfono..."
-            value={phoneInput}
-            onChange={(e) => setPhoneInput(e.target.value)}
-            className="w-full sm:w-[180px] md:w-[200px] xl:w-[250px]"
+          <SearchableSelect
+            options={periods.map(period => ({ value: period.id, label: period.name }))}
+            value={undefined}
+            placeholder="Filtrar por periodo"
+            onChange={setPeriodFilter}
+            searchable={false}
           />
-          <Input
-            placeholder="Buscar por matricula..."
-            value={matriculaInput}
-            onChange={(e) => setMatriculaInput(e.target.value)}
-            className="w-full sm:w-[180px] md:w-[200px] xl:w-[250px]"
-            type="number"
+          <SearchableSelect
+            options={grupos.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
+            value={undefined}
+            placeholder="Filtrar por grupo"
+            onChange={val => setGrupoFilter(val)}
+            searchable={true}
+            showAllOption={true}
+            allOptionLabel="Todos"
           />
-          <div className="w-full md:w-auto mt-2 md:mt-0">
-            {children}
+        </div>
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 transform transition-transform duration-300 ease-in-out">
+            <Input
+              type="date"
+              value={dateInput}
+              onChange={(e) => setDateInput(e.target.value)}
+              className="w-full"
+            />
+            <Input
+              placeholder="Buscar por teléfono..."
+              value={phoneInput}
+              onChange={(e) => setPhoneInput(e.target.value)}
+              className="w-full"
+            />
+            <Input
+              placeholder="Buscar por matricula..."
+              value={matriculaInput}
+              onChange={(e) => setMatriculaInput(e.target.value)}
+              className="w-full"
+              type="number"
+            />
           </div>
         </div>
-      )}
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters && children ? 'max-h-[100px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          {children && (
+            <div className="flex justify-end mt-2">
+              {children}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex justify-start">
+        <button
+          onClick={() => setShowAllFilters(!showAllFilters)}
+          className="flex items-center gap-1 text-sm px-3 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+          aria-expanded={showAllFilters}
+          aria-label={showAllFilters ? "Ocultar filtros adicionales" : "Mostrar filtros adicionales"}
+        >
+          {showAllFilters ? (
+            <>
+              <span className="hidden sm:inline">Menos filtros</span>
+              <ChevronUp className="h-4 w-4" />
+            </>
+          ) : (
+            <>
+              <span className="hidden sm:inline">Más filtros</span>
+              <ChevronDown className="h-4 w-4" />
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 };

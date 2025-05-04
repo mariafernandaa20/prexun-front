@@ -1,7 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StudentForm } from "./student-form";
-import { useActiveCampusStore } from '@/lib/store/plantel-store';
-import { useAuthStore } from "@/lib/store/auth-store";
 
 export const StudentDialog = ({
   isOpen,
@@ -12,18 +10,16 @@ export const StudentDialog = ({
   prepas,
   promos,
 }) => {
-  const { activeCampus } = useActiveCampusStore();
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="lg:min-w-[60rem] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="lg:min-w-[70rem] max-h-[90vh] overflow-y-hidden">
         <DialogHeader>
           <DialogTitle>
             {selectedStudent ? 'Editar Estudiante' : 'Nuevo Estudiante'}
           </DialogTitle>
         </DialogHeader>
         <StudentForm
-          campusId={activeCampus?.id}
           student={selectedStudent}
           onSubmit={onSubmit}
           onCancel={() => setIsOpen(false)}

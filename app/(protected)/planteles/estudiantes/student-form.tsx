@@ -18,12 +18,12 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 import SearchableSelect from '@/components/SearchableSelect';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 interface StudentFormProps {
   student?: Student | null;
   onSubmit: (data: Student) => void;
   onCancel: () => void;
-  campusId: number;
   municipios: Municipio[];
   prepas: Prepa[];
   promos: Promocion[];
@@ -33,12 +33,12 @@ export function StudentForm({
   student,
   onSubmit,
   onCancel,
-  campusId,
   municipios,
   prepas,
   promos,
 }: StudentFormProps) {
   const { toast } = useToast();
+  const { activeCampus } = useActiveCampusStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingButton, setIsLoadingButton] = useState(false);
@@ -47,7 +47,7 @@ export function StudentForm({
   const [formData, setFormData] = useState<Student>({
     id: student?.id || null,
     period_id: student?.period_id || '',
-    campus_id: campusId,
+    campus_id: activeCampus?.id || null,
     promo_id: null,
     grupo_id: student?.grupo_id || null,
     firstname: student?.firstname || '',
@@ -188,8 +188,8 @@ export function StudentForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 flex flex-col max-h-[80vh] lg:min-w-[60rem] overflow-y-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mx-auto overflow-y-auto">
+    <form onSubmit={handleSubmit} className="space-y-4 flex flex-col max-h-[80vh] w-full overflow-y-auto">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-4 mx-auto overflow-y-auto">
         <div className="space-y-2">
           <Label htmlFor="status">Estatus</Label>
           <Select
@@ -261,23 +261,6 @@ export function StudentForm({
         </div> */}
         <div className="space-y-2">
           <Label htmlFor="grupo_id">Grupo</Label>
-          <Select
-            name="grupo_id"
-            value={Number(formData.grupo_id) as any}
-            onValueChange={(value) => handleChange({ name: 'grupo_id', value: value })}
-            disabled={!!student?.id}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona el grupo" />
-            </SelectTrigger>
-            <SelectContent>
-              {grupos.map((grupo) => (
-                <SelectItem key={grupo.id} value={grupo.id as any}>
-                  {grupo.name} - {grupo.students_count}/{grupo.capacity}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           <SearchableSelect
             options={grupos.map(grupo => ({ value: (grupo.id).toString(), label: grupo.name }))}
             value={undefined}
