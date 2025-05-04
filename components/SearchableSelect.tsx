@@ -24,7 +24,6 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   value,
   placeholder,
   onChange,
-  searchable = true,
   searchPlaceholder = 'Buscar...',
   showAllOption = false,
   allOptionLabel = 'Todos',
@@ -47,19 +46,17 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {searchable && (
-          <div className="p-2">
-            <div className="relative">
-              <Input
-                placeholder={searchPlaceholder}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="pl-8"
-              />
-              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            </div>
+        <div className="p-2">
+          <div className="relative">
+            <Input
+              placeholder={searchPlaceholder}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-8"
+            />
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           </div>
-        )}
+        </div>
         {showAllOption && (
           <SelectItem value="todos">{allOptionLabel}</SelectItem>
         )}

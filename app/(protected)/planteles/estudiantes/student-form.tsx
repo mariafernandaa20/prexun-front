@@ -266,7 +266,6 @@ export function StudentForm({
             value={undefined}
             placeholder="Filtrar por periodo"
             onChange={(value) => handleChange({ name: 'grupo_id', value: value })}
-            searchable={false}
           />
         </div>
         <div className="space-y-2">

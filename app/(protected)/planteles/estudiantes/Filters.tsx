@@ -72,14 +72,12 @@ const Filters: React.FC<FiltersProps> = ({
             value={undefined}
             placeholder="Filtrar por periodo"
             onChange={setPeriodFilter}
-            searchable={false}
           />
           <SearchableSelect
             options={grupos.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
             value={undefined}
             placeholder="Filtrar por grupo"
             onChange={val => setGrupoFilter(val)}
-            searchable={true}
             showAllOption={true}
             allOptionLabel="Todos"
           />
