@@ -27,7 +27,7 @@
     --primary: #FFCC00;
     --primary-foreground: #FFFFFF;
     --secondary: #131F46;
-    --secondary-foreground: #FFFFFF;
+    --secondary-foreground: #fff;
     --muted: #F5F5F5;
     --muted-foreground: #666666;
     --accent: #F8F8F8;
@@ -62,7 +62,7 @@
     --primary: #131F46;
     --primary-foreground: #FFFFFF;
     --secondary: #FECB00;
-    --secondary-foreground: #FFFFFF;
+    --secondary-foreground: #131F46;
     --muted: #282828;
     --muted-foreground: #A0A0A0;
     --accent: #121212;

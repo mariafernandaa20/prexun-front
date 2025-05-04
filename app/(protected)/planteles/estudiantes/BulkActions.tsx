@@ -1,6 +1,8 @@
-import React from 'react';
-import { bulkDeleteStudents, deleteStudent } from '@/lib/api';
+import React, { useState, useEffect } from 'react';
+import { bulkDeleteStudents, deleteStudent, bulkUpdateSemanaIntensiva } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { Button, buttonVariants } from '@/components/ui/button';
 
 interface BulkActionsProps {
   selectedStudents: string[];
@@ -16,6 +18,8 @@ const BulkActions: React.FC<BulkActionsProps> = ({
   setIsBulkActionLoading,
 }) => {
   const { toast } = useToast();
+  const [selectedSemanaIntensiva, setSelectedSemanaIntensiva] = useState<string>('');
+  const { semanasIntensivas } = useAuthStore();
 
   const handleBulkDelete = async () => {
     if (selectedStudents.length === 0) {
@@ -84,14 +88,86 @@ const BulkActions: React.FC<BulkActionsProps> = ({
     }
   };
 
+  const handleBulkAssignSemanaIntensiva = async () => {
+    if (selectedStudents.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Seleccione al menos un estudiante',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!selectedSemanaIntensiva) {
+      toast({
+        title: 'Error',
+        description: 'Seleccione una semana intensiva',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`¿Está seguro de asignar ${selectedStudents.length} estudiante(s) a la semana intensiva seleccionada?`)) return;
+
+    try {
+      setIsBulkActionLoading(true);
+      const response = await bulkUpdateSemanaIntensiva(selectedStudents, selectedSemanaIntensiva);
+      await fetchStudents();
+      setSelectedStudents([]);
+      toast({
+        title: 'Acción completada',
+        description: `${selectedStudents.length} estudiante(s) asignados a la semana intensiva correctamente`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al asignar estudiantes a semana intensiva',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkActionLoading(false);
+    }
+  };
+
   return (
-    <div className="flex gap-2">
-      <button onClick={handleBulkDelete} disabled={selectedStudents.length === 0}>
-        Eliminar seleccionados
-      </button>
-      <button onClick={handleBulkDeleteForever} disabled={selectedStudents.length === 0}>
-        Eliminar permanentemente
-      </button>
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-2">
+        <Button
+          variant="destructive"
+          onClick={handleBulkDelete}
+          disabled={selectedStudents.length === 0}
+        >
+          Eliminar seleccionados
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={handleBulkDeleteForever}
+          disabled={selectedStudents.length === 0}
+        >
+          Eliminar permanentemente
+        </Button>
+      </div>
+
+      <div className="flex gap-2 items-center">
+        <select
+          className={buttonVariants({ variant: 'secondary' })}
+          value={selectedSemanaIntensiva}
+          onChange={(e) => setSelectedSemanaIntensiva(e.target.value)}
+        >
+          <option value="">Seleccionar semana intensiva</option>
+          {semanasIntensivas.map((semana) => (
+            <option key={semana.id} value={semana.id}>
+              {semana.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          onClick={handleBulkAssignSemanaIntensiva}
+          disabled={!selectedSemanaIntensiva || selectedStudents.length === 0}
+        >
+          Asignar a semana intensiva
+        </Button>
+      </div>
     </div>
   );
 };

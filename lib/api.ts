@@ -143,6 +143,17 @@ export const bulkDeleteStudents = async (studentIds: string[], permanent: boolea
   return response.data;
 };
 
+export const bulkUpdateSemanaIntensiva = async (studentIds: string[], semanaIntensivaId: string) => {
+  const response = await axiosInstance.post(
+    '/students/bulk-update-semana-intensiva',
+    {
+      student_ids: studentIds,
+      semana_intensiva_id: semanaIntensivaId
+    }
+  );
+  return response.data;
+};
+
 export const getStudentsByCohort = async (cohortId: string) => {
   const endpoint = API_ENDPOINTS.STUDENTS_BY_COHORT.replace(
     ":cohortId",
