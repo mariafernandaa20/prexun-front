@@ -76,4 +76,5 @@ export const API_ENDPOINTS = {
   UPDATE_CAJA: '/caja',
   DELETE_CAJA: '/caja',
   CURRENT_CAJA: '/caja/current',
-} as const; 
+  SYNC_STUDENT_MODULES: '/students/sync-modules',
+} as const;

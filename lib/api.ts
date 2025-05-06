@@ -132,6 +132,11 @@ export const deleteStudent = async (id: string, permanent: boolean = false) => {
   return response.data;
 };
 
+export const syncStudentModules = async () => {
+  const response = await axiosInstance.post(API_ENDPOINTS.SYNC_STUDENT_MODULES);
+  return response.data;
+};
+
 export const bulkDeleteStudents = async (studentIds: string[], permanent: boolean = false) => {
   const response = await axiosInstance.post(
     '/students/bulk-destroy',

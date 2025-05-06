@@ -4,6 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Grupo, Period } from '@/lib/types';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import useDebounce from '@/hooks/useDebounce';
+import { Button } from '@/components/ui/button';
+import { syncStudentModules } from '@/lib/api';
+import { toast } from '@/hooks/use-toast';
 
 
 
@@ -35,6 +38,7 @@ const Filters: React.FC<FiltersProps> = ({
   const [dateInput, setDateInput] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
   const [matriculaInput, setMatriculaInput] = useState<string>('');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const debouncedName = useDebounce(nameInput, 500);
   const debouncedDate = useDebounce(dateInput, 500);
@@ -103,6 +107,28 @@ const Filters: React.FC<FiltersProps> = ({
               className="w-full"
               type="number"
             />
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                try {
+                  setIsSyncing(true);
+                  await syncStudentModules();
+                  toast({ title: 'Sincronización de módulos completada correctamente' });
+                } catch (error: any) {
+                  toast({
+                    title: 'Error al sincronizar módulos',
+                    description: error.response?.data?.message || 'Intente nuevamente',
+                    variant: 'destructive',
+                  });
+                } finally {
+                  setIsSyncing(false);
+                }
+              }}
+              disabled={isSyncing}
+              title='Sincronizar Módulos'
+            >
+              {isSyncing ? 'Sincronizando...' : 'Sincronizar Módulos'}
+            </Button>
           </div>
         </div>
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters && children ? 'max-h-[100px] opacity-100' : 'max-h-0 opacity-0'}`}>
