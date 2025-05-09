@@ -36,20 +36,21 @@ export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
+  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
   const [periodFilter, setPeriodFilter] = useState<string>();
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
   const [searchMatricula, setSearchMatricula] = useState<number | null>(null);
   const [promos, setPromos] = useState<Promocion[]>([]);
-  const { activeCampus } = useActiveCampusStore();
-  const { user, periods, grupos } = useAuthStore();
-  const { pagination, setPagination } = usePagination();
-
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
   const { toast } = useToast();
+  const { activeCampus } = useActiveCampusStore();
+  const { user, periods, grupos } = useAuthStore();
+  const { pagination, setPagination } = usePagination();
+  
 
   const handleOpenEditModal = (student: Student) => {
     setSelectedStudent(student);
@@ -114,6 +115,7 @@ export default function Page() {
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
       grupo: grupoFilter ? grupoFilter : undefined,
+      semanaIntensivaFilter: semanaIntensivaFilter,
       period: periodFilter,
     }
 
@@ -169,7 +171,7 @@ export default function Page() {
 
   useEffect(() => {
     fetchStudents();
-  }, [pagination.currentPage, pagination.perPage, searchName, searchDate, searchPhone, searchMatricula, periodFilter, grupoFilter]);
+  }, [pagination.currentPage, pagination.perPage, searchName, searchDate, searchPhone, searchMatricula, periodFilter, grupoFilter, semanaIntensivaFilter]);
 
   const handleSubmit = async (formData: Student) => {
     try {
@@ -248,6 +250,7 @@ export default function Page() {
                 grupos={grupos}
                 setPeriodFilter={setPeriodFilter}
                 setGrupoFilter={setGrupoFilter}
+                setSemanaIntensivaFilter={setSemanaIntensivaFilter}
                 setSearchName={setSearchName}
                 setSearchDate={setSearchDate}
                 setSearchPhone={setSearchPhone}

@@ -7,6 +7,7 @@ import useDebounce from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { syncStudentModules } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 
 
@@ -15,6 +16,7 @@ interface FiltersProps {
   grupos: Grupo[];
   setPeriodFilter: (value: string) => void;
   setGrupoFilter: (value: string | null) => void;
+  setSemanaIntensivaFilter: (value: string | null) => void;
   setSearchName: (value: string) => void;
   setSearchDate: (value: string) => void;
   setSearchPhone: (value: string) => void;
@@ -27,6 +29,7 @@ const Filters: React.FC<FiltersProps> = ({
   grupos,
   setPeriodFilter,
   setGrupoFilter,
+  setSemanaIntensivaFilter,
   setSearchName,
   setSearchDate,
   setSearchPhone,
@@ -39,6 +42,9 @@ const Filters: React.FC<FiltersProps> = ({
   const [phoneInput, setPhoneInput] = useState('');
   const [matriculaInput, setMatriculaInput] = useState<string>('');
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const {semanasIntensivas} = useAuthStore();
+
 
   const debouncedName = useDebounce(nameInput, 500);
   const debouncedDate = useDebounce(dateInput, 500);
@@ -62,9 +68,9 @@ const Filters: React.FC<FiltersProps> = ({
   }, [debouncedMatricula, setSearchMatricula]);
 
   return (
-    <div className="flex flex-col gap-2 w-full max-w-[800px]">
+    <div className="flex flex-col gap-2 w-full max-w-[1/2]">
       <div className="space-y-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2">
           <Input
             placeholder="Buscar por nombre..."
             value={nameInput}
@@ -82,6 +88,14 @@ const Filters: React.FC<FiltersProps> = ({
             value={undefined}
             placeholder="Filtrar por grupo"
             onChange={val => setGrupoFilter(val)}
+            showAllOption={true}
+            allOptionLabel="Todos"
+          />
+          <SearchableSelect
+            options={semanasIntensivas.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
+            value={undefined}
+            placeholder="Filtrar por semana intensiva"
+            onChange={val => setSemanaIntensivaFilter(val)}
             showAllOption={true}
             allOptionLabel="Todos"
           />
