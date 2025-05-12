@@ -59,6 +59,11 @@ interface Campus {
   name: string;
 }
 
+interface Grupo {
+  id: string;
+  name: string;
+}
+
 export default function page() {
   const { toast } = useToast();
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
@@ -75,6 +80,7 @@ export default function page() {
     role: 'admin',
     password: '',
     campuses: [],
+    grupos: [],
   });
 
   // Fetch users and campuses
@@ -87,12 +93,37 @@ export default function page() {
     try {
       setIsLoading(true);
       const response = await getUsers();
-      toast({ title: 'Usuarios cargados correctamente' });
-      setUsers(response);
+      // Asegurarnos de que los grupos estén incluidos en la respuesta
+      const usersWithGroups = await Promise.all(
+        response.map(async (user) => {
+          if (user.role === 'maestro') {
+            try {
+              const gruposResponse = await axiosInstance.get(`/teacher/groups/${user.id}`);
+              return {
+                ...user,
+                grupos: gruposResponse.data || []
+              };
+            } catch (error) {
+              console.error(`Error al cargar grupos para el maestro ${user.id}:`, error);
+              return {
+                ...user,
+                grupos: []
+              };
+            }
+          }
+          return user;
+        })
+      );
+      setUsers(usersWithGroups);
       setIsLoading(false);
     } catch (error) {
-      toast({ title: 'Error al cargar usuarios' });
+      console.error('Error al cargar usuarios:', error);
+      toast({ 
+        title: 'Error al cargar usuarios',
+        description: 'Por favor, verifica tu conexión e intenta nuevamente'
+      });
       setIsLoading(false);
+      setUsers([]); // Establecer un array vacío en caso de error
     }
   };
 
@@ -118,22 +149,63 @@ export default function page() {
       role: 'user',
       password: '',
       campuses: [],
+      grupos: [],
     });
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (user: User) => {
+  const handleOpenEditModal = async (user: User) => {
     setSelectedUser(user);
-    setFormData({
-      id: user.id || undefined,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      campuses: user.campuses
-        ? user.campuses.map((campus) => campus.id.toString())
-        : [],
-    });
-    setIsModalOpen(true);
+    try {
+      let gruposDelMaestro = [];
+      if (user.role === 'maestro') {
+        // Primero cargar todos los grupos disponibles
+        await fetchGrupos();
+        // Luego obtener los grupos asignados al maestro
+        const response = await axiosInstance.get(`/teacher/${user.id}/groups`); // Removido el /api/ extra
+        gruposDelMaestro = response.data.map((grupo: any) => grupo.id.toString());
+      }
+      
+      setFormData({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        password: '',
+        campuses: user.campuses
+          ? user.campuses.map((campus) => campus.id.toString())
+          : [],
+        grupos: gruposDelMaestro
+      });
+      setShowGrupos(user.role === 'maestro');
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error al cargar los grupos del maestro:', error);
+      toast({ 
+        title: 'Error al cargar los grupos del maestro',
+        description: 'Por favor, intente nuevamente'
+      });
+      // Aún mostramos el modal para permitir la edición
+      setIsModalOpen(true);
+    }
+  };
+
+  const fetchGrupos = async () => {
+    try {
+      const response = await axiosInstance.get('/grupos');  // Remove the extra 'api'
+      const gruposData = response.data.map((grupo: any) => ({
+        id: grupo.id.toString(),
+        name: grupo.name,
+        students: grupo.students || []
+      }));
+      setGrupos(gruposData);
+    } catch (error) {
+      console.error('Error al cargar grupos:', error);
+      toast({ 
+        title: 'Error al cargar grupos',
+        description: 'No se pudieron cargar los grupos disponibles'
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -141,19 +213,32 @@ export default function page() {
     try {
       if (selectedUser) {
         const response = await updateUser(formData as unknown as User);
+        if (formData.role === 'maestro' && formData.grupos) {
+          const groupAssignResponse = await axiosInstance.post(`/api/teacher/${formData.id}/groups/assign`, {
+            grupo_ids: formData.grupos
+          });
+          console.log('Respuesta de asignación:', groupAssignResponse.data);
+        }
         await fetchUsers();
         toast({ title: 'Usuario actualizado correctamente' });
       } else {
         const response = await createUser(formData as unknown as User);
+        if (formData.role === 'maestro' && formData.grupos) {
+          const groupAssignResponse = await axiosInstance.post('/teacher/groups/assign', {
+            user_id: response.data.id, // Asegúrate de que esta sea la estructura correcta
+            grupo_ids: formData.grupos
+          });
+          console.log('Respuesta de asignación:', groupAssignResponse.data);
+        }
         await fetchUsers();
         toast({ title: 'Usuario creado correctamente' });
       }
       setIsModalOpen(false);
     } catch (error: any) {
+      console.error('Error completo:', error);
       toast({
         title: 'Error al guardar usuario',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
+        description: error.response?.data?.message || 'Intente nuevamente'
       });
     }
   };
@@ -188,6 +273,35 @@ export default function page() {
     }));
   };
 
+  const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const [showGrupos, setShowGrupos] = useState(false);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchCampuses();
+    fetchGrupos();
+  }, []);
+
+  const handleRoleChange = (value: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro') => {
+    setFormData((prev) => ({
+      ...prev,
+      role: value,
+      grupos: value === 'maestro' ? [] : [],
+    }));
+    setShowGrupos(value === 'maestro');
+    
+    if (value === 'maestro') {
+      fetchGrupos();
+    }
+  };
+
+  const handleGruposChange = (selectedGrupos: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      grupos: selectedGrupos,
+    }));
+  };
+
   return (
     <div className="w-full max-w-[100vw] overflow-x-hidden">
       <div className="p-4">
@@ -205,6 +319,7 @@ export default function page() {
               <TableHead>Email</TableHead>
               <TableHead>Rol</TableHead>
               <TableHead>Planteles</TableHead>
+              <TableHead>Grupos</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -219,6 +334,11 @@ export default function page() {
                     {user.campuses
                       ? user.campuses.map((campus) => campus.name).join(', ')
                       : 'Sin planteles'}
+                  </TableCell>
+                  <TableCell>
+                    {user.role === 'maestro' && user.grupos
+                      ? user.grupos.map((grupo) => grupo.name).join(', ')
+                      : '-'}
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
@@ -296,12 +416,7 @@ export default function page() {
                 <Select
                   name="role"
                   value={formData.role}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      role: value as User['role'],
-                    }))
-                  }
+                  onValueChange={handleRoleChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un rol" />
@@ -318,6 +433,23 @@ export default function page() {
                   </SelectContent>
                 </Select>
               </div>
+              {showGrupos && (
+                <div>
+                  <Label>Grupos</Label>
+                  <MultiSelect
+                    options={grupos.map(grupo => ({
+                      value: grupo.id,
+                      label: grupo.name
+                    }))}
+                    selectedValues={formData.grupos || []}
+                    onSelectedChange={handleGruposChange}
+                    title="Grupos de Estudiantes"
+                    placeholder="Seleccionar grupos"
+                    searchPlaceholder="Buscar grupo..."
+                    emptyMessage="No se encontraron grupos"
+                  />
+                </div>
+              )}
               <MultiSelect
                   options={campuses.map((campus) => ({
                     value: campus.id.toString(),
