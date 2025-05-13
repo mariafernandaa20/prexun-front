@@ -93,12 +93,12 @@ export default function page() {
     try {
       setIsLoading(true);
       const response = await getUsers();
-      // Asegurarnos de que los grupos estén incluidos en la respuesta
       const usersWithGroups = await Promise.all(
         response.map(async (user) => {
           if (user.role === 'maestro') {
             try {
-              const gruposResponse = await axiosInstance.get(`/teacher/groups/${user.id}`);
+              // Corregir la URL para obtener grupos
+              const gruposResponse = await axiosInstance.get(`/teacher/${user.id}/groups`);
               return {
                 ...user,
                 grupos: gruposResponse.data || []
@@ -214,18 +214,19 @@ export default function page() {
       if (selectedUser) {
         const response = await updateUser(formData as unknown as User);
         if (formData.role === 'maestro' && formData.grupos) {
-          const groupAssignResponse = await axiosInstance.post(`/api/teacher/${formData.id}/groups/assign`, {
-            grupo_ids: formData.grupos
+          // Make sure grupos is an array of IDs
+          const groupAssignResponse = await axiosInstance.post(`/teacher/${formData.id}/groups/assign`, {
+            grupo_ids: formData.grupos.map(id => parseInt(id))
           });
-          console.log('Respuesta de asignación:', groupAssignResponse.data);
+          console.log('Grupos asignados:', groupAssignResponse.data);
         }
         await fetchUsers();
         toast({ title: 'Usuario actualizado correctamente' });
       } else {
         const response = await createUser(formData as unknown as User);
         if (formData.role === 'maestro' && formData.grupos) {
-          const groupAssignResponse = await axiosInstance.post('/teacher/groups/assign', {
-            user_id: response.data.id, // Asegúrate de que esta sea la estructura correcta
+          // Corregir la URL para nuevos usuarios
+          const groupAssignResponse = await axiosInstance.post(`/teacher/${response.data.id}/groups/assign`, {
             grupo_ids: formData.grupos
           });
           console.log('Respuesta de asignación:', groupAssignResponse.data);
@@ -237,11 +238,12 @@ export default function page() {
     } catch (error: any) {
       console.error('Error completo:', error);
       toast({
-        title: 'Error al guardar usuario',
-        description: error.response?.data?.message || 'Intente nuevamente'
+        variant: "destructive",
+        title: "Error al actualizar usuario",
+        description: error.response?.data?.message || error.message
       });
     }
-  };
+};
 
   const handleDelete = async () => {
     if (!selectedUser) return;
