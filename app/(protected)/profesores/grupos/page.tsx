@@ -16,15 +16,15 @@ interface Group {
   frequency: string;
   start_date: string;
   end_date: string;
-  students?: Student[];  // Make students optional
+  students?: Student[];
 }
 
 interface Student {
-  id: number;
+  id: number | string;
   firstname: string;
   lastname: string;
   email: string;
-  matricula: string;
+  matricula: string | null;
 }
 
 export default function TeacherGroupsPage() {
@@ -51,9 +51,11 @@ export default function TeacherGroupsPage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-full">
-      <div className="text-lg">Cargando grupos...</div>
-    </div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-lg">Cargando grupos...</div>
+      </div>
+    );
   }
 
   const selectedGroupData = groups.find(g => g.id === selectedGroup);
@@ -61,7 +63,7 @@ export default function TeacherGroupsPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Mis Grupos</h1>
-      
+
       {groups.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500">No tienes grupos asignados actualmente.</p>
@@ -69,8 +71,8 @@ export default function TeacherGroupsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {groups.map((group) => (
-            <Card 
-              key={group.id} 
+            <Card
+              key={group.id}
               className={`cursor-pointer hover:border-primary transition-colors ${selectedGroup === group.id ? 'border-primary' : ''}`}
               onClick={() => setSelectedGroup(group.id)}
             >
@@ -107,14 +109,16 @@ export default function TeacherGroupsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {selectedGroupData.students.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell>{student.matricula}</TableCell>
-                      <TableCell>{student.firstname}</TableCell>
-                      <TableCell>{student.lastname}</TableCell>
-                      <TableCell>{student.email}</TableCell>
-                    </TableRow>
-                  ))}
+                  {selectedGroupData.students
+                    .filter(student => student !== null)
+                    .map((student, index) => (
+                      <TableRow key={`${selectedGroupData.id}-${student.matricula || `index-${index}`}`}>
+                        <TableCell>{student.id || 'No asignada'}</TableCell>
+                        <TableCell>{student.firstname}</TableCell>
+                        <TableCell>{student.lastname}</TableCell>
+                        <TableCell>{student.email}</TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             )}

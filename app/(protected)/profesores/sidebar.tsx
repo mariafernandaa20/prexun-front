@@ -26,7 +26,7 @@ const teacher_navigation = [
   },
   {
     name: "Lista de Asistencia",
-    url: "/profesores/asistencia",
+    url: "/profesores/lista-asistencia",
     icon: ClipboardList,
   },
   {
