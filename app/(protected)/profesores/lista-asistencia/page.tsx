@@ -50,7 +50,7 @@ export default function AttendanceListPage() {
       const formattedDate = date.toISOString().split('T')[0];
       const response = await axiosInstance.get(`/teacher/attendance/${grupoId}/${formattedDate}`);
       
-      if (response.data.success && response.data.data) {
+      if (response.data.success && response.data.data && response.data.data.length > 0) {
         // Convertir los datos de asistencia al formato que espera el estado
         const attendanceMap: Record<string, boolean> = {};
         response.data.data.forEach((record: any) => {
@@ -58,13 +58,21 @@ export default function AttendanceListPage() {
         });
         setAttendance(attendanceMap);
       } else {
-        // Si no hay asistencias para esa fecha, limpiar el estado
-        setAttendance({});
+        // Si no hay asistencias para esa fecha, marcar todas como presentes por defecto
+        const defaultAttendance: Record<string, boolean> = {};
+        selectedGroupStudents.forEach((student) => {
+          defaultAttendance[student.id] = true;
+        });
+        setAttendance(defaultAttendance);
       }
     } catch (error) {
       console.error('Error al cargar asistencias:', error);
-      // Si hay un error, limpiar el estado de asistencias
-      setAttendance({});
+      // Si hay un error, marcar todas las asistencias como presentes por defecto
+      const defaultAttendance: Record<string, boolean> = {};
+      selectedGroupStudents.forEach((student) => {
+        defaultAttendance[student.id] = true;
+      });
+      setAttendance(defaultAttendance);
     }
   };
 
@@ -110,17 +118,31 @@ export default function AttendanceListPage() {
         date: formattedDate,
         attendance: attendance,
       };
-      console.log('Sending attendance data:', payload);
       
-      await axiosInstance.post('/teacher/attendance', payload);
+      console.log('Enviando datos de asistencia:', payload);
+      const response = await axiosInstance.post('/teacher/attendance', payload);
+      console.log('Respuesta del servidor:', response.data);
 
-      toast('Attendance saved', {
-        description: 'Attendance was saved successfully',
+      toast.success('¡Asistencia Guardada!', {
+        description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,
+        duration: 5000,
+        style: {
+          background: '#ecfdf5',
+          border: '1px solid #059669',
+          color: '#065f46',
+        },
       });
     } catch (error) {
-      console.error('Error details:', error.response?.data);
-      toast('Error saving', {
-        description: error.response?.data?.message || 'Could not save attendance',
+      console.error('Error completo:', error);
+      console.error('Detalles del error:', error.response?.data);
+      toast.error('Error al Guardar', {
+        description: 'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
+        duration: 4000,
+        style: {
+          background: '#fef2f2',
+          border: '1px solid #dc2626',
+          color: '#991b1b',
+        },
       });
     }
   };

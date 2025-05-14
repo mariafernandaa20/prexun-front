@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { Analytics } from "@vercel/analytics/react";
-import { Providers } from "./providers"; // Importamos Providers
+import { Providers } from "./providers";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,12 +35,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Providers> {/* Aquí envuelves tu aplicación con Providers */}
+          <Providers>
             <AuthProvider>
               {children}
             </AuthProvider>
           </Providers>
-          <Toaster />
+          <Toaster 
+            position="top-center"
+            richColors
+            expand
+            closeButton
+          />
         </ThemeProvider>
         <Analytics />
       </body>
