@@ -185,7 +185,7 @@ export default function AttendanceListPage() {
                 <TableBody>
                   {selectedGroupStudents.map((student) => (
                     <TableRow key={student.id}>
-                      <TableCell className="py-3 px-4">{student.matricula}</TableCell>
+                      <TableCell className="py-3 px-4">{student.id}</TableCell>
                       <TableCell className="py-3 px-4">{student.firstname}</TableCell>
                       <TableCell className="py-3 px-4">{student.lastname}</TableCell>
                       <TableCell className="py-3 px-4">
