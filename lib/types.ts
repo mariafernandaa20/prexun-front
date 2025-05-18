@@ -19,21 +19,24 @@ export enum PaymentMethod {
   transfer = 'Transferencia',
   card = 'Tarjeta'
 }
-export interface User {
-  id?: string
-  name: string
-  email: string
-  role: 'user' | 'admin' | 'super_admin' | 'contador'
-  campuses?: Campus[]
+export interface UserFormData {
+  id?: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro';
+  password?: string;
+  campuses: string[];
+  grupos?: string[];
 }
 
-export interface UserFormData {
-  id?: string
-  name: string
-  email: string
-  role: 'user' | 'admin' | 'super_admin' | 'contador'
-  password?: string
-  campuses?: string[]
+export interface User {
+  id?: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro';
+  password?: string;
+  campuses?: Campus[];
+  grupos?: Grupo[];
 }
 
 export interface Student {

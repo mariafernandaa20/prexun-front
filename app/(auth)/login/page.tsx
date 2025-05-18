@@ -51,11 +51,13 @@ export default function LoginPage() {
       document.cookie = `user-role=${user.role}; path=/`;
 
       toast({
-        title: "Success",
+        title: "Éxito",
         description: `Bienvenido ${user.name}`,
       });
 
-      if (user.role === "admin") {
+      if (user.role === "maestro") {
+        router.push("/profesores");
+      } else if (user.role === "admin") {
         router.push("/planteles");
       } else {
         router.push("/dashboard");
@@ -64,7 +66,7 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.response.data.message,
+        description: error.response?.data?.message || "Credenciales inválidas",
       });
     } finally {
       setIsLoading(false);
