@@ -259,24 +259,24 @@ export function StudentForm({
           <SearchableSelect
             options={grupos.map(grupo => ({ value: (grupo.id).toString(), label: grupo.name }))}
             value={undefined}
-            placeholder="Filtrar por periodo"
+            placeholder="Grupo"
             onChange={(value) => handleChange({ name: 'grupo_id', value: value })}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="grupo_id">Grupo de Semanas Intensivas</Label>
+          <Label htmlFor="semana_intensiva_id">Grupo de Semanas Intensivas</Label>
           <Select
-            name="grupo_id"
-            value={Number(formData.semana_intensiva_id) as any}
+            name="semana_intensiva_id"
+            value={formData?.semana_intensiva_id ? formData?.semana_intensiva_id.toString() : ''}
             onValueChange={(value) => handleChange({ name: 'semana_intensiva_id', value: value })}
             disabled={!!student?.id}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Selecciona el grupo" />
+              <SelectValue placeholder="Selecciona la semana intensiva" />
             </SelectTrigger>
             <SelectContent>
               {semanasIntensivas && semanasIntensivas.map((semana) => (
-                <SelectItem key={semana.id} value={semana.id as any}>
+                <SelectItem key={semana.id} value={semana.id.toString()}>
                   {semana.name} - {semana.students_count}/{semana.capacity}
                 </SelectItem>
               ))}
