@@ -53,6 +53,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 interface Campus {
   id: string;
@@ -83,7 +84,6 @@ export default function page() {
     grupos: [],
   });
 
-  // Fetch users and campuses
   useEffect(() => {
     fetchUsers();
     fetchCampuses();
@@ -97,7 +97,6 @@ export default function page() {
         response.map(async (user) => {
           if (user.role === 'maestro') {
             try {
-              // Corregir la URL para obtener grupos
               const gruposResponse = await axiosInstance.get(`/teacher/${user.id}/groups`);
               return {
                 ...user,
@@ -159,9 +158,6 @@ export default function page() {
     try {
       let gruposDelMaestro = [];
       if (user.role === 'maestro') {
-        // Primero cargar todos los grupos disponibles
-        await fetchGrupos();
-        // Luego obtener los grupos asignados al maestro
         const response = await axiosInstance.get(`/teacher/${user.id}/groups`); // Removido el /api/ extra
         gruposDelMaestro = response.data.map((grupo: any) => grupo.id.toString());
       }
@@ -190,31 +186,12 @@ export default function page() {
     }
   };
 
-  const fetchGrupos = async () => {
-    try {
-      const response = await axiosInstance.get('/grupos');  // Remove the extra 'api'
-      const gruposData = response.data.map((grupo: any) => ({
-        id: grupo.id.toString(),
-        name: grupo.name,
-        students: grupo.students || []
-      }));
-      setGrupos(gruposData);
-    } catch (error) {
-      console.error('Error al cargar grupos:', error);
-      toast({ 
-        title: 'Error al cargar grupos',
-        description: 'No se pudieron cargar los grupos disponibles'
-      });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (selectedUser) {
         const response = await updateUser(formData as unknown as User);
         if (formData.role === 'maestro' && formData.grupos) {
-          // Make sure grupos is an array of IDs
           const groupAssignResponse = await axiosInstance.post(`/teacher/${formData.id}/groups/assign`, {
             grupo_ids: formData.grupos.map(id => parseInt(id))
           });
@@ -275,13 +252,13 @@ export default function page() {
     }));
   };
 
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const { grupos } = useAuthStore();
+
   const [showGrupos, setShowGrupos] = useState(false);
 
   useEffect(() => {
     fetchUsers();
     fetchCampuses();
-    fetchGrupos();
   }, []);
 
   const handleRoleChange = (value: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro') => {
@@ -291,10 +268,6 @@ export default function page() {
       grupos: value === 'maestro' ? [] : [],
     }));
     setShowGrupos(value === 'maestro');
-    
-    if (value === 'maestro') {
-      fetchGrupos();
-    }
   };
 
   const handleGruposChange = (selectedGrupos: string[]) => {
@@ -440,9 +413,10 @@ export default function page() {
                   <Label>Grupos</Label>
                   <MultiSelect
                     options={grupos.map(grupo => ({
-                      value: grupo.id,
+                      value: (grupo.id).toString(),
                       label: grupo.name
                     }))}
+                    hiddeBadages={false}
                     selectedValues={formData.grupos || []}
                     onSelectedChange={handleGruposChange}
                     title="Grupos de Estudiantes"
