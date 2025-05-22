@@ -54,17 +54,17 @@ export const data = {
   teams: [
     {
       name: "Acme Inc",
-      logo: GalleryVerticalEnd,
+      logo: Building,
       plan: "Enterprise",
     },
     {
       name: "Acme Corp.",
-      logo: AudioWaveform,
+      logo: Building,
       plan: "Startup",
     },
     {
       name: "Evil Corp.",
-      logo: Command,
+      logo: Building,
       plan: "Free",
     },
   ],
@@ -83,12 +83,12 @@ export const data = {
         {
           title: "Preparatorias",
           url: "/dashboard/preparatorias",
-          icon: BookOpen,
+          icon: School,
         },
         {
           title: "Facultades",
           url: "/dashboard/facultades",
-          icon: BookOpen,
+          icon: GraduationCap,
         },
         {
           title: "Carreras",
@@ -98,7 +98,7 @@ export const data = {
         {
           title: "Módulos",
           url: "/dashboard/modulos",
-          icon: BookOpen,
+          icon: Frame,
         },
       ],
     },
@@ -107,12 +107,12 @@ export const data = {
     {
       name: "Design Engineering",
       url: "#",
-      icon: Frame,
+      icon: Bot,
     },
     {
       name: "Sales & Marketing",
       url: "#",
-      icon: PieChart,
+      icon: Receipt,
     },
     {
       name: "Travel",
@@ -134,12 +134,12 @@ export const data = {
     {
       name: "Estudiantes",
       url: "/dashboard/students",
-      icon: GraduationCap,
+      icon: Users,
     },
     {
       name: "Cohortes",
       url: "/dashboard/cohortes",
-      icon: Users,
+      icon: GraduationCap,
     },
     {
       name: "Planteles",
@@ -159,12 +159,12 @@ export const data = {
     {
       name: "Promociones",
       url: "/dashboard/promos",
-      icon: DollarSign,
+      icon: BaggageClaimIcon,
     },
     {
       name: "Grupos",
       url: "/dashboard/grupos",
-      icon: School,
+      icon: Users,
     },
     {
       name: "Semanas Intensivas",
@@ -191,7 +191,7 @@ export const data = {
     {
       name: "Estudiantes",
       url: "/planteles/estudiantes",
-      icon: GraduationCap,
+      icon: Users,
     },
     {
       name: "Pagos",
@@ -211,8 +211,17 @@ export const data = {
     {
       name: "Caja",
       url: "/planteles/caja",
-      icon: Wallet,
-
+      icon: CreditCard,
+    },
+    {
+      name: "Grupos",
+      url: "/planteles/grupos",
+      icon: Users,
+    },
+    {
+      name: "Asistencias",
+      url: "/planteles/lista-asistencia",
+      icon: BookOpen,
     },
     {
       name: "google",
