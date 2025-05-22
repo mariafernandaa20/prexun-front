@@ -42,7 +42,7 @@ export function StudentForm({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingButton, setIsLoadingButton] = useState(false);
-  const { periods, grupos, carreras, facultades } = useAuthStore();
+  const { periods, grupos, carreras, facultades, semanasIntensivas } = useAuthStore();
 
   const [formData, setFormData] = useState<Student>({
     id: student?.id || null,
@@ -74,7 +74,6 @@ export function StudentForm({
     semana_intensiva_id: student?.semana_intensiva_id || null,
   });
 
-  const semanasIntensivas = useAuthStore(state => state.semanasIntensivas);
   useEffect(() => {
     const fetchCohorts = async () => {
       try {

@@ -246,8 +246,6 @@ export default function Page() {
             </div>
             <div className="flex flex-col lg:flex-row gap-2">
               <Filters
-                periods={periods}
-                grupos={grupos}
                 setPeriodFilter={setPeriodFilter}
                 setGrupoFilter={setGrupoFilter}
                 setSemanaIntensivaFilter={setSemanaIntensivaFilter}

@@ -12,8 +12,6 @@ import { useAuthStore } from '@/lib/store/auth-store';
 
 
 interface FiltersProps {
-  periods: Period[];
-  grupos: Grupo[];
   setPeriodFilter: (value: string) => void;
   setGrupoFilter: (value: string | null) => void;
   setSemanaIntensivaFilter: (value: string | null) => void;
@@ -25,8 +23,6 @@ interface FiltersProps {
 }
 
 const Filters: React.FC<FiltersProps> = ({
-  periods,
-  grupos,
   setPeriodFilter,
   setGrupoFilter,
   setSemanaIntensivaFilter,
@@ -43,7 +39,7 @@ const Filters: React.FC<FiltersProps> = ({
   const [matriculaInput, setMatriculaInput] = useState<string>('');
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const {semanasIntensivas} = useAuthStore();
+  const { periods, grupos, carreras, facultades, semanasIntensivas } = useAuthStore();
 
 
   const debouncedName = useDebounce(nameInput, 500);
