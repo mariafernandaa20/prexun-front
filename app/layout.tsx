@@ -29,6 +29,27 @@ export default function RootLayout({
         ></script>
       </head>
       <body className={inter.className}>
+        {/* <div>
+          <div className="block sm:hidden fixed top-0 left-0 z-[100] px-2 bg-white dark:text-black">
+            sm
+          </div>
+          <div className="hidden sm:block md:hidden fixed top-0 left-0 z-[100] px-2 bg-white dark:text-black">
+            md
+          </div>
+          <div className="hidden md:block lg:hidden fixed top-0 left-0 z-[100] px-2 bg-white dark:text-black">
+            lg
+          </div>
+          <div className="hidden lg:block xl:hidden fixed top-0 left-0 z-[100] px-2 bg-white dark:text-black">
+            xl
+          </div>
+          <div className="hidden xl:block 2xl:hidden fixed top-0 left-0 z-[100] px-2 bg-white dark:text-black">
+            2xl
+          </div>
+          <div className="hidden 2xl:block fixed top-0 left-0 z-[100] px-2 bg-white dark:text-black">
+            +2xl
+          </div>
+        </div> */}
+
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -40,7 +61,7 @@ export default function RootLayout({
               {children}
             </AuthProvider>
           </Providers>
-          <Toaster 
+          <Toaster
             position="top-center"
             richColors
             expand

@@ -66,7 +66,7 @@ const Filters: React.FC<FiltersProps> = ({
   return (
     <div className="flex flex-col gap-2 w-full max-w-[1/2]">
       <div className="space-y-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
           <Input
             placeholder="Buscar por nombre..."
             value={nameInput}

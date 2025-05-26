@@ -132,11 +132,6 @@ export const data = {
       icon: CreditCard,
     },
     {
-      name: "Estudiantes",
-      url: "/dashboard/students",
-      icon: Users,
-    },
-    {
       name: "Cohortes",
       url: "/dashboard/cohortes",
       icon: GraduationCap,
