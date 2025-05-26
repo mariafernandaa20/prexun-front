@@ -19,6 +19,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const develop = process.env.NEXT_PUBLIC_DEVELOPMENT || false;
+
+  console.log(process.env.NEXT_PUBLIC_DEVELOPMENT)
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -29,7 +34,7 @@ export default function RootLayout({
         ></script>
       </head>
       <body className={inter.className}>
-        {/* <div>
+        {develop && <div>
           <div className="block sm:hidden fixed top-0 left-0 z-[100] px-2 bg-white dark:text-black">
             sm
           </div>
@@ -48,7 +53,7 @@ export default function RootLayout({
           <div className="hidden 2xl:block fixed top-0 left-0 z-[100] px-2 bg-white dark:text-black">
             +2xl
           </div>
-        </div> */}
+        </div>}
 
         <ThemeProvider
           attribute="class"
