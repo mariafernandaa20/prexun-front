@@ -145,17 +145,26 @@ export default function Page() {
         is_active: formData.is_active,
         admin_ids: formData.admin_ids || [],
         folio_inicial: formData.folio_inicial,
-        grupo_ids: formData.grupo_ids || []
+        grupo_ids: formData.grupo_ids // Asegurarse que se envían como array de strings
       };
 
       const response = selectedCampus
         ? await updateCampus(campusRequest)
         : await createCampus(campusRequest);
 
+      // Actualizar el estado asegurando que los grupos se mantengan
       setCampuses(prev =>
         selectedCampus
-          ? prev.map((c) => (c.id === selectedCampus.id ? response : c))
-          : [...prev, response]
+          ? prev.map((c) => {
+              if (c.id === selectedCampus.id) {
+                return {
+                  ...response,
+                  grupos: response.grupos || [] // Asegurar que grupos esté definido
+                };
+              }
+              return c;
+            })
+          : [...prev, { ...response, grupos: response.grupos || [] }]
       );
 
       toast({ title: `Plantel ${selectedCampus ? 'actualizado' : 'creado'} correctamente` });
@@ -167,7 +176,7 @@ export default function Page() {
         description: error.response?.data?.message || "Intente nuevamente",
       });
     }
-  };
+};
 
   const handleDelete = async () => {
     if (!selectedCampus) return;
