@@ -145,21 +145,21 @@ export default function Page() {
         is_active: formData.is_active,
         admin_ids: formData.admin_ids || [],
         folio_inicial: formData.folio_inicial,
-        grupo_ids: formData.grupo_ids // Asegurarse que se envían como array de strings
+        grupo_ids: formData.grupo_ids 
       };
 
       const response = selectedCampus
         ? await updateCampus(campusRequest)
         : await createCampus(campusRequest);
 
-      // Actualizar el estado asegurando que los grupos se mantengan
+    
       setCampuses(prev =>
         selectedCampus
           ? prev.map((c) => {
               if (c.id === selectedCampus.id) {
                 return {
                   ...response,
-                  grupos: response.grupos || [] // Asegurar que grupos esté definido
+                  grupos: response.grupos || [] 
                 };
               }
               return c;
@@ -284,14 +284,14 @@ export default function Page() {
                         )}
                       </TableCell>
                      <TableCell>
-  {campus.grupos?.length ? (
-    <div className="max-h-20 overflow-y-auto">
-      {campus.grupos.map((grupo) => (
-        <div key={`grupo-${campus.id}-${grupo.id}`} className="text-sm">
-          <span className="font-medium">{grupo.name}</span>
-        </div>
-      ))}
-    </div>
+                     {campus.grupos?.length ? (
+                        <div className="max-h-20 overflow-y-auto">
+                           {campus.grupos.map((grupo) => (
+                              <div key={`grupo-${campus.id}-${grupo.id}`} className="text-sm">
+                                   <span className="font-medium">{grupo.name}</span>
+                              </div>
+                             ))}
+                         </div>
   ) : (
     <span className="text-muted-foreground">Sin grupos asignados</span>
   )}
@@ -329,7 +329,7 @@ export default function Page() {
               </TableBody>
             </Table>
 
-            {/* Modal de Creación/Edición */}
+            
             <Dialog open={isModalOpen} onOpenChange={handleCloseModal} modal={true}>
               <DialogContent>
                 <DialogHeader>
