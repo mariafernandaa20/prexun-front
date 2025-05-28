@@ -8,7 +8,6 @@ import { AUTH_ENDPOINTS } from "../api/endpoints";
 import { Campus, Carrera, Grupo, Promocion, User } from "../types";
 import { getCampuses, getCarreras, getFacultades, getGrupos, getPeriods, getSemanas, getUsers } from "../api";
 
-// Interfaces separadas para mejor organización
 interface UserState {
   user: User | null;
   users: User[];
@@ -42,6 +41,7 @@ interface AuthActions {
   setUsers: (users: User[]) => void;
   setLoading: (loading: boolean) => void;
   setAccessToken: (token: string) => void;
+  setGrupos: (grupos: Grupo[]) => void;
   login: (email: string, password: string) => Promise<User>;
   logout: () => void;
   register: (

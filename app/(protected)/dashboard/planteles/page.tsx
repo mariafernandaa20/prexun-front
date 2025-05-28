@@ -145,25 +145,25 @@ export default function Page() {
         is_active: formData.is_active,
         admin_ids: formData.admin_ids || [],
         folio_inicial: formData.folio_inicial,
-        grupo_ids: formData.grupo_ids 
+        grupo_ids: formData.grupo_ids
       };
 
       const response = selectedCampus
         ? await updateCampus(campusRequest)
         : await createCampus(campusRequest);
 
-    
+
       setCampuses(prev =>
         selectedCampus
           ? prev.map((c) => {
-              if (c.id === selectedCampus.id) {
-                return {
-                  ...response,
-                  grupos: response.grupos || [] 
-                };
-              }
-              return c;
-            })
+            if (c.id === selectedCampus.id) {
+              return {
+                ...response,
+                grupos: response.grupos || []
+              };
+            }
+            return c;
+          })
           : [...prev, { ...response, grupos: response.grupos || [] }]
       );
 
@@ -176,7 +176,7 @@ export default function Page() {
         description: error.response?.data?.message || "Intente nuevamente",
       });
     }
-};
+  };
 
   const handleDelete = async () => {
     if (!selectedCampus) return;
@@ -283,19 +283,19 @@ export default function Page() {
                           <span className="text-muted-foreground">Sin usuarios</span>
                         )}
                       </TableCell>
-                     <TableCell>
-                     {campus.grupos?.length ? (
-                        <div className="max-h-20 overflow-y-auto">
-                           {campus.grupos.map((grupo) => (
+                      <TableCell>
+                        {campus.grupos?.length ? (
+                          <div className="max-h-20 overflow-y-auto">
+                            {campus.grupos.map((grupo) => (
                               <div key={`grupo-${campus.id}-${grupo.id}`} className="text-sm">
-                                   <span className="font-medium">{grupo.name}</span>
+                                <span className="font-medium">{grupo.name}</span>
                               </div>
-                             ))}
-                         </div>
-  ) : (
-    <span className="text-muted-foreground">Sin grupos asignados</span>
-  )}
-</TableCell>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Sin grupos asignados</span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           <Button
@@ -329,8 +329,8 @@ export default function Page() {
               </TableBody>
             </Table>
 
-            
-            <Dialog open={isModalOpen} onOpenChange={handleCloseModal} modal={true}>
+
+            <Dialog open={isModalOpen} onOpenChange={handleCloseModal} modal={false}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
