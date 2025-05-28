@@ -12,12 +12,18 @@ export interface Campus {
   folio_inicial: number;
   latest_cash_register?: Caja | null;
   users?: User[];
+  grupo_ids?: string[];
+  grupos?: Grupo[];
 }
 
 export enum PaymentMethod {
   cash = 'Efectivo',
   transfer = 'Transferencia',
   card = 'Tarjeta'
+}
+interface campus{
+  grupo_ids: {id: string[];
+  name: string;}[];
 }
 export interface UserFormData {
   id?: string;
