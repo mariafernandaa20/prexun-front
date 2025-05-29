@@ -257,6 +257,7 @@ export function StudentForm({
         <div className="space-y-2">
           <Label htmlFor="grupo_id">Grupo</Label>
           <SearchableSelect
+            disabled={!!student?.id}
             options={grupos.map(grupo => ({ value: (grupo.id).toString(), label: grupo.name }))}
             value={undefined}
             placeholder="Grupo"

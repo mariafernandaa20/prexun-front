@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select"
+import { toast } from '@/hooks/use-toast'
 
 interface Student {
   id: number
@@ -38,6 +39,7 @@ interface Grupo {
 export default function UpdatePersonalInfo({ student }: { student: Student }) {
   const [grupos, setGrupos] = useState<Grupo[]>([])
   const [semanas, setSemanas] = useState<Grupo[]>([])
+  const [open, setOpen] = useState(false)
   const [formData, setFormData] = useState({
     id: student.id,
     email: student.email,
@@ -80,10 +82,18 @@ export default function UpdatePersonalInfo({ student }: { student: Student }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const response = await updateStudent(formData)
+    
+    if(response.message){
+      toast({title: 'Información actualizada', description: 'Tu información personal ha sido actualizada correctamente.'})
+      setOpen(false)
+    }
+    else {
+      toast({variant: 'destructive', title: 'Información actualizada', description: 'Tu información personal ha sido actualizada correctamente.'})    
+    }
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>Actualizar Información Personal <PenIcon className="ml-2" /></Button>
       </DialogTrigger>

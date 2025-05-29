@@ -17,6 +17,7 @@ interface SearchableSelectProps {
   searchPlaceholder?: string;
   showAllOption?: boolean;
   allOptionLabel?: string;
+  disabled?: boolean;
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -27,6 +28,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   searchPlaceholder = 'Buscar...',
   showAllOption = false,
   allOptionLabel = 'Todos',
+  disabled = false,
 }) => {
   const [search, setSearch] = useState('');
 
@@ -41,6 +43,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     <Select
       value={value ?? undefined}
       onValueChange={val => onChange(val === 'todos' ? null : val)}
+      disabled={disabled}
     >
       <SelectTrigger className="w-full sm:w-[180px] md:w-[200px] xl:w-[220px]">
         <SelectValue placeholder={placeholder} />

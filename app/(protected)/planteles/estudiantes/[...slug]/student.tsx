@@ -237,6 +237,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                             <h3 className="font-semibold">Estado Académico</h3>
                             <p><span className="text-muted-foreground">Estatus:</span> {student.status || 'Activo'}</p>
                             <p><span className="text-muted-foreground">Grupo:</span> {student.grupo_id || 'No asignado'}</p>
+                            <p><span className="text-muted-foreground">Semana Intensiva:</span> {student.semana_intensiva_id || 'No asignado'}</p>
                             <p><span className="text-muted-foreground">Fecha de registro:</span> {formatTime({ time: student.created_at })}</p>
                         </div>
                         <div className="space-y-2">
