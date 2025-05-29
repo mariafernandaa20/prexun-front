@@ -42,7 +42,7 @@ export function StudentForm({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingButton, setIsLoadingButton] = useState(false);
-  const { periods, grupos, carreras, facultades, semanasIntensivas } = useAuthStore();
+  const { periods, grupos, carreras, facultades, semanasIntensivas, campuses } = useAuthStore();
 
   const [formData, setFormData] = useState<Student>({
     id: student?.id || null,
@@ -185,6 +185,30 @@ export function StudentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 flex flex-col max-h-[80vh] w-full overflow-y-auto">
       <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-2 mx-auto overflow-y-auto">
+
+        <div className="space-y-2">
+          <Label htmlFor="status">Campus</Label>
+          <Select
+            name="campus_id"
+            value={formData.campus_id.toString()}
+            disabled={!!student?.id}
+            onValueChange={(value) =>
+              handleChange({
+                name: 'campus_id',
+                value: value,
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona el estatus" />
+            </SelectTrigger>
+            <SelectContent>
+              {
+                campuses.map((campus) => <SelectItem value={(campus.id).toString()}>{campus.name}</SelectItem>)
+              }
+            </SelectContent>
+          </Select>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="status">Estatus</Label>
           <Select
