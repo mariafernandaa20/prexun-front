@@ -45,7 +45,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       onValueChange={val => onChange(val === 'todos' ? null : val)}
       disabled={disabled}
     >
-      <SelectTrigger className="w-full sm:w-[180px] md:w-[200px] xl:w-[220px]">
+      <SelectTrigger className="w-full">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

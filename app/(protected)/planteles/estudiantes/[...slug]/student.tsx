@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { Eye } from 'lucide-react'
 import UpdatePersonalInfo from '@/components/dashboard/UpdatePersonalInfo'
 import axiosInstance from '@/lib/api/axiosConfig'
+import SectionContainer from '@/components/SectionContainer'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -209,12 +210,12 @@ export function StudentComponent({ slug }: { slug: string[] }) {
     }
 
     return (
-        <div className="space-y-4">
-            <Card>
+        <div className="space-y-4 ">
+            <Card className='w-full'>
                 <CardHeader className='sticky top-0 z-8 bg-card'>
-                    <div className='flex justify-between items-center'>
+                    <div className='flex flex-col lg:flex-row justify-between items-center'>
                         <h1 className="text-2xl font-bold">{student.firstname} {student.lastname}</h1>
-                        <div className='flex gap-2'>
+                        <div className='flexgap-2'>
                             <Purchace
                                 campusId={campusId}
                                 studentId={student.id}
@@ -225,28 +226,31 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                        <div className="space-y-2">
-                            <h3 className="font-semibold">Información Personal</h3>
-                            <p><span className="text-muted-foreground">ID:</span> {student.id}</p>
-                            <p><span className="text-muted-foreground">Usuario Moodle:</span> {student.id}</p>
-                            <p><span className="text-muted-foreground">Email:</span> {student.email || 'No registrado'}</p>
-                            <p><span className="text-muted-foreground">Teléfono:</span> {student.phone || 'No registrado'}</p>
+                    <SectionContainer>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                            <div className="space-y-2">
+                                <h3 className="font-semibold">Información Personal</h3>
+                                <p><span className="text-muted-foreground">ID:</span> {student.id}</p>
+                                <p><span className="text-muted-foreground">Usuario Moodle:</span> {student.id}</p>
+                                <p><span className="text-muted-foreground">Email:</span> {student.email || 'No registrado'}</p>
+                                <p><span className="text-muted-foreground">Teléfono:</span> {student.phone || 'No registrado'}</p>
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="font-semibold">Estado Académico</h3>
+                                <p><span className="text-muted-foreground">Estatus:</span> {student.status || 'Activo'}</p>
+                                <p><span className="text-muted-foreground">Grupo:</span> {student.grupo_id || 'No asignado'}</p>
+                                <p><span className="text-muted-foreground">Semana Intensiva:</span> {student.semana_intensiva_id || 'No asignado'}</p>
+                                <p><span className="text-muted-foreground">Fecha de registro:</span> {formatTime({ time: student.created_at })}</p>
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="font-semibold">Resumen de Pagos</h3>
+                                <p><span className="text-muted-foreground">Total de transacciones:</span> {student.transactions?.length || 0}</p>
+                                <p><span className="text-muted-foreground">Pagos pendientes:</span> {student.transactions?.filter(t => t.paid === 0).length || 0}</p>
+                                <p><span className="text-muted-foreground">Último pago:</span> {student.transactions?.length ? formatTime({ time: student.transactions[student.transactions.length - 1].payment_date }) : 'Sin pagos'}</p>
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <h3 className="font-semibold">Estado Académico</h3>
-                            <p><span className="text-muted-foreground">Estatus:</span> {student.status || 'Activo'}</p>
-                            <p><span className="text-muted-foreground">Grupo:</span> {student.grupo_id || 'No asignado'}</p>
-                            <p><span className="text-muted-foreground">Semana Intensiva:</span> {student.semana_intensiva_id || 'No asignado'}</p>
-                            <p><span className="text-muted-foreground">Fecha de registro:</span> {formatTime({ time: student.created_at })}</p>
-                        </div>
-                        <div className="space-y-2">
-                            <h3 className="font-semibold">Resumen de Pagos</h3>
-                            <p><span className="text-muted-foreground">Total de transacciones:</span> {student.transactions?.length || 0}</p>
-                            <p><span className="text-muted-foreground">Pagos pendientes:</span> {student.transactions?.filter(t => t.paid === 0).length || 0}</p>
-                            <p><span className="text-muted-foreground">Último pago:</span> {student.transactions?.length ? formatTime({ time: student.transactions[student.transactions.length - 1].payment_date }) : 'Sin pagos'}</p>
-                        </div>
-                    </div>
+                    </SectionContainer>
+
                 </CardContent>
             </Card>
 
@@ -255,12 +259,14 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                     <h2 className="text-xl font-semibold">Historial de Transacciones</h2>
                 </CardHeader>
                 <CardContent>
-                    {student.transactions && (
-                        <TransactionsTable
-                            transactions={student.transactions}
-                            onUpdateTransaction={updateTransaction}
-                        />
-                    )}
+                    <SectionContainer>
+                        {student.transactions && (
+                            <TransactionsTable
+                                transactions={student.transactions}
+                                onUpdateTransaction={updateTransaction}
+                            />
+                        )}
+                    </SectionContainer>
                 </CardContent>
             </Card>
         </div>

@@ -27,6 +27,7 @@ import Filters from './Filters';
 import { usePagination } from '@/hooks/usePagination';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import SectionContainer from '@/components/SectionContainer';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -50,7 +51,7 @@ export default function Page() {
   const { activeCampus } = useActiveCampusStore();
   const { user, periods, grupos } = useAuthStore();
   const { pagination, setPagination } = usePagination();
-  
+
 
   const handleOpenEditModal = (student: Student) => {
     setSelectedStudent(student);
@@ -235,7 +236,7 @@ export default function Page() {
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
         <CardHeader className='sticky top-0 z-20 bg-card'>
-          <div className="flex flex-col lg:flex-row justify-between mb-4 max-w-[80vw] overflow-x-auto">
+          <SectionContainer>
             <div>
               <div className='flex items-center justify-between gap-2 mb-4 lg:mb-0'>
                 <h1 className="text-2xl font-bold">Estudiantes</h1>
@@ -255,7 +256,7 @@ export default function Page() {
                 setSearchMatricula={setSearchMatricula}
               >
                 <MultiSelect
-                  className="w-full lg:w-[200px]"
+                  className="w-full"
                   options={columnOptions}
                   hiddeBadages={true}
                   selectedValues={visibleColumns}
@@ -267,7 +268,7 @@ export default function Page() {
                 />
               </Filters>
             </div>
-          </div>
+          </SectionContainer>
 
           {/* Menú de acciones en masa */}
           {selectedStudents.length > 0 && (
@@ -280,16 +281,18 @@ export default function Page() {
           )}
         </CardHeader>
         <CardContent>
-          {isLoading || isBulkActionLoading ? (
-            <div className="text-center py-4">Cargando...</div>
-          ) : (
-            <div className="h-full overflow-x-auto max-w-[80vw]">
+          <SectionContainer>
+            {isLoading || isBulkActionLoading ? (
+              <div className="text-center py-4">Cargando...</div>
+            ) : (
               <StudentsTable students={students} visibleColumnDefs={visibleColumnDefs} selectedStudents={selectedStudents} selectAll={selectAll} handleSelectAll={handleSelectAll} handleSelectStudent={handleSelectStudent} user={user} handleOpenEditModal={handleOpenEditModal} handleDeleteForever={handleDeleteForever} />
-            </div>
-          )}
+            )}
+          </SectionContainer>
         </CardContent>
         <CardFooter>
-          <PaginationComponent pagination={pagination} setPagination={setPagination} />
+          <SectionContainer>
+            <PaginationComponent pagination={pagination} setPagination={setPagination} />
+          </SectionContainer>
         </CardFooter>
       </Card>
       <StudentDialog isOpen={isModalOpen} setIsOpen={setIsModalOpen} selectedStudent={selectedStudent} onSubmit={handleSubmit} municipios={municipios} prepas={prepas} promos={promos} />

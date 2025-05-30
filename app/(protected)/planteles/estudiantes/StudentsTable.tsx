@@ -13,51 +13,49 @@ export const StudentsTable = ({
   handleDeleteForever
 }) => {
   return (
-    <div className="h-full overflow-x-auto max-w-[80vw]">
-      <Table>
-        <TableHeader className="sticky top-0 z-10 bg-card">
-          <TableRow>
-            <TableHead className="w-12">
-              <Checkbox
-                checked={selectAll && students.length > 0}
-                onCheckedChange={handleSelectAll}
-                aria-label="Seleccionar todos"
-              />
+    <Table>
+      <TableHeader className="sticky top-0 z-10 bg-card">
+        <TableRow>
+          <TableHead className="w-12">
+            <Checkbox
+              checked={selectAll && students.length > 0}
+              onCheckedChange={handleSelectAll}
+              aria-label="Seleccionar todos"
+            />
+          </TableHead>
+          {visibleColumnDefs.map((column) => (
+            <TableHead key={column.id} className="bg-card whitespace-nowrap">
+              {column.label}
             </TableHead>
-            {visibleColumnDefs.map((column) => (
-              <TableHead key={column.id} className="bg-card whitespace-nowrap">
-                {column.label}
-              </TableHead>
-            ))}
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {students.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={visibleColumnDefs.length + 1} className="text-center h-32">
+              No se encontraron estudiantes
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {students.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={visibleColumnDefs.length + 1} className="text-center h-32">
-                No se encontraron estudiantes
+        ) : (
+          students.map((student) => (
+            <TableRow key={student.id}>
+              <TableCell className="w-12">
+                <Checkbox
+                  checked={selectedStudents.includes(student.id)}
+                  onCheckedChange={() => handleSelectStudent(student.id)}
+                  aria-label={`Seleccionar ${student.firstname} ${student.lastname}`}
+                />
               </TableCell>
-            </TableRow>
-          ) : (
-            students.map((student) => (
-              <TableRow key={student.id}>
-                <TableCell className="w-12">
-                  <Checkbox
-                    checked={selectedStudents.includes(student.id)}
-                    onCheckedChange={() => handleSelectStudent(student.id)}
-                    aria-label={`Seleccionar ${student.firstname} ${student.lastname}`}
-                  />
+              {visibleColumnDefs.map((column) => (
+                <TableCell key={`${student.id}-${column.id}`} className="whitespace-nowrap">
+                  {column.render(student, user, handleOpenEditModal, handleDeleteForever)}
                 </TableCell>
-                {visibleColumnDefs.map((column) => (
-                  <TableCell key={`${student.id}-${column.id}`} className="whitespace-nowrap">
-                    {column.render(student, user, handleOpenEditModal, handleDeleteForever)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+              ))}
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
   );
 };

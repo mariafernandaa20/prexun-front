@@ -66,7 +66,7 @@ const Filters: React.FC<FiltersProps> = ({
   return (
     <div className="flex flex-col gap-2 w-full max-w-[1/2]">
       <div className="space-y-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
           <Input
             placeholder="Buscar por nombre..."
             value={nameInput}
@@ -95,6 +95,7 @@ const Filters: React.FC<FiltersProps> = ({
             showAllOption={true}
             allOptionLabel="Todos"
           />
+          <>{children && children}</>
         </div>
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 transform transition-transform duration-300 ease-in-out">
@@ -141,13 +142,7 @@ const Filters: React.FC<FiltersProps> = ({
             </Button>
           </div>
         </div>
-        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters && children ? 'max-h-[100px] opacity-100' : 'max-h-0 opacity-0'}`}>
-          {children && (
-            <div className="flex justify-end mt-2">
-              {children}
-            </div>
-          )}
-        </div>
+
       </div>
       <div className="flex justify-start">
         <button
