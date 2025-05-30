@@ -99,7 +99,6 @@ const TransactionsTable: React.FC<{
                     <TableHead>ID</TableHead>
                     <TableHead>Método</TableHead>
                     <TableHead>Monto</TableHead>
-                    <TableHead>Denominaciones</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Fecha de pago</TableHead>
                     <TableHead>Fecha Limite de Pago</TableHead>
@@ -117,13 +116,6 @@ const TransactionsTable: React.FC<{
                         </TableCell>
                         <TableCell>${transaction.amount}</TableCell>
                         <TableCell>
-                            {transaction?.denominations && Object.entries(
-                                parseDenominations(transaction.denominations)
-                            ).map(([denomination, count]) => (
-                                `$${denomination} x ${count} `
-                            ))}
-                        </TableCell>
-                        <TableCell>
                             {formatTime({ time: transaction.created_at })}
                         </TableCell>
                         <TableCell>
@@ -134,7 +126,9 @@ const TransactionsTable: React.FC<{
                                 time: transaction.expiration_date
                             }) : 'Sin vencimiento'}
                         </TableCell>
-                        <TableCell>{transaction.notes}</TableCell>
+                        <TableCell>
+                            {transaction.notes}
+                        </TableCell>
                         <TableCell>{transaction.paid !== 0 ? 'Sí' : 'No'}</TableCell>
                         <TableCell>
                             <div className='flex justify-left items-center gap-2'>
