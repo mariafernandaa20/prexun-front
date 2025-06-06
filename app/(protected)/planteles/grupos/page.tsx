@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { teacherService } from '@/app/services/teacher';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/lib/store/auth-store";
+import axiosClient from "@/lib/axiosClient";
 
 interface Group {
   id: number;
@@ -27,10 +27,43 @@ interface Student {
   matricula: string | null;
 }
 
+interface AsistenciaItem {
+  student_id: number | string;
+  status: string;
+}
+
 export default function TeachergruposPage() {
   const user = useAuthStore((state) => state.user);
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
   const { grupos } = useAuthStore();
+
+  const [alumnos, setAlumnos] = useState<Student[]>([]);
+  const [asistencia, setAsistencia] = useState<AsistenciaItem[]>([]);
+  const [mostrarTabla, setMostrarTabla] = useState(true);
+
+  useEffect(() => {
+    if (!selectedGroup) return;
+    console.log("Payload que se enviará:", {
+      grupo_id: selectedGroup,
+      fecha: new Date().toISOString().split("T")[0],
+      asistencias: asistencia
+    });
+    
+    axiosClient.get(`/grupos/${selectedGroup}/students`)
+      .then((response) => {
+        setAlumnos(response.data);
+        const lista = response.data.map((alumno: Student) => ({
+          student_id: alumno.id,
+          status: "presente"
+        }));
+        setAsistencia(lista);
+        setMostrarTabla(true); // mostrar tabla al seleccionar grupo
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Error al cargar los alumnos del grupo");
+      });
+  }, [selectedGroup]);
 
   const selectedGroupData = grupos.find(g => g.id === selectedGroup);
 
@@ -66,41 +99,81 @@ export default function TeachergruposPage() {
         </div>
       )}
 
-      {/* {selectedGroupData && selectedGroupData.students && (
+      {selectedGroup && alumnos.length > 0 && mostrarTabla && (
         <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Lista de Alumnos - {selectedGroupData.name}</CardTitle>
+          <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <CardTitle>Tomar asistencia - {selectedGroupData?.name}</CardTitle>
+            <button
+              onClick={() => setMostrarTabla(false)}
+              className="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded"
+            >
+              Ocultar tabla
+            </button>
           </CardHeader>
           <CardContent>
-            {selectedGroupData.students.length === 0 ? (
-              <p className="text-center py-4 text-gray-500">No hay alumnos registrados en este grupo.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Matrícula</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Apellido</TableHead>
-                    <TableHead>Email</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {alumnos.map((alumno) => (
+                  <TableRow key={alumno.id}>
+                    <TableCell>{alumno.firstname} {alumno.lastname}</TableCell>
+                    <TableCell>{alumno.email}</TableCell>
+                    <TableCell>
+                      <select
+                        className="border rounded px-2 py-1"
+                        value={asistencia.find(a => a.student_id === alumno.id)?.status || "presente"}
+                        onChange={(e) => {
+                          const nuevaLista = asistencia.map((a) =>
+                            a.student_id === alumno.id
+                              ? { ...a, status: e.target.value }
+                              : a
+                          );
+                          setAsistencia(nuevaLista);
+                        }}
+                      >
+                        <option value="presente">Presente</option>
+                        <option value="ausente">Ausente</option>
+                        <option value="justificado">Justificado</option>
+                      </select>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedGroupData.students
-                    .filter(student => student !== null)
-                    .map((student, index) => (
-                      <TableRow key={`${selectedGroupData.id}-${student.matricula || `index-${index}`}`}>
-                        <TableCell>{student.id || 'No asignada'}</TableCell>
-                        <TableCell>{student.firstname}</TableCell>
-                        <TableCell>{student.lastname}</TableCell>
-                        <TableCell>{student.email}</TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            )}
+                ))}
+              </TableBody>
+            </Table>
+
+            <button
+              className="mt-4 bg-primary text-white px-4 py-2 rounded"
+              onClick={async () => {
+                const fecha = new Date().toISOString().split("T")[0];
+                const payload = {
+                  grupo_id: selectedGroup,
+                  fecha,
+                  asistencias: asistencia,
+                };
+
+                console.log("ENVIANDO:", payload); // 👀 Debug
+
+                try {
+                  await axiosClient.post('/asistencias', payload);
+                  alert("Asistencia guardada correctamente");
+                } catch (err: any) {
+                  console.error(err);
+                  const message = err.response?.data?.message || "Error al guardar asistencia";
+                  alert(message);
+                }
+              }}
+            >
+              Guardar asistencia
+            </button>
           </CardContent>
         </Card>
-      )} */}
+      )}
     </div>
   );
 }
