@@ -453,10 +453,10 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
             <p className="text-sm text-muted-foreground mb-4">
               Este estudiante no tiene asignaciones a grupos o semanas intensivas
             </p>
-            <Button onClick={handleOpenAddDialog} variant="outline">
+            {/* <Button onClick={handleOpenAddDialog} variant="outline">
               <Plus className="h-4 w-4 mr-2" />
               Crear primera asignación
-            </Button>
+            </Button> */}
           </div>
         ) : (
           <div className="space-y-4">
