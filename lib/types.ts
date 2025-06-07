@@ -233,6 +233,48 @@ export interface Producto {
   updated_at?: string;
 }
 
+export interface StudentAssignment {
+  id?: number;
+  student_id: string;
+  grupo_id?: number | null;
+  semana_intensiva_id?: number | null;
+  period_id: string;
+  assigned_at: string;
+  valid_from?: string | null;
+  valid_until?: string | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  
+  // Relations
+  student?: Student;
+  grupo?: Grupo;
+  semanaIntensiva?: SemanaIntensiva;
+  period?: Period;
+}
+
+export interface SemanaIntensiva {
+  id?: number;
+  name: string;
+  type: string;
+  plantel_id?: number | null;
+  period_id: number;
+  capacity: number;
+  frequency?: string[] | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  moodle_id?: number | null;
+  students_count?: number;
+  available_slots?: number;
+  is_almost_full?: boolean;
+  is_full?: boolean;
+  
+  // Relations
+  period?: Period;
+  students?: Student[];
+}
 
 export interface Caja { 
   id?: number;

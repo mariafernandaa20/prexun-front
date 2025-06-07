@@ -130,25 +130,22 @@ const BulkActions: React.FC<BulkActionsProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2">
-        <Button
-          variant="destructive"
-          onClick={handleBulkDelete}
-          disabled={selectedStudents.length === 0}
-        >
-          Eliminar seleccionados
-        </Button>
-        <Button
-          variant="destructive"
-          onClick={handleBulkDeleteForever}
-          disabled={selectedStudents.length === 0}
-        >
-          Eliminar permanentemente
-        </Button>
-      </div>
-
-      <div className="flex gap-2 items-center">
+    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 w-full">
+      <Button
+        variant="destructive"
+        onClick={handleBulkDelete}
+        disabled={selectedStudents.length === 0}
+      >
+        Eliminar seleccionados
+      </Button>
+      <Button
+        variant="destructive"
+        onClick={handleBulkDeleteForever}
+        disabled={selectedStudents.length === 0}
+      >
+        Eliminar permanentemente
+      </Button>
+      <div className='col-span-2 gap-4 flex items-center'>
         <select
           className={buttonVariants({ variant: 'secondary' })}
           value={selectedSemanaIntensiva}
@@ -162,12 +159,23 @@ const BulkActions: React.FC<BulkActionsProps> = ({
           ))}
         </select>
         <Button
+          className='w-full'
           onClick={handleBulkAssignSemanaIntensiva}
           disabled={!selectedSemanaIntensiva || selectedStudents.length === 0}
         >
           Asignar a semana intensiva
         </Button>
       </div>
+      <Button
+        disabled={selectedStudents.length === 0}
+      >
+        Marcar como Activo
+      </Button>
+      <Button
+        disabled={selectedStudents.length === 0}
+      >
+        Marcar como Inactivo
+      </Button>
     </div>
   );
 };

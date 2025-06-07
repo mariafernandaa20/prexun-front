@@ -13,6 +13,7 @@ import { Eye } from 'lucide-react'
 import UpdatePersonalInfo from '@/components/dashboard/UpdatePersonalInfo'
 import axiosInstance from '@/lib/api/axiosConfig'
 import SectionContainer from '@/components/SectionContainer'
+import StudentPeriod from '../student-period'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -188,12 +189,12 @@ const useStudent = (studentId: number) => {
         fetchStudent()
     }, [fetchStudent])
 
-    return { student, loading, error, updateTransaction }
+    return { student, loading, error, updateTransaction, refetch: fetchStudent }
 }
 
 export function StudentComponent({ slug }: { slug: string[] }) {
     const studentId = Number(slug.join('/'))
-    const { student, loading, error, updateTransaction } = useStudent(studentId)
+    const { student, loading, error, updateTransaction, refetch } = useStudent(studentId)
     const campusId = useActiveCampusStore((state) => state.activeCampus?.id)
     if (loading) return <div>Cargando...</div>
     if (error) return <div>Error: {error.message}</div>
@@ -243,10 +244,10 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                                 <p><span className="text-muted-foreground">Último pago:</span> {student.transactions?.length ? formatTime({ time: student.transactions[student.transactions.length - 1].payment_date }) : 'Sin pagos'}</p>
                             </div>
                         </div>
-                    </SectionContainer>
-
-                </CardContent>
+                    </SectionContainer>                </CardContent>
             </Card>
+
+            <StudentPeriod student={student} onRefresh={refetch} />
 
             <Card>
                 <CardHeader>

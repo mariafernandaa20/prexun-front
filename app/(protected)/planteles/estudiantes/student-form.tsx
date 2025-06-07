@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 import SearchableSelect from '@/components/SearchableSelect';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import StudentPeriod from './student-period';
 
 interface StudentFormProps {
   student?: Student | null;
@@ -707,8 +708,9 @@ export function StudentForm({
               <SelectItem value="En línea y en fisico">En línea y en fisico</SelectItem>
             </SelectContent>
           </Select>
-        </div>}
-      </div>
+        </div>}      </div>
+
+      {student?.id && <StudentPeriod student={student} />}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar

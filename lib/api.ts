@@ -586,3 +586,73 @@ export const closeCaja = async (
 
   return response.data;
 };
+
+// Student Assignments
+export const getStudentAssignments = async (params?: any) => {
+  const response = await axiosInstance.get(API_ENDPOINTS.STUDENT_ASSIGNMENTS, { params });
+  return response.data;
+};
+
+export const getStudentAssignment = async (id: number) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT_ASSIGNMENTS}/${id}`);
+  return response.data;
+};
+
+export const createStudentAssignment = async (assignment: any) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_STUDENT_ASSIGNMENT, assignment);
+  return response.data;
+};
+
+export const updateStudentAssignment = async (assignment: any) => {
+  const response = await axiosInstance.put(
+    `${API_ENDPOINTS.UPDATE_STUDENT_ASSIGNMENT}/${assignment.id}`,
+    assignment
+  );
+  return response.data;
+};
+
+export const deleteStudentAssignment = async (id: number) => {
+  const response = await axiosInstance.delete(
+    `${API_ENDPOINTS.DELETE_STUDENT_ASSIGNMENT}/${id}`
+  );
+  return response.data;
+};
+
+export const getStudentAssignmentsByStudent = async (studentId: number) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT_ASSIGNMENTS_BY_STUDENT}/${studentId}`);
+  return response.data;
+};
+
+export const getStudentAssignmentsByPeriod = async (periodId: number) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT_ASSIGNMENTS_BY_PERIOD}/${periodId}`);
+  return response.data;
+};
+
+export const getStudentAssignmentsByGrupo = async (grupoId: number) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT_ASSIGNMENTS_BY_GRUPO}/${grupoId}`);
+  return response.data;
+};
+
+export const getStudentAssignmentsBySemana = async (semanaId: number) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT_ASSIGNMENTS_BY_SEMANA}/${semanaId}`);
+  return response.data;
+};
+
+export const bulkCreateStudentAssignments = async (assignments: any[]) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.BULK_CREATE_STUDENT_ASSIGNMENTS, {
+    assignments
+  });
+  return response.data;
+};
+
+export const bulkUpdateStudentAssignments = async (assignments: any[]) => {
+  const response = await axiosInstance.put(API_ENDPOINTS.BULK_UPDATE_STUDENT_ASSIGNMENTS, {
+    assignments
+  });
+  return response.data;
+};
+
+export const toggleStudentAssignmentActive = async (id: number) => {
+  const response = await axiosInstance.patch(`${API_ENDPOINTS.TOGGLE_STUDENT_ASSIGNMENT_ACTIVE}/${id}/toggle-active`);
+  return response.data;
+};

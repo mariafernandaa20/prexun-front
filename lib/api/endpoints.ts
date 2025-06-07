@@ -77,4 +77,16 @@ export const API_ENDPOINTS = {
   DELETE_CAJA: '/caja',
   CURRENT_CAJA: '/caja/current',
   SYNC_STUDENT_MODULES: '/students/sync-modules',
+  // Student Assignments
+  STUDENT_ASSIGNMENTS: '/student-assignments',
+  CREATE_STUDENT_ASSIGNMENT: '/student-assignments',
+  UPDATE_STUDENT_ASSIGNMENT: '/student-assignments',
+  DELETE_STUDENT_ASSIGNMENT: '/student-assignments',
+  STUDENT_ASSIGNMENTS_BY_STUDENT: '/student-assignments/student',
+  STUDENT_ASSIGNMENTS_BY_PERIOD: '/student-assignments/period',
+  STUDENT_ASSIGNMENTS_BY_GRUPO: '/student-assignments/grupo',
+  STUDENT_ASSIGNMENTS_BY_SEMANA: '/student-assignments/semana',
+  BULK_CREATE_STUDENT_ASSIGNMENTS: '/student-assignments/bulk',
+  BULK_UPDATE_STUDENT_ASSIGNMENTS: '/student-assignments/bulk',
+  TOGGLE_STUDENT_ASSIGNMENT_ACTIVE: '/student-assignments',
 } as const;
