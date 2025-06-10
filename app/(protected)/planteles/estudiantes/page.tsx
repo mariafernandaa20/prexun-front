@@ -157,8 +157,6 @@ export default function Page() {
     if (!activeCampus) return;
 
     if (periods && periods.length > 0 && !periodFilter) {
-      console.log(periods)
-      console.log('Setting periodFilter to last period:', periods[periods.length - 1].id);
       setPeriodFilter(periods[periods.length - 1].id);
     }
 
@@ -242,7 +240,6 @@ export default function Page() {
   }, [selectedStudents, students]);
   useEffect(() => {
     if (periods && periods.length > 0 && !periodFilter) {
-      console.log('Setting periodFilter to last period:', periods[periods.length - 1].id);
       setPeriodFilter(periods[periods.length - 1].id);
     }
   }, [periods, periodFilter]);
