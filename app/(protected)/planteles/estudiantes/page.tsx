@@ -26,7 +26,7 @@ import BulkActions from './BulkActions';
 import Filters from './Filters';
 import { usePagination } from '@/hooks/usePagination';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCwIcon } from 'lucide-react';
 import SectionContainer from '@/components/SectionContainer';
 
 export default function Page() {
@@ -238,7 +238,7 @@ export default function Page() {
       setSelectAll(false);
     }
   }, [selectedStudents, students]);
-  
+
   useEffect(() => {
     if (periods && periods.length > 0 && !periodFilter) {
       setPeriodFilter(periods[periods.length - 1].id);
@@ -254,9 +254,14 @@ export default function Page() {
             <div>
               <div className='flex items-center justify-between gap-2 mb-4 lg:mb-0'>
                 <h1 className="text-2xl font-bold">Estudiantes</h1>
-                <Button size='icon' onClick={() => setIsModalOpen(true)} title='Nuevo Estudiante'>
-                  <Plus />
-                </Button>
+                <div className='flex items-center gap-2'>
+                  <Button size='icon' onClick={() => setIsModalOpen(true)} title='Nuevo Estudiante'>
+                    <Plus />
+                  </Button>
+                  <Button size='icon' variant='secondary' onClick={() => fetchStudents()} title='Refrescar Estudiantes'>
+                    <RefreshCwIcon />
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="flex flex-col lg:flex-row gap-2">
