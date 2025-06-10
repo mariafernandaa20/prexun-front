@@ -13,6 +13,7 @@ import { useAuthStore } from '@/lib/store/auth-store';
 
 interface FiltersProps {
   setPeriodFilter: (value: string) => void;
+  periodFilter: any;
   setGrupoFilter: (value: string | null) => void;
   setSemanaIntensivaFilter: (value: string | null) => void;
   setSearchName: (value: string) => void;
@@ -24,6 +25,7 @@ interface FiltersProps {
 
 const Filters: React.FC<FiltersProps> = ({
   setPeriodFilter,
+  periodFilter,
   setGrupoFilter,
   setSemanaIntensivaFilter,
   setSearchName,
@@ -75,7 +77,7 @@ const Filters: React.FC<FiltersProps> = ({
           />
           <SearchableSelect
             options={periods.map(period => ({ value: period.id, label: period.name }))}
-            value={undefined}
+            value={periodFilter}
             placeholder="Filtrar por periodo"
             onChange={setPeriodFilter}
           />

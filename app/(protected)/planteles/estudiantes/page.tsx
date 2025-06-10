@@ -153,9 +153,14 @@ export default function Page() {
     const response = await getPromos();
     setPromos(response.active);
   };
-
   useEffect(() => {
     if (!activeCampus) return;
+
+    if (periods && periods.length > 0 && !periodFilter) {
+      console.log(periods)
+      console.log('Setting periodFilter to last period:', periods[periods.length - 1].id);
+      setPeriodFilter(periods[periods.length - 1].id);
+    }
 
     fetchStudents();
     fetchPromos();
@@ -168,11 +173,21 @@ export default function Page() {
         variant: 'destructive',
       });
     }
-  }, [activeCampus,]);
+  }, [activeCampus, periods]);
+
+  useEffect(() => {
+
+    if (pagination.currentPage !== 1) {
+      setPagination(prev => ({ ...prev, currentPage: 1 }));
+    } else {
+      fetchStudents();
+    }
+  }, [searchName, searchDate, searchPhone, searchMatricula, periodFilter, grupoFilter, semanaIntensivaFilter]);
+
 
   useEffect(() => {
     fetchStudents();
-  }, [pagination.currentPage, pagination.perPage, searchName, searchDate, searchPhone, searchMatricula, periodFilter, grupoFilter, semanaIntensivaFilter]);
+  }, [pagination.currentPage, pagination.perPage]);
 
   const handleSubmit = async (formData: Student) => {
     try {
@@ -225,12 +240,13 @@ export default function Page() {
       setSelectAll(false);
     }
   }, [selectedStudents, students]);
-
   useEffect(() => {
-    if (periods && periods.length > 0) {
+    if (periods && periods.length > 0 && !periodFilter) {
+      console.log('Setting periodFilter to last period:', periods[periods.length - 1].id);
       setPeriodFilter(periods[periods.length - 1].id);
     }
-  }, [periods]);
+  }, [periods, periodFilter]);
+
 
   return (
     <div className="flex flex-col h-full">
@@ -248,6 +264,7 @@ export default function Page() {
             <div className="flex flex-col lg:flex-row gap-2">
               <Filters
                 setPeriodFilter={setPeriodFilter}
+                periodFilter={periodFilter}
                 setGrupoFilter={setGrupoFilter}
                 setSemanaIntensivaFilter={setSemanaIntensivaFilter}
                 setSearchName={setSearchName}
