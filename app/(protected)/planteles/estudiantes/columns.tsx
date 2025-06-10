@@ -27,6 +27,26 @@ export const getColumnDefinitions = (
     render: (student: Student) => student.id
   },
   {
+    id: 'status', 
+    label: 'Estatus',
+    defaultVisible: true,
+    render: (student: Student) => (
+      <div className="flex items-center gap-2">
+        <div 
+          className={`w-2 h-2 rounded-full ${
+            student.status === 'Activo' ? 'bg-green-500' :
+            student.status === 'Inactivo' ? 'bg-gray-500' :
+            student.status === 'Baja' ? 'bg-red-500' :
+            student.status === 'Suspendido' ? 'bg-yellow-500' :
+            student.status === 'Transferido' ? 'bg-blue-500' :
+            'bg-gray-400'
+          }`}
+        />
+        <span>{student.status}</span>
+      </div>
+    )
+  },
+  {
     id: 'created_at',
     label: 'Fecha de Inscripción',
     defaultVisible: false,

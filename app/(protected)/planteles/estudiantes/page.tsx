@@ -238,6 +238,7 @@ export default function Page() {
       setSelectAll(false);
     }
   }, [selectedStudents, students]);
+  
   useEffect(() => {
     if (periods && periods.length > 0 && !periodFilter) {
       setPeriodFilter(periods[periods.length - 1].id);
@@ -284,7 +285,6 @@ export default function Page() {
             </div>
           </SectionContainer>
 
-          {/* Menú de acciones en masa */}
           {selectedStudents.length > 0 && (
             <BulkActions
               selectedStudents={selectedStudents}
