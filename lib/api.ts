@@ -159,6 +159,26 @@ export const bulkUpdateSemanaIntensiva = async (studentIds: string[], semanaInte
   return response.data;
 };
 
+export const bulkMarkAsActive = async (studentIds: string[]) => {
+  const response = await axiosInstance.post(
+    '/students/bulk-mark-as-active',
+    {
+      student_ids: studentIds
+    }
+  );
+  return response.data;
+};
+
+export const bulkMarkAsInactive = async (studentIds: string[]) => {
+  const response = await axiosInstance.post(
+    '/students/bulk-mark-as-inactive',
+    {
+      student_ids: studentIds
+    }
+  );
+  return response.data;
+};
+
 export const getStudentsByCohort = async (cohortId: string) => {
   const endpoint = API_ENDPOINTS.STUDENTS_BY_COHORT.replace(
     ":cohortId",

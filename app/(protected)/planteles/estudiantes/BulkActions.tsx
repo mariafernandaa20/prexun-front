@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { bulkDeleteStudents, deleteStudent, bulkUpdateSemanaIntensiva } from '@/lib/api';
+import { bulkDeleteStudents, deleteStudent, bulkUpdateSemanaIntensiva, bulkMarkAsActive, bulkMarkAsInactive } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -87,7 +87,6 @@ const BulkActions: React.FC<BulkActionsProps> = ({
       setIsBulkActionLoading(false);
     }
   };
-
   const handleBulkAssignSemanaIntensiva = async () => {
     if (selectedStudents.length === 0) {
       toast({
@@ -121,6 +120,70 @@ const BulkActions: React.FC<BulkActionsProps> = ({
     } catch (error: any) {
       toast({
         title: 'Error al asignar estudiantes a semana intensiva',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkMarkAsActive = async () => {
+    if (selectedStudents.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Seleccione al menos un estudiante',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`¿Está seguro de marcar como activos ${selectedStudents.length} estudiante(s)?`)) return;
+
+    try {
+      setIsBulkActionLoading(true);
+      await bulkMarkAsActive(selectedStudents);
+      await fetchStudents();
+      setSelectedStudents([]);
+      toast({
+        title: 'Acción completada',
+        description: `${selectedStudents.length} estudiante(s) marcados como activos correctamente`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al marcar estudiantes como activos',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkMarkAsInactive = async () => {
+    if (selectedStudents.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Seleccione al menos un estudiante',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`¿Está seguro de marcar como inactivos ${selectedStudents.length} estudiante(s)?`)) return;
+
+    try {
+      setIsBulkActionLoading(true);
+      await bulkMarkAsInactive(selectedStudents);
+      await fetchStudents();
+      setSelectedStudents([]);
+      toast({
+        title: 'Acción completada',
+        description: `${selectedStudents.length} estudiante(s) marcados como inactivos correctamente`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al marcar estudiantes como inactivos',
         description: error.response?.data?.message || 'Intente nuevamente',
         variant: 'destructive',
       });
@@ -165,14 +228,15 @@ const BulkActions: React.FC<BulkActionsProps> = ({
         >
           Asignar a semana intensiva
         </Button>
-      </div>
-      <Button
+      </div>      <Button
         disabled={selectedStudents.length === 0}
+        onClick={handleBulkMarkAsActive}
       >
         Marcar como Activo
       </Button>
       <Button
         disabled={selectedStudents.length === 0}
+        onClick={handleBulkMarkAsInactive}
       >
         Marcar como Inactivo
       </Button>
