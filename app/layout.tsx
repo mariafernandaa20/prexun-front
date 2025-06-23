@@ -25,7 +25,7 @@ export default function RootLayout({
   console.log(process.env.NEXT_PUBLIC_DEVELOPMENT)
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <head>
         <script
           src="https://analytics.ahrefs.com/analytics.js"
