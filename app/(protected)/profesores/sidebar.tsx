@@ -1,7 +1,7 @@
 "use client";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
-import { NavProjects } from "@/components/nav-items";
+import { NavItems } from "@/components/nav-items";
 import { NavUser } from "@/components/nav-user";
 import Image from "next/image";
 import {
@@ -57,7 +57,7 @@ export function TeacherSidebar({
         />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={teacher_navigation} />
+        <NavItems projects={teacher_navigation} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
