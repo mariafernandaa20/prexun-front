@@ -6,18 +6,11 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { data as sidebarData } from "@/components/sidebar";
-import { usePathname } from 'next/navigation';
-import { useEffect } from "react";
-import { useAuthStore } from "@/lib/store/auth-store";
-import { useAppStore } from "@/lib/store/app-store";
+import { useAppInit } from "@/hooks/use-app-init";
 
 export default function Page({ children }: { children: React.ReactNode }) {
-  const { initializeApp, user } = useAuthStore();
-
-  useEffect(() => {
-    initializeApp();
-  }, []);
+  // Usar el hook personalizado para inicialización
+  useAppInit();
 
   return (
     <SidebarProvider>

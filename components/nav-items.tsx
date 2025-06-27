@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import {
+  Building,
   Folder,
   Forward,
   MoreHorizontal,
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 
-export function NavProjects({
+export function NavItems({
   projects,
 }: {
   projects: {
@@ -34,7 +35,7 @@ export function NavProjects({
       <SidebarMenu>
         {projects.map((item) => (
           <SidebarMenuItem key={item.url}>
-            <SidebarMenuButton 
+            <SidebarMenuButton
               asChild
               className={`${pathname === item.url ? "bg-white text-black" : "text-white"} hover:bg-white hover:text-black`}
             >
@@ -42,9 +43,21 @@ export function NavProjects({
                 <item.icon />
                 <span>{item.name}</span>
               </Link>
+
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            asChild
+            className="text-white"
+          >
+            <a href="/planteles">
+              <Building />
+              <span>Planteles</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
   );

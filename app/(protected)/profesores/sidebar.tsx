@@ -1,7 +1,7 @@
 "use client";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
-import { NavProjects } from "@/components/nav-projects";
+import { NavProjects } from "@/components/nav-items";
 import { NavUser } from "@/components/nav-user";
 import Image from "next/image";
 import {

@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
+import { NavItems } from "@/components/nav-items";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
@@ -171,11 +171,6 @@ export const data = {
       url: "/dashboard/productos",
       icon: ShoppingBag,
     },
-    {
-      name: "Planteles",
-      url: "/planteles",
-      icon: Building,
-    }
   ],
   plantel_navigation: [
     {
@@ -236,7 +231,7 @@ export function TemplateSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain title="Configuración" items={data.navMain}/>
-        <NavProjects projects={data.projects} />
+        <NavItems projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
@@ -256,7 +251,7 @@ export function AdminSidebar({
         <Image className="group-data-[collapsible=icon]:block hidden py-4 " src="/prexun.png" alt="Prexun Logo" width={50} height={50} />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.admin_navigation} />
+        <NavItems projects={data.admin_navigation} />
         <NavMain title="Configuración" items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
@@ -277,7 +272,7 @@ export function PlantelSidebar({
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.plantel_navigation} />
+        <NavItems projects={data.plantel_navigation} />
       </SidebarContent>
       <SidebarFooter>
         <ThemeToggleSidebar />

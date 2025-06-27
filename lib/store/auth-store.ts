@@ -34,6 +34,9 @@ interface AppState {
   carreras: Carrera[],
   promos: Promocion[],
   grupos: Grupo[],
+  // Flags para evitar múltiples cargas
+  isDataLoaded: boolean,
+  isInitialized: boolean,
 }
 
 interface AuthActions {
@@ -71,6 +74,7 @@ interface DataActions {
   fetchGrupos: () => Promise<void>;
   fetchFacultades: () => Promise<void>;
   initializeApp: () => Promise<void>;
+  clearData: () => void;
 }
 
 // Combinamos todas las interfaces
@@ -108,6 +112,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   carreras: [],
   promos: [],
   grupos: [],
+  // Flags para control de carga
+  isDataLoaded: false,
+  isInitialized: false,
 
   // Setters simples
   setUser: (user) => set({ user }),
@@ -159,8 +166,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     removeCookie("user-role");
     set({
       user: null,
-      accessToken: null
+      accessToken: null,
+      isInitialized: false,
+      isDataLoaded: false
     });
+    // Limpiar datos sensibles al hacer logout
+    get().clearData();
   },
 
   register: async (
@@ -253,7 +264,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const grupos = await getGrupos();
       set({ grupos });
     } catch (error) {
-      console.error('Error fetching periods:', error);
+      console.error('Error fetching grupos:', error);
       set({ grupos: [] });
     }
   },
@@ -263,24 +274,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const carreras = await getCarreras();
       set({ carreras });
     } catch (error) {
-      console.error('Error fetching periods:', error);
+      console.error('Error fetching carreras:', error);
       set({ carreras: [] });
     }
   },
+  
   fetchFacultades: async () => {
     try {
       const facultades = await getFacultades();
       set({ facultades });
     } catch (error) {
-      console.error('Error fetching periods:', error);
+      console.error('Error fetching facultades:', error);
       set({ facultades: [] });
     }
   },
 
   // Inicialización de la aplicación
   initializeApp: async () => {
+    // Evitar múltiples inicializaciones simultáneas
+    if (get().isInitialized || get().loading) {
+      return;
+    }
+
     try {
-      set({ loading: true });
+      set({ loading: true, isInitialized: true });
 
       // Intenta recuperar el token si existe en cookies
       const storedToken = Cookies.get("auth-token");
@@ -288,20 +305,47 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ accessToken: storedToken });
       }
 
-      await Promise.all([
-        get().fetchUsers(),
-        get().fetchCampuses(),
-        get().fetchSemanas(),
-        get().fetchPeriods(),
-        get().fetchGrupos(),
-        get().fetchCarreras(),
-        get().fetchFacultades(),
-      ]);
+      // Solo cargar datos si no están ya cargados
+      if (!get().isDataLoaded) {
+        await Promise.all([
+          get().fetchUsers(),
+          get().fetchCampuses(),
+          get().fetchSemanas(),
+          get().fetchPeriods(),
+          get().fetchGrupos(),
+          get().fetchCarreras(),
+          get().fetchFacultades(),
+        ]);
+        set({ isDataLoaded: true });
+      }
 
-      await get().checkAuth();
+      // Solo verificar auth si no hay usuario
+      if (!get().user && storedToken) {
+        await get().checkAuth();
+      }
+
+      set({ loading: false });
     } catch (error) {
       console.error('Error initializing app:', error);
-      set({ loading: false });
+      set({ loading: false, isInitialized: false });
     }
+  },
+
+  // Limpiar datos cuando sea necesario
+  clearData: () => {
+    set({ 
+      isDataLoaded: false,
+      isInitialized: false,
+      users: [],
+      campuses: [],
+      semanasIntensivas: [],
+      periods: [],
+      municipios: [],
+      prepas: [],
+      facultades: [],
+      carreras: [],
+      promos: [],
+      grupos: [],
+    });
   }
 }));

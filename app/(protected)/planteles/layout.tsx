@@ -7,15 +7,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useAuthStore } from "@/lib/store/auth-store";
-import { useEffect } from "react";
+import { useAppInit } from "@/hooks/use-app-init";
 
 export default function Page({ children }: { children: React.ReactNode }) {
-  const { initializeApp } = useAuthStore();
-
-  useEffect(() => {
-    initializeApp();
-  }, []);
+  useAppInit();
 
   return (
     <SidebarProvider>

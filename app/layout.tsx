@@ -32,6 +32,22 @@ export default function RootLayout({
           data-key="tb4VnCQ9veS+etZWvizOmA"
           async
         ></script>
+        {develop && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.debugRequests = function() {
+                  if (window.__requestLogger) {
+                    return window.__requestLogger.getStats();
+                  }
+                  console.log('Request logger not available. Make sure you are in development mode.');
+                  return [];
+                };
+                console.log('🔧 Debug mode enabled. Use debugRequests() to check API calls.');
+              `
+            }}
+          />
+        )}
       </head>
       <body className={inter.className}>
         {develop && <div>
