@@ -212,7 +212,7 @@ export default function CobrosPage() {
   useEffect(() => {
     if (!activeCampus) return;
     fetchIngresos(pagination.currentPage);
-  }, [activeCampus, pagination.currentPage, pagination.perPage]);
+  }, [activeCampus, pagination.currentPage, pagination.perPage, searchStudent, selectedPaymentMethods]);
 
   useEffect(() => {
     if (transactions.length > 0) {
@@ -243,7 +243,13 @@ export default function CobrosPage() {
   const fetchIngresos = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await getCharges(Number(activeCampus.id), page, parseInt(pagination.perPage.toString()));
+      const response = await getCharges(
+        Number(activeCampus.id), 
+        page, 
+        parseInt(pagination.perPage.toString()),
+        searchStudent, // Pasar la búsqueda al backend
+        selectedPaymentMethods.includes('all') ? undefined : selectedPaymentMethods[0] // Pasar método de pago al backend
+      );
 
       setTransactions(response.data);
       setPagination({
@@ -288,25 +294,6 @@ export default function CobrosPage() {
     setSelectedImage(imageUrl);
     setImageModalOpen(true);
   };
-
-  const filteredTransactions = transactions.filter((transaction) => {
-    const studentFullName =
-      `${transaction.student?.username} ${transaction.student?.firstname} ${transaction.student?.lastname}`.toLowerCase();
-    const searchTerms = searchStudent.toLowerCase().split(' ');
-    const matchesSearch = searchTerms.every((term) =>
-      studentFullName.includes(term)
-    );
-
-    const matchesPaymentMethod =
-      selectedPaymentMethods.includes('all') ||
-      selectedPaymentMethods.includes(transaction.payment_method);
-
-    const matchesStudent =
-      selectedStudents.includes('all') ||
-      selectedStudents.includes(transaction.student?.id || '');
-
-    return matchesSearch && matchesPaymentMethod && matchesStudent;
-  });
 
   const columnOptions = columnDefinitions
     .filter(col => !col.alwaysVisible)
@@ -397,8 +384,8 @@ export default function CobrosPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTransactions.length > 0 ? (
-                    filteredTransactions.map((transaction) => (
+                  {transactions.length > 0 ? (
+                    transactions.map((transaction) => (
                       <TableRow key={transaction.id}>
                         {getVisibleColumns().map(column => (
                           <TableCell key={`${transaction.id}-${column.id}`} className="whitespace-nowrap">

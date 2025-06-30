@@ -14,6 +14,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Eye, Share } from 'lucide-react';
 import Link from 'next/link';
 
@@ -111,6 +118,7 @@ export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_VISIBLE_COLUMNS);
   const [expirationDate, setExpirationDate] = useState('');
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -128,6 +136,8 @@ export default function CobrosPage() {
         expiration_date: expirationDate || null,
         page: page,
         per_page: Number(pagination.perPage),
+        search: searchStudent || null,
+        payment_method: selectedPaymentMethods.includes('all') ? null : selectedPaymentMethods[0]
       };
 
       const response = await axiosInstance.get('/charges/not-paid', { params });
@@ -146,7 +156,7 @@ export default function CobrosPage() {
   useEffect(() => {
     if (!activeCampus) return;
     fetchTransactions(pagination.currentPage);
-  }, [activeCampus, pagination.currentPage, pagination.perPage]);
+  }, [activeCampus, pagination.currentPage, pagination.perPage, searchStudent, expirationDate, selectedPaymentMethods]);
 
   // Event handlers
   const handleStudentSelect = (values: string[]) => {
@@ -175,16 +185,11 @@ export default function CobrosPage() {
   const filteredTransactions = transactions?.filter((transaction) => {
     if (!transaction || !transaction.student) return false;
 
-    // Filter by search terms
-    const studentFullName = `${transaction.student.username || ''} ${transaction.student.firstname || ''} ${transaction.student.lastname || ''}`.toLowerCase();
-    const searchTerms = searchStudent.toLowerCase().split(' ');
-    const matchesSearch = searchTerms.every((term) => studentFullName.includes(term));
-
-    // Filter by selected students
+    // Filter by selected students (mantener solo este filtro local)
     const matchesStudent = selectedStudents.includes('all') ||
       selectedStudents.includes(transaction.student.id || '');
 
-    return matchesSearch && matchesStudent;
+    return matchesStudent;
   }) || [];
 
   const uniqueStudents = transactions?.length ? transactions
@@ -306,6 +311,26 @@ export default function CobrosPage() {
               onChange={(e) => setExpirationDate(e.target.value)}
               className="w-[200px]"
             />
+            <Select
+              value={selectedPaymentMethods.includes('all') ? 'all' : selectedPaymentMethods[0]}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setSelectedPaymentMethods(['all']);
+                } else {
+                  setSelectedPaymentMethods([value]);
+                }
+              }}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Método de pago" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="transfer">Transferencia</SelectItem>
+                <SelectItem value="card">Tarjeta</SelectItem>
+                <SelectItem value="cash">Efectivo</SelectItem>
+              </SelectContent>
+            </Select>
             <MultiSelect
               options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
               hiddeBadages={true}

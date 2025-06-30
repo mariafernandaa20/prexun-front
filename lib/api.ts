@@ -222,9 +222,22 @@ export const deletePeriod = async (id: string) => {
   return response.data;
 };
 
-export const getCharges = async (campusId, page, perPage) => {
+export const getCharges = async (campusId: number, page: number, perPage: number, search?: string, payment_method?: string) => {
   try {
-    const response = await axiosInstance.get(`/charges/${campusId}?page=${page}&per_page=${perPage}`);
+    const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: perPage.toString()
+    });
+
+    if (search) {
+      params.append('search', search);
+    }
+
+    if (payment_method && payment_method !== 'all') {
+      params.append('payment_method', payment_method);
+    }
+
+    const response = await axiosInstance.get(`/charges/${campusId}?${params.toString()}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching charges:', error);
