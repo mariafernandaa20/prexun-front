@@ -55,6 +55,8 @@ export default function ChargesForm({
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
+  const SAT = process.env.NEXT_PUBLIC_SAT || false;
+
   const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
     return Object.entries(denominations).reduce((total, [denomination, count]) => {
       return total + (Number(denomination) * (count || 0));
@@ -253,11 +255,21 @@ export default function ChargesForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {cards.map(card => (
-                        <SelectItem key={card.id} value={card.id.toString()}>
-                          {card.number}
-                        </SelectItem>
-                      ))}
+                        {cards
+                        .filter(card => !SAT || card.sat)
+                        .map(card => (
+                          <SelectItem key={card.id} value={card.id.toString()}>
+                          <span className='flex items-center gap-2'>
+                            {card.sat ? (
+                            <div className='text-green-500 bg-green-500 rounded-full size-2 pr-2' />
+                            ) : (
+                            <div className='text-red-500 bg-red-500 rounded-full size-2 pr-2' />
+                            )}
+                            {card.name}
+                          </span>
+                          {card.number} <br /> {card.clabe}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
