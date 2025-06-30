@@ -222,7 +222,7 @@ export const deletePeriod = async (id: string) => {
   return response.data;
 };
 
-export const getCharges = async (campusId: number, page: number, perPage: number, search?: string, payment_method?: string) => {
+export const getCharges = async (campusId: number, page: number, perPage: number, search?: string, payment_method?: string, card_id?: string) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -235,6 +235,10 @@ export const getCharges = async (campusId: number, page: number, perPage: number
 
     if (payment_method && payment_method !== 'all') {
       params.append('payment_method', payment_method);
+    }
+
+    if (card_id && card_id !== 'all') {
+      params.append('card_id', card_id);
     }
 
     const response = await axiosInstance.get(`/charges/${campusId}?${params.toString()}`);

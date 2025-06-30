@@ -114,7 +114,6 @@ const TransactionActions: React.FC<{
 };
 
 export default function CobrosPage() {
-  // State
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
@@ -158,7 +157,6 @@ export default function CobrosPage() {
     fetchTransactions(pagination.currentPage);
   }, [activeCampus, pagination.currentPage, pagination.perPage, searchStudent, expirationDate, selectedPaymentMethods]);
 
-  // Event handlers
   const handleStudentSelect = (values: string[]) => {
     setSelectedStudents(values);
   };
@@ -181,11 +179,9 @@ export default function CobrosPage() {
       variant: 'default'
     });
   };
-  // Derived data
   const filteredTransactions = transactions?.filter((transaction) => {
     if (!transaction || !transaction.student) return false;
 
-    // Filter by selected students (mantener solo este filtro local)
     const matchesStudent = selectedStudents.includes('all') ||
       selectedStudents.includes(transaction.student.id || '');
 
@@ -201,7 +197,6 @@ export default function CobrosPage() {
       index === self.findIndex(s => s.value === student.value)
     ) : [];
 
-  // Component rendering helpers
   const renderTableHeaders = () => (
     <TableHeader>
       <TableRow>

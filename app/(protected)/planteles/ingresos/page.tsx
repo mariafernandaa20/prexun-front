@@ -48,7 +48,8 @@ export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
-  const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
+  const [selectedCard, setSelectedCard] = useState<string>('all');
+  const [cards, setCards] = useState<any[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'payment_date', 'notes', 'paid', 'actions', 'folio']);
 
   const [availableColumnIds, setAvailableColumnIds] = useState<string[]>([]);
@@ -212,7 +213,22 @@ export default function CobrosPage() {
   useEffect(() => {
     if (!activeCampus) return;
     fetchIngresos(pagination.currentPage);
-  }, [activeCampus, pagination.currentPage, pagination.perPage, searchStudent, selectedPaymentMethods]);
+  }, [activeCampus, pagination.currentPage, pagination.perPage, searchStudent, selectedPaymentMethods, selectedCard]);
+
+  useEffect(() => {
+    const fetchCards = async () => {
+      if (!activeCampus) return;
+      try {
+        const response = await axios.get('/cards', {
+          params: { campus_id: activeCampus.id }
+        });
+        setCards(response.data || []);
+      } catch (error) {
+        console.error('Error fetching cards:', error);
+      }
+    };
+    fetchCards();
+  }, [activeCampus]);
 
   useEffect(() => {
     if (transactions.length > 0) {
@@ -247,8 +263,9 @@ export default function CobrosPage() {
         Number(activeCampus.id), 
         page, 
         parseInt(pagination.perPage.toString()),
-        searchStudent, // Pasar la búsqueda al backend
-        selectedPaymentMethods.includes('all') ? undefined : selectedPaymentMethods[0] // Pasar método de pago al backend
+        searchStudent,
+        selectedPaymentMethods.includes('all') ? undefined : selectedPaymentMethods[0],
+        selectedCard === 'all' ? undefined : selectedCard
       );
 
       setTransactions(response.data);
@@ -264,23 +281,6 @@ export default function CobrosPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePaymentMethodChange = (value: string) => {
-    if (value === 'all') {
-      setSelectedPaymentMethods(['all']);
-    } else {
-      const newMethods = selectedPaymentMethods.filter((m) => m !== 'all');
-      if (newMethods.includes(value)) {
-        setSelectedPaymentMethods(newMethods.filter((m) => m !== value));
-      } else {
-        setSelectedPaymentMethods([...newMethods, value]);
-      }
-    }
-  };
-
-  const handleStudentSelect = (values: string[]) => {
-    setSelectedStudents(values);
   };
 
   const handleColumnSelect = (values: string[]) => {
@@ -320,7 +320,7 @@ export default function CobrosPage() {
     <div>
       <Card className="w-full overflow-hidden">
         <CardHeader className='sticky top-0 z-20 bg-card'>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
 
             <Input
               placeholder="Buscar por nombre completo..."
@@ -334,8 +334,12 @@ export default function CobrosPage() {
               onValueChange={(value) => {
                 if (value === 'all') {
                   setSelectedPaymentMethods(['all']);
+                  setSelectedCard('all');
                 } else {
                   setSelectedPaymentMethods([value]);
+                  if (value !== 'card') {
+                    setSelectedCard('all');
+                  }
                 }
               }}
             >
@@ -349,6 +353,26 @@ export default function CobrosPage() {
                 <SelectItem value="cash">Efectivo</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Selector de tarjetas - solo aparece cuando el método es "Tarjeta" */}
+            {!selectedPaymentMethods.includes('all') && selectedPaymentMethods[0] === 'card' && (
+              <Select
+                value={selectedCard}
+                onValueChange={setSelectedCard}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar tarjeta" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las tarjetas</SelectItem>
+                  {cards.map((card) => (
+                    <SelectItem key={card.id} value={card.id.toString()}>
+                      {card.number} - {card.bank}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             <MultiSelect
               options={columnOptions}
