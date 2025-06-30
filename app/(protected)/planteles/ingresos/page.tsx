@@ -165,7 +165,7 @@ export default function CobrosPage() {
           {(user?.role === 'super_admin' || user?.role === 'contador') &&
             <EditarFolio
               transaction={transaction}
-              onSuccess={() => fetchTransactions(pagination.currentPage)}
+              onSuccess={() => fetchIngresos(pagination.currentPage)}
             />
           }
         </div>
@@ -173,34 +173,29 @@ export default function CobrosPage() {
     },
   ];
 
-  // Función para generar definiciones de columnas dinámicas basadas en los datos recibidos
   const generateDynamicColumns = (transactions: Transaction[]) => {
     if (!transactions.length) return [];
 
-    // Extraer todas las claves de la primera transacción
     const sampleTransaction = transactions[0];
     const allKeys = Object.keys(sampleTransaction);
 
-    // Crear columnas dinámicas para las propiedades que no están en las columnas predefinidas
     const knownColumnIds = commonColumnDefinitions.map(col => col.id);
     const dynamicColumns = allKeys
       .filter(key =>
-        // Excluir propiedades que ya tenemos definidas o que son objetos complejos
         !knownColumnIds.includes(key) &&
         typeof sampleTransaction[key as keyof Transaction] !== 'object' &&
-        key !== 'student' && // Ya manejamos student en una columna personalizada
-        key !== 'image' && // Ya manejamos image en la columna comprobante
-        key !== 'uuid' && // No necesitamos mostrar el UUID
-        key !== 'created_at' && // Ya manejamos created_at en la columna date
-        key !== 'payment_method' // Ya manejamos payment_method en la columna paymentMethod
+        key !== 'student' &&
+        key !== 'image' &&
+        key !== 'uuid' &&
+        key !== 'created_at' &&
+        key !== 'payment_method'
       )
       .map(key => ({
         id: key,
-        label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '), // Formato más legible
+        label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
         render: (transaction: Transaction) => {
           const value = transaction[key as keyof Transaction];
 
-          // Formatear valores según su tipo
           if (typeof value === 'boolean') return value ? 'Sí' : 'No';
           if (value instanceof Date) return value.toLocaleDateString();
           if (value === null || value === undefined) return '-';
@@ -216,7 +211,7 @@ export default function CobrosPage() {
 
   useEffect(() => {
     if (!activeCampus) return;
-    fetchTransactions(pagination.currentPage);
+    fetchIngresos(pagination.currentPage);
   }, [activeCampus, pagination.currentPage, pagination.perPage]);
 
   useEffect(() => {
@@ -245,7 +240,7 @@ export default function CobrosPage() {
     }
   }, [transactions]);
 
-  const fetchTransactions = async (page = 1) => {
+  const fetchIngresos = async (page = 1) => {
     try {
       setLoading(true);
       const response = await getCharges(Number(activeCampus.id), page, parseInt(pagination.perPage.toString()));
@@ -283,7 +278,6 @@ export default function CobrosPage() {
   };
 
   const handleColumnSelect = (values: string[]) => {
-    // Validar que todas las columnas seleccionadas existan en las columnas disponibles
     const validValues = values.filter(value =>
       availableColumnIds.includes(value) || value === 'all'
     );
@@ -426,7 +420,6 @@ export default function CobrosPage() {
           )}
         </CardContent>
 
-        {/* Paginación */}
         <CardFooter>
           <PaginationComponent pagination={pagination} setPagination={setPagination} />
         </CardFooter>
