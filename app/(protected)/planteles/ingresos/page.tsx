@@ -148,7 +148,7 @@ export default function CobrosPage() {
           </div>
         ) : null
       ),
-      alwaysVisible: true // Esta columna siempre se muestra
+      alwaysVisible: true
     },
     {
       id: 'actions',
@@ -212,7 +212,6 @@ export default function CobrosPage() {
     return dynamicColumns;
   };
 
-  // Combinar columnas conocidas con columnas dinámicas
   const [columnDefinitions, setColumnDefinitions] = useState<Array<any>>(commonColumnDefinitions);
 
   useEffect(() => {
@@ -220,18 +219,15 @@ export default function CobrosPage() {
     fetchTransactions(pagination.currentPage);
   }, [activeCampus, pagination.currentPage, pagination.perPage]);
 
-  // Actualizar las definiciones de columnas cuando se carguen las transacciones
   useEffect(() => {
     if (transactions.length > 0) {
       const dynamicCols = generateDynamicColumns(transactions);
       const allColumns = [...commonColumnDefinitions, ...dynamicCols];
       setColumnDefinitions(allColumns);
 
-      // Actualizar el listado de IDs de columnas disponibles
       const allColumnIds = allColumns.map(col => col.id);
       setAvailableColumnIds(allColumnIds);
 
-      // Añadir columnas dinámicas nuevas al listado de columnas visibles si no están ya
       const newColumnIds = dynamicCols.map(col => col.id);
       const newVisibleColumnIds = [...visibleColumns];
 
@@ -318,18 +314,8 @@ export default function CobrosPage() {
     return matchesSearch && matchesPaymentMethod && matchesStudent;
   });
 
-  const uniqueStudents = transactions
-    .map(t => ({
-      value: t.student?.id || '',
-      label: `${t.student?.firstname} ${t.student?.lastname}`,
-    }))
-    .filter((student, index, self) =>
-      index === self.findIndex(s => s.value === student.value)
-    );
-
-  // Usar las definiciones de columnas para crear las opciones de columnas
   const columnOptions = columnDefinitions
-    .filter(col => !col.alwaysVisible) // Excluimos columnas que siempre se muestran
+    .filter(col => !col.alwaysVisible)
     .map(col => ({ value: col.id, label: col.label }));
 
   const handleShare = (transaction: Transaction) => {
@@ -343,7 +329,6 @@ export default function CobrosPage() {
     });
   };
 
-  // Obtiene las columnas visibles más las que siempre deben mostrarse
   const getVisibleColumns = () => {
     return columnDefinitions.filter(col =>
       visibleColumns.includes(col.id) || col.alwaysVisible
@@ -354,79 +339,55 @@ export default function CobrosPage() {
     <div>
       <Card className="w-full overflow-hidden">
         <CardHeader className='sticky top-0 z-20 bg-card'>
-          <div className="flex flex-col space-y-4">
-            {/* Primera fila: Search + Botones de acción */}
-            <div className="flex flex-col lg:flex-row justify-between items-center mb-4">
-              <Input
-                placeholder="Buscar por nombre completo..."
-                value={searchStudent}
-                onChange={(e) => setSearchStudent(e.target.value)}
-                className="w-full"
-              />
-              <div className="flex flex-wrap sm:flex-nowrap gap-2">
-                <AgregarIngreso />
-                <Link href="/planteles/cobros/actualizar" className={buttonVariants({ variant: 'default' })}>
-                  <span className="hidden sm:inline">Actualizar Folios</span>
-                  <span className="sm:hidden">Actualizar</span>
-                </Link>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
 
-            {/* Segunda fila: Filtros de métodos de pago */}
-            <div className="flex gap-2 w-full overflow-x-auto pb-2">
-              <Button
-                variant={selectedPaymentMethods.includes('all') ? 'default' : 'outline'}
-                onClick={() => setSelectedPaymentMethods(['all'])}
-                className="whitespace-nowrap"
-                size="sm"
-              >
-                Todos
-              </Button>
-              <Button
-                variant={selectedPaymentMethods.includes('transfer') ? 'default' : 'outline'}
-                onClick={() => handlePaymentMethodChange('transfer')}
-                className="whitespace-nowrap"
-                size="sm"
-              >
-                Transferencia
-              </Button>
-              <Button
-                variant={selectedPaymentMethods.includes('card') ? 'default' : 'outline'}
-                onClick={() => handlePaymentMethodChange('card')}
-                className="whitespace-nowrap"
-                size="sm"
-              >
-                Tarjeta
-              </Button>
-            </div>
+            <Input
+              placeholder="Buscar por nombre completo..."
+              value={searchStudent}
+              onChange={(e) => setSearchStudent(e.target.value)}
+              className="w-full"
+            />
 
-            {/* Tercera fila: MultiSelect */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <MultiSelect
-                options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
-                hiddeBadages={true}
-                selectedValues={selectedStudents}
-                onSelectedChange={handleStudentSelect}
-                title="Estudiantes"
-                placeholder="Seleccionar estudiantes"
-                searchPlaceholder="Buscar estudiante..."
-                emptyMessage="No se encontraron estudiantes"
-              />
-              <MultiSelect
-                options={columnOptions}
-                hiddeBadages={true}
-                selectedValues={visibleColumns}
-                onSelectedChange={handleColumnSelect}
-                title="Columnas"
-                placeholder="Seleccionar columnas"
-                searchPlaceholder="Buscar columna..."
-                emptyMessage="No se encontraron columnas"
-              />
-            </div>
+            <Select
+              value={selectedPaymentMethods.includes('all') ? 'all' : selectedPaymentMethods[0]}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setSelectedPaymentMethods(['all']);
+                } else {
+                  setSelectedPaymentMethods([value]);
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Método de pago" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="transfer">Transferencia</SelectItem>
+                <SelectItem value="card">Tarjeta</SelectItem>
+                <SelectItem value="cash">Efectivo</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <MultiSelect
+              options={columnOptions}
+              hiddeBadages={true}
+              selectedValues={visibleColumns}
+              onSelectedChange={handleColumnSelect}
+              title="Columnas"
+              placeholder="Seleccionar columnas"
+              searchPlaceholder="Buscar columna..."
+              emptyMessage="No se encontraron columnas"
+            />
+
+            <AgregarIngreso />
+            <Link href="/planteles/ingresos/actualizar" className={buttonVariants({ variant: 'default', size: 'sm' })}>
+              <span className="hidden sm:inline">Actualizar Folios</span>
+              <span className="sm:hidden">Actualizar</span>
+            </Link>
           </div>
         </CardHeader>
 
-        {/* Tabla con contenedor mejorado */}
         <CardContent>
           {loading ? (
             <div className="text-center py-4">Cargando...</div>

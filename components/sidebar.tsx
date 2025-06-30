@@ -184,8 +184,8 @@ export const data = {
       icon: Users,
     },
     {
-      name: "Pagos",
-      url: "/planteles/cobros",
+      name: "Ingresos",
+      url: "/planteles/ingresos",
       icon: Receipt,
     },
     {
