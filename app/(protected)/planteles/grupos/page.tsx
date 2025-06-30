@@ -43,11 +43,6 @@ export default function TeachergruposPage() {
 
   useEffect(() => {
     if (!selectedGroup) return;
-    console.log("Payload que se enviará:", {
-      grupo_id: selectedGroup,
-      fecha: new Date().toISOString().split("T")[0],
-      asistencias: asistencia
-    });
     
     axiosClient.get(`/grupos/${selectedGroup}/students`)
       .then((response) => {
@@ -156,8 +151,6 @@ export default function TeachergruposPage() {
                   fecha,
                   asistencias: asistencia,
                 };
-
-                console.log("ENVIANDO:", payload); // 👀 Debug
 
                 try {
                   await axiosClient.post('/asistencias', payload);

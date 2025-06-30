@@ -119,9 +119,7 @@ export default function AttendanceListPage() {
         attendance: attendance,
       };
       
-      console.log('Enviando datos de asistencia:', payload);
       const response = await axiosInstance.post('/teacher/attendance', payload);
-      console.log('Respuesta del servidor:', response.data);
 
       toast.success('¡Asistencia Guardada!', {
         description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,

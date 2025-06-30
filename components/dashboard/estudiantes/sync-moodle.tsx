@@ -55,7 +55,7 @@ export default function SyncMoodle() {
         try {
         } catch (error) {
             setUserStatus("error")
-            console.log(error)
+            console.error(error)
             let errorMessage = "Hubo un problema al sincronizar los usuarios con Moodle.";
             if (error.response && error.response.data && error.response.data.errors) {
                 const moodleErrors = error.response.data.errors;

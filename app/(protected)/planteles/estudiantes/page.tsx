@@ -119,7 +119,9 @@ export default function Page() {
       semanaIntensivaFilter: semanaIntensivaFilter,
       period: periodFilter,
     }
-
+    if(!periodFilter){
+      return;
+    }
     try {
       setIsLoading(true);
       const response = await getStudents({ params });

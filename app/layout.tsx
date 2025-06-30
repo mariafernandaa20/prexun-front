@@ -43,7 +43,6 @@ export default function RootLayout({
                   console.log('Request logger not available. Make sure you are in development mode.');
                   return [];
                 };
-                console.log('🔧 Debug mode enabled. Use debugRequests() to check API calls.');
               `
             }}
           />

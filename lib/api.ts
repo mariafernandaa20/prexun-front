@@ -458,18 +458,18 @@ export const deleteGrupo = async (id: string) => {
   return response.data;
 };
 export const getSemanas = async () => {
-  const response = await axiosInstance.get('/semanas');
+  const response = await axiosInstance.get(API_ENDPOINTS.SEMANAS);
   return response.data;
 };
 
 export const createSemanas = async (grupo: Grupo) => {
-  const response = await axiosInstance.post("/semanas", grupo);
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_SEMANA, grupo);
   return response.data;
 };
 
 export const updateSemanas = async (grupo: Grupo) => {
   const response = await axiosInstance.put(
-    `/semanas/${grupo.id}`,
+    `${API_ENDPOINTS.UPDATE_SEMANA}/${grupo.id}`,
     grupo
   );
   return response.data;
@@ -477,7 +477,7 @@ export const updateSemanas = async (grupo: Grupo) => {
 
 export const deleteSemanas = async (id: string) => {
   const response = await axiosInstance.delete(
-    `${API_ENDPOINTS.DELETE_GRUPO}/${id}`
+    `${API_ENDPOINTS.DELETE_SEMANA}/${id}`
   );
   return response.data;
 };

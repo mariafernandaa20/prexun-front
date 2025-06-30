@@ -195,7 +195,6 @@ export default function page() {
           const groupAssignResponse = await axiosInstance.post(`/teacher/${formData.id}/groups/assign`, {
             grupo_ids: formData.grupos.map(id => parseInt(id))
           });
-          console.log('Grupos asignados:', groupAssignResponse.data);
         }
         await fetchUsers();
         toast({ title: 'Usuario actualizado correctamente' });
@@ -206,7 +205,6 @@ export default function page() {
           const groupAssignResponse = await axiosInstance.post(`/teacher/${response.data.id}/groups/assign`, {
             grupo_ids: formData.grupos
           });
-          console.log('Respuesta de asignación:', groupAssignResponse.data);
         }
         await fetchUsers();
         toast({ title: 'Usuario creado correctamente' });

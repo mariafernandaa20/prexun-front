@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   campuses: [],
   semanasIntensivas: [],
   accessToken: null,
-  loading: true,
+  loading: false,
   periods: [],
   municipios: [],
   prepas: [],
@@ -292,7 +292,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Inicialización de la aplicación
   initializeApp: async () => {
     // Evitar múltiples inicializaciones simultáneas
-    if (get().isInitialized || get().loading) {
+    if (get().isInitialized) {
       return;
     }
 
@@ -307,7 +307,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Solo cargar datos si no están ya cargados
       if (!get().isDataLoaded) {
-        await Promise.all([
+        const fetchPromises = [
           get().fetchUsers(),
           get().fetchCampuses(),
           get().fetchSemanas(),
@@ -315,7 +315,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           get().fetchGrupos(),
           get().fetchCarreras(),
           get().fetchFacultades(),
-        ]);
+        ];
+
+        await Promise.allSettled(fetchPromises);
         set({ isDataLoaded: true });
       }
 
