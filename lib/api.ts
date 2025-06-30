@@ -693,3 +693,44 @@ export const toggleStudentAssignmentActive = async (id: number) => {
   const response = await axiosInstance.patch(`${API_ENDPOINTS.TOGGLE_STUDENT_ASSIGNMENT_ACTIVE}/${id}/toggle-active`);
   return response.data;
 };
+
+// Site Settings API
+export const getSiteSettings = async () => {
+  const response = await axiosInstance.get('/site-settings');
+  return response.data;
+};
+
+export const getSiteSettingsByGroup = async (group: string) => {
+  const response = await axiosInstance.get(`/site-settings/group/${group}`);
+  return response.data;
+};
+
+export const getSiteSettingValue = async (key: string) => {
+  const response = await axiosInstance.get(`/site-settings/value/${key}`);
+  return response.data;
+};
+
+export const createSiteSetting = async (setting: any) => {
+  const response = await axiosInstance.post('/site-settings', setting);
+  return response.data;
+};
+
+export const updateSiteSetting = async (id: number, setting: any) => {
+  const response = await axiosInstance.put(`/site-settings/${id}`, setting);
+  return response.data;
+};
+
+export const updateMultipleSiteSettings = async (settings: any[]) => {
+  const response = await axiosInstance.post('/site-settings/update-multiple', { settings });
+  return response.data;
+};
+
+export const deleteSiteSetting = async (id: number) => {
+  const response = await axiosInstance.delete(`/site-settings/${id}`);
+  return response.data;
+};
+
+export const getUIConfig = async () => {
+  const response = await axiosInstance.get('/site-settings/ui-config');
+  return response.data;
+};

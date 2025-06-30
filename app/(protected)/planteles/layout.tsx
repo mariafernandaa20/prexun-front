@@ -8,10 +8,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAppInit } from "@/hooks/use-app-init";
+import { useUIConfig } from "@/hooks/useUIConfig";
 
 export default function Page({ children }: { children: React.ReactNode }) {
+  useUIConfig();
   useAppInit();
-
   return (
     <SidebarProvider>
       <PlantelSidebar />

@@ -41,6 +41,7 @@ import ActualizarFolios from './actualizar/ActualizarFolios';
 import { useAuthStore } from '@/lib/store/auth-store';
 import PaginationComponent from '@/components/ui/PaginationComponent';
 import { usePagination } from '@/hooks/usePagination';
+import { useUIConfig } from '@/hooks/useUIConfig';
 
 export default function CobrosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -58,6 +59,7 @@ export default function CobrosPage() {
   const { toast } = useToast();
 
   const { pagination, setPagination } = usePagination();
+  const { config: uiConfig } = useUIConfig();
 
 
   const [loading, setLoading] = useState(false);
@@ -348,9 +350,15 @@ export default function CobrosPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="transfer">Transferencia</SelectItem>
-                <SelectItem value="card">Tarjeta</SelectItem>
-                <SelectItem value="cash">Efectivo</SelectItem>
+                {uiConfig?.payment_methods_enabled?.includes('transfer') && (
+                  <SelectItem value="transfer">Transferencia</SelectItem>
+                )}
+                {uiConfig?.payment_methods_enabled?.includes('card') && (
+                  <SelectItem value="card">Tarjeta</SelectItem>
+                )}
+                {uiConfig?.payment_methods_enabled?.includes('cash') && (
+                  <SelectItem value="cash">Efectivo</SelectItem>
+                )}
               </SelectContent>
             </Select>
 

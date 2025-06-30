@@ -100,6 +100,11 @@ export const data = {
           url: "/dashboard/modulos",
           icon: Frame,
         },
+        {
+          title: "Ajustes",
+          url: "/dashboard/ajustes",
+          icon: Frame,
+        },
       ],
     },
   ],

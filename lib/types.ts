@@ -290,3 +290,34 @@ export interface Caja {
   transactions?: Transaction[];
   gastos?: Gasto[];
 }
+
+export interface SiteSetting {
+  id?: number;
+  key: string;
+  label: string;
+  value: string | null;
+  type: 'text' | 'number' | 'boolean' | 'select' | 'json' | 'textarea' | 'email' | 'url' | 'password';
+  description?: string;
+  options?: Record<string, string> | null;
+  group: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  parsed_value?: any; // Valor parseado según el tipo
+}
+
+export interface SiteSettingGroup {
+  [key: string]: SiteSetting[];
+}
+
+export interface SiteSettingFormData {
+  key: string;
+  label: string;
+  value: string | null;
+  type: SiteSetting['type'];
+  description?: string;
+  options?: Record<string, string>;
+  group: string;
+  sort_order?: number;
+}

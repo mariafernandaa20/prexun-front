@@ -25,6 +25,7 @@ import PaginationComponent from "@/components/ui/PaginationComponent";
 import BulkActions from './BulkActions';
 import Filters from './Filters';
 import { usePagination } from '@/hooks/usePagination';
+import { useUIConfig } from '@/hooks/useUIConfig';
 import { Button } from '@/components/ui/button';
 import { Plus, RefreshCwIcon } from 'lucide-react';
 import SectionContainer from '@/components/SectionContainer';
@@ -50,8 +51,16 @@ export default function Page() {
   const { toast } = useToast();
   const { activeCampus } = useActiveCampusStore();
   const { user, periods, grupos } = useAuthStore();
-  const { pagination, setPagination } = usePagination();
+  const { config: uiConfig, loading: configLoading } = useUIConfig();
+  const { pagination, setPagination } = usePagination({ 
+    initialPerPage: 10
+  });
 
+  useEffect(() => {
+    if (uiConfig?.default_period_id && !periodFilter) {
+      setPeriodFilter(uiConfig.default_period_id);
+    }
+  }, [uiConfig?.default_period_id, periodFilter]);
 
   const handleOpenEditModal = (student: Student) => {
     setSelectedStudent(student);
@@ -155,25 +164,31 @@ export default function Page() {
     const response = await getPromos();
     setPromos(response.active);
   };
+  
   useEffect(() => {
     if (!activeCampus) return;
 
     if (periods && periods.length > 0 && !periodFilter) {
-      setPeriodFilter(periods[periods.length - 1].id);
+      const defaultId = uiConfig?.default_period_id;
+      if (defaultId && periods.find(p => p.id === defaultId)) {
+        setPeriodFilter(defaultId);
+      }
     }
 
-    fetchStudents();
-    fetchPromos();
-    try {
-      getData();
-    } catch (error) {
-      toast({
-        title: 'Error al cargar datos',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
-      });
+    if (periodFilter) {
+      fetchStudents();
+      fetchPromos();
+      try {
+        getData();
+      } catch (error) {
+        toast({
+          title: 'Error al cargar datos',
+          description: error.response?.data?.message || 'Intente nuevamente',
+          variant: 'destructive',
+        });
+      }
     }
-  }, [activeCampus, periods]);
+  }, [activeCampus, periods, uiConfig]);
 
   useEffect(() => {
 
@@ -241,13 +256,9 @@ export default function Page() {
     }
   }, [selectedStudents, students]);
 
-  useEffect(() => {
-    if (periods && periods.length > 0 && !periodFilter) {
-      setPeriodFilter(periods[periods.length - 1].id);
-    }
-  }, [periods, periodFilter]);
 
-
+  console.log(periodFilter , 'Hola mundo')
+  console.log(uiConfig?.default_period_id, 'uiConfig default period id')
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
