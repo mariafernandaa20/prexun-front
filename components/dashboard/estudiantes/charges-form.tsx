@@ -21,6 +21,7 @@ import { createCharge, updateCharge } from '@/lib/api';
 import { Textarea } from '@/components/ui/textarea';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Input } from '@/components/ui/input';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 interface ChargesFormProps {
   fetchStudents: () => void;
@@ -55,7 +56,7 @@ export default function ChargesForm({
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
-  const SAT = process.env.NEXT_PUBLIC_SAT || false;
+  const { SAT } = useFeatureFlags();
 
   const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
     return Object.entries(denominations).reduce((total, [denomination, count]) => {

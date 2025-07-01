@@ -33,13 +33,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {Card as CardType} from '@/lib/types';
+import { Card as CardType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 const CardManagement = () => {
     const [cards, setCards] = useState<CardType[]>([]);
@@ -61,7 +62,7 @@ const CardManagement = () => {
     };
 
     const [formData, setFormData] = useState(addForm);
-
+    const { SAT } = useFeatureFlags();
     useEffect(() => {
         // Fetch cards and campuses when component mounts
         const fetchData = async () => {
@@ -90,9 +91,9 @@ const CardManagement = () => {
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({ 
-            ...prev, 
-            [name]: type === 'checkbox' ? checked : value 
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
@@ -235,14 +236,16 @@ const CardManagement = () => {
                                         placeholder="Clabe interbancaria"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2">
+
+                                {!SAT && (<div className="flex items-center gap-2">
                                     <Label htmlFor="sat">SAT</Label>
-                                    <Checkbox 
-                                        id="sat" 
-                                        checked={formData.sat} 
-                                        onCheckedChange={(checked) => handleCheckboxChange(checked, 'sat')} 
+                                    <Checkbox
+                                        id="sat"
+                                        checked={formData.sat}
+                                        onCheckedChange={(checked) => handleCheckboxChange(checked, 'sat')}
                                     />
-                                </div>
+                                </div>)}
+
                                 <div className="grid gap-2">
                                     <Label htmlFor="campus">Campus</Label>
                                     <Select
@@ -280,6 +283,8 @@ const CardManagement = () => {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Card Number</TableHead>
+                                    {!SAT && (<TableHead>SAT</TableHead>)}
+                                    <TableHead>Clabe Interbancaria</TableHead>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Campus</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
@@ -290,7 +295,10 @@ const CardManagement = () => {
                                     cards.map(card => (
                                         <TableRow key={card.id}>
                                             <TableCell className="font-medium">{card.number}</TableCell>
+                                            {!SAT && (<TableCell>{card.sat}</TableCell>)}
+                                            <TableCell>{card.clabe}</TableCell>
                                             <TableCell>{card.name}</TableCell>
+
                                             <TableCell>{getCampusName(card.campus_id)}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
@@ -361,10 +369,10 @@ const CardManagement = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Label htmlFor="edit-sat">SAT</Label>
-                                    <Checkbox 
-                                        id="edit-sat" 
-                                        checked={formData.sat} 
-                                        onCheckedChange={(checked) => handleCheckboxChange(checked, 'sat')} 
+                                    <Checkbox
+                                        id="edit-sat"
+                                        checked={formData.sat}
+                                        onCheckedChange={(checked) => handleCheckboxChange(checked, 'sat')}
                                     />
                                 </div>
                                 <div className="grid gap-2">
