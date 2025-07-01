@@ -90,6 +90,7 @@ export const API_ENDPOINTS = {
   STUDENT_ASSIGNMENTS_BY_PERIOD: '/student-assignments/period',
   STUDENT_ASSIGNMENTS_BY_GRUPO: '/student-assignments/grupo',
   STUDENT_ASSIGNMENTS_BY_SEMANA: '/student-assignments/semana',
+  STUDENTS_BY_ASSIGNED_PERIOD: '/student-assignments/students-by-period',
   BULK_CREATE_STUDENT_ASSIGNMENTS: '/student-assignments/bulk',
   BULK_UPDATE_STUDENT_ASSIGNMENTS: '/student-assignments/bulk',
   TOGGLE_STUDENT_ASSIGNMENT_ACTIVE: '/student-assignments',

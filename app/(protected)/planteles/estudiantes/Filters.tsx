@@ -14,6 +14,8 @@ import { useAuthStore } from '@/lib/store/auth-store';
 interface FiltersProps {
   setPeriodFilter: (value: string) => void;
   periodFilter: any;
+  setAssignedPeriodFilter: (value: string) => void;
+  assignedPeriodFilter: any;
   setGrupoFilter: (value: string | null) => void;
   setSemanaIntensivaFilter: (value: string | null) => void;
   setSearchName: (value: string) => void;
@@ -26,6 +28,8 @@ interface FiltersProps {
 const Filters: React.FC<FiltersProps> = ({
   setPeriodFilter,
   periodFilter,
+  setAssignedPeriodFilter,
+  assignedPeriodFilter,
   setGrupoFilter,
   setSemanaIntensivaFilter,
   setSearchName,
@@ -67,40 +71,50 @@ const Filters: React.FC<FiltersProps> = ({
 
   return (
     <div className="flex flex-col gap-2 w-full max-w-[1/2]">
-      <div className="space-y-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-          <Input
-            placeholder="Buscar por nombre..."
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            className="w-full"
-          />
-          <SearchableSelect
-            options={periods.map(period => ({ value: period.id, label: period.name }))}
-            value={periodFilter}
-            placeholder="Filtrar por periodo"
-            onChange={setPeriodFilter}
-          />
-          <SearchableSelect
-            options={grupos.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
-            value={undefined}
-            placeholder="Filtrar por grupo"
-            onChange={val => setGrupoFilter(val)}
-            showAllOption={true}
-            allOptionLabel="Todos"
-          />
-          <SearchableSelect
-            options={semanasIntensivas.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
-            value={undefined}
-            placeholder="Filtrar por semana intensiva"
-            onChange={val => setSemanaIntensivaFilter(val)}
-            showAllOption={true}
-            allOptionLabel="Todos"
-          />
-          <>{children && children}</>
-        </div>
+      <div className="space-y-2">          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
+        <Input
+          placeholder="Buscar por nombre..."
+          value={nameInput}
+          onChange={(e) => setNameInput(e.target.value)}
+          className="w-full"
+        />
+        <SearchableSelect
+          options={periods.map(period => ({ value: period.id, label: period.name }))}
+          value={periodFilter}
+          placeholder="Filtrar por periodo (Viejo)"
+          onChange={setPeriodFilter}
+          showAllOption={true}
+          allOptionLabel="Todos"
+        />
+        <SearchableSelect
+          options={periods.map(period => ({ value: period.id, label: period.name }))}
+          value={assignedPeriodFilter}
+          placeholder="Filtrar por periodo (Nuevo)"
+          onChange={setAssignedPeriodFilter}
+          showAllOption={true}
+          allOptionLabel="Todos"
+        />
+        <SearchableSelect
+          options={grupos.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
+          value={undefined}
+          placeholder="Filtrar por grupo"
+          onChange={val => setGrupoFilter(val)}
+          showAllOption={true}
+          allOptionLabel="Todos"
+        />
+        <SearchableSelect
+          options={semanasIntensivas.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
+          value={undefined}
+          placeholder="Filtrar por semana intensiva"
+          onChange={val => setSemanaIntensivaFilter(val)}
+          showAllOption={true}
+          allOptionLabel="Todos"
+        />
+        <>{children && children}</>
+      </div>
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
+
             <Input
               type="date"
               value={dateInput}

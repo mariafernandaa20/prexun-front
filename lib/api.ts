@@ -734,3 +734,8 @@ export const getUIConfig = async () => {
   const response = await axiosInstance.get('/site-settings/ui-config');
   return response.data;
 };
+
+export const getStudentsByAssignedPeriod = async (periodId: string, params: any) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENTS_BY_ASSIGNED_PERIOD}/${periodId}`, { params });
+  return response.data;
+};

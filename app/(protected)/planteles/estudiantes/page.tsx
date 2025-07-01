@@ -40,6 +40,8 @@ export default function Page() {
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
   const [periodFilter, setPeriodFilter] = useState<string>();
+  const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>();
+  const [periodFilterInitialized, setPeriodFilterInitialized] = useState(false);
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
@@ -52,15 +54,23 @@ export default function Page() {
   const { activeCampus } = useActiveCampusStore();
   const { user, periods, grupos } = useAuthStore();
   const { config: uiConfig, loading: configLoading } = useUIConfig();
-  const { pagination, setPagination } = usePagination({ 
+  const { pagination, setPagination } = usePagination({
     initialPerPage: 10
   });
 
+  const handlePeriodFilterChange = (value: string) => {
+    setPeriodFilter(value);
+    setPeriodFilterInitialized(true);
+  };
+
   useEffect(() => {
-    if (uiConfig?.default_period_id && !periodFilter) {
+    if (uiConfig?.default_period_id && !periodFilter && !periodFilterInitialized) {
       setPeriodFilter(uiConfig.default_period_id);
+      setPeriodFilterInitialized(true);
     }
-  }, [uiConfig?.default_period_id, periodFilter]);
+    // Note: assignedPeriodFilter is intentionally left without auto-initialization
+    // to allow users to see all students by default
+  }, [uiConfig?.default_period_id, periodFilter, periodFilterInitialized]);
 
   const handleOpenEditModal = (student: Student) => {
     setSelectedStudent(student);
@@ -126,14 +136,17 @@ export default function Page() {
       searchMatricula: searchMatricula,
       grupo: grupoFilter ? grupoFilter : undefined,
       semanaIntensivaFilter: semanaIntensivaFilter,
-      period: periodFilter,
+      period: periodFilter && periodFilter !== 'all' ? periodFilter : undefined,
+      assignedPeriod: assignedPeriodFilter && assignedPeriodFilter !== 'all' ? assignedPeriodFilter : undefined,
     }
-    if(!periodFilter){
-      return;
-    }
+  
+    
     try {
       setIsLoading(true);
+      
+      // Use the regular StudentController endpoint with assignedPeriod parameter
       const response = await getStudents({ params });
+      
       setStudents(response.data);
       setPagination({
         currentPage: pagination.currentPage,
@@ -164,18 +177,19 @@ export default function Page() {
     const response = await getPromos();
     setPromos(response.active);
   };
-  
+
   useEffect(() => {
     if (!activeCampus) return;
 
-    if (periods && periods.length > 0 && !periodFilter) {
+    if (periods && periods.length > 0 && !periodFilter && !periodFilterInitialized) {
       const defaultId = uiConfig?.default_period_id;
       if (defaultId && periods.find(p => p.id === defaultId)) {
         setPeriodFilter(defaultId);
+        setPeriodFilterInitialized(true);
       }
     }
 
-    if (periodFilter) {
+    if (periodFilter || periodFilter === 'all') {
       fetchStudents();
       fetchPromos();
       try {
@@ -197,7 +211,7 @@ export default function Page() {
     } else {
       fetchStudents();
     }
-  }, [searchName, searchDate, searchPhone, searchMatricula, periodFilter, grupoFilter, semanaIntensivaFilter]);
+  }, [searchName, searchDate, searchPhone, searchMatricula, periodFilter, grupoFilter, semanaIntensivaFilter, assignedPeriodFilter]);
 
 
   useEffect(() => {
@@ -257,8 +271,6 @@ export default function Page() {
   }, [selectedStudents, students]);
 
 
-  console.log(periodFilter , 'Hola mundo')
-  console.log(uiConfig?.default_period_id, 'uiConfig default period id')
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
@@ -279,8 +291,10 @@ export default function Page() {
             </div>
             <div className="flex flex-col lg:flex-row gap-2">
               <Filters
-                setPeriodFilter={setPeriodFilter}
+                setPeriodFilter={handlePeriodFilterChange}
                 periodFilter={periodFilter}
+                setAssignedPeriodFilter={setAssignedPeriodFilter}
+                assignedPeriodFilter={assignedPeriodFilter}
                 setGrupoFilter={setGrupoFilter}
                 setSemanaIntensivaFilter={setSemanaIntensivaFilter}
                 setSearchName={setSearchName}
