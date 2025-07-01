@@ -8,18 +8,19 @@ export function InvoiceClient({ invoice }) {
 
     const invoiceNumber = ({ folio }) => {
         if (!folio) return 'No pagado';
+        const campusInitial = invoice?.campus?.name?.charAt(0) || 'X';
         if (folio < 10) {
-            return `${invoice?.campus?.name?.charAt(0)}I-0000${folio}`;
+            return `${campusInitial}I-0000${folio}`;
         } if (folio < 100) {
-            return `${invoice?.campus?.name?.charAt(0)}I-000${folio}`;
+            return `${campusInitial}I-000${folio}`;
         }
         if (folio < 1000) {
-            return `${invoice?.campus?.name?.charAt(0)}-00${folio}`;
+            return `${campusInitial}I-00${folio}`;
         }
         if (folio < 10000) {
-            return `${invoice?.campus?.name?.charAt(0)}I-0${folio}`;
+            return `${campusInitial}I-0${folio}`;
         }
-        return `${invoice?.campus?.name?.charAt(0)}I-${folio}`;
+        return `${campusInitial}I-${folio}`;
     };
 
     return (
@@ -53,8 +54,8 @@ export function InvoiceClient({ invoice }) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6 lg:mb-8">
                         <div>
                             <h3 className="font-semibold mb-2">Prexun Asesorías</h3>
-                            <p className="text-gray-600">{invoice.campus?.name}</p>
-                            <p className="text-gray-600">{invoice.campus?.address}</p>
+                            <p className="text-gray-600">{invoice.campus?.name || 'Campus no especificado'}</p>
+                            <p className="text-gray-600">{invoice.campus?.address || 'Dirección no disponible'}</p>
                             {/* <p className="text-gray-600">{invoice.campus?.titular}</p>
                             <p className="text-gray-600">{invoice.campus?.rfc}</p> */}
                             {/* <p className="text-gray-600"><span className='font-bold'>Tarjeta:</span> {invoice?.card?.number}</p>
@@ -68,7 +69,9 @@ export function InvoiceClient({ invoice }) {
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-medium">Estudiante</span>
-                                <span className="text-right">{invoice.student?.firstname} {invoice.student?.lastname}</span>
+                                <span className="text-right">
+                                    {invoice.student?.firstname || 'N/A'} {invoice.student?.lastname || ''}
+                                </span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-medium">Fecha</span>
@@ -83,7 +86,7 @@ export function InvoiceClient({ invoice }) {
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-medium">Método de pago</span>
-                                <span>{PaymentMethod[invoice.payment_method]}</span>
+                                <span>{invoice.payment_method ? PaymentMethod[invoice.payment_method] : 'No especificado'}</span>
                             </div>
                         </div>
                     </div>
@@ -105,28 +108,46 @@ export function InvoiceClient({ invoice }) {
                                 <tr>
                                     <td className="px-3 md:px-6 py-4">
                                         <div>
-                                            <div className="font-medium text-gray-900">{invoice.student?.grupo?.name} | {invoice.student?.grupo?.type}</div>
-                                            <div className="font-medium text-gray-900 text-xs lg:text-sm">
-                                                {new Date(invoice.student?.grupo?.start_date).toLocaleDateString('es-MX', {
-                                                    day: 'numeric',
-                                                    month: 'long',
-                                                    year: 'numeric',
-                                                    timeZone: 'UTC'
-                                                })} - {new Date(invoice.student?.grupo?.end_date).toLocaleDateString('es-MX', {
-                                                    day: 'numeric',
-                                                    month: 'long',
-                                                    year: 'numeric',
-                                                    timeZone: 'UTC'
-                                                })}
+                                            <div className="font-medium text-gray-900">
+                                                {invoice.student?.grupo?.name || 'Grupo no asignado'} | {invoice.student?.grupo?.type || 'Tipo no especificado'}
                                             </div>
+                                            {invoice.student?.grupo?.start_date && invoice.student?.grupo?.end_date ? (
+                                                <div className="font-medium text-gray-900 text-xs lg:text-sm">
+                                                    {new Date(invoice.student?.grupo?.start_date).toLocaleDateString('es-MX', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric',
+                                                        timeZone: 'UTC'
+                                                    })} - {new Date(invoice.student?.grupo?.end_date).toLocaleDateString('es-MX', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric',
+                                                        timeZone: 'UTC'
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <div className="text-gray-500 text-xs lg:text-sm">
+                                                    Fechas no disponibles
+                                                </div>
+                                            )}
                                             <div className="text-gray-500 text-xs lg:text-sm mt-1">
-                                                <p>Frecuencia clases: {JSON.parse(invoice.student?.grupo?.frequency).join(', ')}</p>
-                                                <p>{invoice.student?.grupo?.start_time} - {invoice.student?.grupo?.end_time}</p>
-                                                <p>{invoice.notes}</p>
+                                                <p>Frecuencia clases: {
+                                                    (() => {
+                                                        try {
+                                                            return invoice.student?.grupo?.frequency 
+                                                                ? JSON.parse(invoice.student.grupo.frequency).join(', ') 
+                                                                : 'No especificada';
+                                                        } catch (error) {
+                                                            return 'No especificada';
+                                                        }
+                                                    })()
+                                                }</p>
+                                                <p>{invoice.student?.grupo?.start_time || 'N/A'} - {invoice.student?.grupo?.end_time || 'N/A'}</p>
+                                                <p>{invoice.notes || ''}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-3 md:px-6 py-4 text-center">MX${invoice.amount}</td>
+                                    <td className="px-3 md:px-6 py-4 text-center">MX${invoice.amount || '0.00'}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -137,15 +158,15 @@ export function InvoiceClient({ invoice }) {
                         <div className="text-right w-full sm:w-1/2 md:w-1/3">
                             <div className="flex justify-between font-bold gap-2">
                                 <span>SubTotal</span>
-                                <span>MX${(invoice.amount / 1.16).toFixed(2)}</span>
+                                <span>MX${invoice.amount ? (invoice.amount / 1.16).toFixed(2) : '0.00'}</span>
                             </div>
                             <div className="flex justify-between font-bold gap-2">
                                 <span>IVA</span>
-                                <span>MX${(invoice.amount - (invoice.amount / 1.16)).toFixed(2)}</span>
+                                <span>MX${invoice.amount ? (invoice.amount - (invoice.amount / 1.16)).toFixed(2) : '0.00'}</span>
                             </div>
                             <div className="flex justify-between font-bold gap-2 text-sm md:text-base">
                                 <span>Total</span>
-                                <span>MX${Number(invoice.amount).toFixed(2)}</span>
+                                <span>MX${invoice.amount ? Number(invoice.amount).toFixed(2) : '0.00'}</span>
                             </div>
                         </div>
                     </div>

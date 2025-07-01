@@ -64,10 +64,11 @@ const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, curren
     
     // Nombre del campus
     currentY += 7;
-    doc.text(campus?.name, leftCol, currentY);
+    doc.text(campus?.name || 'Campus no especificado', leftCol, currentY);
     
     currentY += 7;
-    const addressLines = doc.splitTextToSize(campus?.address, rightCol - leftCol - 10);
+    const address = campus?.address || 'Dirección no disponible';
+    const addressLines = doc.splitTextToSize(address, rightCol - leftCol - 10);
     doc.text(addressLines, leftCol, currentY);
     
     currentY += (addressLines.length * 7);
@@ -90,10 +91,13 @@ const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, curren
 
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
     doc.setFontSize(11);
+    const campusInitial = invoice?.campus?.name?.charAt(0) || 'X';
+    const folioFormatted = invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado';
+    
     const details = [
-        ["Comprobante de Pago:", invoice.folio_new ? invoice.folio_new : `${invoice?.campus?.name?.charAt(0)}-${invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}`],
-        ["Estudiante:", invoice.student?.firstname],
-        ["", invoice.student?.lastname],
+        ["Comprobante de Pago:", invoice.folio_new ? invoice.folio_new : `${campusInitial}-${folioFormatted}`],
+        ["Estudiante:", (invoice.student?.firstname || 'N/A')],
+        ["", (invoice.student?.lastname || '')],
 
         ["Fecha:", new Date(invoice.payment_date ? invoice.payment_date : invoice.created_at).toLocaleDateString('es-MX', {
             day: 'numeric',
@@ -104,13 +108,13 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
 
         ["Hora de pago:", invoice.paid === 1 ?
             dayjs(invoice.updated_at).format('HH:mm A') : 'No pagada'],
-        ["Metodo de pago:", PaymentMethod[invoice.payment_method]]
+        ["Metodo de pago:", invoice.payment_method ? PaymentMethod[invoice.payment_method] : 'No especificado']
     ];
 
     details.forEach((row, index) => {
         // Añadir fondo amarillo claro solo para el número de comprobante (primera fila)
         if (index === 0) {
-            const invoiceNumber = `${invoice?.campus?.name?.charAt(0)}-${invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}`;
+            const invoiceNumber = `${campusInitial}-${folioFormatted}`;
             const textWidth = doc.getTextWidth(invoiceNumber);
             
             // Guardar el estado actual
@@ -140,7 +144,7 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
 const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
 
     const formatPrice = (amount: number | undefined): string => {
-        return typeof amount === 'number'
+        return typeof amount === 'number' && !isNaN(amount)
             ? `$${amount.toLocaleString()}`
             : '$0';
     };
@@ -158,19 +162,29 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
 
     const buildServiceDescription = (invoice: any): string => {
         const grupo = invoice?.student?.grupo ?? {};
+        
+        // Validar fechas antes de formatearlas
+        const startDate = grupo.start_date 
+            ? new Date(grupo.start_date).toLocaleDateString('es-MX', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                timeZone: 'UTC'
+            })
+            : 'Fecha no disponible';
+            
+        const endDate = grupo.end_date
+            ? new Date(grupo.end_date).toLocaleDateString('es-MX', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                timeZone: 'UTC'
+            })
+            : 'Fecha no disponible';
+        
         const groupInfo = [
-            `${grupo.name ?? 'Sin grupo'} | ${grupo.type ?? 'Sin tipo'}`,
-            `${new Date(grupo.start_date).toLocaleDateString('es-MX', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                timeZone: 'UTC'
-            })} - ${new Date(grupo.end_date).toLocaleDateString('es-MX', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                timeZone: 'UTC'
-            })}`,
+            `${grupo.name ?? 'Grupo no asignado'} | ${grupo.type ?? 'Tipo no especificado'}`,
+            `${startDate} - ${endDate}`,
             `Frecuencia clases: ${formatFrequency(grupo.frequency)}`,
             `${grupo.start_time ? formatTime(grupo.start_time) : 'N/A'} - ${grupo.end_time ? formatTime(grupo.end_time) : 'N/A'}`,
             `${invoice.notes ?? ''}`
@@ -193,7 +207,7 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
                 }
             },
             {
-                content: "$" + invoice.amount.toLocaleString(),
+                content: "$" + (invoice.amount ? invoice.amount.toLocaleString() : '0'),
                 styles: {
                     halign: 'center',
                     fontSize: 11
@@ -218,10 +232,13 @@ const generateTotals = (doc, finalY, invoice) => {
     doc.setFontSize(11);
     doc.setFont(undefined, 'bold');
 
+    // Validar que amount existe y es un número válido
+    const amount = invoice.amount && !isNaN(invoice.amount) ? Number(invoice.amount) : 0;
+
     // Calculations with 2 decimal tolerance
-    const subtotal = +(invoice.amount / 1.16).toFixed(2);
-    const iva = +(invoice.amount - subtotal).toFixed(2);
-    const total = Number(invoice.amount).toFixed(2);
+    const subtotal = +(amount / 1.16).toFixed(2);
+    const iva = +(amount - subtotal).toFixed(2);
+    const total = amount.toFixed(2);
 
     // Add text to the document
     doc.text("Subtotal:", 140, finalY + 20);
@@ -287,7 +304,7 @@ const generatePDF = (invoice) => {
     generateTotals(doc, finalY, invoice);
     generateComments(doc, finalY, leftCol);
 
-    doc.save(`comprobante-${invoice.folio? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}.pdf`);
+    doc.save(`comprobante-${invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}.pdf`);
 };
 
 const InvoicePDF = ({ icon, invoice }) => {
