@@ -205,7 +205,7 @@ const CardManagement = () => {
                             <DialogHeader>
                                 <DialogTitle>Agregar Nueva Tarjeta</DialogTitle>
                             </DialogHeader>
-                            <div className="grid gap-2 py-4">
+                            <div className="grid gap-2 py-4 space-y-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="name">Nombre</Label>
                                     <Input
@@ -338,7 +338,7 @@ const CardManagement = () => {
                             <DialogHeader>
                                 <DialogTitle>Editar Tarjeta</DialogTitle>
                             </DialogHeader>
-                            <div className="grid gap-2 py-4">
+                            <div className="grid gap-2 py-4 space-y-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="edit-name">Nombre</Label>
                                     <Input
@@ -367,14 +367,14 @@ const CardManagement = () => {
                                         placeholder="Clabe interbancaria"
                                     />
                                 </div>
-                                <div className="flex items-center gap-2">
+                                {!SAT && (<div className="flex items-center gap-2">
                                     <Label htmlFor="edit-sat">SAT</Label>
                                     <Checkbox
                                         id="edit-sat"
                                         checked={formData.sat}
                                         onCheckedChange={(checked) => handleCheckboxChange(checked, 'sat')}
                                     />
-                                </div>
+                                </div>)}
                                 <div className="grid gap-2">
                                     <Label htmlFor="edit-campus">Campus</Label>
                                     <Select
