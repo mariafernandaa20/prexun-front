@@ -30,11 +30,13 @@ import {
 import { useAuthStore } from "@/lib/store/auth-store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 export function NavUser() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const { isMobile } = useSidebar();
+  const { SAT } = useFeatureFlags();
 
 
   const handleLogout = async () => {
@@ -51,10 +53,7 @@ export function NavUser() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.name} alt={user?.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
+              <div className={`h-8 w-8 rounded-lg  ${!SAT ? 'bg-red-500' : 'bg-green-500'}`}/>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user?.name}</span>
                 <span className="truncate text-xs">{user?.email}</span>
@@ -70,7 +69,7 @@ export function NavUser() {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
+                <Avatar className="h-8 w-8 rounded-lg  ">
                   <AvatarImage src={user?.name} alt={user?.name} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
