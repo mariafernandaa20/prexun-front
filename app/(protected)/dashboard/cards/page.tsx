@@ -77,7 +77,7 @@ const CardManagement = () => {
             } catch (error) {
                 toast({
                     title: "Error",
-                    description: "Failed to load data. Please try again.",
+                    description: "Error al cargar los datos. Por favor, inténtalo de nuevo.",
                     variant: "destructive"
                 });
                 console.error('Error fetching data:', error);
@@ -112,13 +112,13 @@ const CardManagement = () => {
             setIsAddDialogOpen(false);
             setFormData(addForm);
             toast({
-                title: "Success",
-                description: "Card created successfully!",
+                title: "Éxito",
+                description: "¡Tarjeta creada exitosamente!",
             });
         } catch (error) {
             toast({
                 title: "Error",
-                description: error.response?.data?.errors?.number || "Failed to create card. Please try again.",
+                description: error.response?.data?.errors?.number || "Error al crear la tarjeta. Por favor, inténtalo de nuevo.",
                 variant: "destructive"
             });
             console.error('Error adding card:', error);
@@ -133,13 +133,13 @@ const CardManagement = () => {
             );
             setIsEditDialogOpen(false);
             toast({
-                title: "Success",
-                description: "Card updated successfully!",
+                title: "Éxito",
+                description: "¡Tarjeta actualizada exitosamente!",
             });
         } catch (error) {
             toast({
                 title: "Error",
-                description: error.response?.data?.errors?.number || "Failed to update card. Please try again.",
+                description: error.response?.data?.errors?.number || "Error al actualizar la tarjeta. Por favor, inténtalo de nuevo.",
                 variant: "destructive"
             });
             console.error('Error editing card:', error);
@@ -152,13 +152,13 @@ const CardManagement = () => {
             setCards(prev => prev.filter(card => card.id !== currentCard.id));
             setIsDeleteDialogOpen(false);
             toast({
-                title: "Success",
-                description: "Card deleted successfully!",
+                title: "Éxito",
+                description: "¡Tarjeta eliminada exitosamente!",
             });
         } catch (error) {
             toast({
                 title: "Error",
-                description: "Failed to delete card. Please try again.",
+                description: "Error al eliminar la tarjeta. Por favor, inténtalo de nuevo.",
                 variant: "destructive"
             });
             console.error('Error deleting card:', error);
@@ -184,7 +184,7 @@ const CardManagement = () => {
 
     const getCampusName = (campusId) => {
         const campus = campuses.find(c => c.id === campusId);
-        return campus ? campus.name : 'Unknown Campus';
+        return campus ? campus.name : 'Campus Desconocido';
     };
 
     return (
@@ -192,18 +192,18 @@ const CardManagement = () => {
             <Card className="w-full">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                        <CardTitle>Card Management</CardTitle>
-                        <CardDescription>Manage all campus access cards</CardDescription>
+                        <CardTitle>Gestión de Tarjetas</CardTitle>
+                        <CardDescription>Administrar todas las tarjetas de acceso del campus</CardDescription>
                     </div>
                     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                         <DialogTrigger asChild>
                             <Button className="flex items-center gap-1">
-                                <Plus size={16} /> Add Card
+                                <Plus size={16} /> Agregar Tarjeta
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Add New Card</DialogTitle>
+                                <DialogTitle>Agregar Nueva Tarjeta</DialogTitle>
                             </DialogHeader>
                             <div className="grid gap-2 py-4">
                                 <div className="grid gap-2">
@@ -213,7 +213,7 @@ const CardManagement = () => {
                                         name="name"
                                         value={formData.name}
                                         onChange={handleInputChange}
-                                        placeholder="Enter name"
+                                        placeholder="Ingrese el nombre"
                                     />
                                 </div>
                                 <div className="grid gap-2">
@@ -223,7 +223,7 @@ const CardManagement = () => {
                                         name="number"
                                         value={formData.number}
                                         onChange={handleInputChange}
-                                        placeholder="Enter card number"
+                                        placeholder="Ingrese el número de tarjeta"
                                     />
                                 </div>
                                 <div className="grid gap-2">
@@ -253,7 +253,7 @@ const CardManagement = () => {
                                         onValueChange={(value) => handleSelectChange(value, 'campus_id')}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select campus" />
+                                            <SelectValue placeholder="Seleccionar campus" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {campuses.map(campus => (
@@ -267,32 +267,32 @@ const CardManagement = () => {
                             </div>
                             <DialogFooter>
                                 <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
+                                    <Button variant="outline">Cancelar</Button>
                                 </DialogClose>
-                                <Button onClick={handleAddCard}>Add Card</Button>
+                                <Button onClick={handleAddCard}>Agregar Tarjeta</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="flex justify-center py-8">Loading cards...</div>
+                        <div className="flex justify-center py-8">Cargando tarjetas...</div>
                     ) : (
                         <Table>
-                            <TableCaption>List of all registered access cards</TableCaption>
+                            <TableCaption>Lista de todas las tarjetas de acceso registradas</TableCaption>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Card Number</TableHead>
+                                    <TableHead>Número de Tarjeta</TableHead>
                                     {!SAT && (<TableHead>SAT</TableHead>)}
                                     <TableHead>Clabe Interbancaria</TableHead>
-                                    <TableHead>Name</TableHead>
+                                    <TableHead>Nombre</TableHead>
                                     <TableHead>Campus</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {cards.length > 0 ? (
-                                    cards.map(card => (
+                                    cards.filter(card => !SAT || card.sat).map(card => (
                                         <TableRow key={card.id}>
                                             <TableCell className="font-medium">{card.number}</TableCell>
                                             {!SAT && (<TableCell>{card.sat}</TableCell>)}
@@ -324,7 +324,7 @@ const CardManagement = () => {
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={4} className="text-center py-8">
-                                            No cards found. Add one to get started.
+                                            No se encontraron tarjetas. Agrega una para comenzar.
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -336,7 +336,7 @@ const CardManagement = () => {
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Edit Card</DialogTitle>
+                                <DialogTitle>Editar Tarjeta</DialogTitle>
                             </DialogHeader>
                             <div className="grid gap-2 py-4">
                                 <div className="grid gap-2">
@@ -382,7 +382,7 @@ const CardManagement = () => {
                                         onValueChange={(value) => handleSelectChange(value, 'campus_id')}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select campus" />
+                                            <SelectValue placeholder="Seleccionar campus" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {campuses.map(campus => (
@@ -396,9 +396,9 @@ const CardManagement = () => {
                             </div>
                             <DialogFooter>
                                 <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
+                                    <Button variant="outline">Cancelar</Button>
                                 </DialogClose>
-                                <Button onClick={handleEditCard}>Save Changes</Button>
+                                <Button onClick={handleEditCard}>Guardar Cambios</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -407,17 +407,17 @@ const CardManagement = () => {
                     <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Confirm Deletion</DialogTitle>
+                                <DialogTitle>Confirmar Eliminación</DialogTitle>
                             </DialogHeader>
                             <p className="py-4">
-                                Are you sure you want to delete the card for {currentCard?.name}? This action cannot be undone.
+                                ¿Estás seguro de que quieres eliminar la tarjeta de {currentCard?.name}? Esta acción no se puede deshacer.
                             </p>
                             <DialogFooter>
                                 <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
+                                    <Button variant="outline">Cancelar</Button>
                                 </DialogClose>
                                 <Button variant="destructive" onClick={handleDeleteCard}>
-                                    Delete Card
+                                    Eliminar Tarjeta
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
