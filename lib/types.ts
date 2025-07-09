@@ -47,7 +47,7 @@ export interface User {
 
 export interface Student {
   id?: string | null;
-  period_id: string;
+  period_id?: string | null;
   period?: Period;
   promo_id?: number;
   grupo_id?: number;

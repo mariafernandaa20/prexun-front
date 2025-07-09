@@ -82,6 +82,25 @@ export const getStudents = async ({params}) => {
   return response.data;
 };
 
+export const checkStudentExists = async (email: string) => {
+  const response = await axiosInstance.get(API_ENDPOINTS.STUDENTS, {
+    params: {
+      search: email,
+      perPage: 1
+    }
+  });
+  
+  // Check if the email matches exactly (not just contains)
+  const exactMatch = response.data.data?.find((student: any) => 
+    student.email.toLowerCase() === email.toLowerCase()
+  );
+  
+  return {
+    exists: !!exactMatch,
+    student: exactMatch
+  };
+};
+
 export const getStudent = async (student: number) => {
   const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT}/${student}`);
   return response.data;

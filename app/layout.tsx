@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 
-  const develop = process.env.NEXT_PUBLIC_DEVELOPMENT || false;
+  const develop = process.env.NEXT_PUBLIC_DEVELOPMENT === "true" || false;
 
   console.log(process.env.NEXT_PUBLIC_DEVELOPMENT)
 
