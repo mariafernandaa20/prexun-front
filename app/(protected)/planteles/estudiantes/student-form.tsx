@@ -258,40 +258,31 @@ export function StudentForm({
 
       {/* Alert for existing student */}
       {showExistingStudentAlert && existingStudent && (
-        <Alert className="border-amber-500 bg-amber-50">
-          <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <AlertTitle className="text-amber-800">
+        <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-400">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <AlertTitle className="text-amber-800 dark:text-amber-200">
             ¡Estudiante existente encontrado!
           </AlertTitle>
-          <AlertDescription className="text-amber-700">
+          <AlertDescription className="text-amber-700 dark:text-amber-300">
             <p className="mb-3">
-              Ya existe un estudiante con el email <strong>{existingStudent.email}</strong>:
+              Ya existe un estudiante con el email <strong className="text-amber-900 dark:text-amber-100">{existingStudent.email}</strong>:
             </p>
-            <div className="bg-white p-3 rounded border border-amber-200 mb-3">
-              <p><strong>Nombre:</strong> {existingStudent.firstname} {existingStudent.lastname}</p>
-              <p><strong>ID:</strong> {existingStudent.id}</p>
-              <p><strong>Teléfono:</strong> {existingStudent.phone || 'No registrado'}</p>
-              <p><strong>Campus:</strong> {existingStudent.campus?.name || 'No asignado'}</p>
-              <p><strong>Estado:</strong> {existingStudent.status}</p>
+            <div className="bg-white dark:bg-gray-800 p-3 rounded border border-amber-200 dark:border-amber-700 mb-3">
+              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">Nombre:</strong> {existingStudent.firstname} {existingStudent.lastname}</p>
+              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">ID:</strong> {existingStudent.id}</p>
+              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">Teléfono:</strong> {existingStudent.phone || 'No registrado'}</p>
+              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">Campus:</strong> {existingStudent.campus?.name || 'No asignado'}</p>
+              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">Estado:</strong> {existingStudent.status}</p>
             </div>
             <div className="flex gap-2">
               <Button
                 type="button"
                 size="sm"
                 onClick={() => router.push(`/planteles/estudiantes/${existingStudent.id}`)}
-                className="bg-amber-600 hover:bg-amber-700 text-white"
+                className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-700 text-white"
               >
                 <User className="h-4 w-4 mr-1" />
                 Ver estudiante existente
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setShowExistingStudentAlert(false)}
-                className="border-amber-500 text-amber-700 hover:bg-amber-100"
-              >
-                Continuar de todos modos
               </Button>
             </div>
           </AlertDescription>
@@ -303,7 +294,7 @@ export function StudentForm({
           <Label htmlFor="email">
             Correo electrónico
             {isCheckingEmail && (
-              <span className="ml-2 text-xs text-gray-500">
+              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                 (Verificando...)
               </span>
             )}
