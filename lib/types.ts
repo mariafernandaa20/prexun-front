@@ -146,7 +146,7 @@ export interface Promocion {
 }
 
 export interface Grupo {
-  campuses?: string[];
+  campuses?: string[] | Campus[];
   id?: number;
   name: string;
   type: string;

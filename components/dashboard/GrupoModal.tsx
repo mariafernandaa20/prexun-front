@@ -40,7 +40,7 @@ export default function GrupoModal({
   campuses,
 }: GrupoModalProps) {
 
-  const [formData, setFormData] = useState<Grupo>({
+  const [formData, setFormData] = useState<Grupo & { campuses: string[] }>({
     name: '',
     type: '',
     plantel_id: 0,
@@ -58,9 +58,15 @@ export default function GrupoModal({
   useEffect(() => {
     if (grupo) {
       const frequency = Array.isArray(grupo.frequency) ? grupo.frequency : [];
+      const campusIds = grupo.campuses ?
+        grupo.campuses.map(campus =>
+          typeof campus === 'string' ? campus : campus.id?.toString() || ''
+        ).filter(id => id !== '') : [];
+
       setFormData({
         ...grupo,
         frequency,
+        campuses: campusIds,
       });
     } else {
       setFormData({
@@ -176,18 +182,6 @@ export default function GrupoModal({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="space-y-2">
-                <Label htmlFor="name">
-                  <span className='text-red-500'>*</span>  Nombre del Grupo
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="period_id">
                   <span className='text-red-500'>*</span> Periodo
                 </Label>
@@ -206,6 +200,19 @@ export default function GrupoModal({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  <span className='text-red-500'>*</span>  Nombre del Grupo
+                </Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
               </div>
 
               <div>

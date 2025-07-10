@@ -52,10 +52,16 @@ export default function GruposPage() {
 
   const handleSubmit = async (grupo: Grupo) => {
     try {
+      // Preparar los datos del grupo incluyendo campus_ids
+      const grupoData = {
+        ...grupo,
+        campus_ids: grupo.campuses // Enviar como campus_ids para el backend
+      };
+
       if (grupo.id) {
-        await updateGrupo(grupo)
+        await updateGrupo(grupoData)
       } else {
-        await createGrupo(grupo)
+        await createGrupo(grupoData)
       }
       fetchGrupos()
       setIsOpen(false)
@@ -99,6 +105,7 @@ export default function GruposPage() {
           <TableHead>Moodle ID</TableHead>
           <TableHead>Tipo</TableHead>
           <TableHead>Capacidad</TableHead>
+          <TableHead>Planteles</TableHead>
           <TableHead>Frecuencia</TableHead>
           <TableHead>Horario</TableHead>
           <TableHead>Fecha de Inicio</TableHead>
@@ -114,6 +121,26 @@ export default function GruposPage() {
             <TableCell>{grupo.moodle_id}</TableCell>
             <TableCell>{grupo.type}</TableCell>
             <TableCell>{grupo.capacity}</TableCell>
+            <TableCell>
+              {grupo.campuses && grupo.campuses.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {grupo.campuses.map((campus, index) => {
+                    // Si es un string, buscar el campus por ID
+                    const campusInfo = typeof campus === 'string' 
+                      ? campuses.find(c => c.id?.toString() === campus)
+                      : campus;
+                    
+                    return (
+                      <span key={campusInfo?.id || index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                        {campusInfo?.name || campus}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <span className="text-gray-400">Sin asignar</span>
+              )}
+            </TableCell>
             <TableCell>
               {Object.entries(JSON.parse(grupo.frequency as any))
                 .map(([day, value]) => value)
