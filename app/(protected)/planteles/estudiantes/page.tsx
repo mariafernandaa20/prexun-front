@@ -139,14 +139,14 @@ export default function Page() {
       period: periodFilter && periodFilter !== 'all' ? periodFilter : undefined,
       assignedPeriod: assignedPeriodFilter && assignedPeriodFilter !== 'all' ? assignedPeriodFilter : undefined,
     }
-  
-    
+
+
     try {
       setIsLoading(true);
-      
+
       // Use the regular StudentController endpoint with assignedPeriod parameter
       const response = await getStudents({ params });
-      
+
       setStudents(response.data);
       setPagination({
         currentPage: pagination.currentPage,

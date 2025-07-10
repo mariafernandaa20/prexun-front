@@ -95,7 +95,7 @@ const Filters: React.FC<FiltersProps> = ({
           allOptionLabel="Todos"
         />
         <SearchableSelect
-          options={grupos.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
+          options={grupos.filter(grupo => !periodFilter || grupo.period_id.toString() === periodFilter.toString()).map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
           value={undefined}
           placeholder="Filtrar por grupo"
           onChange={val => setGrupoFilter(val)}
@@ -103,7 +103,7 @@ const Filters: React.FC<FiltersProps> = ({
           allOptionLabel="Todos"
         />
         <SearchableSelect
-          options={semanasIntensivas.map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
+          options={semanasIntensivas.filter(semana => !periodFilter || semana.period_id.toString() === periodFilter.toString()).map(semana => ({ value: semana.id.toString(), label: semana.name }))}
           value={undefined}
           placeholder="Filtrar por semana intensiva"
           onChange={val => setSemanaIntensivaFilter(val)}
