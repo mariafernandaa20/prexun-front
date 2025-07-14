@@ -14,6 +14,7 @@ import UpdatePersonalInfo from '@/components/dashboard/UpdatePersonalInfo'
 import axiosInstance from '@/lib/api/axiosConfig'
 import SectionContainer from '@/components/SectionContainer'
 import StudentPeriod from '../student-period'
+import StudentLogs from './StudentLogs'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -193,16 +194,16 @@ const useStudent = (studentId: number) => {
 }
 
 export function StudentComponent({ slug }: { slug: string[] }) {
-    const studentId = Number(slug.join('/'))
-    const { student, loading, error, updateTransaction, refetch } = useStudent(studentId)
-    const campusId = useActiveCampusStore((state) => state.activeCampus?.id)
-    if (loading) return <div>Cargando...</div>
-    if (error) return <div>Error: {error.message}</div>
-    if (!student) return <div>No se encontró el estudiante</div>
+    const studentId = Number(slug.join('/'));
+    const { student, loading, error, updateTransaction, refetch } = useStudent(studentId);
+
+    const campusId = useActiveCampusStore((state) => state.activeCampus?.id);
+
+    if (!student) return <div>No se encontró el estudiante</div>;
 
     const handlePurchaseComplete = (newTransaction: Transaction) => {
-        updateTransaction(newTransaction)
-    }
+        updateTransaction(newTransaction);
+    };
 
     return (
         <div className="space-y-4 ">
@@ -244,11 +245,18 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                                 <p><span className="text-muted-foreground">Último pago:</span> {student.transactions?.length ? formatTime({ time: student.transactions[student.transactions.length - 1].payment_date }) : 'Sin pagos'}</p>
                             </div>
                         </div>
-                    </SectionContainer>                </CardContent>
+                    </SectionContainer>
+                </CardContent>
             </Card>
 
-            <StudentPeriod student={student} onRefresh={refetch} />
-
+            <div className='flex gap-4'>
+                <div className='xl:w-1/2'>
+                    <StudentPeriod student={student} onRefresh={refetch} />
+                </div>
+                <div className='xl:w-1/2'>
+                    <StudentLogs studentId={student.id} />
+                </div>
+            </div>
             <Card>
                 <CardHeader>
                     <h2 className="text-xl font-semibold">Historial de Transacciones</h2>
@@ -265,5 +273,5 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }

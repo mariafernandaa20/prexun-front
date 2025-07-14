@@ -758,3 +758,24 @@ export const getStudentsByAssignedPeriod = async (periodId: string, params: any)
   const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENTS_BY_ASSIGNED_PERIOD}/${periodId}`, { params });
   return response.data;
 };
+
+// Student Events API
+export const getStudentEvents = async (studentId: string, params?: any) => {
+  const response = await axiosInstance.get(`/student-events/${studentId}`, { params });
+  return response.data;
+};
+
+export const getRecentStudentEvents = async (studentId: string, limit?: number) => {
+  const response = await axiosInstance.get(`/student-events/${studentId}/recent/${limit}`);
+  return response.data;
+};
+
+export const getEventsByType = async (type: string) => {
+  const response = await axiosInstance.get(`/student-events/type/${type}`);
+  return response.data;
+};
+
+export const getMovementEvents = async () => {
+  const response = await axiosInstance.get(`/student-events/movement`);
+  return response.data;
+};
