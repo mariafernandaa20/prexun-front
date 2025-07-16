@@ -67,16 +67,16 @@ export default function Page() {
 
     const params = {
       campus_id: activeCampus.id,
-      page: pagination.currentPage,
+      page: (!searchName || !searchPhone) ? pagination.currentPage : 1,
       perPage: pagination.perPage,
       search: searchName,
       searchDate: searchDate,
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
-      grupo: grupoFilter || undefined,
+      grupo: (!searchName || !searchPhone) && grupoFilter || undefined,
       semanaIntensivaFilter: semanaIntensivaFilter || undefined,
-      period: periodFilter || undefined,
-      assignedPeriod: assignedPeriodFilter || undefined,
+      period: (!searchName || !searchPhone) && periodFilter || undefined,
+      assignedPeriod: (!searchName || !searchPhone) && assignedPeriodFilter || undefined,
     };
 
     try {
