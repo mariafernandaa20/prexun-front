@@ -44,8 +44,8 @@ export default function PaginationComponent({ pagination, setPagination }: Pagin
               <SelectValue placeholder="200" />
             </SelectTrigger>
             <SelectContent>
-              {[50, 100, 200, 500].map((value) => (
-                <SelectItem key={value} value={value.toString()}>
+              {["50", "100", "200", " 500"].map((value) => (
+                <SelectItem key={value} value={value}>
                   {value}
                 </SelectItem>
               ))}

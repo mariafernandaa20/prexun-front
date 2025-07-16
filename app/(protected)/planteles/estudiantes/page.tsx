@@ -42,14 +42,14 @@ export default function Page() {
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
-  
+
   // Filter states
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
   const [periodFilter, setPeriodFilter] = useState<string>('');
   const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>('');
   const [filtersInitialized, setFiltersInitialized] = useState(false);
-  
+
   // Search states
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
@@ -60,7 +60,7 @@ export default function Page() {
   const { activeCampus } = useActiveCampusStore();
   const { user, periods, grupos } = useAuthStore();
   const { config: uiConfig, loading: configLoading } = useUIConfig();
-  const { pagination, setPagination } = usePagination({ initialPerPage: 10 });
+  const { pagination, setPagination } = usePagination({ initialPerPage: 50 });
 
   const fetchStudents = useCallback(async () => {
     if (!activeCampus?.id) return;
@@ -224,8 +224,8 @@ export default function Page() {
   }, [selectedStudent, fetchStudents, toast]);
 
   const handleSelectStudent = useCallback((studentId: string) => {
-    setSelectedStudents(prev => 
-      prev.includes(studentId) 
+    setSelectedStudents(prev =>
+      prev.includes(studentId)
         ? prev.filter(id => id !== studentId)
         : [...prev, studentId]
     );
@@ -347,16 +347,16 @@ export default function Page() {
             {isLoading || isBulkActionLoading ? (
               <div className="text-center py-4">Cargando...</div>
             ) : (
-              <StudentsTable 
-                students={students} 
-                visibleColumnDefs={visibleColumnDefs} 
-                selectedStudents={selectedStudents} 
-                selectAll={selectAll} 
-                handleSelectAll={handleSelectAll} 
-                handleSelectStudent={handleSelectStudent} 
-                user={user} 
-                handleOpenEditModal={handleOpenEditModal} 
-                handleDeleteForever={handleDeleteForever} 
+              <StudentsTable
+                students={students}
+                visibleColumnDefs={visibleColumnDefs}
+                selectedStudents={selectedStudents}
+                selectAll={selectAll}
+                handleSelectAll={handleSelectAll}
+                handleSelectStudent={handleSelectStudent}
+                user={user}
+                handleOpenEditModal={handleOpenEditModal}
+                handleDeleteForever={handleDeleteForever}
               />
             )}
           </SectionContainer>
@@ -367,14 +367,14 @@ export default function Page() {
           </SectionContainer>
         </CardFooter>
       </Card>
-      <StudentDialog 
-        isOpen={isModalOpen} 
-        setIsOpen={setIsModalOpen} 
-        selectedStudent={selectedStudent} 
-        onSubmit={handleSubmit} 
-        municipios={municipios} 
-        prepas={prepas} 
-        promos={promos} 
+      <StudentDialog
+        isOpen={isModalOpen}
+        setIsOpen={setIsModalOpen}
+        selectedStudent={selectedStudent}
+        onSubmit={handleSubmit}
+        municipios={municipios}
+        prepas={prepas}
+        promos={promos}
       />
     </div>
   );
