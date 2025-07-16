@@ -249,29 +249,32 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 </CardContent>
             </Card>
 
-            <div className='flex gap-4'>
-                <div className='xl:w-1/2'>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+                <div className='lg:col-span-2'>
+                    <Card>
+                        <CardHeader>
+                            <h2 className="text-xl font-semibold">Historial de Transacciones</h2>
+                        </CardHeader>
+                        <CardContent>
+                            <SectionContainer>
+                                {student.transactions && (
+                                    <TransactionsTable
+                                        transactions={student.transactions}
+                                        onUpdateTransaction={updateTransaction}
+                                    />
+                                )}
+                            </SectionContainer>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div>
                     <StudentPeriod student={student} onRefresh={refetch} />
                 </div>
-                <div className='xl:w-1/2'>
+                <div>
                     <StudentLogs studentId={student.id} />
                 </div>
             </div>
-            <Card>
-                <CardHeader>
-                    <h2 className="text-xl font-semibold">Historial de Transacciones</h2>
-                </CardHeader>
-                <CardContent>
-                    <SectionContainer>
-                        {student.transactions && (
-                            <TransactionsTable
-                                transactions={student.transactions}
-                                onUpdateTransaction={updateTransaction}
-                            />
-                        )}
-                    </SectionContainer>
-                </CardContent>
-            </Card>
+
         </div>
     );
 }
