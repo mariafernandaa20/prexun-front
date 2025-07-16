@@ -365,7 +365,7 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Ninguno</SelectItem>
-                        {grupos.filter(grupo => grupo.period_id.toString() === formData.period_id.toString()).map((grupo) => (
+                        {grupos.filter(grupo => grupo.period_id.toString() === (formData.period_id ? formData.period_id.toString() : null)).map((grupo) => (
                           <SelectItem key={grupo.id} value={grupo.id!.toString()}>
                             {grupo.name} ({grupo.students_count || 0}/{grupo.capacity})
                           </SelectItem>
@@ -386,7 +386,7 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Ninguna</SelectItem>
-                        {semanasIntensivas.filter(semana => semana.period_id.toString() === formData.period_id.toString()).map((semana) => (
+                        {semanasIntensivas.filter(semana => semana.period_id.toString() === (formData.period_id ? formData.period_id.toString() : null)).map((semana) => (
                           <SelectItem key={semana.id} value={semana.id!.toString()}>
                             {semana.name} ({semana.students_count || 0}/{semana.capacity})
                           </SelectItem>

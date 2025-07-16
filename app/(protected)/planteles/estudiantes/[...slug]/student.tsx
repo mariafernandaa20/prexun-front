@@ -227,7 +227,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                             <div className="space-y-2">
                                 <h3 className="font-semibold">Información Personal</h3>
                                 <p><span className="text-muted-foreground">ID:</span> {student.id}</p>
-                                <p><span className="text-muted-foreground">Usuario Moodle:</span> {student.id}</p>
+                                <p><span className="text-muted-foreground">Moodle User:</span> {student.id}</p>
                                 <p><span className="text-muted-foreground">Email:</span> {student.email || 'No registrado'}</p>
                                 <p><span className="text-muted-foreground">Teléfono:</span> {student.phone || 'No registrado'}</p>
                             </div>
