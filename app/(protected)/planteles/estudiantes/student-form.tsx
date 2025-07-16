@@ -316,7 +316,7 @@ export function StudentForm({
           )}
         </div>
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="period_id">Periodo</Label>
           <Select
             name="period_id"
@@ -341,7 +341,7 @@ export function StudentForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
 
         <div className="space-y-2">
           <Label htmlFor="grupo_id">Grupo</Label>

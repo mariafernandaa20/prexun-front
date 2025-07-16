@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Promocion, Student } from '@/lib/types';
 import {
   getStudents,
@@ -7,144 +7,80 @@ import {
   updateStudent,
   deleteStudent,
   getPromos,
-} from '@/lib/api';
-import { useToast } from '@/hooks/use-toast';
-import { useActiveCampusStore } from '@/lib/store/plantel-store';
-
-import {
   getMunicipios,
   getPrepas,
 } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { usePagination } from '@/hooks/usePagination';
+import { useUIConfig } from '@/hooks/useUIConfig';
+
 import { MultiSelect } from '@/components/multi-select';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { useAuthStore } from '@/lib/store/auth-store';
+import { Button } from '@/components/ui/button';
+import { Plus, RefreshCwIcon } from 'lucide-react';
+import SectionContainer from '@/components/SectionContainer';
+
 import { getColumnDefinitions, getColumnOptions } from './columns';
 import { StudentsTable } from "./StudentsTable";
 import { StudentDialog } from "./StudentDialog";
 import PaginationComponent from "@/components/ui/PaginationComponent";
 import BulkActions from './BulkActions';
 import Filters from './Filters';
-import { usePagination } from '@/hooks/usePagination';
-import { useUIConfig } from '@/hooks/useUIConfig';
-import { Button } from '@/components/ui/button';
-import { Plus, RefreshCwIcon } from 'lucide-react';
-import SectionContainer from '@/components/SectionContainer';
+
+const INITIAL_VISIBLE_COLUMNS_KEY = 'studentTableColumns';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
   const [municipios, setMunicipios] = useState<Array<{ id: string; name: string }>>([]);
   const [prepas, setPrepas] = useState<Array<{ id: string; name: string }>>([]);
+  const [promos, setPromos] = useState<Promocion[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+  
+  // Filter states
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
-  const [periodFilter, setPeriodFilter] = useState<string>();
-  const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>();
-  const [periodFilterInitialized, setPeriodFilterInitialized] = useState(false);
+  const [periodFilter, setPeriodFilter] = useState<string>('');
+  const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>('');
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
+  
+  // Search states
   const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
   const [searchMatricula, setSearchMatricula] = useState<number | null>(null);
-  const [promos, setPromos] = useState<Promocion[]>([]);
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
+
   const { toast } = useToast();
   const { activeCampus } = useActiveCampusStore();
   const { user, periods, grupos } = useAuthStore();
   const { config: uiConfig, loading: configLoading } = useUIConfig();
-  const { pagination, setPagination } = usePagination({
-    initialPerPage: 10
-  });
+  const { pagination, setPagination } = usePagination({ initialPerPage: 10 });
 
-  const handlePeriodFilterChange = (value: string) => {
-    setPeriodFilter(value);
-    setPeriodFilterInitialized(true);
-  };
+  const fetchStudents = useCallback(async () => {
+    if (!activeCampus?.id) return;
 
-  useEffect(() => {
-    if (uiConfig?.default_period_id && !periodFilter && !periodFilterInitialized) {
-      setPeriodFilter(uiConfig.default_period_id);
-      setPeriodFilterInitialized(true);
-    }
-    // Note: assignedPeriodFilter is intentionally left without auto-initialization
-    // to allow users to see all students by default
-  }, [uiConfig?.default_period_id, periodFilter, periodFilterInitialized]);
-
-  const handleOpenEditModal = (student: Student) => {
-    setSelectedStudent(student);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteForever = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este estudiante permanentemente?')) return;
-
-    try {
-      await deleteStudent(id, true);
-      await fetchStudents();
-      toast({ title: 'Estudiante eliminado correctamente' });
-    } catch (error: any) {
-      toast({
-        title: 'Error al eliminar estudiante',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const columnDefinitions = React.useMemo(
-    () => getColumnDefinitions(user, handleOpenEditModal, handleDeleteForever),
-    [user]
-  );
-
-  const columnOptions = React.useMemo(
-    () => getColumnOptions(columnDefinitions),
-    [columnDefinitions]
-  );
-
-  const [visibleColumns, setVisibleColumns] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const savedColumns = localStorage.getItem('studentTableColumns');
-      if (savedColumns) {
-        return JSON.parse(savedColumns);
-      }
-    }
-    return columnDefinitions
-      .filter((col) => col.defaultVisible)
-      .map((col) => col.id);
-  });
-
-  const handleColumnSelect = (selectedColumns: string[]) => {
-    setVisibleColumns(selectedColumns);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(
-        'studentTableColumns',
-        JSON.stringify(selectedColumns)
-      );
-    }
-  };
-
-  const fetchStudents = async () => {
     const params = {
-      campus_id: activeCampus?.id,
+      campus_id: activeCampus.id,
       page: pagination.currentPage,
       perPage: pagination.perPage,
       search: searchName,
       searchDate: searchDate,
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
-      grupo: grupoFilter ? grupoFilter : undefined,
-      semanaIntensivaFilter: semanaIntensivaFilter,
-      period: periodFilter && periodFilter !== 'all' ? periodFilter : undefined,
-      assignedPeriod: assignedPeriodFilter && assignedPeriodFilter !== 'all' ? assignedPeriodFilter : undefined,
-    }
-
+      grupo: grupoFilter || undefined,
+      semanaIntensivaFilter: semanaIntensivaFilter || undefined,
+      period: periodFilter || undefined,
+      assignedPeriod: assignedPeriodFilter || undefined,
+    };
 
     try {
       setIsLoading(true);
-
-      // Use the regular StudentController endpoint with assignedPeriod parameter
       const response = await getStudents({ params });
 
       setStudents(response.data);
@@ -163,62 +99,111 @@ export default function Page() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [
+    activeCampus?.id,
+    pagination.currentPage,
+    pagination.perPage,
+    searchName,
+    searchDate,
+    searchPhone,
+    searchMatricula,
+    grupoFilter,
+    semanaIntensivaFilter,
+    periodFilter,
+    assignedPeriodFilter,
+    toast,
+    setPagination
+  ]);
 
-  const getData = async () => {
-    const responseMunicipios = await getMunicipios();
-    const responsePrepas = await getPrepas();
+  const handleOpenEditModal = useCallback((student: Student) => {
+    setSelectedStudent(student);
+    setIsModalOpen(true);
+  }, []);
 
-    setMunicipios(responseMunicipios);
-    setPrepas(responsePrepas);
-  };
+  const handleDeleteForever = useCallback(async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar este estudiante permanentemente?')) return;
 
-  const fetchPromos = async () => {
-    const response = await getPromos();
-    setPromos(response.active);
-  };
+    try {
+      await deleteStudent(id, true);
+      await fetchStudents();
+      toast({ title: 'Estudiante eliminado correctamente' });
+    } catch (error: any) {
+      toast({
+        title: 'Error al eliminar estudiante',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    }
+  }, [fetchStudents, toast]);
 
-  useEffect(() => {
-    if (!activeCampus) return;
+  const columnDefinitions = useMemo(
+    () => getColumnDefinitions(user, handleOpenEditModal, handleDeleteForever),
+    [user, handleOpenEditModal, handleDeleteForever]
+  );
 
-    if (periods && periods.length > 0 && !periodFilter && !periodFilterInitialized) {
-      const defaultId = uiConfig?.default_period_id;
-      if (defaultId && periods.find(p => p.id === defaultId)) {
-        setPeriodFilter(defaultId);
-        setPeriodFilterInitialized(true);
+  const columnOptions = useMemo(
+    () => getColumnOptions(columnDefinitions),
+    [columnDefinitions]
+  );
+
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedColumns = localStorage.getItem(INITIAL_VISIBLE_COLUMNS_KEY);
+      if (savedColumns) {
+        return JSON.parse(savedColumns);
       }
     }
+    return columnDefinitions
+      .filter((col) => col.defaultVisible)
+      .map((col) => col.id);
+  });
 
-    if (periodFilter || periodFilter === 'all') {
-      fetchStudents();
-      fetchPromos();
-      try {
-        getData();
-      } catch (error) {
-        toast({
-          title: 'Error al cargar datos',
-          description: error.response?.data?.message || 'Intente nuevamente',
-          variant: 'destructive',
-        });
-      }
-    }
-  }, [activeCampus, periods, uiConfig]);
+  const visibleColumnDefs = useMemo(
+    () => columnDefinitions.filter(col => visibleColumns.includes(col.id)),
+    [columnDefinitions, visibleColumns]
+  );
 
+  // Initialize filters with default values
   useEffect(() => {
-
-    if (pagination.currentPage !== 1) {
-      setPagination(prev => ({ ...prev, currentPage: 1 }));
-    } else {
-      fetchStudents();
+    if (uiConfig?.default_period_id && !filtersInitialized) {
+      setAssignedPeriodFilter(uiConfig.default_period_id);
+      setPeriodFilter('');
+      setFiltersInitialized(true);
     }
-  }, [searchName, searchDate, searchPhone, searchMatricula, periodFilter, grupoFilter, semanaIntensivaFilter, assignedPeriodFilter]);
+  }, [uiConfig?.default_period_id, filtersInitialized]);
 
+  const handlePeriodFilterChange = useCallback((value: string) => {
+    setPeriodFilter(value);
+  }, []);
 
-  useEffect(() => {
-    fetchStudents();
-  }, [pagination.currentPage, pagination.perPage]);
+  const handleColumnSelect = useCallback((selectedColumns: string[]) => {
+    setVisibleColumns(selectedColumns);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(INITIAL_VISIBLE_COLUMNS_KEY, JSON.stringify(selectedColumns));
+    }
+  }, []);
 
-  const handleSubmit = async (formData: Student) => {
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const [municipiosResponse, prepasResponse, promosResponse] = await Promise.all([
+        getMunicipios(),
+        getPrepas(),
+        getPromos(),
+      ]);
+
+      setMunicipios(municipiosResponse);
+      setPrepas(prepasResponse);
+      setPromos(promosResponse.active);
+    } catch (error: any) {
+      toast({
+        title: 'Error al cargar datos iniciales',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    }
+  }, [toast]);
+
+  const handleSubmit = useCallback(async (formData: Student) => {
     try {
       if (selectedStudent) {
         await updateStudent({ ...formData });
@@ -236,40 +221,71 @@ export default function Page() {
         variant: 'destructive',
       });
     }
-  };
+  }, [selectedStudent, fetchStudents, toast]);
 
-  const visibleColumnDefs = React.useMemo(
-    () => columnDefinitions.filter(col => visibleColumns.includes(col.id)),
-    [columnDefinitions, visibleColumns]
-  );
+  const handleSelectStudent = useCallback((studentId: string) => {
+    setSelectedStudents(prev => 
+      prev.includes(studentId) 
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
+  }, []);
 
-  const handleSelectStudent = (studentId: string) => {
-    setSelectedStudents(prev => {
-      if (prev.includes(studentId)) {
-        return prev.filter(id => id !== studentId);
-      } else {
-        return [...prev, studentId];
-      }
-    });
-  };
-
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (selectAll) {
       setSelectedStudents([]);
     } else {
       setSelectedStudents(students.map(student => student.id));
     }
     setSelectAll(!selectAll);
-  };
+  }, [selectAll, students]);
 
+  // Load initial data
   useEffect(() => {
-    if (students.length > 0 && selectedStudents.length === students.length) {
-      setSelectAll(true);
-    } else {
-      setSelectAll(false);
+    if (activeCampus && filtersInitialized) {
+      fetchInitialData();
     }
+  }, [activeCampus, filtersInitialized, fetchInitialData]);
+
+  // Fetch students when filters change
+  useEffect(() => {
+    if (!filtersInitialized) return;
+
+    if (pagination.currentPage !== 1) {
+      setPagination(prev => ({ ...prev, currentPage: 1 }));
+    } else {
+      fetchStudents();
+    }
+  }, [
+    filtersInitialized,
+    searchName,
+    searchDate,
+    searchPhone,
+    searchMatricula,
+    periodFilter,
+    grupoFilter,
+    semanaIntensivaFilter,
+    assignedPeriodFilter,
+    pagination.currentPage,
+    setPagination,
+    fetchStudents
+  ]);
+
+  // Fetch students when pagination changes
+  useEffect(() => {
+    if (filtersInitialized) {
+      fetchStudents();
+    }
+  }, [pagination.currentPage, pagination.perPage, filtersInitialized, fetchStudents]);
+
+  // Update selectAll state based on selected students
+  useEffect(() => {
+    setSelectAll(students.length > 0 && selectedStudents.length === students.length);
   }, [selectedStudents, students]);
 
+  if (!activeCampus) {
+    return <div className="text-center py-4">Seleccione un campus</div>;
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -283,7 +299,7 @@ export default function Page() {
                   <Button size='icon' onClick={() => setIsModalOpen(true)} title='Nuevo Estudiante'>
                     <Plus />
                   </Button>
-                  <Button size='icon' variant='secondary' onClick={() => fetchStudents()} title='Refrescar Estudiantes'>
+                  <Button size='icon' variant='secondary' onClick={fetchStudents} title='Refrescar Estudiantes'>
                     <RefreshCwIcon />
                   </Button>
                 </div>
@@ -331,7 +347,17 @@ export default function Page() {
             {isLoading || isBulkActionLoading ? (
               <div className="text-center py-4">Cargando...</div>
             ) : (
-              <StudentsTable students={students} visibleColumnDefs={visibleColumnDefs} selectedStudents={selectedStudents} selectAll={selectAll} handleSelectAll={handleSelectAll} handleSelectStudent={handleSelectStudent} user={user} handleOpenEditModal={handleOpenEditModal} handleDeleteForever={handleDeleteForever} />
+              <StudentsTable 
+                students={students} 
+                visibleColumnDefs={visibleColumnDefs} 
+                selectedStudents={selectedStudents} 
+                selectAll={selectAll} 
+                handleSelectAll={handleSelectAll} 
+                handleSelectStudent={handleSelectStudent} 
+                user={user} 
+                handleOpenEditModal={handleOpenEditModal} 
+                handleDeleteForever={handleDeleteForever} 
+              />
             )}
           </SectionContainer>
         </CardContent>
@@ -341,7 +367,15 @@ export default function Page() {
           </SectionContainer>
         </CardFooter>
       </Card>
-      <StudentDialog isOpen={isModalOpen} setIsOpen={setIsModalOpen} selectedStudent={selectedStudent} onSubmit={handleSubmit} municipios={municipios} prepas={prepas} promos={promos} />
+      <StudentDialog 
+        isOpen={isModalOpen} 
+        setIsOpen={setIsModalOpen} 
+        selectedStudent={selectedStudent} 
+        onSubmit={handleSubmit} 
+        municipios={municipios} 
+        prepas={prepas} 
+        promos={promos} 
+      />
     </div>
   );
 }
