@@ -170,57 +170,57 @@ export default function StudentNotes({ studentId }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          Notas del Estudiante
-        </h3>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openCreateDialog} size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Agregar Nota
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Crear Nueva Nota</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="note-text">Texto de la Nota</Label>
-                <Textarea
-                  id="note-text"
-                  placeholder="Escribe aquí la nota del estudiante..."
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  rows={4}
-                  className={errors.text ? 'border-red-500' : ''}
-                />
-                {errors.text && (
-                  <p className="text-red-500 text-sm">{errors.text}</p>
-                )}
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreateDialogOpen(false)}
-                  disabled={loading}
-                >
-                  Cancelar
-                </Button>
-                <Button onClick={handleCreateNote} disabled={loading}>
-                  {loading ? 'Creando...' : 'Crear Nota'}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+
 
       <Card >
         <CardHeader className="pb-3">
-
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Notas del Estudiante
+            </h3>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={openCreateDialog} size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Agregar Nota
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Crear Nueva Nota</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="note-text">Texto de la Nota</Label>
+                    <Textarea
+                      id="note-text"
+                      placeholder="Escribe aquí la nota del estudiante..."
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      rows={4}
+                      className={errors.text ? 'border-red-500' : ''}
+                    />
+                    {errors.text && (
+                      <p className="text-red-500 text-sm">{errors.text}</p>
+                    )}
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsCreateDialogOpen(false)}
+                      disabled={loading}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleCreateNote} disabled={loading}>
+                      {loading ? 'Creando...' : 'Crear Nota'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
 

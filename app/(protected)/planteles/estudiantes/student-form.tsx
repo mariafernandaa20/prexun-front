@@ -315,7 +315,28 @@ export function StudentForm({
             </p>
           )}
         </div>
-
+ <div className="space-y-2">
+          <Label htmlFor="status">Campus</Label>
+          <Select
+            name="campus_id"
+            value={formData.campus_id.toString()}
+            onValueChange={(value) =>
+              handleChange({
+                name: 'campus_id',
+                value: value,
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona el estatus" />
+            </SelectTrigger>
+            <SelectContent>
+              {
+                campuses.map((campus) => <SelectItem value={(campus.id).toString()}>{campus.name}</SelectItem>)
+              }
+            </SelectContent>
+          </Select>
+        </div>
         {/* <div className="space-y-2">
           <Label htmlFor="period_id">Periodo</Label>
           <Select
@@ -343,7 +364,7 @@ export function StudentForm({
           </Select>
         </div> */}
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="grupo_id">Grupo</Label>
           <SearchableSelect
             disabled={!!student?.id}
@@ -374,7 +395,7 @@ export function StudentForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
 
         <div className="space-y-2">
           <Label htmlFor="firstname">Nombre</Label>
@@ -763,32 +784,8 @@ export function StudentForm({
               <SelectItem value="En línea y en fisico">En línea y en fisico</SelectItem>
             </SelectContent>
           </Select>
-
         </div>}
 
-        <div className="space-y-2">
-          <Label htmlFor="status">Campus</Label>
-          <Select
-            name="campus_id"
-            value={formData.campus_id.toString()}
-            disabled={!!student?.id}
-            onValueChange={(value) =>
-              handleChange({
-                name: 'campus_id',
-                value: value,
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona el estatus" />
-            </SelectTrigger>
-            <SelectContent>
-              {
-                campuses.map((campus) => <SelectItem value={(campus.id).toString()}>{campus.name}</SelectItem>)
-              }
-            </SelectContent>
-          </Select>
-        </div>
         <div className="space-y-2">
           <Label htmlFor="status">Estatus</Label>
           <Select

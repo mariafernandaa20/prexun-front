@@ -288,7 +288,7 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Asignaciones del Estudiante</CardTitle>
+          <CardTitle>Asignaciones</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center p-8">
@@ -306,11 +306,8 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
           <div>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Asignaciones del Estudiante
+              Asignaciones
             </CardTitle>
-            <CardDescription>
-              Gestiona las asignaciones a grupos y semanas intensivas para {student.firstname} {student.lastname}
-            </CardDescription>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -463,12 +460,6 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                {assignments.length} asignación{assignments.length !== 1 ? 'es' : ''} encontrada{assignments.length !== 1 ? 's' : ''}
-              </h4>
-            </div>
-
             <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>

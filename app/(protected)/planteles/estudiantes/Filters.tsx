@@ -90,12 +90,6 @@ const Filters: React.FC<FiltersProps> = ({
       <div className="space-y-2">
         <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
           <Input
-            placeholder="Buscar por nombre..."
-            value={firstnameInput}
-            onChange={(e) => setFirstnameInput(e.target.value)}
-            className="w-full"
-          />
-          <Input
             placeholder="Buscar por apellido..."
             value={lastnameInput}
             onChange={(e) => setLastnameInput(e.target.value)}
@@ -108,43 +102,48 @@ const Filters: React.FC<FiltersProps> = ({
             className="w-full"
             type="email"
           />
-        <SearchableSelect
-          options={periods.map(period => ({ value: period.id, label: period.name }))}
-          value={periodFilter}
-          placeholder="Filtrar por periodo (Viejo)"
-          onChange={setPeriodFilter}
-          showAllOption={true}
-          allOptionLabel="Todos"
-        />
-        <SearchableSelect
-          options={periods.map(period => ({ value: period.id, label: period.name }))}
-          value={assignedPeriodFilter}
-          placeholder="Filtrar por periodo (Nuevo)"
-          onChange={setAssignedPeriodFilter}
-          showAllOption={true}
-          allOptionLabel="Todos"
-        />
-        <SearchableSelect
-          options={grupos.filter(grupo => !periodFilter || grupo.period_id.toString() === periodFilter.toString()).map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
-          value={undefined}
-          placeholder="Filtrar por grupo"
-          onChange={val => setGrupoFilter(val)}
-          showAllOption={true}
-          allOptionLabel="Todos"
-        />
-        <SearchableSelect
-          options={semanasIntensivas.filter(semana => !periodFilter || semana.period_id.toString() === periodFilter.toString()).map(semana => ({ value: semana.id.toString(), label: semana.name }))}
-          value={undefined}
-          placeholder="Filtrar por semana intensiva"
-          onChange={val => setSemanaIntensivaFilter(val)}
-          showAllOption={true}
-          allOptionLabel="Todos"
-        />
-        <>{children && children}</>
-      </div>
+          <SearchableSelect
+            options={periods.map(period => ({ value: period.id, label: period.name }))}
+            value={periodFilter}
+            placeholder="Filtrar por periodo (Viejo)"
+            onChange={setPeriodFilter}
+            showAllOption={true}
+            allOptionLabel="Todos"
+          />
+          <SearchableSelect
+            options={periods.map(period => ({ value: period.id, label: period.name }))}
+            value={assignedPeriodFilter}
+            placeholder="Filtrar por periodo (Nuevo)"
+            onChange={setAssignedPeriodFilter}
+            showAllOption={true}
+            allOptionLabel="Todos"
+          />
+          <SearchableSelect
+            options={grupos.filter(grupo => !periodFilter || grupo.period_id.toString() === periodFilter.toString()).map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
+            value={undefined}
+            placeholder="Filtrar por grupo"
+            onChange={val => setGrupoFilter(val)}
+            showAllOption={true}
+            allOptionLabel="Todos"
+          />
+          <SearchableSelect
+            options={semanasIntensivas.filter(semana => !periodFilter || semana.period_id.toString() === periodFilter.toString()).map(semana => ({ value: semana.id.toString(), label: semana.name }))}
+            value={undefined}
+            placeholder="Filtrar por semana intensiva"
+            onChange={val => setSemanaIntensivaFilter(val)}
+            showAllOption={true}
+            allOptionLabel="Todos"
+          />
+          <>{children && children}</>
+        </div>
         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-
+            <Input
+              placeholder="Buscar por nombre..."
+              value={firstnameInput}
+              onChange={(e) => setFirstnameInput(e.target.value)}
+              className="w-full"
+            />
             <Input
               type="date"
               value={dateInput}

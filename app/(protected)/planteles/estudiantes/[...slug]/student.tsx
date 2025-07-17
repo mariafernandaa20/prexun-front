@@ -274,7 +274,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 <div>
                     <StudentNotes studentId={student.id.toString()} />
                 </div>
-                <div>
+                <div className='lg:col-span-2'>
                     <StudentLogs studentId={student.id} />
                 </div>
             </div>
