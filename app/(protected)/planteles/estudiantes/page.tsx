@@ -51,7 +51,9 @@ export default function Page() {
   const [filtersInitialized, setFiltersInitialized] = useState(false);
 
   // Search states
-  const [searchName, setSearchName] = useState('');
+  const [searchFirstname, setSearchFirstname] = useState('');
+  const [searchLastname, setSearchLastname] = useState('');
+  const [searchEmail, setSearchEmail] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
   const [searchMatricula, setSearchMatricula] = useState<number | null>(null);
@@ -65,18 +67,23 @@ export default function Page() {
   const fetchStudents = useCallback(async () => {
     if (!activeCampus?.id) return;
 
+    // Check if any search field is being used
+    const isSearching = searchFirstname || searchLastname || searchEmail || searchPhone || searchMatricula;
+
     const params = {
       campus_id: activeCampus.id,
-      page: (!searchName || !searchPhone) ? pagination.currentPage : 1,
+      page: !isSearching ? pagination.currentPage : 1,
       perPage: pagination.perPage,
-      search: searchName,
+      searchFirstname: searchFirstname,
+      searchLastname: searchLastname,
+      searchEmail: searchEmail,
       searchDate: searchDate,
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
-      grupo: (!searchName || !searchPhone) && grupoFilter || undefined,
-      semanaIntensivaFilter: semanaIntensivaFilter || undefined,
-      period: (!searchName || !searchPhone) && periodFilter || undefined,
-      assignedPeriod: (!searchName || !searchPhone) && assignedPeriodFilter || undefined,
+      grupo: !isSearching && grupoFilter || undefined,
+      semanaIntensivaFilter: !isSearching && semanaIntensivaFilter || undefined,
+      period: !isSearching && periodFilter || undefined,
+      assignedPeriod: !isSearching && assignedPeriodFilter || undefined,
     };
 
     try {
@@ -103,7 +110,9 @@ export default function Page() {
     activeCampus?.id,
     pagination.currentPage,
     pagination.perPage,
-    searchName,
+    searchFirstname,
+    searchLastname,
+    searchEmail,
     searchDate,
     searchPhone,
     searchMatricula,
@@ -258,7 +267,9 @@ export default function Page() {
     }
   }, [
     filtersInitialized,
-    searchName,
+    searchFirstname,
+    searchLastname,
+    searchEmail,
     searchDate,
     searchPhone,
     searchMatricula,
@@ -313,7 +324,9 @@ export default function Page() {
                 assignedPeriodFilter={assignedPeriodFilter}
                 setGrupoFilter={setGrupoFilter}
                 setSemanaIntensivaFilter={setSemanaIntensivaFilter}
-                setSearchName={setSearchName}
+                setSearchFirstname={setSearchFirstname}
+                setSearchLastname={setSearchLastname}
+                setSearchEmail={setSearchEmail}
                 setSearchDate={setSearchDate}
                 setSearchPhone={setSearchPhone}
                 setSearchMatricula={setSearchMatricula}

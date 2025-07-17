@@ -18,7 +18,9 @@ interface FiltersProps {
   assignedPeriodFilter: any;
   setGrupoFilter: (value: string | null) => void;
   setSemanaIntensivaFilter: (value: string | null) => void;
-  setSearchName: (value: string) => void;
+  setSearchFirstname: (value: string) => void;
+  setSearchLastname: (value: string) => void;
+  setSearchEmail: (value: string) => void;
   setSearchDate: (value: string) => void;
   setSearchPhone: (value: string) => void;
   setSearchMatricula: (value: number | null) => void;
@@ -32,14 +34,18 @@ const Filters: React.FC<FiltersProps> = ({
   assignedPeriodFilter,
   setGrupoFilter,
   setSemanaIntensivaFilter,
-  setSearchName,
+  setSearchFirstname,
+  setSearchLastname,
+  setSearchEmail,
   setSearchDate,
   setSearchPhone,
   setSearchMatricula,
   children
 }) => {
   const [showAllFilters, setShowAllFilters] = useState(false);
-  const [nameInput, setNameInput] = useState('');
+  const [firstnameInput, setFirstnameInput] = useState('');
+  const [lastnameInput, setLastnameInput] = useState('');
+  const [emailInput, setEmailInput] = useState('');
   const [dateInput, setDateInput] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
   const [matriculaInput, setMatriculaInput] = useState<string>('');
@@ -48,14 +54,24 @@ const Filters: React.FC<FiltersProps> = ({
   const { periods, grupos, carreras, facultades, semanasIntensivas } = useAuthStore();
 
 
-  const debouncedName = useDebounce(nameInput, 500);
+  const debouncedFirstname = useDebounce(firstnameInput, 500);
+  const debouncedLastname = useDebounce(lastnameInput, 500);
+  const debouncedEmail = useDebounce(emailInput, 500);
   const debouncedDate = useDebounce(dateInput, 500);
   const debouncedPhone = useDebounce(phoneInput, 500);
   const debouncedMatricula = useDebounce(matriculaInput, 500);
 
   useEffect(() => {
-    setSearchName(debouncedName);
-  }, [debouncedName, setSearchName]);
+    setSearchFirstname(debouncedFirstname);
+  }, [debouncedFirstname, setSearchFirstname]);
+
+  useEffect(() => {
+    setSearchLastname(debouncedLastname);
+  }, [debouncedLastname, setSearchLastname]);
+
+  useEffect(() => {
+    setSearchEmail(debouncedEmail);
+  }, [debouncedEmail, setSearchEmail]);
 
   useEffect(() => {
     setSearchDate(debouncedDate);
@@ -71,13 +87,27 @@ const Filters: React.FC<FiltersProps> = ({
 
   return (
     <div className="flex flex-col gap-2 w-full max-w-[1/2]">
-      <div className="space-y-2">          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-        <Input
-          placeholder="Buscar por nombre..."
-          value={nameInput}
-          onChange={(e) => setNameInput(e.target.value)}
-          className="w-full"
-        />
+      <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
+          <Input
+            placeholder="Buscar por nombre..."
+            value={firstnameInput}
+            onChange={(e) => setFirstnameInput(e.target.value)}
+            className="w-full"
+          />
+          <Input
+            placeholder="Buscar por apellido..."
+            value={lastnameInput}
+            onChange={(e) => setLastnameInput(e.target.value)}
+            className="w-full"
+          />
+          <Input
+            placeholder="Buscar por correo..."
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
+            className="w-full"
+            type="email"
+          />
         <SearchableSelect
           options={periods.map(period => ({ value: period.id, label: period.name }))}
           value={periodFilter}
