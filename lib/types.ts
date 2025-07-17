@@ -177,6 +177,15 @@ export interface Gasto {
   user?: User;
   admin?: User;
 }
+export interface Note {
+  id?: number;
+  student_id: number;
+  text: string;
+  created_at?: string;
+  updated_at?: string;
+  student?: Student;
+}
+
 export interface Transaction {
   id?: number;
   uuid?: string;

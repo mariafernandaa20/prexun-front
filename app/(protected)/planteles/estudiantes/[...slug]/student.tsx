@@ -15,6 +15,7 @@ import axiosInstance from '@/lib/api/axiosConfig'
 import SectionContainer from '@/components/SectionContainer'
 import StudentPeriod from '../student-period'
 import StudentLogs from './StudentLogs'
+import StudentNotes from './StudentNotes'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -269,6 +270,9 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 </div>
                 <div>
                     <StudentPeriod student={student} onRefresh={refetch} />
+                </div>
+                <div>
+                    <StudentNotes studentId={student.id.toString()} />
                 </div>
                 <div>
                     <StudentLogs studentId={student.id} />

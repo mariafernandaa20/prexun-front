@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosInstance from "./api/axiosConfig";
 import { API_ENDPOINTS } from "./api/endpoints";
-import { Campus, Carrera, Caja, Facultad, Gasto, Grupo, Modulo, Municipio, Period, Prepa, Promocion, Student, Transaction, User, Producto, Denomination } from "./types";
+import { Campus, Carrera, Caja, Facultad, Gasto, Grupo, Modulo, Municipio, Note, Period, Prepa, Promocion, Student, Transaction, User, Producto, Denomination } from "./types";
 
 export const getDashboardData = async () => {
   const response = await axiosInstance.get(API_ENDPOINTS.DASHBOARD);
@@ -777,5 +777,31 @@ export const getEventsByType = async (type: string) => {
 
 export const getMovementEvents = async () => {
   const response = await axiosInstance.get(`/student-events/movement`);
+  return response.data;
+};
+
+// Notes API
+export const getNotes = async () => {
+  const response = await axiosInstance.get(API_ENDPOINTS.NOTES);
+  return response.data;
+};
+
+export const getStudentNotes = async (studentId: number) => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENT_NOTES}/${studentId}/notes`);
+  return response.data;
+};
+
+export const createNote = async (note: Omit<Note, 'id' | 'created_at' | 'updated_at'>) => {
+  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_NOTE, note);
+  return response.data;
+};
+
+export const updateNote = async (note: Note) => {
+  const response = await axiosInstance.put(`${API_ENDPOINTS.UPDATE_NOTE}/${note.id}`, note);
+  return response.data;
+};
+
+export const deleteNote = async (id: number) => {
+  const response = await axiosInstance.delete(`${API_ENDPOINTS.DELETE_NOTE}/${id}`);
   return response.data;
 };
