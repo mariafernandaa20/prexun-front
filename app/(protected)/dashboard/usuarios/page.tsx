@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -305,15 +306,15 @@ export default function page() {
           <TableBody>
             {users ? (
               users.map((user) => (
-                <TableRow key={user.id} className={user.suspendido ? 'bg-red-50' : ''}>
+                <TableRow key={user.id} className={user.suspendido ? 'bg-red-50 dark:bg-red-950/20' : ''}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       user.suspendido 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-green-100 text-green-800'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
+                        : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                     }`}>
                       {user.suspendido ? 'Suspendido' : 'Activo'}
                     </span>
