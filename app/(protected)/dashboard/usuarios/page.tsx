@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { User, UserFormData } from '@/lib/types';
@@ -82,6 +83,7 @@ export default function page() {
     password: '',
     campuses: [],
     grupos: [],
+    suspendido: false,
   });
 
   useEffect(() => {
@@ -149,6 +151,7 @@ export default function page() {
       password: '',
       campuses: [],
       grupos: [],
+      suspendido: false,
     });
     setIsModalOpen(true);
   };
@@ -171,7 +174,8 @@ export default function page() {
         campuses: user.campuses
           ? user.campuses.map((campus) => campus.id.toString())
           : [],
-        grupos: gruposDelMaestro
+        grupos: gruposDelMaestro,
+        suspendido: user.suspendido || false
       });
       setShowGrupos(user.role === 'maestro');
       setIsModalOpen(true);
@@ -236,10 +240,11 @@ export default function page() {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -291,6 +296,7 @@ export default function page() {
               <TableHead>Nombre</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Rol</TableHead>
+              <TableHead>Estado</TableHead>
               <TableHead>Planteles</TableHead>
               <TableHead>Grupos</TableHead>
               <TableHead>Acciones</TableHead>
@@ -299,10 +305,19 @@ export default function page() {
           <TableBody>
             {users ? (
               users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user.id} className={user.suspendido ? 'bg-red-50' : ''}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      user.suspendido 
+                        ? 'bg-red-100 text-red-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {user.suspendido ? 'Suspendido' : 'Activo'}
+                    </span>
+                  </TableCell>
                   <TableCell>
                     {user.campuses
                       ? user.campuses.map((campus) => campus.name).join(', ')
@@ -338,7 +353,7 @@ export default function page() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
+                <TableCell colSpan={7} className="text-center">
                   No se encontraron usuarios.
                 </TableCell>
               </TableRow>
@@ -451,6 +466,23 @@ export default function page() {
                   onChange={handleInputChange}
                   required={!selectedUser}
                 />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="suspendido"
+                  name="suspendido"
+                  checked={formData.suspendido || false}
+                  onCheckedChange={(checked) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      suspendido: checked as boolean,
+                    }));
+                  }}
+                />
+                <Label htmlFor="suspendido" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Usuario suspendido
+                </Label>
               </div>
 
               <DialogFooter>

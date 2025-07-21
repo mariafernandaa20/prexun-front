@@ -33,6 +33,7 @@ export interface UserFormData {
   password?: string;
   campuses: string[];
   grupos?: string[];
+  suspendido?: boolean;
 }
 
 export interface User {
@@ -43,6 +44,7 @@ export interface User {
   password?: string;
   campuses?: Campus[];
   grupos?: Grupo[];
+  suspendido?: boolean;
 }
 
 export interface Student {
