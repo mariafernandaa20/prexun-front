@@ -24,6 +24,7 @@ import {
   Wallet,
   AlertCircle,
   DollarSign,
+  MessageSquare,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -175,6 +176,11 @@ export const data = {
       name: "Productos",
       url: "/dashboard/productos",
       icon: ShoppingBag,
+    },
+    {
+      name: "Instrucciones",
+      url: "/dashboard/instrucciones",
+      icon: MessageSquare,
     },
   ],
   plantel_navigation: [
