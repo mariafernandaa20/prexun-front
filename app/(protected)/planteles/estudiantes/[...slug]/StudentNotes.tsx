@@ -256,6 +256,10 @@ export default function StudentNotes({ studentId }: Props) {
                           </span>
                         )}
                       </p>
+                      <div className="text-sm text-gray-500">
+                        Creado por: {note.user?.name || 'Usuario desconocido'}
+                        <span className="ml-2">{formatDate(note.created_at)}</span>
+                      </div>
                     </div>
                     <div className="flex gap-1">
                       <Button

@@ -186,6 +186,7 @@ export interface Note {
   created_at?: string;
   updated_at?: string;
   student?: Student;
+  user?: User;
 }
 
 export interface Transaction {
