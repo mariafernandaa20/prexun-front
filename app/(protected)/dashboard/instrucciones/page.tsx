@@ -18,6 +18,7 @@ import axiosInstance from "@/lib/api/axiosConfig";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff, Send, RotateCcw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ReactMarkdown from "react-markdown";
 import OpenAI from "openai";
 
 interface Context {
@@ -256,10 +257,10 @@ export default function InstruccionesPage() {
           </div>
           
           {/* Chat Messages */}
-          <Card className="flex-1 flex flex-col">
-            <CardContent className="flex-1 flex flex-col p-4">
-              <ScrollArea className="flex-1 mb-4">
-                <div className="space-y-4">
+          <Card className="flex-1 flex flex-col max-h-[calc(100vh-20rem)]">
+            <CardContent className="flex-1 flex flex-col p-4 h-full">
+              <ScrollArea className="flex-1 mb-4 max-h-[calc(100vh-25rem)] overflow-y-auto">
+                <div className="space-y-4 pr-4">
                   {messages.map((message, index) => (
                     <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[80%] p-3 rounded-lg ${
@@ -267,7 +268,9 @@ export default function InstruccionesPage() {
                           ? 'bg-blue-500 text-white' 
                           : 'bg-gray-100 text-gray-900'
                       }`}>
-                        <p className="text-sm">{message.content}</p>
+                        <div className="text-sm prose prose-sm max-w-none">
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        </div>
                         <p className="text-xs opacity-70 mt-1">
                           {message.timestamp.toLocaleTimeString()}
                         </p>
@@ -306,7 +309,7 @@ export default function InstruccionesPage() {
         </div>
         
         {/* Instructions Management Section */}
-        <div className="flex flex-col">
+        <div className="flex flex-col max-h-[calc(100vh-8rem)] overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Gestión de Instrucciones</h1>
             <Button onClick={() => setShowCreateForm(!showCreateForm)}>
@@ -335,7 +338,8 @@ export default function InstruccionesPage() {
                 placeholder="Escribe las instrucciones para ChatGPT..."
                 value={newContextInstructions}
                 onChange={(e) => setNewContextInstructions(e.target.value)}
-                rows={4}
+                rows={8}
+                className="min-h-[200px]"
               />
             </div>
             <div className="flex gap-2">
@@ -348,9 +352,10 @@ export default function InstruccionesPage() {
         </Card>
       )}
 
-      <Card>
+      <Card className="flex-1">
         <CardContent className="p-0">
-          <Table>
+          <div className="max-h-[calc(100vh-25rem)] overflow-y-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
@@ -382,7 +387,8 @@ export default function InstruccionesPage() {
                         onChange={(e) =>
                           setEditingContext({ ...editingContext, instructions: e.target.value })
                         }
-                        rows={3}
+                        rows={6}
+                        className="min-h-[150px]"
                       />
                     ) : (
                       <div className="truncate" title={context.instructions}>
@@ -460,6 +466,7 @@ export default function InstruccionesPage() {
               No hay instrucciones creadas. Crea la primera instrucción para comenzar.
             </div>
           )}
+          </div>
         </CardContent>
       </Card>
         </div>
