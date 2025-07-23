@@ -16,7 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/api/axiosConfig";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff } from "lucide-react";
+import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff, Send, RotateCcw } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import OpenAI from "openai";
 
 interface Context {
   id: number;
@@ -27,6 +29,17 @@ interface Context {
   updated_at: string;
 }
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+const openai = new OpenAI({
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
+
 export default function InstruccionesPage() {
   const [contexts, setContexts] = useState<Context[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +47,11 @@ export default function InstruccionesPage() {
   const [newContextInstructions, setNewContextInstructions] = useState("");
   const [editingContext, setEditingContext] = useState<Context | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  
+  // Chat states
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [currentMessage, setCurrentMessage] = useState("");
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
 
   useEffect(() => {
     loadContexts();
@@ -132,6 +150,60 @@ export default function InstruccionesPage() {
     });
   };
 
+  const sendMessage = async () => {
+    if (!currentMessage.trim()) return;
+    
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: currentMessage,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setCurrentMessage("");
+    setIsLoadingChat(true);
+    
+    try {
+      const activeContexts = contexts.filter(c => c.is_active);
+      let systemMessage = "Eres un asistente útil.";
+      
+      if (activeContexts.length > 0) {
+        const combinedInstructions = activeContexts
+          .map(context => `${context.name}: ${context.instructions}`)
+          .join('\n\n');
+        systemMessage = `Eres un asistente útil. Sigue todas estas instrucciones al mismo tiempo:\n\n${combinedInstructions}`;
+      }
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: systemMessage },
+          ...messages.map(msg => ({ role: msg.role, content: msg.content })),
+          { role: "user", content: currentMessage }
+        ],
+        max_tokens: 500
+      });
+      
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: completion.choices[0]?.message?.content || "No pude generar una respuesta.",
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      toast.error("Error al enviar mensaje a OpenAI");
+      console.error(error);
+    } finally {
+      setIsLoadingChat(false);
+    }
+  };
+  
+  const resetChat = () => {
+    setMessages([]);
+    setCurrentMessage("");
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-10">
@@ -147,13 +219,101 @@ export default function InstruccionesPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Gestión de Instrucciones</h1>
-        <Button onClick={() => setShowCreateForm(!showCreateForm)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Instrucción
-        </Button>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-8rem)]">
+        {/* Chat Section */}
+        <div className="flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">Probar Instrucciones</h2>
+            <Button onClick={resetChat} variant="outline" size="sm">
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset
+            </Button>
+          </div>
+          
+          {/* Active Instructions Display */}
+          <div className="mb-4">
+            <label className="text-sm font-medium mb-2 block">Instrucciones Activas (se usan automáticamente):</label>
+            <div className="p-3 border rounded-md bg-gray-50 min-h-[60px]">
+              {contexts.filter(c => c.is_active).length > 0 ? (
+                <div className="space-y-2">
+                  {contexts.filter(c => c.is_active).map(context => (
+                    <div key={context.id} className="flex items-center gap-2">
+                      <Badge variant="default" className="bg-green-100 text-green-800">
+                        {context.name}
+                      </Badge>
+                      <span className="text-xs text-gray-600 truncate">
+                        {context.instructions.length > 50 
+                          ? `${context.instructions.substring(0, 50)}...` 
+                          : context.instructions}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No hay instrucciones activas. Activa algunas instrucciones para que se usen automáticamente.</p>
+              )}
+            </div>
+          </div>
+          
+          {/* Chat Messages */}
+          <Card className="flex-1 flex flex-col">
+            <CardContent className="flex-1 flex flex-col p-4">
+              <ScrollArea className="flex-1 mb-4">
+                <div className="space-y-4">
+                  {messages.map((message, index) => (
+                    <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] p-3 rounded-lg ${
+                        message.role === 'user' 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-gray-100 text-gray-900'
+                      }`}>
+                        <p className="text-sm">{message.content}</p>
+                        <p className="text-xs opacity-70 mt-1">
+                          {message.timestamp.toLocaleTimeString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {isLoadingChat && (
+                    <div className="flex justify-start">
+                      <div className="bg-gray-100 p-3 rounded-lg">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+              
+              {/* Message Input */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Escribe tu mensaje..."
+                  value={currentMessage}
+                  onChange={(e) => setCurrentMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && !isLoadingChat && sendMessage()}
+                  disabled={isLoadingChat}
+                />
+                <Button 
+                  onClick={sendMessage} 
+                  disabled={isLoadingChat || !currentMessage.trim()}
+                  size="sm"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Instructions Management Section */}
+        <div className="flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Gestión de Instrucciones</h1>
+            <Button onClick={() => setShowCreateForm(!showCreateForm)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nueva Instrucción
+            </Button>
+          </div>
 
       {showCreateForm && (
         <Card className="mb-6">
@@ -302,6 +462,8 @@ export default function InstruccionesPage() {
           )}
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   );
 }

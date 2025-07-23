@@ -248,16 +248,8 @@ export default function StudentNotes({ studentId }: Props) {
                 <div key={note.id}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="text-sm text-muted-foreground">
-                        {note.created_at && formatDate(note.created_at)}
-                        {note.updated_at && note.updated_at !== note.created_at && (
-                          <span className="ml-2">
-                            (Editado: {formatDate(note.updated_at)})
-                          </span>
-                        )}
-                      </p>
                       <div className="text-sm text-gray-500">
-                        Creado por: {note.user?.name || 'Usuario desconocido'}
+                        Por: {note.user?.name || 'Usuario desconocido'}
                         <span className="ml-2">{formatDate(note.created_at)}</span>
                       </div>
                     </div>
