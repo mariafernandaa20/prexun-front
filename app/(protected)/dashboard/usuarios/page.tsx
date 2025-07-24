@@ -197,7 +197,7 @@ export default function page() {
         const response = await createUser(formData as unknown as User);
         if (formData.role === 'maestro' && formData.grupos) {
           // Corregir la URL para nuevos usuarios
-          const groupAssignResponse = await axiosInstance.post(`/teacher/${response.data.id}/groups/assign`, {
+          const groupAssignResponse = await axiosInstance.post(`/teacher/${response.data.data.id}/groups/assign`, {
             grupo_ids: formData.grupos
           });
         }

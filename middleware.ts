@@ -19,8 +19,8 @@ export function middleware(request: NextRequest) {
   }
 
   if (role === 'super_admin' || role === 'chatbot') {
-    if (role === 'chatbot') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (role === 'chatbot' && !pathname.startsWith('/chat')) {
+      return NextResponse.redirect(new URL('/chat', request.url))
     }
     return NextResponse.next()
   } else if (role === 'admin' || role === 'contador') {
@@ -36,7 +36,9 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/planteles/:path*',
+    '/chat/:path*',
     '/dashboard',
-    '/planteles'
+    '/planteles',
+    '/chat'
   ]
-} 
+}

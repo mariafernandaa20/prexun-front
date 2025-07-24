@@ -25,11 +25,13 @@ interface campus{
   grupo_ids: {id: string[];
   name: string;}[];
 }
+export type UserRole = 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro' | 'chatbot';
+
 export interface UserFormData {
   id?: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro' | 'chatbot';
+  role: UserRole;
   password?: string;
   campuses: string[];
   grupos?: string[];
@@ -40,7 +42,7 @@ export interface User {
   id?: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro';
+  role: UserRole;
   password?: string;
   campuses?: Campus[];
   grupos?: Grupo[];

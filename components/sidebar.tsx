@@ -230,6 +230,13 @@ export const data = {
       icon: FcGoogle as any,
     }
   ],
+  chatbot_navigation: [
+    {
+      name: "Chat",
+      url: "/chat",
+      icon: MessageSquare,
+    },
+  ],
 };
 
 export function TemplateSidebar({
@@ -284,6 +291,27 @@ export function PlantelSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavItems projects={data.plantel_navigation} />
+      </SidebarContent>
+      <SidebarFooter>
+        <ThemeToggleSidebar />
+        <NavUser />
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  );
+}
+
+export function ChatSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <h2 className="text-xl font-bold px-2 py-4 group-data-[collapsible=icon]:hidden text-white">Chat Assistant</h2>
+        <MessageSquare className="group-data-[collapsible=icon]:block hidden py-4 mx-auto" size={32} />
+      </SidebarHeader>
+      <SidebarContent>
+        <NavItems projects={data.chatbot_navigation} />
       </SidebarContent>
       <SidebarFooter>
         <ThemeToggleSidebar />
