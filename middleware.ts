@@ -18,7 +18,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (role === 'super_admin') {
+  if (role === 'super_admin' || role === 'chatbot') {
+    if (role === 'chatbot') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
     return NextResponse.next()
   } else if (role === 'admin' || role === 'contador') {
     if (!pathname.startsWith('/planteles')) {

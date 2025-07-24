@@ -57,16 +57,6 @@ import axiosInstance from '@/lib/api/axiosConfig';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { useAuthStore } from '@/lib/store/auth-store';
 
-interface Campus {
-  id: string;
-  name: string;
-}
-
-interface Grupo {
-  id: string;
-  name: string;
-}
-
 export default function page() {
   const { toast } = useToast();
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
@@ -265,7 +255,7 @@ export default function page() {
     fetchCampuses();
   }, []);
 
-  const handleRoleChange = (value: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro') => {
+  const handleRoleChange = (value: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'chatbot' | 'otro') => {
     setFormData((prev) => ({
       ...prev,
       role: value,
@@ -418,6 +408,7 @@ export default function page() {
                     <SelectItem value="contador">Contador</SelectItem>
                     <SelectItem value="maestro">Maestro</SelectItem>
                     <SelectItem value="proveedor">Proveedor</SelectItem>
+                    <SelectItem value="chatbot">Chatbot</SelectItem>
                     <SelectItem value="otro">Otro</SelectItem>
                   </SelectContent>
                 </Select>

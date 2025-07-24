@@ -29,7 +29,7 @@ export interface UserFormData {
   id?: string;
   name: string;
   email: string;
-  role: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro';
+  role: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro' | 'chatbot';
   password?: string;
   campuses: string[];
   grupos?: string[];
