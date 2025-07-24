@@ -179,7 +179,7 @@ export const data = {
     },
     {
       name: "Instrucciones",
-      url: "/dashboard/instrucciones",
+      url: "/chat",
       icon: MessageSquare,
     },
   ],
