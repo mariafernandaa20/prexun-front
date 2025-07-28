@@ -27,7 +27,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { MainNav } from "@/components/main-nav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import axiosClient from "@/lib/axiosClient";
+import axiosInstance from "@/lib/api/axiosConfig";
 
 const formSchema = z.object({
   firstname: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -88,7 +88,7 @@ export default function RegistroPage() {
   useEffect(() => {
     const fetchFormData = async () => {
       try {
-        const response = await axiosClient.get('/public/students/form-data');
+        const response = await axiosInstance.get('/public/students/form-data');
         setFormData(response.data);
       } catch (error) {
         toast({
@@ -119,7 +119,7 @@ export default function RegistroPage() {
         average: values.average ? parseFloat(values.average) : null,
       };
 
-      const response = await axiosClient.post('/public/students/register', submitData);
+      const response = await axiosInstance.post('/public/students/register', submitData);
 
       toast({
         title: "¡Registro exitoso!",

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/lib/store/auth-store";
-import axiosClient from "@/lib/axiosClient";
+import axiosInstance from '@/lib/api/axiosConfig';
 
 interface Group {
   id: number;
@@ -44,7 +44,7 @@ export default function TeachergruposPage() {
   useEffect(() => {
     if (!selectedGroup) return;
     
-    axiosClient.get(`/grupos/${selectedGroup}/students`)
+    axiosInstance.get(`/grupos/${selectedGroup}/students`)
       .then((response) => {
         setAlumnos(response.data);
         const lista = response.data.map((alumno: Student) => ({
@@ -153,7 +153,7 @@ export default function TeachergruposPage() {
                 };
 
                 try {
-                  await axiosClient.post('/asistencias', payload);
+                  await axiosInstance.post('/asistencias', payload);
                   alert("Asistencia guardada correctamente");
                 } catch (err: any) {
                   console.error(err);

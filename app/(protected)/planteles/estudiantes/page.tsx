@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Promocion, Student } from '@/lib/types';
 import {
   getStudents,
@@ -63,6 +64,7 @@ export default function Page() {
   const { user, periods, grupos } = useAuthStore();
   const { config: uiConfig, loading: configLoading } = useUIConfig();
   const { pagination, setPagination } = usePagination({ initialPerPage: 50 });
+  const router = useRouter();
 
   const fetchStudents = useCallback(async () => {
     if (!activeCampus?.id) return;
@@ -217,12 +219,20 @@ export default function Page() {
       if (selectedStudent) {
         await updateStudent({ ...formData });
         toast({ title: 'Estudiante actualizado correctamente' });
+        await fetchStudents();
+        setIsModalOpen(false);
       } else {
-        await createStudent({ ...formData });
+        const response = await createStudent({ ...formData });
         toast({ title: 'Estudiante creado correctamente' });
+        setIsModalOpen(false);
+        
+        // Redirect to the new student's detail page
+        if (response?.id) {
+          router.push(`/planteles/estudiantes/${response.id}`);
+        } else {
+          await fetchStudents();
+        }
       }
-      await fetchStudents();
-      setIsModalOpen(false);
     } catch (error: any) {
       toast({
         title: 'Error al guardar estudiante',
@@ -230,7 +240,7 @@ export default function Page() {
         variant: 'destructive',
       });
     }
-  }, [selectedStudent, fetchStudents, toast]);
+  }, [selectedStudent, fetchStudents, toast, router]);
 
   const handleSelectStudent = useCallback((studentId: string) => {
     setSelectedStudents(prev =>
