@@ -125,7 +125,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         transaction_type: 'purchase',
         denominations: [],
         payment_date: null,
-        expiration_date: formData.expiration_date || null
+        expiration_date: formData.expiration_date || null,
+        debt_id: null
       })
 
       if (response) {
