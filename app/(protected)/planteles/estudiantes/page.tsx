@@ -317,7 +317,7 @@ export default function Page() {
               <div className='flex items-center justify-between gap-2 mb-4 lg:mb-0'>
                 <h1 className="text-2xl font-bold">Estudiantes</h1>
                 <div className='flex items-center gap-2'>
-                  <Button size='icon' onClick={() => setIsModalOpen(true)} title='Nuevo Estudiante'>
+                  <Button size='icon' onClick={() => { setSelectedStudent(null); setIsModalOpen(true); }} title='Nuevo Estudiante'>
                     <Plus />
                   </Button>
                   <Button size='icon' variant='secondary' onClick={fetchStudents} title='Refrescar Estudiantes'>
@@ -394,6 +394,7 @@ export default function Page() {
         isOpen={isModalOpen}
         setIsOpen={setIsModalOpen}
         selectedStudent={selectedStudent}
+        setSelectedStudent={setSelectedStudent}
         onSubmit={handleSubmit}
         municipios={municipios}
         prepas={prepas}

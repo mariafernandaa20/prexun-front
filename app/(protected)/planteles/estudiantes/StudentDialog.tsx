@@ -5,14 +5,21 @@ export const StudentDialog = ({
   isOpen,
   setIsOpen,
   selectedStudent,
+  setSelectedStudent,
   onSubmit,
   municipios,
   prepas,
   promos,
 }) => {
+  const handleOpenChange = (open) => {
+    setIsOpen(open);
+    if (!open) {
+      setSelectedStudent(null);
+    }
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="lg:min-w-[70rem] max-h-[90vh] overflow-y-hidden">
         <DialogHeader>
           <DialogTitle>
