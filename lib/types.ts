@@ -206,6 +206,7 @@ export interface Transaction {
   expiration_date?: string;
   notes?: string;
   transaction_type?: string;
+  debt_id: number;
   folio?: number;
   student?: Student;
   cash_register_id?: number;

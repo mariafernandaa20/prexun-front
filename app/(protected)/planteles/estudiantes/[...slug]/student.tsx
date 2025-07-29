@@ -16,6 +16,7 @@ import SectionContainer from '@/components/SectionContainer'
 import StudentPeriod from '../student-period'
 import StudentLogs from './StudentLogs'
 import StudentNotes from './StudentNotes'
+import StudentDebtsManager from '@/components/dashboard/estudiantes/StudentDebtsManager'
 
 const PaymentMethod: React.FC<{ method: string }> = ({ method }) => {
     const methods = {
@@ -251,6 +252,12 @@ export function StudentComponent({ slug }: { slug: string[] }) {
             </Card>
 
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+                <div className='lg:col-span-2'>
+                    <StudentDebtsManager 
+                        studentId={Number(student.id)} 
+                        onTransactionUpdate={updateTransaction}
+                    />
+                </div>
                 <div className='lg:col-span-2'>
                     <Card>
                         <CardHeader>
