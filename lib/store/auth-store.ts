@@ -5,8 +5,8 @@ import { auth } from "@/lib/auth";
 import Cookies from "js-cookie";
 import axiosInstance from "../api/axiosConfig";
 import { AUTH_ENDPOINTS } from "../api/endpoints";
-import { Campus, Carrera, Grupo, Promocion, User } from "../types";
-import { getCampuses, getCarreras, getFacultades, getGrupos, getPeriods, getSemanas, getUsers } from "../api";
+import { Campus, Carrera, Grupo, Promocion, User, Modulo } from "../types";
+import { getCampuses, getCarreras, getFacultades, getGrupos, getPeriods, getSemanas, getUsers, getModules } from "../api";
 
 interface UserState {
   user: User | null;
@@ -32,6 +32,7 @@ interface AppState {
   prepas: any,
   facultades: any,
   carreras: Carrera[],
+  modulos: Modulo[],
   promos: Promocion[],
   grupos: Grupo[],
   // Flags para evitar múltiples cargas
@@ -71,6 +72,7 @@ interface DataActions {
   fetchSemanas: () => Promise<void>;
   fetchPeriods: () => Promise<void>;
   fetchCarreras: () => Promise<void>;
+  fetchModulos: () => Promise<void>;
   fetchGrupos: () => Promise<void>;
   fetchFacultades: () => Promise<void>;
   initializeApp: () => Promise<void>;
@@ -110,6 +112,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   prepas: [],
   facultades: [],
   carreras: [],
+  modulos: [],
   promos: [],
   grupos: [],
   // Flags para control de carga
@@ -128,6 +131,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setPrepas: (prepas) => set({ prepas }),
   setFacultades: (facultades) => set({ facultades }),
   setCarreras: (carreras) => set({ carreras }),
+  setModulos: (modulos) => set({ modulos }),
   setPromos: (promos) => set({ promos }),
   setGrupos: (grupos) => set({ grupos }),
 
@@ -278,6 +282,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ carreras: [] });
     }
   },
+
+  fetchModulos: async () => {
+    try {
+      const modulos = await getModules();
+      set({ modulos });
+    } catch (error) {
+      console.error('Error fetching modulos:', error);
+      set({ modulos: [] });
+    }
+  },
   
   fetchFacultades: async () => {
     try {
@@ -314,6 +328,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           get().fetchPeriods(),
           get().fetchGrupos(),
           get().fetchCarreras(),
+          get().fetchModulos(),
           get().fetchFacultades(),
         ];
 
@@ -346,6 +361,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       prepas: [],
       facultades: [],
       carreras: [],
+      modulos: [],
       promos: [],
       grupos: [],
     });

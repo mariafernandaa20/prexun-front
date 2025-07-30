@@ -18,6 +18,12 @@ interface FiltersProps {
   assignedPeriodFilter: any;
   setGrupoFilter: (value: string | null) => void;
   setSemanaIntensivaFilter: (value: string | null) => void;
+  setCarreraFilter?: (value: string | null) => void;
+  carreraFilter?: string | null;
+  setFacultadFilter?: (value: string | null) => void;
+  facultadFilter?: string | null;
+  setModuloFilter?: (value: string | null) => void;
+  moduloFilter?: string | null;
   setSearchFirstname: (value: string) => void;
   setSearchLastname: (value: string) => void;
   setSearchEmail: (value: string) => void;
@@ -34,6 +40,12 @@ const Filters: React.FC<FiltersProps> = ({
   assignedPeriodFilter,
   setGrupoFilter,
   setSemanaIntensivaFilter,
+  setCarreraFilter,
+  carreraFilter,
+  setFacultadFilter,
+  facultadFilter,
+  setModuloFilter,
+  moduloFilter,
   setSearchFirstname,
   setSearchLastname,
   setSearchEmail,
@@ -51,7 +63,7 @@ const Filters: React.FC<FiltersProps> = ({
   const [matriculaInput, setMatriculaInput] = useState<string>('');
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const { periods, grupos, carreras, facultades, semanasIntensivas } = useAuthStore();
+  const { periods, grupos, carreras, facultades, modulos, semanasIntensivas } = useAuthStore();
 
 
   const debouncedFirstname = useDebounce(firstnameInput, 500);
@@ -163,6 +175,30 @@ const Filters: React.FC<FiltersProps> = ({
               className="w-full"
               type="number"
             />
+                    <SearchableSelect
+                options={carreras.map(carrera => ({ value: carrera.id?.toString() || '', label: carrera.name }))}
+                value={carreraFilter}
+                placeholder="Filtrar por carrera"
+                onChange={val => setCarreraFilter?.(val)}
+                showAllOption={true}
+                allOptionLabel="Todas"
+              />
+              <SearchableSelect
+                options={facultades.map(facultad => ({ value: facultad.id?.toString() || '', label: facultad.name }))}
+                value={facultadFilter}
+                placeholder="Filtrar por facultad"
+                onChange={val => setFacultadFilter?.(val)}
+                showAllOption={true}
+                allOptionLabel="Todas"
+              />
+              <SearchableSelect
+                options={modulos.map(modulo => ({ value: modulo.id?.toString() || '', label: modulo.name || '' }))}
+                value={undefined}
+                placeholder="Filtrar por módulo"
+                onChange={val => setModuloFilter?.(val)}
+                showAllOption={true}
+                allOptionLabel="Todos"
+              />
             <Button
               variant="destructive"
               onClick={async () => {

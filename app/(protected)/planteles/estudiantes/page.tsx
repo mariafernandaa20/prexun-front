@@ -49,6 +49,9 @@ export default function Page() {
   const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
   const [periodFilter, setPeriodFilter] = useState<string>('');
   const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>('');
+  const [carreraFilter, setCarreraFilter] = useState<string | null>(null);
+  const [facultadFilter, setFacultadFilter] = useState<string | null>(null);
+  const [moduloFilter, setModuloFilter] = useState<string | null>(null);
   const [filtersInitialized, setFiltersInitialized] = useState(false);
 
   // Search states
@@ -86,6 +89,9 @@ export default function Page() {
       semanaIntensivaFilter: !isSearching && semanaIntensivaFilter || undefined,
       period: !isSearching && periodFilter || undefined,
       assignedPeriod: !isSearching && assignedPeriodFilter || undefined,
+      carrera: !isSearching && carreraFilter || undefined,
+      facultad: !isSearching && facultadFilter || undefined,
+      modulo: !isSearching && moduloFilter || undefined,
     };
 
     try {
@@ -122,6 +128,9 @@ export default function Page() {
     semanaIntensivaFilter,
     periodFilter,
     assignedPeriodFilter,
+    carreraFilter,
+    facultadFilter,
+    moduloFilter,
     toast,
     setPagination
   ]);
@@ -287,6 +296,9 @@ export default function Page() {
     grupoFilter,
     semanaIntensivaFilter,
     assignedPeriodFilter,
+    carreraFilter,
+    facultadFilter,
+    moduloFilter,
     pagination.currentPage,
     setPagination,
     fetchStudents
@@ -334,6 +346,12 @@ export default function Page() {
                 assignedPeriodFilter={assignedPeriodFilter}
                 setGrupoFilter={setGrupoFilter}
                 setSemanaIntensivaFilter={setSemanaIntensivaFilter}
+                setCarreraFilter={setCarreraFilter}
+                carreraFilter={carreraFilter}
+                setFacultadFilter={setFacultadFilter}
+                facultadFilter={facultadFilter}
+                setModuloFilter={setModuloFilter}
+                moduloFilter={moduloFilter}
                 setSearchFirstname={setSearchFirstname}
                 setSearchLastname={setSearchLastname}
                 setSearchEmail={setSearchEmail}
