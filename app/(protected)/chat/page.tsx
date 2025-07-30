@@ -298,30 +298,6 @@ export default function InstruccionesPage() {
             </Button>
           </div>
 
-          <div className="mb-4">
-            <label className="text-sm font-medium mb-2 block">Instrucciones Activas (se usan automáticamente):</label>
-            <div className="p-3 border rounded-md bg-gray-50 min-h-[60px]">
-              {contexts.filter(c => c.is_active).length > 0 ? (
-                <div className="space-y-2">
-                  {contexts.filter(c => c.is_active).map(context => (
-                    <div key={context.id} className="flex items-center gap-2">
-                      <Badge variant="default" className="bg-green-100 text-green-800">
-                        {context.name}
-                      </Badge>
-                      <span className="text-xs text-gray-600 truncate">
-                        {context.instructions.length > 50
-                          ? `${context.instructions.substring(0, 50)}...`
-                          : context.instructions}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">No hay instrucciones activas. Activa algunas instrucciones para que se usen automáticamente.</p>
-              )}
-            </div>
-          </div>
-
           {/* Chat Messages */}
           <Card className="flex-1 flex flex-col max-h-[calc(100vh-20rem)]">
             <CardContent className="flex-1 flex flex-col p-4 h-full">
