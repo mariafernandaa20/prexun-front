@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/api/axiosConfig";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff, Send, RotateCcw, ArrowLeft } from "lucide-react";
+import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff, Send, RotateCcw, ArrowLeft, ImagePlus, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import OpenAI from "openai";
@@ -40,6 +40,7 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  images?: string[];
 }
 
 const openai = new OpenAI({
@@ -61,6 +62,8 @@ export default function InstruccionesPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
 
   useEffect(() => {
     loadContexts();
@@ -166,12 +169,13 @@ export default function InstruccionesPage() {
   };
 
   const sendMessage = async () => {
-    if (!currentMessage.trim()) return;
+    if ((!currentMessage.trim() && selectedImages.length === 0) || isLoadingChat) return;
 
     const userMessage: ChatMessage = {
       role: 'user',
-      content: currentMessage,
-      timestamp: new Date()
+      content: currentMessage || "[Imagen enviada]",
+      timestamp: new Date(),
+      images: imagePreviewUrls.length > 0 ? [...imagePreviewUrls] : undefined
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -189,14 +193,32 @@ export default function InstruccionesPage() {
         systemMessage = `Eres un asistente útil. Sigue todas estas instrucciones al mismo tiempo:\n\n${combinedInstructions}`;
       }
 
+      const messageContent: any[] = [];
+      
+      if (currentMessage.trim()) {
+        messageContent.push({ type: "text", text: currentMessage });
+      }
+      
+      if (selectedImages.length > 0) {
+        for (const imageUrl of imagePreviewUrls) {
+          messageContent.push({
+            type: "image_url",
+            image_url: {
+              url: imageUrl
+            }
+          });
+        }
+      }
+
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemMessage },
           ...messages.map(msg => ({ role: msg.role, content: msg.content })),
-          { role: "user", content: currentMessage }
+          { role: "user", content: messageContent.length > 0 ? messageContent : currentMessage }
         ],
-        max_tokens: 500
+        max_tokens: 1000,
+        temperature: 0.7
       });
 
       const assistantMessage: ChatMessage = {
@@ -210,6 +232,8 @@ export default function InstruccionesPage() {
       toast.error("Error al enviar mensaje a OpenAI");
       console.error(error);
     } finally {
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
       setIsLoadingChat(false);
     }
   };
@@ -217,6 +241,30 @@ export default function InstruccionesPage() {
   const resetChat = () => {
     setMessages([]);
     setCurrentMessage("");
+    setSelectedImages([]);
+    setImagePreviewUrls([]);
+  };
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length > 0) {
+      setSelectedImages(prev => [...prev, ...imageFiles]);
+      
+      imageFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreviewUrls(prev => [...prev, e.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   if (isLoading) {
@@ -285,6 +333,18 @@ export default function InstruccionesPage() {
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-100 text-gray-900'
                         }`}>
+                        {message.images && message.images.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {message.images.map((imageUrl, imgIndex) => (
+                              <img
+                                key={imgIndex}
+                                src={imageUrl}
+                                alt={`Imagen ${imgIndex + 1}`}
+                                className="max-w-48 max-h-48 object-cover rounded-lg border"
+                              />
+                            ))}
+                          </div>
+                        )}
                         <div className="text-sm prose prose-sm max-w-none">
                           <ReactMarkdown>{message.content}</ReactMarkdown>
                         </div>
@@ -304,18 +364,57 @@ export default function InstruccionesPage() {
                 </div>
               </ScrollArea>
 
+              {/* Image Previews */}
+              {imagePreviewUrls.length > 0 && (
+                <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-gray-50">
+                  {imagePreviewUrls.map((url, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={url}
+                        alt={`Preview ${index + 1}`}
+                        className="w-20 h-20 object-cover rounded-lg border"
+                      />
+                      <button
+                        onClick={() => removeImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Message Input */}
               <div className="flex gap-2">
-                <Input
-                  placeholder="Escribe tu mensaje..."
-                  value={currentMessage}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && !isLoadingChat && sendMessage()}
-                  disabled={isLoadingChat}
-                />
+                <div className="flex-1 flex gap-2">
+                  <Input
+                    placeholder="Escribe tu mensaje..."
+                    value={currentMessage}
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && !isLoadingChat && sendMessage()}
+                    disabled={isLoadingChat}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('image-upload')?.click()}
+                    disabled={isLoadingChat}
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                  </Button>
+                </div>
                 <Button
                   onClick={sendMessage}
-                  disabled={isLoadingChat || !currentMessage.trim()}
+                  disabled={isLoadingChat || (!currentMessage.trim() && selectedImages.length === 0)}
                   size="sm"
                 >
                   <Send className="h-4 w-4" />
