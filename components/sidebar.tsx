@@ -25,6 +25,7 @@ import {
   AlertCircle,
   DollarSign,
   MessageSquare,
+  MessageCircle,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -181,6 +182,11 @@ export const data = {
       name: "Instrucciones",
       url: "/chat",
       icon: MessageSquare,
+    },
+    {
+      name: "WhatsApp",
+      url: "/dashboard/whatsapp",
+      icon: MessageCircle,
     },
   ],
   plantel_navigation: [
