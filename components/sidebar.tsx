@@ -234,6 +234,11 @@ export const data = {
       name: "google",
       url: "/planteles/google",
       icon: FcGoogle as any,
+    },
+    {
+      name: "chat",
+      url: "/planteles/chat",
+      icon: FcGoogle as any,
     }
   ],
   chatbot_navigation: [

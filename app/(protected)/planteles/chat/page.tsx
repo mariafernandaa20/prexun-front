@@ -172,13 +172,13 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex bg-background" style={{ height: 'calc(100vh - 50px)' }}>
       {/* Sidebar de contactos */}
-      <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-1/3 bg-card border-r border-border flex flex-col">
         {/* Header del sidebar */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-semibold text-gray-800">Chats</h1>
+            <h1 className="text-xl font-semibold text-foreground">Chats</h1>
             <Button variant="ghost" size="icon">
               <MoreVertical className="h-5 w-5" />
             </Button>
@@ -186,7 +186,7 @@ export default function ChatPage() {
           
           {/* Barra de búsqueda */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Buscar estudiantes..."
               value={searchQuery}
@@ -202,8 +202,8 @@ export default function ChatPage() {
             {filteredContacts.map((contact) => (
               <Card
                 key={contact.id}
-                className={`p-3 mb-2 cursor-pointer hover:bg-gray-50 transition-colors ${
-                  selectedContact?.id === contact.id ? 'bg-blue-50 border-blue-200' : ''
+                className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${
+                  selectedContact?.id === contact.id ? 'bg-accent border-primary' : ''
                 }`}
                 onClick={() => setSelectedContact(contact)}
               >
@@ -211,25 +211,25 @@ export default function ChatPage() {
                   <div className="relative">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={contact.avatar} />
-                      <AvatarFallback className="bg-blue-500 text-white">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
                         {contact.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
                     {contact.online && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
                     )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-gray-900 truncate">
+                      <h3 className="font-medium text-foreground truncate">
                         {contact.name}
                       </h3>
-                      <span className="text-xs text-gray-500">{contact.timestamp}</span>
+                      <span className="text-xs text-muted-foreground">{contact.timestamp}</span>
                     </div>
                     
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-600 truncate">
+                      <p className="text-sm text-muted-foreground truncate">
                         {contact.lastMessage}
                       </p>
                       {contact.unreadCount > 0 && (
@@ -239,7 +239,7 @@ export default function ChatPage() {
                       )}
                     </div>
                     
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Mat: {contact.matricula}
                     </p>
                   </div>
@@ -255,18 +255,18 @@ export default function ChatPage() {
         {selectedContact ? (
           <>
             {/* Header del chat */}
-            <div className="bg-white border-b border-gray-200 p-4">
+            <div className="bg-card border-b border-border p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={selectedContact.avatar} />
-                    <AvatarFallback className="bg-blue-500 text-white">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
                       {selectedContact.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="font-semibold text-gray-900">{selectedContact.name}</h2>
-                    <p className="text-sm text-gray-500">
+                    <h2 className="font-semibold text-foreground">{selectedContact.name}</h2>
+                    <p className="text-sm text-muted-foreground">
                       {selectedContact.online ? 'En línea' : 'Desconectado'} • Mat: {selectedContact.matricula}
                     </p>
                   </div>
@@ -287,7 +287,7 @@ export default function ChatPage() {
             </div>
 
             {/* Mensajes */}
-            <ScrollArea className="flex-1 p-4 bg-gray-50">
+            <ScrollArea className="flex-1 p-4 bg-muted/50">
               <div className="space-y-4">
                 {currentMessages.map((message) => (
                   <div
@@ -297,13 +297,13 @@ export default function ChatPage() {
                     <div
                       className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                         message.sender === 'teacher'
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-white text-gray-800 border border-gray-200'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-card text-card-foreground border border-border'
                       }`}
                     >
                       <p className="text-sm">{message.text}</p>
                       <div className={`flex items-center justify-end mt-1 space-x-1 ${
-                        message.sender === 'teacher' ? 'text-blue-100' : 'text-gray-400'
+                        message.sender === 'teacher' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                       }`}>
                         <span className="text-xs">{message.timestamp}</span>
                         {message.sender === 'teacher' && (
@@ -320,10 +320,10 @@ export default function ChatPage() {
             </ScrollArea>
 
             {/* Input de mensaje */}
-            <div className="bg-white border-t border-gray-200 p-4">
+            <div className="bg-card border-t border-border p-4">
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="icon">
-                  <Paperclip className="h-5 w-5 text-gray-400" />
+                  <Paperclip className="h-5 w-5 text-muted-foreground" />
                 </Button>
                 
                 <div className="flex-1 relative">
@@ -339,13 +339,13 @@ export default function ChatPage() {
                     size="icon"
                     className="absolute right-1 top-1/2 transform -translate-y-1/2"
                   >
-                    <Smile className="h-4 w-4 text-gray-400" />
+                    <Smile className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </div>
                 
                 <Button 
                   onClick={sendMessage}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   disabled={!newMessage.trim()}
                 >
                   <Send className="h-4 w-4" />
@@ -354,15 +354,15 @@ export default function ChatPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="flex-1 flex items-center justify-center bg-muted/50">
             <div className="text-center">
-              <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Send className="h-8 w-8 text-gray-400" />
+              <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <Send className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 Selecciona un chat
               </h3>
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 Elige un estudiante para comenzar a chatear
               </p>
             </div>
