@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, MessageCircle, Send, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, MessageCircle, Send, CheckCircle, XCircle, Plus, Edit, Trash2, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 
@@ -25,6 +25,15 @@ interface WhatsAppStatus {
   token: string;
 }
 
+interface Template {
+  id: number;
+  name: string;
+  meta_id: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function WhatsAppPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<WhatsAppStatus | null>(null);
@@ -38,6 +47,13 @@ export default function WhatsAppPage() {
   const [templatePhoneNumber, setTemplatePhoneNumber] = useState('');
   const [templateName, setTemplateName] = useState('');
   const [languageCode, setLanguageCode] = useState('es');
+  
+  // Template management
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateMetaId, setNewTemplateMetaId] = useState('');
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
 
   const checkStatus = async () => {
     setStatusLoading(true);
@@ -127,6 +143,115 @@ export default function WhatsAppPage() {
     }
   };
 
+  // Template management functions
+  const fetchTemplates = async () => {
+    setTemplatesLoading(true);
+    try {
+      const response = await axiosInstance.get('/whatsapp/templates');
+      if (response.data.success) {
+        setTemplates(response.data.data);
+      } else {
+        toast.error('Error al cargar las plantillas');
+      }
+    } catch (error: any) {
+      toast.error('Error al cargar las plantillas');
+    } finally {
+      setTemplatesLoading(false);
+    }
+  };
+
+  const createTemplate = async () => {
+    if (!newTemplateName || !newTemplateMetaId) {
+      toast.error('Por favor completa todos los campos');
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.post('/whatsapp/templates', {
+        name: newTemplateName,
+        meta_id: newTemplateMetaId,
+        is_active: true
+      });
+
+      if (response.data.success) {
+        toast.success('Plantilla creada exitosamente');
+        setNewTemplateName('');
+        setNewTemplateMetaId('');
+        fetchTemplates();
+      } else {
+        toast.error(response.data.message || 'Error al crear la plantilla');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Error de conexión';
+      const errors = error.response?.data?.errors;
+      
+      if (errors) {
+        Object.values(errors).flat().forEach((err: any) => {
+          toast.error(err);
+        });
+      } else {
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  const updateTemplate = async () => {
+    if (!editingTemplate || !editingTemplate.name || !editingTemplate.meta_id) {
+      toast.error('Por favor completa todos los campos');
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.put(`/whatsapp/templates/${editingTemplate.id}`, {
+        name: editingTemplate.name,
+        meta_id: editingTemplate.meta_id,
+        is_active: editingTemplate.is_active
+      });
+
+      if (response.data.success) {
+        toast.success('Plantilla actualizada exitosamente');
+        setEditingTemplate(null);
+        fetchTemplates();
+      } else {
+        toast.error(response.data.message || 'Error al actualizar la plantilla');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Error de conexión';
+      const errors = error.response?.data?.errors;
+      
+      if (errors) {
+        Object.values(errors).flat().forEach((err: any) => {
+          toast.error(err);
+        });
+      } else {
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  const deleteTemplate = async (id: number) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta plantilla?')) {
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.delete(`/whatsapp/templates/${id}`);
+      
+      if (response.data.success) {
+        toast.success('Plantilla eliminada exitosamente');
+        fetchTemplates();
+      } else {
+        toast.error(response.data.message || 'Error al eliminar la plantilla');
+      }
+    } catch (error: any) {
+      toast.error('Error al eliminar la plantilla');
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="mb-8">
@@ -198,9 +323,10 @@ export default function WhatsAppPage() {
 
       {/* Message Sending Tabs */}
       <Tabs defaultValue="simple" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="simple">Mensaje Simple</TabsTrigger>
           <TabsTrigger value="template">Mensaje de Plantilla</TabsTrigger>
+          <TabsTrigger value="manage">Gestionar Plantillas</TabsTrigger>
         </TabsList>
         
         <TabsContent value="simple">
@@ -318,6 +444,161 @@ export default function WhatsAppPage() {
                 )}
                 Enviar Plantilla
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="manage">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Gestionar Plantillas
+              </CardTitle>
+              <CardDescription>
+                Administra las plantillas de WhatsApp disponibles
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Load Templates Button */}
+              <div className="flex justify-between items-center">
+                <Button 
+                  onClick={fetchTemplates} 
+                  disabled={templatesLoading}
+                  variant="outline"
+                >
+                  {templatesLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : null}
+                  Cargar Plantillas
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {templates.length} plantilla(s) cargada(s)
+                </span>
+              </div>
+
+              {/* Create New Template */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <h3 className="font-medium flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Crear Nueva Plantilla
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-template-name">Nombre de la Plantilla</Label>
+                    <Input
+                      id="new-template-name"
+                      placeholder="Ej: Bienvenida"
+                      value={newTemplateName}
+                      onChange={(e) => setNewTemplateName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-template-meta-id">ID de Meta</Label>
+                    <Input
+                      id="new-template-meta-id"
+                      placeholder="Ej: welcome_template_001"
+                      value={newTemplateMetaId}
+                      onChange={(e) => setNewTemplateMetaId(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <Button 
+                  onClick={createTemplate}
+                  disabled={!newTemplateName || !newTemplateMetaId}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear Plantilla
+                </Button>
+              </div>
+
+              {/* Templates List */}
+              {templates.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-medium">Plantillas Existentes</h3>
+                  <div className="space-y-2">
+                    {templates.map((template) => (
+                      <div key={template.id} className="border rounded-lg p-4">
+                        {editingTemplate?.id === template.id ? (
+                          // Edit mode
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label>Nombre</Label>
+                                <Input
+                                  value={editingTemplate.name}
+                                  onChange={(e) => setEditingTemplate({
+                                    ...editingTemplate,
+                                    name: e.target.value
+                                  })}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>ID de Meta</Label>
+                                <Input
+                                  value={editingTemplate.meta_id}
+                                  onChange={(e) => setEditingTemplate({
+                                    ...editingTemplate,
+                                    meta_id: e.target.value
+                                  })}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button onClick={updateTemplate} size="sm">
+                                Guardar
+                              </Button>
+                              <Button 
+                                onClick={() => setEditingTemplate(null)} 
+                                variant="outline" 
+                                size="sm"
+                              >
+                                Cancelar
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          // View mode
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                              <div className="font-medium">{template.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                ID: {template.meta_id}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Estado: {template.is_active ? 'Activa' : 'Inactiva'}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => setEditingTemplate(template)}
+                                variant="outline"
+                                size="sm"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                onClick={() => deleteTemplate(template.id)}
+                                variant="destructive"
+                                size="sm"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {templates.length === 0 && !templatesLoading && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No hay plantillas cargadas. Haz clic en "Cargar Plantillas" para ver las disponibles.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
