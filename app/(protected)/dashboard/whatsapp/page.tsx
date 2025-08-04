@@ -39,16 +39,16 @@ export default function WhatsAppPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<WhatsAppStatus | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
-  
+
   // Simple message form
   const [phoneNumber, setPhoneNumber] = useState('');
   const [message, setMessage] = useState('');
-  
+
   // Template message form
   const [templatePhoneNumber, setTemplatePhoneNumber] = useState('');
   const [templateName, setTemplateName] = useState('');
   const [languageCode, setLanguageCode] = useState('es');
-  
+
   // Template management
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
@@ -92,7 +92,7 @@ export default function WhatsAppPage() {
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error de conexión';
       const errors = error.response?.data?.errors;
-      
+
       if (errors) {
         // Show validation errors
         Object.values(errors).flat().forEach((err: any) => {
@@ -130,7 +130,7 @@ export default function WhatsAppPage() {
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error de conexión';
       const errors = error.response?.data?.errors;
-      
+
       if (errors) {
         // Show validation errors
         Object.values(errors).flat().forEach((err: any) => {
@@ -185,7 +185,7 @@ export default function WhatsAppPage() {
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error de conexión';
       const errors = error.response?.data?.errors;
-      
+
       if (errors) {
         Object.values(errors).flat().forEach((err: any) => {
           toast.error(err);
@@ -219,7 +219,7 @@ export default function WhatsAppPage() {
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error de conexión';
       const errors = error.response?.data?.errors;
-      
+
       if (errors) {
         Object.values(errors).flat().forEach((err: any) => {
           toast.error(err);
@@ -237,7 +237,7 @@ export default function WhatsAppPage() {
 
     try {
       const response = await axiosInstance.delete(`/whatsapp/templates/${id}`);
-      
+
       if (response.data.success) {
         toast.success('Plantilla eliminada exitosamente');
         fetchTemplates();
@@ -276,8 +276,8 @@ export default function WhatsAppPage() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
-            <Button 
-              onClick={checkStatus} 
+            <Button
+              onClick={checkStatus}
               disabled={statusLoading}
               variant="outline"
             >
@@ -286,7 +286,7 @@ export default function WhatsAppPage() {
               ) : null}
               Verificar Estado
             </Button>
-            
+
             {status && (
               <div className="flex items-center gap-2">
                 {status.configured ? (
@@ -303,7 +303,7 @@ export default function WhatsAppPage() {
               </div>
             )}
           </div>
-          
+
           {status && (
             <div className="mt-4 space-y-2">
               <div className="text-sm">
@@ -330,7 +330,7 @@ export default function WhatsAppPage() {
           <TabsTrigger value="template">Mensaje de Plantilla</TabsTrigger>
           <TabsTrigger value="manage">Gestionar Plantillas</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="simple">
           <Card>
             <CardHeader>
@@ -352,7 +352,7 @@ export default function WhatsAppPage() {
                   Formato: +[código país][número]. Ejemplo: +525512345678
                 </p>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="message">Mensaje</Label>
                 <Textarea
@@ -363,9 +363,9 @@ export default function WhatsAppPage() {
                   rows={4}
                 />
               </div>
-              
-              <Button 
-                onClick={sendMessage} 
+
+              <Button
+                onClick={sendMessage}
                 disabled={loading || !phoneNumber || !message}
                 className="w-full"
               >
@@ -379,7 +379,7 @@ export default function WhatsAppPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="template">
           <Card>
             <CardHeader>
@@ -394,7 +394,7 @@ export default function WhatsAppPage() {
                   Los mensajes de plantilla son necesarios para contactar nuevos usuarios que no han iniciado una conversación contigo.
                 </AlertDescription>
               </Alert>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="template-phone">Número de Teléfono</Label>
                 <Input
@@ -407,7 +407,7 @@ export default function WhatsAppPage() {
                   Formato: +[código país][número]. Ejemplo: +525512345678
                 </p>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="template-name">Plantilla</Label>
                 <Select value={templateName} onValueChange={setTemplateName}>
@@ -432,7 +432,7 @@ export default function WhatsAppPage() {
                   Selecciona una plantilla de la lista. Si no ves plantillas, ve a la pestaña "Gestionar Plantillas".
                 </p>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="language">Código de Idioma</Label>
                 <Input
@@ -445,9 +445,9 @@ export default function WhatsAppPage() {
                   Código ISO de 2 letras. Ejemplos: es (español), en (inglés)
                 </p>
               </div>
-              
-              <Button 
-                onClick={sendTemplateMessage} 
+
+              <Button
+                onClick={sendTemplateMessage}
                 disabled={loading || !templatePhoneNumber || !templateName}
                 className="w-full"
               >
@@ -461,7 +461,7 @@ export default function WhatsAppPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="manage">
           <Card>
             <CardHeader>
@@ -476,8 +476,8 @@ export default function WhatsAppPage() {
             <CardContent className="space-y-6">
               {/* Load Templates Button */}
               <div className="flex justify-between items-center">
-                <Button 
-                  onClick={fetchTemplates} 
+                <Button
+                  onClick={fetchTemplates}
                   disabled={templatesLoading}
                   variant="outline"
                 >
@@ -517,7 +517,7 @@ export default function WhatsAppPage() {
                     />
                   </div>
                 </div>
-                <Button 
+                <Button
                   onClick={createTemplate}
                   disabled={!newTemplateName || !newTemplateMetaId}
                   className="w-full"
@@ -563,9 +563,9 @@ export default function WhatsAppPage() {
                               <Button onClick={updateTemplate} size="sm">
                                 Guardar
                               </Button>
-                              <Button 
-                                onClick={() => setEditingTemplate(null)} 
-                                variant="outline" 
+                              <Button
+                                onClick={() => setEditingTemplate(null)}
+                                variant="outline"
                                 size="sm"
                               >
                                 Cancelar
