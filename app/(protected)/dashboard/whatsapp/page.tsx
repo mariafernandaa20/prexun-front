@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, MessageCircle, Send, CheckCircle, XCircle, Plus, Edit, Trash2, Settings } from 'lucide-react';
+import { Loader2, MessageCircle, Send, CheckCircle, XCircle, Plus, Edit, Trash2, Settings, ChevronDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 
@@ -249,6 +250,7 @@ export default function WhatsAppPage() {
   };
 
   useEffect(() => {
+    checkStatus();
     fetchTemplates();
   }, []);
 
@@ -407,15 +409,27 @@ export default function WhatsAppPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="template-name">Nombre de la Plantilla</Label>
-                <Input
-                  id="template-name"
-                  placeholder="hello_world"
-                  value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
-                />
+                <Label htmlFor="template-name">Plantilla</Label>
+                <Select value={templateName} onValueChange={setTemplateName}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una plantilla" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templates.length > 0 ? (
+                      templates.map((template) => (
+                        <SelectItem key={template.id} value={template.name}>
+                          {template.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        {templatesLoading ? 'Cargando...' : 'No hay plantillas disponibles'}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground">
-                  Solo letras minúsculas, números y guiones bajos. Debe estar aprobada en Meta Business.
+                  Selecciona una plantilla de la lista. Si no ves plantillas, ve a la pestaña "Gestionar Plantillas".
                 </p>
               </div>
               
