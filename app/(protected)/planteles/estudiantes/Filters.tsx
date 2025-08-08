@@ -116,16 +116,8 @@ const Filters: React.FC<FiltersProps> = ({
           />
           <SearchableSelect
             options={periods.map(period => ({ value: period.id, label: period.name }))}
-            value={periodFilter}
-            placeholder="Filtrar por periodo (Viejo)"
-            onChange={setPeriodFilter}
-            showAllOption={true}
-            allOptionLabel="Todos"
-          />
-          <SearchableSelect
-            options={periods.map(period => ({ value: period.id, label: period.name }))}
             value={assignedPeriodFilter}
-            placeholder="Filtrar por periodo (Nuevo)"
+            placeholder="Periodo (Nuevo)"
             onChange={setAssignedPeriodFilter}
             showAllOption={true}
             allOptionLabel="Todos"
@@ -133,7 +125,7 @@ const Filters: React.FC<FiltersProps> = ({
           <SearchableSelect
             options={grupos.filter(grupo => !periodFilter || grupo.period_id.toString() === periodFilter.toString()).map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
             value={undefined}
-            placeholder="Filtrar por grupo"
+            placeholder="Grupo"
             onChange={val => setGrupoFilter(val)}
             showAllOption={true}
             allOptionLabel="Todos"
@@ -141,7 +133,7 @@ const Filters: React.FC<FiltersProps> = ({
           <SearchableSelect
             options={semanasIntensivas.filter(semana => !periodFilter || semana.period_id.toString() === periodFilter.toString()).map(semana => ({ value: semana.id.toString(), label: semana.name }))}
             value={undefined}
-            placeholder="Filtrar por semana intensiva"
+            placeholder="Semana intensiva"
             onChange={val => setSemanaIntensivaFilter(val)}
             showAllOption={true}
             allOptionLabel="Todos"
@@ -163,42 +155,50 @@ const Filters: React.FC<FiltersProps> = ({
               className="w-full"
             />
             <Input
-              placeholder="Buscar por teléfono..."
+              placeholder="Teléfono..."
               value={phoneInput}
               onChange={(e) => setPhoneInput(e.target.value)}
               className="w-full"
             />
             <Input
-              placeholder="Buscar por matricula..."
+              placeholder="Matrícula..."
               value={matriculaInput}
               onChange={(e) => setMatriculaInput(e.target.value)}
               className="w-full"
               type="number"
             />
-                    <SearchableSelect
-                options={carreras.map(carrera => ({ value: carrera.id?.toString() || '', label: carrera.name }))}
-                value={carreraFilter}
-                placeholder="Filtrar por carrera"
-                onChange={val => setCarreraFilter?.(val)}
-                showAllOption={true}
-                allOptionLabel="Todas"
-              />
-              <SearchableSelect
-                options={facultades.map(facultad => ({ value: facultad.id?.toString() || '', label: facultad.name }))}
-                value={facultadFilter}
-                placeholder="Filtrar por facultad"
-                onChange={val => setFacultadFilter?.(val)}
-                showAllOption={true}
-                allOptionLabel="Todas"
-              />
-              <SearchableSelect
-                options={modulos.map(modulo => ({ value: modulo.id?.toString() || '', label: modulo.name || '' }))}
-                value={undefined}
-                placeholder="Filtrar por módulo"
-                onChange={val => setModuloFilter?.(val)}
-                showAllOption={true}
-                allOptionLabel="Todos"
-              />
+            <SearchableSelect
+              options={periods.map(period => ({ value: period.id, label: period.name }))}
+              value={periodFilter}
+              placeholder="Periodo (Viejo)"
+              onChange={setPeriodFilter}
+              showAllOption={true}
+              allOptionLabel="Todos"
+            />
+            <SearchableSelect
+              options={carreras.map(carrera => ({ value: carrera.id?.toString() || '', label: carrera.name }))}
+              value={carreraFilter}
+              placeholder="Carrera"
+              onChange={val => setCarreraFilter?.(val)}
+              showAllOption={true}
+              allOptionLabel="Todas"
+            />
+            <SearchableSelect
+              options={facultades.map(facultad => ({ value: facultad.id?.toString() || '', label: facultad.name }))}
+              value={facultadFilter}
+              placeholder="Facultad"
+              onChange={val => setFacultadFilter?.(val)}
+              showAllOption={true}
+              allOptionLabel="Todas"
+            />
+            <SearchableSelect
+              options={modulos.map(modulo => ({ value: modulo.id?.toString() || '', label: modulo.name || '' }))}
+              value={undefined}
+              placeholder="Módulo"
+              onChange={val => setModuloFilter?.(val)}
+              showAllOption={true}
+              allOptionLabel="Todos"
+            />
             <Button
               variant="destructive"
               onClick={async () => {
