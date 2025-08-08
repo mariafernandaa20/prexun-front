@@ -29,6 +29,7 @@ import { StudentDialog } from "./StudentDialog";
 import PaginationComponent from "@/components/ui/PaginationComponent";
 import BulkActions from './BulkActions';
 import Filters from './Filters';
+import WhatsAppMessageModal from '@/components/students/WhatsAppMessageModal';
 
 const INITIAL_VISIBLE_COLUMNS_KEY = 'studentTableColumns';
 
@@ -43,6 +44,10 @@ export default function Page() {
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+
+  // WhatsApp modal states
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [whatsAppStudent, setWhatsAppStudent] = useState<Student | null>(null);
 
   // Filter states
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
@@ -156,9 +161,14 @@ export default function Page() {
     }
   }, [fetchStudents, toast]);
 
+  const handleOpenWhatsAppModal = useCallback((student: Student) => {
+    setWhatsAppStudent(student);
+    setIsWhatsAppModalOpen(true);
+  }, []);
+
   const columnDefinitions = useMemo(
-    () => getColumnDefinitions(user, handleOpenEditModal, handleDeleteForever),
-    [user, handleOpenEditModal, handleDeleteForever]
+    () => getColumnDefinitions(user, handleOpenEditModal, handleDeleteForever, handleOpenWhatsAppModal),
+    [user, handleOpenEditModal, handleDeleteForever, handleOpenWhatsAppModal]
   );
 
   const columnOptions = useMemo(
@@ -398,6 +408,7 @@ export default function Page() {
                 user={user}
                 handleOpenEditModal={handleOpenEditModal}
                 handleDeleteForever={handleDeleteForever}
+                handleOpenWhatsAppModal={handleOpenWhatsAppModal}
               />
             )}
           </SectionContainer>
@@ -417,6 +428,11 @@ export default function Page() {
         municipios={municipios}
         prepas={prepas}
         promos={promos}
+      />
+      <WhatsAppMessageModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+        student={whatsAppStudent}
       />
     </div>
   );

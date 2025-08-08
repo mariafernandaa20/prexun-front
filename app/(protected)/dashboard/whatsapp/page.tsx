@@ -407,31 +407,36 @@ export default function WhatsAppPage() {
                   Formato: +[código país][número]. Ejemplo: +525512345678
                 </p>
               </div>
+              {
+                templates && templates.length > 0 &&
+                (
+                  <div className="space-y-2">
+                    <Label htmlFor="template-name">Plantilla</Label>
+                    <Select value={templateName} onValueChange={setTemplateName}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona una plantilla" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {templates.length > 0 ? (
+                          templates.map((template) => (
+                            <SelectItem key={template.id} value={template.name}>
+                              {template.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>
+                            {templatesLoading ? 'Cargando...' : 'No hay plantillas disponibles'}
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Selecciona una plantilla de la lista. Si no ves plantillas, ve a la pestaña "Gestionar Plantillas".
+                    </p>
+                  </div>
+                )
+              }
 
-              <div className="space-y-2">
-                <Label htmlFor="template-name">Plantilla</Label>
-                <Select value={templateName} onValueChange={setTemplateName}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una plantilla" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {templates.length > 0 ? (
-                      templates.map((template) => (
-                        <SelectItem key={template.id} value={template.name}>
-                          {template.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="" disabled>
-                        {templatesLoading ? 'Cargando...' : 'No hay plantillas disponibles'}
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Selecciona una plantilla de la lista. Si no ves plantillas, ve a la pestaña "Gestionar Plantillas".
-                </p>
-              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="language">Código de Idioma</Label>

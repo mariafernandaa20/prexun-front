@@ -1,5 +1,19 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Student, User } from "@/lib/types";
+
+interface StudentsTableProps {
+  students: Student[];
+  visibleColumnDefs: any[];
+  selectedStudents: string[];
+  selectAll: boolean;
+  handleSelectAll: () => void;
+  handleSelectStudent: (id: string) => void;
+  user: User | null;
+  handleOpenEditModal: (student: Student) => void;
+  handleDeleteForever: (id: string) => void;
+  handleOpenWhatsAppModal?: (student: Student) => void;
+}
 
 export const StudentsTable = ({
   students,
@@ -10,8 +24,9 @@ export const StudentsTable = ({
   handleSelectStudent,
   user,
   handleOpenEditModal,
-  handleDeleteForever
-}) => {
+  handleDeleteForever,
+  handleOpenWhatsAppModal
+}: StudentsTableProps) => {
   return (
     <Table>
       <TableHeader className="sticky top-0 z-10 bg-card">
@@ -49,7 +64,7 @@ export const StudentsTable = ({
               </TableCell>
               {visibleColumnDefs.map((column) => (
                 <TableCell key={`${student.id}-${column.id}`} className="whitespace-nowrap">
-                  {column.render(student, user, handleOpenEditModal, handleDeleteForever)}
+                  {column.render(student, user, handleOpenEditModal, handleDeleteForever, handleOpenWhatsAppModal)}
                 </TableCell>
               ))}
             </TableRow>

@@ -13,13 +13,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/api/axiosConfig";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff, Send, RotateCcw, ArrowLeft, ImagePlus, X } from "lucide-react";
+import { RefreshCw, Plus, Edit, Trash2, Power, PowerOff, Send, RotateCcw, ArrowLeft, ImagePlus, X, MessageSquare, Phone } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
-import OpenAI from "openai";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuthStore } from "@/lib/store/auth-store";
+import WhatsAppChatHistory from "@/components/chat/WhatsAppChatHistory";
 
 interface Context {
   id: number;
@@ -37,16 +38,14 @@ interface Context {
 }
 
 interface ChatMessage {
+  id?: number;
   role: 'user' | 'assistant';
   content: string;
-  timestamp: Date;
+  timestamp?: Date;
+  created_at?: string;
   images?: string[];
+  metadata?: any;
 }
-
-const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
 
 export default function InstruccionesPage() {
   const [contexts, setContexts] = useState<Context[]>([]);
@@ -67,12 +66,13 @@ export default function InstruccionesPage() {
 
   useEffect(() => {
     loadContexts();
+    loadChatHistory();
   }, []);
 
   const loadContexts = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get('/contexts');
+      const response = await axiosInstance.get('/contexts?all=true');
       setContexts(response.data.data);
     } catch (error) {
       toast.error("Error al cargar las instrucciones");
@@ -179,57 +179,35 @@ export default function InstruccionesPage() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageToSend = currentMessage;
     setCurrentMessage("");
     setIsLoadingChat(true);
 
     try {
-      const activeContexts = contexts.filter(c => c.is_active);
-      let systemMessage = "Eres un asistente útil.";
-
-      if (activeContexts.length > 0) {
-        const combinedInstructions = activeContexts
-          .map(context => `${context.name}: ${context.instructions}`)
-          .join('\n\n');
-        systemMessage = `Eres un asistente útil. Sigue todas estas instrucciones al mismo tiempo:\n\n${combinedInstructions}`;
-      }
-
-      const messageContent: any[] = [];
-      
-      if (currentMessage.trim()) {
-        messageContent.push({ type: "text", text: currentMessage });
-      }
+      const formData = new FormData();
+      formData.append('message', messageToSend);
       
       if (selectedImages.length > 0) {
-        for (const imageUrl of imagePreviewUrls) {
-          messageContent.push({
-            type: "image_url",
-            image_url: {
-              url: imageUrl
-            }
-          });
-        }
+        selectedImages.forEach((image, index) => {
+          formData.append(`images[${index}]`, image);
+        });
       }
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemMessage },
-          ...messages.map(msg => ({ role: msg.role, content: msg.content })),
-          { role: "user", content: messageContent.length > 0 ? messageContent : currentMessage }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7
+      const response = await axiosInstance.post('/chat/send', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       const assistantMessage: ChatMessage = {
         role: 'assistant',
-        content: completion.choices[0]?.message?.content || "No pude generar una respuesta.",
+        content: response.data.response,
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      toast.error("Error al enviar mensaje a OpenAI");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Error al enviar mensaje");
       console.error(error);
     } finally {
       setSelectedImages([]);
@@ -238,11 +216,32 @@ export default function InstruccionesPage() {
     }
   };
 
-  const resetChat = () => {
-    setMessages([]);
-    setCurrentMessage("");
-    setSelectedImages([]);
-    setImagePreviewUrls([]);
+  const resetChat = async () => {
+    try {
+      await axiosInstance.delete('/chat/history');
+      setMessages([]);
+      setCurrentMessage("");
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
+      toast.success("Chat reiniciado");
+    } catch (error) {
+      toast.error("Error al reiniciar el chat");
+    }
+  };
+
+  const loadChatHistory = async () => {
+    try {
+      const response = await axiosInstance.get('/chat/history');
+      const history = response.data.messages.map((msg: any) => ({
+        role: msg.role,
+        content: msg.content,
+        timestamp: new Date(msg.created_at),
+        images: msg.images
+      }));
+      setMessages(history);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
   };
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,23 +279,42 @@ export default function InstruccionesPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-8rem)]">
-        {/* Chat Section */}
-        <div className="flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            {
-              user?.role === 'super_admin' &&
-              <a href="/dashboard" className="flex  items-center text-sm text-blue-600 hover:underline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver al Dashboard
-              </a>
-            }
-            <h2 className="text-xl font-bold">Probar Instrucciones</h2>
-            <Button onClick={resetChat} variant="outline" size="sm">
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Reset
-            </Button>
-          </div>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        {user?.role === 'super_admin' && (
+          <a href="/dashboard" className="flex items-center text-sm text-blue-600 hover:underline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver al Dashboard
+          </a>
+        )}
+        <h1 className="text-2xl font-bold">Sistema de Chat</h1>
+        <div></div>
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="instructions" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="instructions" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Chat & Instrucciones
+          </TabsTrigger>
+          <TabsTrigger value="whatsapp" className="flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            Historial WhatsApp
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="instructions" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)]">
+            {/* Chat Section */}
+            <div className="flex flex-col">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Probar Instrucciones</h2>
+                <Button onClick={resetChat} variant="outline" size="sm">
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
+              </div>
 
           {/* Chat Messages */}
           <Card className="flex-1 flex flex-col max-h-[calc(100vh-20rem)]">
@@ -325,7 +343,7 @@ export default function InstruccionesPage() {
                           <ReactMarkdown>{message.content}</ReactMarkdown>
                         </div>
                         <p className="text-xs opacity-70 mt-1">
-                          {message.timestamp.toLocaleTimeString()}
+                          {message.timestamp ? message.timestamp.toLocaleTimeString() : new Date().toLocaleTimeString()}
                         </p>
                       </div>
                     </div>
@@ -524,6 +542,12 @@ export default function InstruccionesPage() {
           </Card>
         </div>
       </div>
+        </TabsContent>
+
+        <TabsContent value="whatsapp" className="mt-6">
+          <WhatsAppChatHistory />
+        </TabsContent>
+      </Tabs>
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>

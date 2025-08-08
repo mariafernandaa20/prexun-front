@@ -41,8 +41,12 @@ export default function LoginPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+
+    console.log("Submitting login with values:", values);
+    
     try {
       setIsLoading(true);
+
       const user = (await login(
         values.email,
         values.password
@@ -50,18 +54,21 @@ export default function LoginPage() {
 
       document.cookie = `user-role=${user.role}; path=/`;
 
+      console.log("Login successful, user role:", user.role, document.cookie);
+
+
       toast({
         title: "Éxito",
         description: `Bienvenido ${user.name}`,
       });
 
-      if (user.role === "maestro") {
-        router.push("/profesores");
-      } else if (user.role === "admin") {
+      if (user.role === "admin") {
         router.push("/planteles");
       } else {
         router.push("/dashboard");
       }
+
+  
     } catch (error) {
       toast({
         variant: "destructive",

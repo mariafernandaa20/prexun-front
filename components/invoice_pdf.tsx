@@ -161,9 +161,95 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
     };
 
     const buildServiceDescription = (invoice: any): string => {
-        const grupo = invoice?.student?.grupo ?? {};
+        // Helper function to get assignment information (same as in invoice_page.tsx)
+        const getAssignmentInfo = () => {
+            // First check if there's a debt with assignment information
+            if (invoice.debt?.assignment) {
+                return {
+                    assignment: invoice.debt.assignment,
+                    source: 'debt'
+                };
+            }
+            
+            // Then check if student has active assignments
+            const activeAssignments = invoice.student?.assignments?.filter(assignment => assignment.is_active);
+            if (activeAssignments && activeAssignments.length > 0) {
+                // Get the most recent assignment
+                const latestAssignment = activeAssignments.sort((a, b) => 
+                    new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime()
+                )[0];
+                return {
+                    assignment: latestAssignment,
+                    source: 'student'
+                };
+            }
+            
+            // Fallback to grupo information if available
+            if (invoice.student?.grupo) {
+                return {
+                    assignment: null,
+                    source: 'grupo'
+                };
+            }
+            
+            return null;
+        };
+
+        const assignmentInfo = getAssignmentInfo();
         
-        // Validar fechas antes de formatearlas
+        if (!assignmentInfo) {
+            return 'Servicio no especificado';
+        }
+
+        if (assignmentInfo.source === 'debt' || assignmentInfo.source === 'student') {
+            const assignment = assignmentInfo.assignment;
+            const period = assignment.period;
+            const grupo = assignment.grupo;
+            const semanaIntensiva = assignment.semanaIntensiva;
+            
+            const startDate = period?.start_date 
+                ? new Date(period.start_date).toLocaleDateString('es-MX', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    timeZone: 'UTC'
+                })
+                : 'Fecha no disponible';
+                
+            const endDate = period?.end_date
+                ? new Date(period.end_date).toLocaleDateString('es-MX', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    timeZone: 'UTC'
+                })
+                : 'Fecha no disponible';
+            
+            const serviceInfo = [
+                period?.name || 'Período no especificado'
+            ];
+            
+            if (grupo) {
+                serviceInfo.push(`Grupo: ${grupo.name} | ${grupo.type || 'Tipo no especificado'}`);
+            }
+            
+            if (semanaIntensiva) {
+                serviceInfo.push(`Semana Intensiva: ${semanaIntensiva.name} | ${semanaIntensiva.type || 'Tipo no especificado'}`);
+            }
+            
+            serviceInfo.push(
+                `${startDate} - ${endDate}`,
+                `Frecuencia clases: ${formatFrequency(grupo?.frequency)}`,
+                `${grupo?.start_time ? formatTime(grupo.start_time) : 'N/A'} - ${grupo?.end_time ? formatTime(grupo.end_time) : 'N/A'}`,
+                `${invoice.notes ?? ''}`
+            );
+            
+            return serviceInfo.join('\n');
+        }
+        
+        // Fallback to grupo information
+        const grupo = invoice.student.grupo;
+        
         const startDate = grupo.start_date 
             ? new Date(grupo.start_date).toLocaleDateString('es-MX', {
                 day: 'numeric',

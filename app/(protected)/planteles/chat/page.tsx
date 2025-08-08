@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
+import axiosInstance from '@/lib/api/axiosConfig';
+import ReactMarkdown from 'react-markdown';
 import { 
   Send, 
   Search, 
@@ -16,151 +19,125 @@ import {
   Paperclip,
   Smile,
   Check,
-  CheckCheck
+  CheckCheck,
+  RefreshCw,
+  Trash2
 } from 'lucide-react';
 
-// Datos ficticios de contactos
-const contacts = [
-  {
-    id: 1,
-    name: 'María González',
-    matricula: '2024001',
-    lastMessage: 'Profesor, ¿cuándo es el examen?',
-    timestamp: '14:30',
-    unreadCount: 2,
-    avatar: null,
-    online: true
-  },
-  {
-    id: 2,
-    name: 'Carlos Rodríguez',
-    matricula: '2024002',
-    lastMessage: 'Gracias por la explicación',
-    timestamp: '13:45',
-    unreadCount: 0,
-    avatar: null,
-    online: false
-  },
-  {
-    id: 3,
-    name: 'Ana López',
-    matricula: '2024003',
-    lastMessage: 'No entiendo el ejercicio 5',
-    timestamp: '12:20',
-    unreadCount: 1,
-    avatar: null,
-    online: true
-  },
-  {
-    id: 4,
-    name: 'José Martínez',
-    matricula: '2024004',
-    lastMessage: '¿Podrías revisar mi tarea?',
-    timestamp: 'Ayer',
-    unreadCount: 0,
-    avatar: null,
-    online: false
-  },
-  {
-    id: 5,
-    name: 'Sofía Hernández',
-    matricula: '2024005',
-    lastMessage: 'Perfecto, muchas gracias',
-    timestamp: 'Ayer',
-    unreadCount: 0,
-    avatar: null,
-    online: true
-  }
-];
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
 
-// Datos ficticios de mensajes
-const messagesData = {
-  1: [
-    {
-      id: 1,
-      text: 'Hola profesor, tengo una duda sobre la tarea',
-      sender: 'student',
-      timestamp: '14:20',
-      status: 'read'
-    },
-    {
-      id: 2,
-      text: 'Hola María, dime cuál es tu duda',
-      sender: 'teacher',
-      timestamp: '14:22',
-      status: 'read'
-    },
-    {
-      id: 3,
-      text: 'Es sobre el ejercicio de matemáticas número 3',
-      sender: 'student',
-      timestamp: '14:25',
-      status: 'read'
-    },
-    {
-      id: 4,
-      text: 'Ah sí, ese ejercicio requiere que uses la fórmula cuadrática. ¿Ya la revisaste?',
-      sender: 'teacher',
-      timestamp: '14:27',
-      status: 'read'
-    },
-    {
-      id: 5,
-      text: 'Profesor, ¿cuándo es el examen?',
-      sender: 'student',
-      timestamp: '14:30',
-      status: 'delivered'
-    }
-  ],
-  2: [
-    {
-      id: 1,
-      text: 'Profesor, ya terminé la práctica',
-      sender: 'student',
-      timestamp: '13:40',
-      status: 'read'
-    },
-    {
-      id: 2,
-      text: 'Excelente Carlos, ¿cómo te fue?',
-      sender: 'teacher',
-      timestamp: '13:42',
-      status: 'read'
-    },
-    {
-      id: 3,
-      text: 'Muy bien, me ayudó mucho su explicación de ayer',
-      sender: 'student',
-      timestamp: '13:43',
-      status: 'read'
-    },
-    {
-      id: 4,
-      text: 'Gracias por la explicación',
-      sender: 'student',
-      timestamp: '13:45',
-      status: 'read'
-    }
-  ]
-};
+interface ChatMessage {
+  id: number;
+  user_id: number;
+  role: 'user' | 'assistant';
+  content: string;
+  images?: string[];
+  metadata?: any;
+  created_at: string;
+  user?: User;
+}
+
+interface ChatConversation {
+  user_id: number;
+  user: User;
+  last_message: ChatMessage;
+  unread_count: number;
+  messages: ChatMessage[];
+}
 
 export default function ChatPage() {
-  const [selectedContact, setSelectedContact] = useState(contacts[0]);
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
 
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.matricula.includes(searchQuery)
+  const filteredConversations = conversations.filter(conv =>
+    conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conv.user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const currentMessages = messagesData[selectedContact?.id] || [];
+  useEffect(() => {
+    loadAllChats();
+  }, []);
 
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      // Aquí iría la lógica para enviar el mensaje
-      console.log('Enviando mensaje:', newMessage);
-      setNewMessage('');
+  const loadAllChats = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get('/chat/all-conversations');
+      setConversations(response.data.conversations || []);
+    } catch (error) {
+      toast.error('Error al cargar las conversaciones');
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadConversationHistory = async (userId: number) => {
+    try {
+      const response = await axiosInstance.get(`/chat/history/${userId}`);
+      const messages = response.data.messages || [];
+      
+      setConversations(prev => prev.map(conv => 
+        conv.user_id === userId 
+          ? { ...conv, messages }
+          : conv
+      ));
+    } catch (error) {
+      toast.error('Error al cargar el historial');
+      console.error(error);
+    }
+  };
+
+  const clearConversation = async (userId: number) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta conversación?')) {
+      return;
+    }
+    
+    try {
+      await axiosInstance.delete(`/chat/history/${userId}`);
+      await loadAllChats();
+      if (selectedConversation?.user_id === userId) {
+        setSelectedConversation(null);
+      }
+      toast.success('Conversación eliminada');
+    } catch (error) {
+      toast.error('Error al eliminar la conversación');
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || isLoadingChat || !selectedConversation) return;
+
+    setIsLoadingChat(true);
+    const messageToSend = newMessage;
+    setNewMessage('');
+
+    try {
+      const formData = new FormData();
+      formData.append('content', messageToSend);
+      formData.append('target_user_id', selectedConversation.user_id.toString());
+
+      const response = await axiosInstance.post('/chat/send', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      await loadConversationHistory(selectedConversation.user_id);
+      await loadAllChats();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Error al enviar mensaje');
+      console.error(error);
+    } finally {
+      setIsLoadingChat(false);
     }
   };
 
@@ -171,6 +148,42 @@ export default function ChatPage() {
     }
   };
 
+  const selectConversation = async (conversation: ChatConversation) => {
+    setSelectedConversation(conversation);
+    if (!conversation.messages || conversation.messages.length === 0) {
+      await loadConversationHistory(conversation.user_id);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) {
+      return 'Hoy';
+    } else if (diffDays === 2) {
+      return 'Ayer';
+    } else if (diffDays <= 7) {
+      return `${diffDays - 1} días`;
+    } else {
+      return date.toLocaleDateString('es-ES', { 
+        day: '2-digit', 
+        month: '2-digit' 
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <RefreshCw className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Cargando conversaciones...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex bg-background" style={{ height: 'calc(100vh - 50px)' }}>
       {/* Sidebar de contactos */}
@@ -178,9 +191,9 @@ export default function ChatPage() {
         {/* Header del sidebar */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-semibold text-foreground">Chats</h1>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-5 w-5" />
+            <h1 className="text-xl font-semibold text-foreground">Todos los Chats</h1>
+            <Button variant="ghost" size="icon" onClick={loadAllChats}>
+              <RefreshCw className="h-5 w-5" />
             </Button>
           </div>
           
@@ -188,7 +201,7 @@ export default function ChatPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Buscar estudiantes..."
+              placeholder="Buscar usuarios..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -199,85 +212,105 @@ export default function ChatPage() {
         {/* Lista de contactos */}
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {filteredContacts.map((contact) => (
+            {filteredConversations.map((conversation) => (
               <Card
-                key={contact.id}
+                key={conversation.user_id}
                 className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${
-                  selectedContact?.id === contact.id ? 'bg-accent border-primary' : ''
+                  selectedConversation?.user_id === conversation.user_id ? 'bg-accent border-primary' : ''
                 }`}
-                onClick={() => setSelectedContact(contact)}
+                onClick={() => selectConversation(conversation)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={contact.avatar} />
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {contact.name.split(' ').map(n => n[0]).join('')}
+                        {conversation.user.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
-                    {contact.online && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
-                    )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium text-foreground truncate">
-                        {contact.name}
+                        {conversation.user.name}
                       </h3>
-                      <span className="text-xs text-muted-foreground">{contact.timestamp}</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(conversation.last_message.created_at)}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearConversation(conversation.user_id);
+                          }}
+                          className="h-6 w-6 p-0 hover:bg-red-100"
+                        >
+                          <Trash2 className="h-3 w-3 text-red-500" />
+                        </Button>
+                      </div>
                     </div>
                     
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-muted-foreground truncate">
-                        {contact.lastMessage}
+                        {conversation.last_message.content.length > 50 
+                          ? `${conversation.last_message.content.substring(0, 50)}...`
+                          : conversation.last_message.content
+                        }
                       </p>
-                      {contact.unreadCount > 0 && (
+                      {conversation.unread_count > 0 && (
                         <Badge className="bg-green-500 text-white text-xs rounded-full px-2 py-1">
-                          {contact.unreadCount}
+                          {conversation.unread_count}
                         </Badge>
                       )}
                     </div>
                     
                     <p className="text-xs text-muted-foreground mt-1">
-                      Mat: {contact.matricula}
+                      {conversation.user.email} • {conversation.user.role}
                     </p>
                   </div>
                 </div>
               </Card>
             ))}
+            
+            {filteredConversations.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No hay conversaciones disponibles
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
 
       {/* Área de chat */}
       <div className="flex-1 flex flex-col">
-        {selectedContact ? (
+        {selectedConversation ? (
           <>
             {/* Header del chat */}
             <div className="bg-card border-b border-border p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={selectedContact.avatar} />
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {selectedContact.name.split(' ').map(n => n[0]).join('')}
+                      {selectedConversation.user.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="font-semibold text-foreground">{selectedContact.name}</h2>
+                    <h2 className="font-semibold text-foreground">{selectedConversation.user.name}</h2>
                     <p className="text-sm text-muted-foreground">
-                      {selectedContact.online ? 'En línea' : 'Desconectado'} • Mat: {selectedContact.matricula}
+                      {selectedConversation.user.email} • {selectedConversation.user.role}
                     </p>
                   </div>
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="icon">
-                    <Phone className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Video className="h-5 w-5" />
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => clearConversation(selectedConversation.user_id)}
+                  >
+                    <Trash2 className="h-5 w-5" />
                   </Button>
                   <Button variant="ghost" size="icon">
                     <MoreVertical className="h-5 w-5" />
@@ -289,33 +322,54 @@ export default function ChatPage() {
             {/* Mensajes */}
             <ScrollArea className="flex-1 p-4 bg-muted/50">
               <div className="space-y-4">
-                {currentMessages.map((message) => (
+                {selectedConversation.messages?.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.sender === 'teacher' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${message.role === 'assistant' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
                       className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        message.sender === 'teacher'
+                        message.role === 'assistant'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card text-card-foreground border border-border'
                       }`}
                     >
-                      <p className="text-sm">{message.text}</p>
+                      {message.images && message.images.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {message.images.map((imageUrl, imgIndex) => (
+                            <img
+                              key={imgIndex}
+                              src={imageUrl}
+                              alt={`Imagen ${imgIndex + 1}`}
+                              className="max-w-48 max-h-48 object-cover rounded-lg border"
+                            />
+                          ))}
+                        </div>
+                      )}
+                      <div className="text-sm prose prose-sm max-w-none">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      </div>
                       <div className={`flex items-center justify-end mt-1 space-x-1 ${
-                        message.sender === 'teacher' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        message.role === 'assistant' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                       }`}>
-                        <span className="text-xs">{message.timestamp}</span>
-                        {message.sender === 'teacher' && (
-                          <>
-                            {message.status === 'delivered' && <Check className="h-3 w-3" />}
-                            {message.status === 'read' && <CheckCheck className="h-3 w-3" />}
-                          </>
-                        )}
+                        <span className="text-xs">
+                          {new Date(message.created_at).toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
                       </div>
                     </div>
                   </div>
-                ))}
+                )) || []}
+                
+                {isLoadingChat && (
+                  <div className="flex justify-end">
+                    <div className="bg-primary text-primary-foreground px-4 py-2 rounded-lg">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    </div>
+                  </div>
+                )}
               </div>
             </ScrollArea>
 
@@ -346,9 +400,13 @@ export default function ChatPage() {
                 <Button 
                   onClick={sendMessage}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  disabled={!newMessage.trim()}
+                  disabled={!newMessage.trim() || isLoadingChat}
                 >
-                  <Send className="h-4 w-4" />
+                  {isLoadingChat ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -360,10 +418,10 @@ export default function ChatPage() {
                 <Send className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-medium text-foreground mb-2">
-                Selecciona un chat
+                Selecciona una conversación
               </h3>
               <p className="text-muted-foreground">
-                Elige un estudiante para comenzar a chatear
+                Elige una conversación para ver los mensajes
               </p>
             </div>
           </div>

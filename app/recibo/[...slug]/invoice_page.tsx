@@ -23,6 +23,93 @@ export function InvoiceClient({ invoice }) {
         return `${campusInitial}I-${folio}`;
     };
 
+    // Helper function to get assignment information
+    const getAssignmentInfo = () => {
+        // First check if there's a debt with assignment information
+        if (invoice.debt?.assignment) {
+            return {
+                assignment: invoice.debt.assignment,
+                source: 'debt'
+            };
+        }
+        
+        // Then check if student has active assignments
+        const activeAssignments = invoice.student?.assignments?.filter(assignment => assignment.is_active);
+        if (activeAssignments && activeAssignments.length > 0) {
+            // Get the most recent assignment
+            const latestAssignment = activeAssignments.sort((a, b) => 
+                new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime()
+            )[0];
+            return {
+                assignment: latestAssignment,
+                source: 'student'
+            };
+        }
+        
+        // Fallback to grupo information if available
+        if (invoice.student?.grupo) {
+            return {
+                assignment: null,
+                source: 'grupo'
+            };
+        }
+        
+        return null;
+    };
+
+    const formatAssignmentDisplay = () => {
+        const assignmentInfo = getAssignmentInfo();
+        
+        if (!assignmentInfo) {
+            return {
+                title: 'Servicio no especificado',
+                period: null,
+                grupo: null,
+                semanaIntensiva: null,
+                dates: null,
+                frequency: null,
+                schedule: null
+            };
+        }
+
+        if (assignmentInfo.source === 'debt' || assignmentInfo.source === 'student') {
+            const assignment = assignmentInfo.assignment;
+            return {
+                title: assignment.period?.name || 'Período no especificado',
+                period: assignment.period,
+                grupo: assignment.grupo,
+                semanaIntensiva: assignment.semanaIntensiva,
+                dates: assignment.period ? {
+                    start: assignment.period.start_date,
+                    end: assignment.period.end_date
+                } : null,
+                frequency: assignment.grupo?.frequency || null,
+                schedule: assignment.grupo ? {
+                    start: assignment.grupo.start_time,
+                    end: assignment.grupo.end_time
+                } : null
+            };
+        }
+        
+        // Fallback to grupo information
+        const grupo = invoice.student.grupo;
+        return {
+            title: `${grupo.name || 'Grupo no asignado'} | ${grupo.type || 'Tipo no especificado'}`,
+            period: null,
+            grupo: grupo,
+            semanaIntensiva: null,
+            dates: grupo.start_date && grupo.end_date ? {
+                start: grupo.start_date,
+                end: grupo.end_date
+            } : null,
+            frequency: grupo.frequency,
+            schedule: {
+                start: grupo.start_time,
+                end: grupo.end_time
+            }
+        };
+    };
+
     return (
         <div className='flex flex-col justify-center items-center mx-auto bg-white w-full min-h-screen text-black text-xs md:text-sm'>
             {/* Watermark */}
@@ -107,45 +194,69 @@ export function InvoiceClient({ invoice }) {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 <tr>
                                     <td className="px-3 md:px-6 py-4">
-                                        <div>
-                                            <div className="font-medium text-gray-900">
-                                                {invoice.student?.grupo?.name || 'Grupo no asignado'} | {invoice.student?.grupo?.type || 'Tipo no especificado'}
-                                            </div>
-                                            {invoice.student?.grupo?.start_date && invoice.student?.grupo?.end_date ? (
-                                                <div className="font-medium text-gray-900 text-xs lg:text-sm">
-                                                    {new Date(invoice.student?.grupo?.start_date).toLocaleDateString('es-MX', {
-                                                        day: 'numeric',
-                                                        month: 'long',
-                                                        year: 'numeric',
-                                                        timeZone: 'UTC'
-                                                    })} - {new Date(invoice.student?.grupo?.end_date).toLocaleDateString('es-MX', {
-                                                        day: 'numeric',
-                                                        month: 'long',
-                                                        year: 'numeric',
-                                                        timeZone: 'UTC'
-                                                    })}
+                                        {(() => {
+                                            const assignmentDisplay = formatAssignmentDisplay();
+                                            
+                                            return (
+                                                <div>
+                                                    <div className="font-medium text-gray-900">
+                                                        {assignmentDisplay.title}
+                                                    </div>
+                                                    
+                                                    {/* Show assignment specific information */}
+                                                    {assignmentDisplay.grupo && (
+                                                        <div className="font-medium text-gray-700 text-xs lg:text-sm mt-1">
+                                                            Grupo: {assignmentDisplay.grupo.name} | {assignmentDisplay.grupo.type || 'Tipo no especificado'}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {assignmentDisplay.semanaIntensiva && (
+                                                        <div className="font-medium text-gray-700 text-xs lg:text-sm mt-1">
+                                                            Semana Intensiva: {assignmentDisplay.semanaIntensiva.name} | {assignmentDisplay.semanaIntensiva.type || 'Tipo no especificado'}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {/* Show dates */}
+                                                    {assignmentDisplay.dates ? (
+                                                        <div className="font-medium text-gray-900 text-xs lg:text-sm mt-1">
+                                                            {new Date(assignmentDisplay.dates.start).toLocaleDateString('es-MX', {
+                                                                day: 'numeric',
+                                                                month: 'long',
+                                                                year: 'numeric',
+                                                                timeZone: 'UTC'
+                                                            })} - {new Date(assignmentDisplay.dates.end).toLocaleDateString('es-MX', {
+                                                                day: 'numeric',
+                                                                month: 'long',
+                                                                year: 'numeric',
+                                                                timeZone: 'UTC'
+                                                            })}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-gray-500 text-xs lg:text-sm mt-1">
+                                                            Fechas no disponibles
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div className="text-gray-500 text-xs lg:text-sm mt-1">
+                                                        <p>Frecuencia clases: {
+                                                            (() => {
+                                                                try {
+                                                                    return assignmentDisplay.frequency 
+                                                                        ? JSON.parse(assignmentDisplay.frequency).join(', ') 
+                                                                        : 'No especificada';
+                                                                } catch (error) {
+                                                                    return 'No especificada';
+                                                                }
+                                                            })()
+                                                        }</p>
+                                                        {assignmentDisplay.schedule && (
+                                                            <p>{assignmentDisplay.schedule.start || 'N/A'} - {assignmentDisplay.schedule.end || 'N/A'}</p>
+                                                        )}
+                                                        <p>{invoice.notes || ''}</p>
+                                                    </div>
                                                 </div>
-                                            ) : (
-                                                <div className="text-gray-500 text-xs lg:text-sm">
-                                                    Fechas no disponibles
-                                                </div>
-                                            )}
-                                            <div className="text-gray-500 text-xs lg:text-sm mt-1">
-                                                <p>Frecuencia clases: {
-                                                    (() => {
-                                                        try {
-                                                            return invoice.student?.grupo?.frequency 
-                                                                ? JSON.parse(invoice.student.grupo.frequency).join(', ') 
-                                                                : 'No especificada';
-                                                        } catch (error) {
-                                                            return 'No especificada';
-                                                        }
-                                                    })()
-                                                }</p>
-                                                <p>{invoice.student?.grupo?.start_time || 'N/A'} - {invoice.student?.grupo?.end_time || 'N/A'}</p>
-                                                <p>{invoice.notes || ''}</p>
-                                            </div>
-                                        </div>
+                                            );
+                                        })()}
                                     </td>
                                     <td className="px-3 md:px-6 py-4 text-center">MX${invoice.amount || '0.00'}</td>
                                 </tr>

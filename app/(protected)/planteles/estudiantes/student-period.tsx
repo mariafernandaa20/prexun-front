@@ -159,7 +159,7 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
     }));
   };
   const validateForm = (): boolean => {
-    if ((!formData.grupo_id || formData.grupo_id === 0) && (!formData.semana_intensiva_id || formData.semana_intensiva_id === 0)) {
+    if ((!formData.grupo_id || formData.grupo_id === 0) || (!formData.semana_intensiva_id || formData.semana_intensiva_id === 0)) {
       toast({
         title: 'Error de validación',
         description: 'Debe seleccionar al menos un grupo o una semana intensiva',
@@ -185,6 +185,7 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log(formData)
     if (!validateForm()) return;
 
     try {

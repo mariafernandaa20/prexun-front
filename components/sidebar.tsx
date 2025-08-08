@@ -45,6 +45,7 @@ import Image from "next/image";
 import { Separator } from "./ui/separator";
 import { url } from "inspector";
 import { FcGoogle } from "react-icons/fc";
+import { FaWhatsapp } from "react-icons/fa6";
 
 // This is sample data.
 export const data = {
@@ -236,9 +237,9 @@ export const data = {
       icon: FcGoogle as any,
     },
     {
-      name: "chat",
+      name: "WhatsApp",
       url: "/planteles/chat",
-      icon: FcGoogle as any,
+      icon: FaWhatsapp as any,
     }
   ],
   chatbot_navigation: [

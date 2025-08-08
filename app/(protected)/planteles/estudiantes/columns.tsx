@@ -4,7 +4,7 @@ import React from 'react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Student } from '@/lib/types';
-import { Pencil, Trash2, Eye } from 'lucide-react';
+import { Pencil, Trash2, Eye, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { User } from '@/lib/types';
 
@@ -12,13 +12,14 @@ interface ColumnDefinition {
   id: string;
   label: string;
   defaultVisible: boolean;
-  render: (student: Student, user?: User | null, handleOpenEditModal?: (student: Student) => void, handleDeleteForever?: (id: string) => void) => React.ReactNode;
+  render: (student: Student, user?: User | null, handleOpenEditModal?: (student: Student) => void, handleDeleteForever?: (id: string) => void, handleOpenWhatsAppModal?: (student: Student) => void) => React.ReactNode;
 }
 
 export const getColumnDefinitions = (
   user: User | null,
   handleOpenEditModal: (student: Student) => void,
-  handleDeleteForever: (id: string) => void
+  handleDeleteForever: (id: string) => void,
+  handleOpenWhatsAppModal: (student: Student) => void
 ): ColumnDefinition[] => [
   {
     id: 'matricula',
@@ -164,26 +165,37 @@ export const getColumnDefinitions = (
     id: 'actions',
     label: 'Acciones',
     defaultVisible: true,
-    render: (student: Student, user?: User | null, handleOpenEditModal?: (student: Student) => void, handleDeleteForever?: (id: string) => void) => (
+    render: (student: Student, user?: User | null, handleOpenEditModal?: (student: Student) => void, handleDeleteForever?: (id: string) => void, handleOpenWhatsAppModal?: (student: Student) => void) => (
       <div className="flex gap-2">
         <a
           className={buttonVariants({ variant: 'ghost' })}
           href={`https://wa.me/${student.phone}`}
           target="_blank"
           rel="noreferrer"
+          title="Abrir WhatsApp Web"
         >
           <FaWhatsapp />
         </a>
         <Button
           variant="ghost"
           size="icon"
+          onClick={() => handleOpenWhatsAppModal && handleOpenWhatsAppModal(student)}
+          title="Enviar mensaje personalizado"
+        >
+          <MessageSquare className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => handleOpenEditModal && handleOpenEditModal(student)}
+          title="Editar estudiante"
         >
           <Pencil className="h-4 w-4" />
         </Button>
         <Link
           className={buttonVariants({ variant: 'ghost' })}
           href={`/planteles/estudiantes/${student.id}`}
+          title="Ver detalles"
         >
           <Eye className="h-4 w-4" />
         </Link>
@@ -193,6 +205,7 @@ export const getColumnDefinitions = (
             size="icon"
             className='text-red-500 hover:text-red-700'
             onClick={() => handleDeleteForever && handleDeleteForever(student.id!)}
+            title="Eliminar estudiante"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

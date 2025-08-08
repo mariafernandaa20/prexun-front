@@ -12,11 +12,12 @@ import axiosInstance from '@/lib/api/axiosConfig'
 import { formatTime } from '@/lib/utils'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
 import { createCharge } from '@/lib/api'
+import { getStudentAssignmentsByStudent } from '@/lib/api'
 
 interface Debt {
   id: number
   student_id: number
-  period_id: number
+  assignment_id?: number
   concept: string
   total_amount: number
   paid_amount: number
@@ -26,11 +27,7 @@ interface Debt {
   description?: string
   created_at: string
   updated_at: string
-  period?: {
-    id: number
-    name: string
-    price: number
-  }
+  assignment?: Assignment
   transactions?: any[]
 }
 
@@ -40,6 +37,30 @@ interface Period {
   price: number
   start_date: string
   end_date: string
+}
+
+interface Assignment {
+  id: number
+  student_id: number
+  period_id: number
+  grupo_id?: number | null
+  semana_intensiva_id?: number | null
+  assigned_at: string
+  valid_until?: string | null
+  is_active: boolean
+  period?: {
+    id: number
+    name: string
+    price: number
+  }
+  grupo?: {
+    id: number
+    name: string
+  }
+  semanaIntensiva?: {
+    id: number
+    name: string
+  }
 }
 
 interface StudentDebtsManagerProps {
@@ -75,7 +96,7 @@ const formatCurrency = (amount: number) => {
 
 export default function StudentDebtsManager({ studentId, onTransactionUpdate }: StudentDebtsManagerProps) {
   const [debts, setDebts] = useState<Debt[]>([])
-  const [periods, setPeriods] = useState<Period[]>([])
+  const [assignments, setAssignments] = useState<Assignment[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showPaymentForm, setShowPaymentForm] = useState(false)
@@ -85,7 +106,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus)
   
   const [debtFormData, setDebtFormData] = useState({
-    period_id: '',
+    assignment_id: '',
     concept: '',
     total_amount: '',
     due_date: '',
@@ -103,7 +124,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
   useEffect(() => {
     if (studentId) {
       fetchStudentDebts()
-      fetchPeriods()
+      fetchAssignments()
     }
   }, [studentId])
 
@@ -119,12 +140,12 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
     }
   }
 
-  const fetchPeriods = async () => {
+  const fetchAssignments = async () => {
     try {
-      const response = await axiosInstance.get('/periods')
-      setPeriods(response.data.data || response.data || [])
+      const response = await getStudentAssignmentsByStudent(studentId)
+      setAssignments(response.filter((assignment: Assignment) => assignment.is_active) || [])
     } catch (error) {
-      console.error('Error fetching periods:', error)
+      console.error('Error fetching assignments:', error)
     }
   }
 
@@ -141,7 +162,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
       })
       
       setDebtFormData({
-        period_id: '',
+        assignment_id: '',
         concept: '',
         total_amount: '',
         due_date: '',
@@ -283,7 +304,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
             <TableHeader>
               <TableRow>
                 <TableHead>Concepto</TableHead>
-                <TableHead>Período</TableHead>
+                <TableHead>Asignación</TableHead>
                 <TableHead>Monto Total</TableHead>
                 <TableHead>Pagado</TableHead>
                 <TableHead>Pendiente</TableHead>
@@ -296,7 +317,28 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
               {debts.map((debt) => (
                 <TableRow key={debt.id}>
                   <TableCell className="font-medium">{debt.concept}</TableCell>
-                  <TableCell>{debt.period?.name || 'N/A'}</TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {debt.assignment?.period?.name && (
+                        <div className="text-sm font-medium">
+                          {debt.assignment.period.name}
+                        </div>
+                      )}
+                      {debt.assignment?.grupo?.name && (
+                        <div className="text-xs text-gray-600">
+                          Grupo: {debt.assignment.grupo.name}
+                        </div>
+                      )}
+                      {debt.assignment?.semanaIntensiva?.name && (
+                        <div className="text-xs text-gray-600">
+                          Semana: {debt.assignment.semanaIntensiva.name}
+                        </div>
+                      )}
+                      {!debt.assignment && (
+                        <span className="text-gray-500">Sin asignación</span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>{formatCurrency(debt.total_amount)}</TableCell>
                   <TableCell className="text-green-600">
                     {formatCurrency(debt.paid_amount)}
@@ -344,23 +386,26 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
             <form onSubmit={handleCreateDebt} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Período
+                  Asignación
                   <select
-                    value={debtFormData.period_id}
-                    onChange={(e) => setDebtFormData({ ...debtFormData, period_id: e.target.value })}
+                    value={debtFormData.assignment_id}
+                    onChange={(e) => setDebtFormData({ ...debtFormData, assignment_id: e.target.value })}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     required
                   >
-                    <option value="">Seleccione un período</option>
-                    {periods.map((period) => (
-                      <option key={period.id} value={period.id}>
-                        {period.name} - {formatCurrency(period.price)}
+                    <option value="">Seleccione una asignación</option>
+                    {assignments.map((assignment) => (
+                      <option key={assignment.id} value={assignment.id}>
+                        {assignment.period?.name} 
+                        {assignment.grupo?.name && ` - Grupo: ${assignment.grupo.name}`}
+                        {assignment.semanaIntensiva?.name && ` - Semana: ${assignment.semanaIntensiva.name}`}
+                        {assignment.period?.price && ` - ${formatCurrency(assignment.period.price)}`}
                       </option>
                     ))}
                   </select>
                 </label>
-                {errors.period_id && (
-                  <p className="text-red-500 text-sm mt-1">{errors.period_id[0]}</p>
+                {errors.assignment_id && (
+                  <p className="text-red-500 text-sm mt-1">{errors.assignment_id[0]}</p>
                 )}
               </div>
 
