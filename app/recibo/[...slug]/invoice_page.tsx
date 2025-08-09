@@ -79,15 +79,36 @@ export function InvoiceClient({ invoice }) {
                 period: assignment.period,
                 grupo: assignment.grupo,
                 semanaIntensiva: assignment.semanaIntensiva,
-                dates: assignment.period ? {
-                    start: assignment.period.start_date,
-                    end: assignment.period.end_date
-                } : null,
-                frequency: assignment.grupo?.frequency || null,
-                schedule: assignment.grupo ? {
-                    start: assignment.grupo.start_time,
-                    end: assignment.grupo.end_time
-                } : null
+                dates: (() => {
+                    // Priorizar fechas del grupo/semana intensiva sobre el período
+                    if (assignment.grupo?.start_date && assignment.grupo?.end_date) {
+                        return {
+                            start: assignment.grupo.start_date,
+                            end: assignment.grupo.end_date
+                        };
+                    } else if (assignment.semanaIntensiva?.start_date && assignment.semanaIntensiva?.end_date) {
+                        return {
+                            start: assignment.semanaIntensiva.start_date,
+                            end: assignment.semanaIntensiva.end_date
+                        };
+                    }
+                    return null;
+                })(),
+                frequency: assignment.grupo?.frequency || assignment.semanaIntensiva?.frequency || null,
+                schedule: (() => {
+                    if (assignment.grupo) {
+                        return {
+                            start: assignment.grupo.start_time,
+                            end: assignment.grupo.end_time
+                        };
+                    } else if (assignment.semanaIntensiva) {
+                        return {
+                            start: assignment.semanaIntensiva.start_time,
+                            end: assignment.semanaIntensiva.end_time
+                        };
+                    }
+                    return null;
+                })()
             };
         }
         

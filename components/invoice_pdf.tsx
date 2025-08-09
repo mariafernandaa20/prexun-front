@@ -207,23 +207,37 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
             const grupo = assignment.grupo;
             const semanaIntensiva = assignment.semanaIntensiva;
             
-            const startDate = period?.start_date 
-                ? new Date(period.start_date).toLocaleDateString('es-MX', {
+            // Usar las fechas del grupo/semana intensiva, no del período
+            let startDate = 'Fecha no disponible';
+            let endDate = 'Fecha no disponible';
+            
+            if (grupo?.start_date && grupo?.end_date) {
+                startDate = new Date(grupo.start_date).toLocaleDateString('es-MX', {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
                     timeZone: 'UTC'
-                })
-                : 'Fecha no disponible';
-                
-            const endDate = period?.end_date
-                ? new Date(period.end_date).toLocaleDateString('es-MX', {
+                });
+                endDate = new Date(grupo.end_date).toLocaleDateString('es-MX', {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
                     timeZone: 'UTC'
-                })
-                : 'Fecha no disponible';
+                });
+            } else if (semanaIntensiva?.start_date && semanaIntensiva?.end_date) {
+                startDate = new Date(semanaIntensiva.start_date).toLocaleDateString('es-MX', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    timeZone: 'UTC'
+                });
+                endDate = new Date(semanaIntensiva.end_date).toLocaleDateString('es-MX', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    timeZone: 'UTC'
+                });
+            }
             
             const serviceInfo = [
                 period?.name || 'Período no especificado'
@@ -239,8 +253,8 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
             
             serviceInfo.push(
                 `${startDate} - ${endDate}`,
-                `Frecuencia clases: ${formatFrequency(grupo?.frequency)}`,
-                `${grupo?.start_time ? formatTime(grupo.start_time) : 'N/A'} - ${grupo?.end_time ? formatTime(grupo.end_time) : 'N/A'}`,
+                `Frecuencia clases: ${formatFrequency(grupo?.frequency || semanaIntensiva?.frequency)}`,
+                `${(grupo?.start_time || semanaIntensiva?.start_time) ? formatTime(grupo?.start_time || semanaIntensiva?.start_time) : 'N/A'} - ${(grupo?.end_time || semanaIntensiva?.end_time) ? formatTime(grupo?.end_time || semanaIntensiva?.end_time) : 'N/A'}`,
                 `${invoice.notes ?? ''}`
             );
             
