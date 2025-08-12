@@ -101,6 +101,11 @@ const TransactionsTable: React.FC<{
             <TableHeader>
                 <TableRow>
                     <TableHead>ID</TableHead>
+                    <TableHead>Folio</TableHead>
+                    <TableHead>Folio Nuevo</TableHead>
+                    <TableHead>Folio Efectivo</TableHead>
+                    <TableHead>Folio Transferencia</TableHead>
+                    <TableHead>Folio Tarjeta</TableHead>
                     <TableHead>Método</TableHead>
                     <TableHead>Monto</TableHead>
                     <TableHead>Fecha</TableHead>
@@ -115,6 +120,10 @@ const TransactionsTable: React.FC<{
                 {transactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                         <TableCell>{transaction.id}</TableCell>
+                        <TableCell>{transaction?.folio}</TableCell>
+                        <TableCell>{transaction?.folio_new}</TableCell>
+                        <TableCell>{transaction?.folio_cash}</TableCell>
+                        <TableCell>{transaction?.folio_transfer}</TableCell>
                         <TableCell>
                             <PaymentMethod method={transaction.payment_method} />
                         </TableCell>

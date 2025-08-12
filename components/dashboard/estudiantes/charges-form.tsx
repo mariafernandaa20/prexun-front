@@ -23,11 +23,23 @@ import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Input } from '@/components/ui/input';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
+interface Debt {
+  id: number;
+  student_id: number;
+  concept: string;
+  total_amount: number;
+  paid_amount: number;
+  remaining_amount: number;
+  due_date: string;
+  status: 'pending' | 'partial' | 'paid' | 'overdue';
+  description?: string;
+}
+
 interface ChargesFormProps {
   fetchStudents: () => void;
   student?: Student | null;
   cards: Card[];
-  campusId: number;
+  campusId?: number;
   student_id?: number;
   icon?: boolean;
   transaction?: Transaction;
@@ -35,6 +47,9 @@ interface ChargesFormProps {
   setFormData: (formData: Transaction) => void;
   onTransactionUpdate?: (transaction: Transaction) => void;
   mode?: 'create' | 'update';
+  debt?: Debt | null;
+  buttonText?: string;
+  title?: string;
 }
 
 export default function ChargesForm({
@@ -48,7 +63,10 @@ export default function ChargesForm({
   formData,
   setFormData,
   onTransactionUpdate,
-  mode = 'create'
+  mode = 'create',
+  debt = null,
+  buttonText,
+  title
 }: ChargesFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -56,7 +74,28 @@ export default function ChargesForm({
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
+  // Usar campusId de props o del store
+  const currentCampusId = campusId || activeCampus?.id || 0;
+
   const { SAT } = useFeatureFlags();
+
+  // Función para formatear moneda
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN'
+    }).format(amount);
+  };
+
+  useEffect(() => {
+    if (debt && open) {
+      setFormData({
+        ...formData,
+        amount: debt.remaining_amount,
+        notes: formData.notes || `Pago para adeudo: ${debt.concept}`
+      });
+    }
+  }, [debt, open]);
 
   const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
     return Object.entries(denominations).reduce((total, [denomination, count]) => {
@@ -87,10 +126,20 @@ export default function ChargesForm({
     setLoading(true);
 
     try {
+      const submitData = debt ? {
+        ...formData,
+        campus_id: currentCampusId,
+        debt_id: debt.id,
+        transaction_type: 'income'
+      } : {
+        ...formData,
+        campus_id: currentCampusId
+      };
+
       const updatedTransaction = mode === 'create'
-        ? await createCharge(formData)
+        ? await createCharge(submitData)
         : await updateCharge({
-          ...formData,
+          ...submitData,
           denominations: null,
           paid: 1,
           cash_register_id: activeCampus.latest_cash_register.id,
@@ -136,7 +185,6 @@ export default function ChargesForm({
 
   return (
     <>
-
       {
         activeCampus?.latest_cash_register ? icon ? (
           <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
@@ -144,7 +192,7 @@ export default function ChargesForm({
           </Button>
         ) : (
           <Button onClick={() => setOpen(true)}>
-            {mode === 'create' ? 'Crear Pago' : 'Registrar Pago'}
+            {buttonText || (mode === 'create' ? 'Crear Pago' : 'Registrar Pago')}
           </Button>
         ) : null
       }
@@ -154,9 +202,34 @@ export default function ChargesForm({
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
-              {mode === 'create' ? 'Registrar Nuevo Pago' : 'Registrar Pago'}
+              {title || (mode === 'create' ? 'Registrar Nuevo Pago' : 'Registrar Pago')}
             </DialogTitle>
           </DialogHeader>
+          
+          {/* Información del adeudo si existe */}
+          {debt && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
+              <h4 className="font-medium text-gray-900 mb-2">Información del Adeudo</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-gray-500 font-bold">Concepto:</span>
+                  <p className="font-medium text-gray-500">{debt.concept}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500 font-bold">Monto Total:</span>
+                  <p className="font-medium text-gray-500">{formatCurrency(debt.total_amount)}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Pagado:</span>
+                  <p className="font-medium text-green-600">{formatCurrency(debt.paid_amount)}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Pendiente:</span>
+                  <p className="font-medium text-red-600">{formatCurrency(debt.remaining_amount)}</p>
+                </div>
+              </div>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="space-y-2">
@@ -191,12 +264,19 @@ export default function ChargesForm({
                 <Label>Monto</Label>
                 <Input
                   type="number"
+                  step="0.01"
                   value={formData.amount}
                   onChange={(e) =>
                     setFormData({ ...formData, amount: Number(e.target.value) })
                   }
+                  max={debt?.remaining_amount}
                   required
                 />
+                {debt && (
+                  <p className="text-xs text-gray-500">
+                    Máximo disponible: {formatCurrency(debt.remaining_amount)}
+                  </p>
+                )}
                 {errors.amount && (
                   <p className="text-red-500 text-sm">{errors.amount}</p>
                 )}
@@ -221,6 +301,7 @@ export default function ChargesForm({
                   <SelectContent>
                     <SelectItem value="transfer">Transferencia</SelectItem>
                     <SelectItem value="card">Tarjeta</SelectItem>
+                    <SelectItem value="cash">Efectivo</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.payment_method && (
@@ -256,19 +337,25 @@ export default function ChargesForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        {cards
-                        .filter(card => !SAT || card.sat)
+                      {cards
+                        .filter(card => {
+                          // Filtrar por campus - solo mostrar tarjetas del campus activo
+                          const campusMatch = card.campus_id === currentCampusId;
+                          // Filtrar por SAT si está habilitado (feature flag)
+                          const satMatch = !SAT || card.sat;
+                          return campusMatch && satMatch;
+                        })
                         .map(card => (
                           <SelectItem key={card.id} value={card.id.toString()}>
-                          <span className='flex items-center gap-2'>
-                            {card.sat ? (
-                            <div className='text-green-500 bg-green-500 rounded-full size-2 pr-2' />
-                            ) : (
-                            <div className='text-red-500 bg-red-500 rounded-full size-2 pr-2' />
-                            )}
-                            {card.name}
-                          </span>
-                          {card.number} <br /> {card.clabe}
+                            <span className='flex items-center gap-2'>
+                              {card.sat ? (
+                                <div className='text-green-500 bg-green-500 rounded-full size-2 pr-2' />
+                              ) : (
+                                <div className='text-red-500 bg-red-500 rounded-full size-2 pr-2' />
+                              )}
+                              {card.name}
+                            </span>
+                            {card.number} <br /> {card.clabe}
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -316,7 +403,7 @@ export default function ChargesForm({
             )} */}
 
             <Button type="submit" disabled={loading}>
-              {loading ? 'Procesando...' : mode === 'create' ? 'Registrar Pago' : 'Registrar Pago'}
+              {loading ? 'Procesando...' : (debt ? 'Registrar Pago de Adeudo' : (mode === 'create' ? 'Registrar Pago' : 'Registrar Pago'))}
             </Button>
           </form>
         </DialogContent>

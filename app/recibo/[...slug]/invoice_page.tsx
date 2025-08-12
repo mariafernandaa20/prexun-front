@@ -173,7 +173,7 @@ export function InvoiceClient({ invoice }) {
                         <div className="space-y-2">
                             <div className="flex justify-between">
                                 <span className="font-medium">Comprobante de Pago</span>
-                                <span className='bg-yellow-200 p-2'>{invoice.folio_new || invoiceNumber(invoice)}</span>
+                                <span className='bg-yellow-200 p-2'>{invoice.display_folio || invoice.folio_new || invoiceNumber(invoice)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-medium">Estudiante</span>

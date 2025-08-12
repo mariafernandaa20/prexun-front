@@ -208,6 +208,9 @@ export interface Transaction {
   transaction_type?: string;
   debt_id?: number | null;
   folio?: number;
+  folio_cash?: string;
+  folio_card?: string;
+  folio_transfer?: string;
   student?: Student;
   cash_register_id?: number;
   folio_new?: string;

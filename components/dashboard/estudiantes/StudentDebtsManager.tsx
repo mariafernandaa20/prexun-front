@@ -11,8 +11,10 @@ import { PlusIcon, CreditCard, AlertTriangle, CheckCircle } from 'lucide-react'
 import axiosInstance from '@/lib/api/axiosConfig'
 import { formatTime } from '@/lib/utils'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
-import { createCharge } from '@/lib/api'
+import { createCharge, getCards } from '@/lib/api'
 import { getStudentAssignmentsByStudent } from '@/lib/api'
+import ChargesForm from './charges-form'
+import type { Transaction, Card as CardType } from '@/lib/types'
 
 interface Debt {
   id: number
@@ -97,9 +99,9 @@ const formatCurrency = (amount: number) => {
 export default function StudentDebtsManager({ studentId, onTransactionUpdate }: StudentDebtsManagerProps) {
   const [debts, setDebts] = useState<Debt[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
+  const [cards, setCards] = useState<CardType[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
   const [submitting, setSubmitting] = useState(false)
   
@@ -113,20 +115,52 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
     description: ''
   })
   
-  const [paymentFormData, setPaymentFormData] = useState({
-    amount: '',
+  // Estado para el formulario de pago unificado
+  const [paymentFormData, setPaymentFormData] = useState<Transaction>({
+    campus_id: activeCampus?.id || 0,
+    student_id: studentId,
+    amount: 0,
     payment_method: 'card',
-    notes: ''
+    paid: 1,
+    notes: '',
+    transaction_type: 'income',
+    denominations: {},
+    payment_date: new Date().toISOString().split('T')[0],
+    card_id: '',
+    debt_id: null
   })
   
   const [errors, setErrors] = useState<any>({})
 
   useEffect(() => {
-    if (studentId) {
+    if (studentId && activeCampus) {
       fetchStudentDebts()
       fetchAssignments()
+      fetchCards()
     }
-  }, [studentId])
+  }, [studentId, activeCampus])
+
+  // Actualizar formData cuando cambie el campus activo
+  useEffect(() => {
+    if (activeCampus) {
+      setPaymentFormData(prev => ({
+        ...prev,
+        campus_id: activeCampus.id
+      }))
+      // Recargar tarjetas del nuevo campus
+      fetchCards()
+    }
+  }, [activeCampus])
+
+  const fetchCards = async () => {
+    try {
+      if (!activeCampus) return;
+      const response = await getCards(activeCampus.id)
+      setCards(response || [])
+    } catch (error) {
+      console.error('Error fetching cards:', error)
+    }
+  }
 
   const fetchStudentDebts = async () => {
     try {
@@ -181,58 +215,28 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
     }
   }
 
-  const handleCreatePayment = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedDebt) return
-    
-    setSubmitting(true)
-    setErrors({})
-
-    try {
-      const response = await createCharge({
-        campus_id: activeCampus?.id || 0,
-        student_id: studentId,
-        amount: parseFloat(paymentFormData.amount),
-        payment_method: paymentFormData.payment_method as "cash" | "transfer" | "card",
-        paid: 1,
-        notes: paymentFormData.notes || `Pago para adeudo: ${selectedDebt.concept}`,
-        transaction_type: 'income',
-        debt_id: selectedDebt.id,
-        denominations: [],
-        payment_date: new Date().toISOString().split('T')[0]
-      })
-
-      if (response && onTransactionUpdate) {
-        onTransactionUpdate(response)
-      }
-      
-      setPaymentFormData({
-        amount: '',
-        payment_method: 'card',
-        notes: ''
-      })
-      setShowPaymentForm(false)
-      setSelectedDebt(null)
-      fetchStudentDebts()
-    } catch (error: any) {
-      if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors)
-      } else {
-        console.error('Error creating payment:', error)
-      }
-    } finally {
-      setSubmitting(false)
+  const handleTransactionUpdate = (transaction: Transaction) => {
+    if (onTransactionUpdate) {
+      onTransactionUpdate(transaction)
     }
+    setSelectedDebt(null)
+    fetchStudentDebts()
   }
 
-  const openPaymentForm = (debt: Debt) => {
-    setSelectedDebt(debt)
+  const resetPaymentForm = () => {
     setPaymentFormData({
-      amount: debt.remaining_amount.toString(),
+      campus_id: activeCampus?.id || 0,
+      student_id: studentId,
+      amount: 0,
       payment_method: 'card',
-      notes: `Pago para adeudo: ${debt.concept}`
+      paid: 1,
+      notes: '',
+      transaction_type: 'income',
+      denominations: {},
+      payment_date: new Date().toISOString().split('T')[0],
+      card_id: '',
+      debt_id: null
     })
-    setShowPaymentForm(true)
   }
 
   const getTotalSummary = () => {
@@ -355,14 +359,17 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                   <TableCell>
                     <div className="flex gap-2">
                       {debt.status !== 'paid' && (
-                        <Button
-                          size="sm"
-                          onClick={() => openPaymentForm(debt)}
-                          disabled={!activeCampus?.latest_cash_register}
-                        >
-                          <CreditCard className="w-4 h-4 mr-1" />
-                          Pagar
-                        </Button>
+                        <ChargesForm
+                          fetchStudents={fetchStudentDebts}
+                          cards={cards}
+                          student_id={studentId}
+                          formData={paymentFormData}
+                          setFormData={setPaymentFormData}
+                          onTransactionUpdate={handleTransactionUpdate}
+                          debt={debt}
+                          buttonText="Pagar"
+                          title="Registrar Pago de Adeudo"
+                        />
                       )}
                     </div>
                   </TableCell>
@@ -474,78 +481,6 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                   {submitting ? 'Creando...' : 'Crear Adeudo'}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Payment Modal */}
-        <Dialog open={showPaymentForm} onOpenChange={setShowPaymentForm}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Registrar Pago</DialogTitle>
-            </DialogHeader>
-            {selectedDebt && (
-              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium">{selectedDebt.concept}</h4>
-                <p className="text-sm text-gray-600">
-                  Pendiente: {formatCurrency(selectedDebt.remaining_amount)}
-                </p>
-              </div>
-            )}
-            <form onSubmit={handleCreatePayment} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Monto a Pagar
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={paymentFormData.amount}
-                    onChange={(e) => setPaymentFormData({ ...paymentFormData, amount: e.target.value })}
-                    max={selectedDebt?.remaining_amount}
-                    required
-                  />
-                </label>
-                {errors.amount && (
-                  <p className="text-red-500 text-sm mt-1">{errors.amount[0]}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Método de Pago
-                  <select
-                    value={paymentFormData.payment_method}
-                    onChange={(e) => setPaymentFormData({ ...paymentFormData, payment_method: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                    required
-                  >
-                    <option value="card">Tarjeta</option>
-                    <option value="transfer">Transferencia</option>
-                    <option value="cash">Efectivo</option>
-                  </select>
-                </label>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Notas (Opcional)
-                  <Textarea
-                    value={paymentFormData.notes}
-                    onChange={(e) => setPaymentFormData({ ...paymentFormData, notes: e.target.value })}
-                    placeholder="Información adicional sobre el pago..."
-                    rows={3}
-                  />
-                </label>
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button type="submit" disabled={submitting || !activeCampus?.latest_cash_register}>
-                  {submitting ? 'Procesando...' : 'Registrar Pago'}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setShowPaymentForm(false)}>
                   Cancelar
                 </Button>
               </div>

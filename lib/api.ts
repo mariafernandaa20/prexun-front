@@ -52,6 +52,12 @@ export const getCampuses = async () => {
   return response.data;
 };
 
+export const getCards = async (campus_id?: number) => {
+  const params = campus_id ? { campus_id } : {};
+  const response = await axiosInstance.get('/cards', { params });
+  return response.data;
+};
+
 export const createCampus = async (campus: Campus) => {
   const response = await axiosInstance.post(
     API_ENDPOINTS.CREATE_CAMPUS,
