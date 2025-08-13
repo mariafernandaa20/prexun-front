@@ -80,6 +80,16 @@ export default function CobrosPage() {
       label: 'Nuevo Folio',
       render: (transaction: Transaction) => transaction.folio_new
     },
+        {
+      id: 'otros_folios',
+      label: 'Nuevo Cash',
+      render: (transaction: Transaction) => transaction.folio_cash
+    },
+        {
+      id: 'otros_folios',
+      label: 'Nuevo Transfer',
+      render: (transaction: Transaction) => transaction.folio_transfer
+    },
     {
       id: 'student',
       label: 'Estudiante',
