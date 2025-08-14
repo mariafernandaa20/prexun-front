@@ -111,6 +111,7 @@ export const data = {
       ],
     },
   ],
+
   projects: [
     {
       name: "Design Engineering",
@@ -128,6 +129,7 @@ export const data = {
       icon: Map,
     },
   ],
+
   admin_navigation: [
     {
       name: "Dashboard",
@@ -190,6 +192,7 @@ export const data = {
       icon: MessageCircle,
     },
   ],
+
   plantel_navigation: [
     {
       name: "Dashboard",
@@ -200,6 +203,11 @@ export const data = {
       name: "Estudiantes",
       url: "/planteles/estudiantes",
       icon: Users,
+    },
+    {
+      name: "Adeudos",
+      url: "/planteles/adeudos",
+      icon: Receipt,
     },
     {
       name: "Ingresos",
@@ -260,7 +268,7 @@ export function TemplateSidebar({
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain title="Configuración" items={data.navMain}/>
+        <NavMain title="Configuración" items={data.navMain} />
         <NavItems projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
