@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { InvoiceClient } from "./invoice_page";
+import { ReciboPage } from "./recibo_page";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -19,7 +19,7 @@ async function getInvoiceData(slug) {
 export default async function InvoicePage({ params }) {
     try {
         const invoice = await getInvoiceData(params.slug.join('/'));
-        return <InvoiceClient invoice={invoice} />;
+        return <ReciboPage invoice={invoice} />;
     } catch (error) {
         return (
             <div className="flex items-center justify-center h-screen w-screen bg-[#F0F0F0]">

@@ -1,10 +1,11 @@
 'use client'
+
 import "jspdf-autotable";
 import Image from "next/image";
 import InvoicePDF from '@/components/invoice_pdf';
 import { PaymentMethod } from '@/lib/types';
 
-export function InvoiceClient({ invoice }) {
+export function ReciboPage({ invoice }) {
 
     const invoiceNumber = ({ folio }) => {
         if (!folio) return 'No pagado';
