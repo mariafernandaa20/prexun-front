@@ -5,15 +5,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { formatCurrency, formatTime } from '@/lib/utils';
-import { AlertTriangle, CheckCircle, CreditCard } from 'lucide-react';
+import { AlertTriangle, CheckCircle, CreditCard, Info } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 
 const cards = [];
 const studentId = null;
 const paymentFormData = {};
-const setPaymentFormData = () => {};
-const handleTransactionUpdate = () => {};
-const fetchStudentDebts = () => {};
+const setPaymentFormData = () => { };
+const handleTransactionUpdate = () => { };
+const fetchStudentDebts = () => { };
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const statusConfig = {
@@ -22,12 +22,12 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     paid: { label: 'Pagado', variant: 'default' as const, icon: CheckCircle },
     overdue: { label: 'Vencido', variant: 'destructive' as const, icon: AlertTriangle }
   }
-  
+
   const config = statusConfig[status] || statusConfig.pending
   const Icon = config.icon
-  
+
   return (
-    <Badge variant={config.variant} className="flex items-center gap-1">
+    <Badge variant={config.variant} className="flex items-center gap-1 ">
       <Icon className="w-3 h-3" />
       {config.label}
     </Badge>
@@ -36,7 +36,9 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
 
 export default function debtsPage() {
+
   const [debts, setdebts] = useState([]);
+
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
   async function getdebts() {
@@ -48,6 +50,8 @@ export default function debtsPage() {
       console.error('Error fetching debts:', error);
     }
   }
+
+  console.log(debts)
 
   useEffect(() => {
     getdebts();
@@ -62,6 +66,7 @@ export default function debtsPage() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Estudiante</TableHead>
             <TableHead>Concepto</TableHead>
             <TableHead>Asignación</TableHead>
             <TableHead>Monto Total</TableHead>
@@ -69,12 +74,18 @@ export default function debtsPage() {
             <TableHead>Pendiente</TableHead>
             <TableHead>Vencimiento</TableHead>
             <TableHead>Estado</TableHead>
-            <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {debts.map((debt) => (
             <TableRow key={debt.id}>
+              <TableCell>
+                <div className='flex items-center gap-4'>
+                  <a className='text-blue-500' href={`/planteles/estudiantes/${debt.student_id}`}>
+                    {debt.student?.firstname} {debt.student?.lastname}</a>
+                  <Info />
+                </div>
+              </TableCell>
               <TableCell className="font-medium">{debt.concept}</TableCell>
               <TableCell>
                 <div className="space-y-1">
@@ -110,13 +121,6 @@ export default function debtsPage() {
               </TableCell>
               <TableCell>
                 <StatusBadge status={debt.status} />
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  {debt.status !== 'paid' && (
-                   <a href={`/planteles/estudiantes/${debt.student_id}`}>Ver Estudiante</a>
-                  )}
-                </div>
               </TableCell>
             </TableRow>
           ))}
