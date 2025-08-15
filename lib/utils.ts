@@ -86,3 +86,13 @@ export const formatCurrency = (
     return '$0.00';
   }
 };
+
+
+export function getPaymentMethodLabel(method: string): string {
+  switch (method) {
+    case "cash": return "Efectivo";
+    case "transfer": return "Transferencia";
+    case "card": return "Tarjeta";
+    default: return method;
+  }
+}
