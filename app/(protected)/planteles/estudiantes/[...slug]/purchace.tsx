@@ -31,7 +31,7 @@ interface FormData {
 
 export default function Purchase({ campusId, studentId, onPurchaseComplete }: PurchaseFormProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const [assignments, setAssignments] = useState<Assignment[]>([])
+  const [assignments, setAssignments] = useState<any[]>([])
 
   const [formData, setFormData] = useState<FormData>({
     product_id: '',
@@ -52,8 +52,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
   const activeCampus = useActiveCampusStore((state) => state.activeCampus)
   const fetchAssignments = async () => {
     try {
-      const response = await getStudentAssignmentsByStudent(studentId)
-      setAssignments(response.filter((assignment: Assignment) => assignment.is_active) || [])
+      const response = await getStudentAssignmentsByStudent(studentId as any)
+      setAssignments(response.filter((assignment: any) => assignment.is_active) || [])
     } catch (error) {
       console.error('Error fetching assignments:', error)
     }
