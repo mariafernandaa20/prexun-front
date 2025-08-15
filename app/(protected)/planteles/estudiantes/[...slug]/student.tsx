@@ -34,7 +34,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onU
         <TableHead>Folio Nuevo</TableHead>
         <TableHead>Folio Efectivo</TableHead>
         <TableHead>Folio Transferencia</TableHead>
-        <TableHead>Folio Tarjeta</TableHead>
         <TableHead>Método</TableHead>
         <TableHead>Monto</TableHead>
         <TableHead>Fecha</TableHead>
