@@ -303,12 +303,13 @@ export default function ChargesForm({
                   <div className="space-y-2">
                     <Label>Comprobante</Label>
                     <Input
-                      type='file'
-                      accept="image/*"
+                      type="file"
+                      accept=".jpg,.jpeg,.png"
                       onChange={(e) =>
                         updateFormData({ image: e.target.files?.[0] })
                       }
                     />
+
                   </div>
                 )}
               {localFormData.payment_method === 'transfer' && (
