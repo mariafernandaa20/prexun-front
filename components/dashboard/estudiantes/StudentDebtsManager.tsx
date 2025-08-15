@@ -127,7 +127,8 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
     denominations: {},
     payment_date: new Date().toISOString().split('T')[0],
     card_id: '',
-    debt_id: null
+    debt_id: null,
+    image: undefined
   })
 
   const [errors, setErrors] = useState<any>({})
@@ -235,7 +236,8 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
       denominations: {},
       payment_date: new Date().toISOString().split('T')[0],
       card_id: '',
-      debt_id: null
+      debt_id: null,
+      image: undefined
     })
   }
 

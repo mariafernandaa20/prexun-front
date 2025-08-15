@@ -154,25 +154,6 @@ export default function ChargesForm({
     }
   };
 
-  const handleDenominationChange = (denomination: string, value: string) => {
-    const newDenominations = {
-      ...localFormData.denominations,
-      [denomination]: parseInt(value) || 0,
-    };
-
-    updateFormData({ denominations: newDenominations });
-
-    if (errors.denominations) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.denominations;
-        return newErrors;
-      });
-    }
-  };
-
-
-
   return (
     <>
       {
@@ -305,9 +286,11 @@ export default function ChargesForm({
                     <Input
                       type='file'
                       accept="image/*"
-                      onChange={(e) =>
-                        updateFormData({ image: e.target.files?.[0] })
-                      }
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        console.log('File selected:', file);
+                        updateFormData({ image: file });
+                      }}
                     />
                   </div>
                 )}

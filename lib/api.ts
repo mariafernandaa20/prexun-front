@@ -275,8 +275,38 @@ export const getCharges = async (campusId: number, page: number, perPage: number
 };
 
 export const createCharge = async (charge: Transaction) => {
-  const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CHARGE, charge);
-  return response.data;
+  // Si hay una imagen, usar FormData para manejar archivos
+  if (charge.image && charge.image instanceof File) {
+    const formData = new FormData();
+
+    Object.keys(charge).forEach(key => {
+      if (charge[key] !== null && charge[key] !== undefined) {
+        if (key === 'image' && charge[key] instanceof File) {
+          formData.append('image', charge[key]);
+        } else if (typeof charge[key] === 'object') {
+          formData.append(key, JSON.stringify(charge[key]));
+        } else {
+          formData.append(key, String(charge[key]));
+        }
+      }
+    });
+
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.CREATE_CHARGE, 
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    return response.data;
+  } else {
+    // Si no hay imagen, usar el método normal
+    const response = await axiosInstance.post(API_ENDPOINTS.CREATE_CHARGE, charge);
+    return response.data;
+  }
 };
 
 export const updateCharge = async (charge: Transaction) => {
