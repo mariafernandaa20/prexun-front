@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { createCharge, getProductos } from '@/lib/api'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
-import { PlusIcon } from 'lucide-react'
+import { PlusIcon, ShoppingBag } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 
 interface PurchaseFormProps {
@@ -154,8 +154,8 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
   return (
     <>
       {activeCampus?.latest_cash_register ?
-        <Button onClick={() => setModalOpen(true)}>
-          <PlusIcon className="mr-2 h-4 w-4" /> Comprar
+        <Button onClick={() => setModalOpen(true)} variant='secondary'>
+          <ShoppingBag className="mr-2 h-4 w-4" /> Comprar
         </Button>
         : null}
 

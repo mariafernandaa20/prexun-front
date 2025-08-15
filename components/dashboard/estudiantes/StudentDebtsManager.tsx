@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Table, TableCell, TableHead, TableHeader, TableRow, TableBody } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { PlusIcon, CreditCard, AlertTriangle, CheckCircle } from 'lucide-react'
+import { PlusIcon, CreditCard, AlertTriangle, CheckCircle, FilePlus2 } from 'lucide-react'
 import axiosInstance from '@/lib/api/axiosConfig'
 import { formatTime } from '@/lib/utils'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
@@ -265,9 +265,9 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
       <CardHeader>
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Gestión de Adeudos</h2>
-          <Button onClick={() => setShowCreateForm(true)}>
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Crear Adeudo
+          <Button variant='secondary' onClick={() => setShowCreateForm(true)}>
+            <FilePlus2 className="mr-2 h-4 w-4" />
+            Nuevo Adeudo
           </Button>
         </div>
       </CardHeader>
@@ -478,7 +478,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
 
               <div className="flex gap-2 pt-4">
                 <Button type="submit" disabled={submitting}>
-                  {submitting ? 'Creando...' : 'Crear Adeudo'}
+                  {submitting ? 'Creando...' : 'Nuevo Adeudo'}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
                   Cancelar

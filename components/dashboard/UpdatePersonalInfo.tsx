@@ -95,7 +95,7 @@ export default function UpdatePersonalInfo({ student }: { student: Student }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Actualizar Información Personal <PenIcon className="ml-2" /></Button>
+        <Button>Editar <PenIcon className="ml-2" /></Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -139,7 +139,7 @@ export default function UpdatePersonalInfo({ student }: { student: Student }) {
               required
             />
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="grupo_id">Grupo</Label>
             <Select
               name="grupo_id"
@@ -176,7 +176,7 @@ export default function UpdatePersonalInfo({ student }: { student: Student }) {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
           <Button type="submit" className="w-full">
             Guardar Cambios
           </Button>

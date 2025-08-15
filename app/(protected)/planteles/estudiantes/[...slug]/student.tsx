@@ -165,7 +165,6 @@ export function StudentComponent({ slug }: { slug: string[] }) {
     updateTransaction(newTransaction);
   };
 
-  // Ensure student.id is a number for UpdatePersonalInfo
   const studentForUpdatePersonalInfo = {
     ...student,
     id: typeof student.id === "string" ? Number(student.id) : student.id
