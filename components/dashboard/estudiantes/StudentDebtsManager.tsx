@@ -77,10 +77,10 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     paid: { label: 'Pagado', variant: 'default' as const, icon: CheckCircle },
     overdue: { label: 'Vencido', variant: 'destructive' as const, icon: AlertTriangle }
   }
-  
+
   const config = statusConfig[status] || statusConfig.pending
   const Icon = config.icon
-  
+
   return (
     <Badge variant={config.variant} className="flex items-center gap-1">
       <Icon className="w-3 h-3" />
@@ -104,9 +104,9 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  
+
   const activeCampus = useActiveCampusStore((state) => state.activeCampus)
-  
+
   const [debtFormData, setDebtFormData] = useState({
     assignment_id: '',
     concept: '',
@@ -114,7 +114,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
     due_date: '',
     description: ''
   })
-  
+
   // Estado para el formulario de pago unificado
   const [paymentFormData, setPaymentFormData] = useState<Transaction>({
     campus_id: activeCampus?.id || 0,
@@ -129,7 +129,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
     card_id: '',
     debt_id: null
   })
-  
+
   const [errors, setErrors] = useState<any>({})
 
   useEffect(() => {
@@ -194,7 +194,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
         student_id: studentId,
         total_amount: parseFloat(debtFormData.total_amount)
       })
-      
+
       setDebtFormData({
         assignment_id: '',
         concept: '',
@@ -395,7 +395,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                 <label className="block text-sm font-medium mb-1">
                   Asignación
                   <select
-                    value={debtFormData.assignment_id}
+                    value={debtFormData?.assignment_id}
                     onChange={(e) => setDebtFormData({ ...debtFormData, assignment_id: e.target.value })}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     required
@@ -403,7 +403,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                     <option value="">Seleccione una asignación</option>
                     {assignments.map((assignment) => (
                       <option key={assignment.id} value={assignment.id}>
-                        {assignment.period?.name} 
+                        {assignment.period?.name}
                         {assignment.grupo?.name && ` - Grupo: ${assignment.grupo.name}`}
                         {assignment.semanaIntensiva?.name && ` - Semana: ${assignment.semanaIntensiva.name}`}
                         {assignment.period?.price && ` - ${formatCurrency(assignment.period.price)}`}

@@ -8,7 +8,6 @@ import { formatCurrency, formatTime } from '@/lib/utils';
 import { AlertTriangle, CheckCircle, CreditCard } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 
-// Estados y funciones para ChargesForm (ajusta según tu lógica)
 const cards = [];
 const studentId = null;
 const paymentFormData = {};

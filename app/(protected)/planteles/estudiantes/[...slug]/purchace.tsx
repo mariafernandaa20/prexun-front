@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { createCharge, getProductos } from '@/lib/api'
+import { createCharge, getProductos, getStudentAssignmentsByStudent } from '@/lib/api'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
 import { PlusIcon, ShoppingBag } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
@@ -31,6 +31,8 @@ interface FormData {
 
 export default function Purchase({ campusId, studentId, onPurchaseComplete }: PurchaseFormProps) {
   const [modalOpen, setModalOpen] = useState(false)
+  const [assignments, setAssignments] = useState<Assignment[]>([])
+
   const [formData, setFormData] = useState<FormData>({
     product_id: '',
     quantity: 1,
@@ -48,7 +50,14 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
 
   const [products, setProducts] = useState<any[]>([])
   const activeCampus = useActiveCampusStore((state) => state.activeCampus)
-
+  const fetchAssignments = async () => {
+    try {
+      const response = await getStudentAssignmentsByStudent(studentId)
+      setAssignments(response.filter((assignment: Assignment) => assignment.is_active) || [])
+    } catch (error) {
+      console.error('Error fetching assignments:', error)
+    }
+  }
   useEffect(() => {
     const fetchProducts = async () => {
       const response = await getProductos()
@@ -164,6 +173,27 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
           <div className="p-4">
             <h2 className="text-xl font-bold mb-4">Registrar Nuevo Pago</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* <div>
+                <label className="block text-sm font-medium mb-1">
+                  Asignación
+                  <select
+                    value={debtFormData.assignment_id}
+                    onChange={(e) => setDebtFormData({ ...debtFormData, assignment_id: e.target.value })}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    required
+                  >
+                    <option value="">Seleccione una asignación</option>
+                    {assignments.map((assignment) => (
+                      <option key={assignment.id} value={assignment.id}>
+                        {assignment.period?.name}
+                        {assignment.grupo?.name && ` - Grupo: ${assignment.grupo.name}`}
+                        {assignment.semanaIntensiva?.name && ` - Semana: ${assignment.semanaIntensiva.name}`}
+                        {assignment.period?.price && ` - ${formatCurrency(assignment.period.price)}`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Producto

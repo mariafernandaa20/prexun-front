@@ -71,15 +71,14 @@ export default function ChargesForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [localFormData, setLocalFormData] = useState<Transaction>(formData);
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
-  // Usar campusId de props o del store
   const currentCampusId = campusId || activeCampus?.id || 0;
 
   const { SAT } = useFeatureFlags();
 
-  // Función para formatear moneda
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
@@ -89,35 +88,21 @@ export default function ChargesForm({
 
   useEffect(() => {
     if (debt && open) {
-      setFormData({
-        ...formData,
+      const updatedData = {
+        ...localFormData,
         amount: debt.remaining_amount,
-        notes: formData.notes || `Pago para adeudo: ${debt.concept}`
-      });
+        notes: localFormData.notes || `Pago para adeudo: ${debt.concept}`
+      };
+      setLocalFormData(updatedData);
+      if (setFormData) {
+        setFormData(updatedData);
+      }
     }
   }, [debt, open]);
 
-  const calculateDenominationsTotal = (denominations: Record<string, number>): number => {
-    return Object.entries(denominations).reduce((total, [denomination, count]) => {
-      return total + (Number(denomination) * (count || 0));
-    }, 0);
-  };
-
-  const validateDenominations = (): boolean => {
-    if (formData.payment_method === 'cash' && formData.denominations && typeof formData.denominations === 'object' && !Array.isArray(formData.denominations)) {
-      const denominationsTotal = Number(calculateDenominationsTotal(formData.denominations)).toFixed(2);
-      const amount = Number(formData.amount).toFixed(2);
-
-      if (denominationsTotal !== amount) {
-        setErrors({
-          ...errors,
-          denominations: `El total de las denominaciones (${denominationsTotal}) debe ser igual al monto del pago (${amount})`
-        });
-        return false;
-      }
-    }
-    return true;
-  };
+  useEffect(() => {
+    setLocalFormData(formData);
+  }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,12 +112,12 @@ export default function ChargesForm({
 
     try {
       const submitData = debt ? {
-        ...formData,
+        ...localFormData,
         campus_id: currentCampusId,
         debt_id: debt.id,
         transaction_type: 'income'
       } : {
-        ...formData,
+        ...localFormData,
         campus_id: currentCampusId
       };
 
@@ -143,8 +128,8 @@ export default function ChargesForm({
           denominations: null,
           paid: 1,
           cash_register_id: activeCampus.latest_cash_register.id,
-          payment_date: formData.payment_date,
-          image: formData.image,
+          payment_date: localFormData.payment_date,
+          image: localFormData.image,
         });
 
       setOpen(false);
@@ -161,16 +146,21 @@ export default function ChargesForm({
     }
   };
 
+  const updateFormData = (updates: Partial<Transaction>) => {
+    const updatedData = { ...localFormData, ...updates };
+    setLocalFormData(updatedData);
+    if (setFormData) {
+      setFormData(updatedData);
+    }
+  };
+
   const handleDenominationChange = (denomination: string, value: string) => {
     const newDenominations = {
-      ...formData.denominations,
+      ...localFormData.denominations,
       [denomination]: parseInt(value) || 0,
     };
 
-    setFormData({
-      ...formData,
-      denominations: newDenominations,
-    });
+    updateFormData({ denominations: newDenominations });
 
     if (errors.denominations) {
       setErrors((prev) => {
@@ -191,8 +181,8 @@ export default function ChargesForm({
             <Receipt className="w-4 h-4" />
           </Button>
         ) : (
-          <Button onClick={() => setOpen(true)}>
-            {buttonText || (mode === 'create' ? 'Crear Pago' : 'Registrar Pago')}
+          <Button variant='secondary' onClick={() => setOpen(true)}>
+            {buttonText || (mode === 'create' ? 'Crear Pago' : 'Pagar')}
           </Button>
         ) : null
       }
@@ -205,7 +195,7 @@ export default function ChargesForm({
               {title || (mode === 'create' ? 'Registrar Nuevo Pago' : 'Registrar Pago')}
             </DialogTitle>
           </DialogHeader>
-          
+
           {/* Información del adeudo si existe */}
           {debt && (
             <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
@@ -236,9 +226,9 @@ export default function ChargesForm({
                 <Label>Fecha de pago</Label>
                 <Input
                   type="date"
-                  value={formData.payment_date}
+                  value={localFormData.payment_date}
                   onChange={(e) =>
-                    setFormData({ ...formData, payment_date: e.target.value })
+                    updateFormData({ payment_date: e.target.value })
                   }
                   required
                 />
@@ -265,9 +255,9 @@ export default function ChargesForm({
                 <Input
                   type="number"
                   step="0.01"
-                  value={formData.amount}
+                  value={localFormData.amount}
                   onChange={(e) =>
-                    setFormData({ ...formData, amount: Number(e.target.value) })
+                    updateFormData({ amount: Number(e.target.value) })
                   }
                   max={debt?.remaining_amount}
                   required
@@ -287,13 +277,13 @@ export default function ChargesForm({
               <div className="space-y-2">
                 <Label>Método de Pago</Label>
                 <Select
-                  value={formData.payment_method}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
+                  value={localFormData.payment_method}
+                  onValueChange={(value) => {
+                    console.log(value);
+                    updateFormData({
                       payment_method: value as 'cash' | 'transfer' | 'card',
-                    })
-                  }
+                    });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -308,7 +298,7 @@ export default function ChargesForm({
                   <p className="text-red-500 text-sm">{errors.payment_method}</p>
                 )}
               </div>
-              {formData.payment_method === 'transfer' &&
+              {localFormData.payment_method === 'transfer' &&
                 (
                   <div className="space-y-2">
                     <Label>Comprobante</Label>
@@ -316,19 +306,18 @@ export default function ChargesForm({
                       type='file'
                       accept="image/*"
                       onChange={(e) =>
-                        setFormData({ ...formData, image: e.target.files?.[0] })
+                        updateFormData({ image: e.target.files?.[0] })
                       }
                     />
                   </div>
                 )}
-              {formData.payment_method === 'transfer' && (
+              {localFormData.payment_method === 'transfer' && (
                 <div className="space-y-2">
                   <Label>Tarjeta</Label>
                   <Select
-                    value={formData.card_id}
+                    value={localFormData.card_id}
                     onValueChange={(value) =>
-                      setFormData({
-                        ...formData,
+                      updateFormData({
                         card_id: value,
                       })
                     }
@@ -366,15 +355,15 @@ export default function ChargesForm({
                 <Label>Notas</Label>
                 <Textarea
                   rows={6}
-                  value={formData.notes}
+                  value={localFormData.notes}
                   onChange={(e) =>
-                    setFormData({ ...formData, notes: e.target.value })
+                    updateFormData({ notes: e.target.value })
                   }
                 />
               </div>
             </div>
 
-            {/* {formData.payment_method === 'cash' && (
+            {/* {localFormData.payment_method === 'cash' && (
               <div className="space-y-2">
                 <Label>Denominaciones</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -384,7 +373,7 @@ export default function ChargesForm({
                         <Label>${denom}</Label>
                         <Input
                           type="number"
-                          value={formData.denominations[denom] || ''}
+                          value={localFormData.denominations[denom] || ''}
                           onChange={(e) =>
                             handleDenominationChange(denom, e.target.value)
                           }
@@ -397,7 +386,7 @@ export default function ChargesForm({
                   <p className="text-red-500 text-sm mt-2">{errors.denominations}</p>
                 )}
                 <p className="text-sm text-gray-500 mt-2">
-                  Total en denominaciones: ${formData.denominations && typeof formData.denominations === 'object' && !Array.isArray(formData.denominations) ? calculateDenominationsTotal(formData.denominations) : 0}
+                  Total en denominaciones: ${localFormData.denominations && typeof localFormData.denominations === 'object' && !Array.isArray(localFormData.denominations) ? calculateDenominationsTotal(localFormData.denominations) : 0}
                 </p>
               </div>
             )} */}
