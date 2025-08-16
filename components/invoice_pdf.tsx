@@ -91,13 +91,11 @@ const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, curren
 
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
     doc.setFontSize(11);
-    const campusInitial = invoice?.campus?.name?.charAt(0) || 'X';
-    const folioFormatted = invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado';
-    
+    const folioFormatted = invoice.folio_new + (invoice.folio || invoice.folio_cash || invoice.folio_transfer).toString().padStart(3, '0');
+
     const details = [
-        ["Comprobante de Pago:", invoice.folio_new ? invoice.folio_new : `${campusInitial}-${folioFormatted}`],
-        ["Estudiante:", (invoice.student?.firstname || 'N/A')],
-        ["", (invoice.student?.lastname || '')],
+        ["Comprobante de Pago:", folioFormatted],
+        ["Estudiante:", (invoice.student?.firstname  + ' ' + invoice.student?.lastname || 'N/A')],
 
         ["Fecha:", new Date(invoice.payment_date ? invoice.payment_date : invoice.created_at).toLocaleDateString('es-MX', {
             day: 'numeric',
@@ -114,7 +112,7 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
     details.forEach((row, index) => {
         // Añadir fondo amarillo claro solo para el número de comprobante (primera fila)
         if (index === 0) {
-            const invoiceNumber = `${campusInitial}-${folioFormatted}`;
+            const invoiceNumber = `${folioFormatted}`;
             const textWidth = doc.getTextWidth(invoiceNumber);
             
             // Guardar el estado actual
@@ -404,7 +402,8 @@ const generatePDF = (invoice) => {
     generateTotals(doc, finalY, invoice);
     generateComments(doc, finalY, leftCol);
 
-    doc.save(`comprobante-${invoice.folio ? invoice.folio.toString().padStart(5, '0') : 'no_pagado'}.pdf`);
+    const folioForFilename = invoice.folio_new + (invoice.folio || invoice.folio_cash || invoice.folio_transfer).toString().padStart(3, '0');
+    doc.save(`comprobante-${folioForFilename}.pdf`);
 };
 
 const InvoicePDF = ({ icon, invoice }) => {

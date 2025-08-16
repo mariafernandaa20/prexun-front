@@ -7,23 +7,6 @@ import { PaymentMethod } from '@/lib/types';
 
 export function ReciboPage({ invoice }) {
 
-    const invoiceNumber = ({ folio }) => {
-        if (!folio) return 'No pagado';
-        const campusInitial = invoice?.campus?.name?.charAt(0) || 'X';
-        if (folio < 10) {
-            return `${campusInitial}I-0000${folio}`;
-        } if (folio < 100) {
-            return `${campusInitial}I-000${folio}`;
-        }
-        if (folio < 1000) {
-            return `${campusInitial}I-00${folio}`;
-        }
-        if (folio < 10000) {
-            return `${campusInitial}I-0${folio}`;
-        }
-        return `${campusInitial}I-${folio}`;
-    };
-
     // Helper function to get assignment information
     const getAssignmentInfo = () => {
         // First check if there's a debt with assignment information
@@ -174,7 +157,7 @@ export function ReciboPage({ invoice }) {
                         <div className="space-y-2">
                             <div className="flex justify-between">
                                 <span className="font-medium">Comprobante de Pago</span>
-                                <span className='bg-yellow-200 p-2'>{invoice.display_folio || invoice.folio_new || invoiceNumber(invoice)}</span>
+                                <span className='bg-yellow-200 p-2'>{invoice.folio_new + (invoice.folio || invoice.folio_cash || invoice.folio_transfer).toString().padStart(3, '0')}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="font-medium">Estudiante</span>
