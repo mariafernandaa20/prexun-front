@@ -17,37 +17,61 @@ import StudentPeriod from '../student-period'
 import StudentLogs from './StudentLogs'
 import StudentNotes from './StudentNotes'
 import StudentDebtsManager from '@/components/dashboard/estudiantes/StudentDebtsManager'
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 interface TransactionsTableProps {
   transactions: Transaction[];
   onUpdateTransaction: (updatedTransaction: Transaction) => void;
   cards: CardType[];
+  showNotes: boolean;
 }
 
-const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onUpdateTransaction, cards }) => (
+const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onUpdateTransaction, cards, showNotes }) => (
   <Table>
     <TableHeader>
       <TableRow>
         <TableHead>ID</TableHead>
+        <TableHead>Acciones</TableHead>
         <TableHead>Folio</TableHead>
-        <TableHead>Folio Nuevo</TableHead>
-        <TableHead>Folio Efectivo</TableHead>
-        <TableHead>Folio Transferencia</TableHead>
+        <TableHead>Nuevo</TableHead>
+        <TableHead>Efectivo</TableHead>
+        <TableHead>Transferencia</TableHead>
         <TableHead>Método</TableHead>
         <TableHead>Monto</TableHead>
         <TableHead>Fecha</TableHead>
         <TableHead>Fecha de pago</TableHead>
         <TableHead>Fecha Limite de Pago</TableHead>
-        <TableHead>Notas</TableHead>
+        {showNotes && <TableHead>Notas</TableHead>}
         <TableHead>Pagado</TableHead>
-        <TableHead>Acciones</TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
       {transactions.map((transaction) => (
         <TableRow key={transaction.id}>
           <TableCell>{transaction.id}</TableCell>
+          <TableCell>
+            <div className="flex justify-left items-center gap-2">
+              <Link href={`/recibo/${transaction.uuid}`} target="_blank">
+                <Eye className="w-4 h-4 mr-2" />
+              </Link>
+              <ChargesForm
+                campusId={transaction.campus_id}
+                cards={cards}
+                fetchStudents={() => { }}
+                student_id={transaction.student_id}
+                transaction={transaction}
+                formData={transaction}
+                setFormData={() => { }}
+                onTransactionUpdate={onUpdateTransaction}
+                mode="update"
+                student={null}
+                icon={false}
+              />
+            </div>
+          </TableCell>
           <TableCell>{transaction?.folio}</TableCell>
           <TableCell>{transaction?.folio_new}</TableCell>
           <TableCell>{transaction?.folio_cash}</TableCell>
@@ -57,28 +81,8 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onU
           <TableCell>{formatTime({ time: transaction.created_at })}</TableCell>
           <TableCell>{formatTime({ time: transaction.payment_date })}</TableCell>
           <TableCell>{transaction.expiration_date ? formatTime({ time: transaction.expiration_date }) : "Sin vencimiento"}</TableCell>
-          <TableCell>{transaction.notes}</TableCell>
+          {showNotes && <TableCell>{transaction.notes}</TableCell>}
           <TableCell>{transaction.paid !== 0 ? "Sí" : "No"}</TableCell>
-          <TableCell>
-            <div className="flex justify-left items-center gap-2">
-              <Link href={`/recibo/${transaction.uuid}`} target="_blank">
-                <Eye className="w-4 h-4 mr-2" />
-              </Link>
-              <ChargesForm
-                  campusId={transaction.campus_id}
-                  cards={cards}
-                  fetchStudents={() => { }}
-                  student_id={transaction.student_id}
-                  transaction={transaction}
-                  formData={transaction}
-                  setFormData={() => { }}
-                  onTransactionUpdate={onUpdateTransaction}
-                  mode="update"
-                  student={null}
-                  icon={false}
-                />
-            </div>
-          </TableCell>
         </TableRow>
       ))}
     </TableBody>
@@ -153,7 +157,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
   const studentId = Number(slug.join("/"));
   const campusId = useActiveCampusStore((state) => state.activeCampus?.id);
   const { student, loading, error, updateTransaction, refetch, cards } = useStudentData(studentId, campusId);
-
+  const [showNotes, setShowNotes] = useState(false);
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!student) return <div>No se encontró el estudiante</div>;
@@ -221,7 +225,12 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <h2 className="text-xl font-semibold">Historial de Transacciones</h2>
+              <div className='flex items-center gap-4'>
+                <h2 className="text-xl font-semibold">Historial de Transacciones</h2>
+                <Label className='flex items-center gap-2'>
+                  Mostrar notas <Checkbox checked={showNotes} onCheckedChange={() => setShowNotes(!showNotes)} />
+                </Label>
+              </div>
             </CardHeader>
             <CardContent>
               <SectionContainer>
@@ -230,6 +239,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                     transactions={student.transactions}
                     onUpdateTransaction={updateTransaction}
                     cards={cards}
+                    showNotes={showNotes}
                   />
                 )}
               </SectionContainer>

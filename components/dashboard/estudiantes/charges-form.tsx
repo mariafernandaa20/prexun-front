@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Receipt } from 'lucide-react';
+import { CreditCard, FilePlus, PencilIcon, Receipt } from 'lucide-react';
 import { Card, Student, Transaction } from '@/lib/types';
 import { createCharge, updateCharge } from '@/lib/api';
 import { Textarea } from '@/components/ui/textarea';
@@ -159,15 +159,14 @@ export default function ChargesForm({
       {
         activeCampus?.latest_cash_register ? icon ? (
           <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
-            <Receipt className="w-4 h-4" />
+            <Receipt className="w-4 h-4 " />
           </Button>
         ) : (
-          <Button variant='secondary' onClick={() => setOpen(true)}>
-            {buttonText || (mode === 'create' ? 'Crear Pago' : (formData.paid === 1 ? 'Editar' : 'Pagar'))}
+          <Button variant='ghost' onClick={() => setOpen(true)}>
+            {buttonText || (mode === 'create' ? <FilePlus /> : (formData.paid === 1 ? <PencilIcon /> : <CreditCard />))}
           </Button>
         ) : null
       }
-
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[600px]">
@@ -177,7 +176,6 @@ export default function ChargesForm({
             </DialogTitle>
           </DialogHeader>
 
-          {/* Información del adeudo si existe */}
           {debt && (
             <div className="mb-4 p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg border">
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">Información del Adeudo</h4>
@@ -211,7 +209,6 @@ export default function ChargesForm({
                   onChange={(e) =>
                     updateFormData({ payment_date: e.target.value })
                   }
-                  disabled={formData.paid === 1}
                   required
                 />
                 {errors.payment_date && (
@@ -380,7 +377,7 @@ export default function ChargesForm({
             )} */}
 
             <Button type="submit" disabled={loading}>
-              {loading ? 'Procesando...' : (debt ? 'Registrar Pago de Adeudo' : (mode === 'create' ? 'Registrar Pago' : 'Registrar Pago'))}
+              {loading ? 'Procesando...' : (debt ? 'Registrar Pago de Adeudo' : (mode === 'create' ? 'Registrar Pago' : (formData.paid === 1 ? 'Actualizar' : 'Pagar')))}
             </Button>
           </form>
         </DialogContent>
