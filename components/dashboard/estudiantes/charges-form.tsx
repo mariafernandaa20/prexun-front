@@ -163,7 +163,7 @@ export default function ChargesForm({
           </Button>
         ) : (
           <Button variant='secondary' onClick={() => setOpen(true)}>
-            {buttonText || (mode === 'create' ? 'Crear Pago' : 'Pagar')}
+            {buttonText || (mode === 'create' ? 'Crear Pago' : (formData.paid === 1 ? 'Editar' : 'Pagar'))}
           </Button>
         ) : null
       }
@@ -211,6 +211,7 @@ export default function ChargesForm({
                   onChange={(e) =>
                     updateFormData({ payment_date: e.target.value })
                   }
+                  disabled={formData.paid === 1}
                   required
                 />
                 {errors.payment_date && (
@@ -237,6 +238,7 @@ export default function ChargesForm({
                   type="number"
                   step="0.01"
                   value={localFormData.amount}
+                  disabled={formData.paid === 1}
                   onChange={(e) =>
                     updateFormData({ amount: Number(e.target.value) })
                   }
@@ -253,32 +255,35 @@ export default function ChargesForm({
                 )}
               </div>
 
+              {
+                formData.paid === 0 && (
+                  <div className="space-y-2">
+                    <Label>Método de Pago</Label>
+                    <Select
+                      value={localFormData.payment_method}
+                      onValueChange={(value) => {
+                        console.log(value);
+                        updateFormData({
+                          payment_method: value as 'cash' | 'transfer' | 'card',
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="transfer">Transferencia</SelectItem>
+                        <SelectItem value="card">Tarjeta</SelectItem>
+                        <SelectItem value="cash">Efectivo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.payment_method && (
+                      <p className="text-red-500 text-sm">{errors.payment_method}</p>
+                    )}
+                  </div>
+                )
+              }
 
-
-              <div className="space-y-2">
-                <Label>Método de Pago</Label>
-                <Select
-                  value={localFormData.payment_method}
-                  onValueChange={(value) => {
-                    console.log(value);
-                    updateFormData({
-                      payment_method: value as 'cash' | 'transfer' | 'card',
-                    });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="transfer">Transferencia</SelectItem>
-                    <SelectItem value="card">Tarjeta</SelectItem>
-                    <SelectItem value="cash">Efectivo</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.payment_method && (
-                  <p className="text-red-500 text-sm">{errors.payment_method}</p>
-                )}
-              </div>
               {localFormData.payment_method === 'transfer' &&
                 (
                   <div className="space-y-2">

@@ -64,8 +64,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onU
               <Link href={`/recibo/${transaction.uuid}`} target="_blank">
                 <Eye className="w-4 h-4 mr-2" />
               </Link>
-              {transaction.paid === 0 && (
-                <ChargesForm
+              <ChargesForm
                   campusId={transaction.campus_id}
                   cards={cards}
                   fetchStudents={() => { }}
@@ -78,7 +77,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onU
                   student={null}
                   icon={false}
                 />
-              )}
             </div>
           </TableCell>
         </TableRow>
