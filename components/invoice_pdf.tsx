@@ -98,9 +98,10 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
   doc.setFontSize(11);
   const folioFormatted =
     invoice.folio_new +
+    ' ' +
     (invoice.folio || invoice.folio_cash || invoice.folio_transfer)
       .toString()
-      .padStart(3, '0');
+      .padStart(4, '0');
 
   const details = [
     ['Comprobante de Pago:', invoice.paid ? folioFormatted : 'No pagado'],

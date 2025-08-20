@@ -185,13 +185,14 @@ export function ReciboPage({ invoice }) {
                 <span className="bg-yellow-200 p-2">
                   {invoice.paid
                     ? invoice.folio_new +
+                      ' ' +
                       (
                         invoice.folio ||
                         invoice.folio_cash ||
                         invoice.folio_transfer
                       )
                         .toString()
-                        .padStart(3, '0')
+                        .padStart(4, '0')
                     : 'No Pagado'}
                 </span>
               </div>
