@@ -14,27 +14,24 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-
-export const FormattedDate: React.FC<{ date: string | null, defaultText?: string }> = ({ 
-    date, 
-    defaultText = 'Sin fecha' 
-}) => {
-    if (!date) return defaultText
-    return new Date(date).toLocaleDateString()
-}
+export const FormattedDate: React.FC<{
+  date: string | null;
+  defaultText?: string;
+}> = ({ date, defaultText = 'Sin fecha' }) => {
+  if (!date) return defaultText;
+  return new Date(date).toLocaleDateString();
+};
 
 export const formatTime: React.FC<{ time: string | null }> = ({ time }) => {
   if (!time) return null;
-  
-  return (
-    new Intl.DateTimeFormat('es', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric',
-      timeZone: 'UTC'
-    }).format(new Date(time))  );
-};
 
+  return new Intl.DateTimeFormat('es', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(time));
+};
 
 interface FormatCurrencyOptions {
   currency?: string;
@@ -54,10 +51,11 @@ export const formatCurrency = (
       locale = 'es-MX',
       decimals = 2,
       format = 'standard',
-      showSymbol = true
+      showSymbol = true,
     } = options;
 
-    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    const numericAmount =
+      typeof amount === 'string' ? parseFloat(amount) : amount;
 
     if (isNaN(numericAmount)) {
       return '$0.00';
@@ -67,17 +65,21 @@ export const formatCurrency = (
       style: showSymbol ? 'currency' : 'decimal',
       currency,
       minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
+      maximumFractionDigits: decimals,
     };
 
     if (format === 'compact') {
       formatOptions.notation = 'compact';
     }
 
-    const formatted = new Intl.NumberFormat(locale, formatOptions).format(numericAmount);
+    const formatted = new Intl.NumberFormat(locale, formatOptions).format(
+      numericAmount
+    );
 
     if (format === 'simple') {
-      return showSymbol ? `$${numericAmount.toFixed(decimals)}` : numericAmount.toFixed(decimals);
+      return showSymbol
+        ? `$${numericAmount.toFixed(decimals)}`
+        : numericAmount.toFixed(decimals);
     }
 
     return formatted;
@@ -87,12 +89,20 @@ export const formatCurrency = (
   }
 };
 
-
 export function getPaymentMethodLabel(method: string): string {
   switch (method) {
-    case "cash": return "Efectivo";
-    case "transfer": return "Transferencia";
-    case "card": return "Tarjeta";
-    default: return method;
+    case 'cash':
+      return 'Efectivo';
+    case 'transfer':
+      return 'Transferencia';
+    case 'card':
+      return 'Tarjeta';
+    default:
+      return method;
   }
 }
+
+export const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};

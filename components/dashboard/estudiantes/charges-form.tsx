@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Input } from '@/components/ui/input';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { getTodayDate } from '@/lib/utils';
 
 interface Debt {
   id: number;
@@ -102,6 +103,10 @@ export default function ChargesForm({
 
   useEffect(() => {
     setLocalFormData(formData);
+
+    if (!formData.payment_date) {
+      localFormData.payment_date = getTodayDate();
+    }
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { createCharge, getProductos, getStudentAssignmentsByStudent } from '@/lib/api'
 import { useActiveCampusStore } from '@/lib/store/plantel-store'
+import { getTodayDate } from '@/lib/utils'
 import { PlusIcon, ShoppingBag } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 
@@ -160,11 +161,17 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
     }
   }
 
+  useEffect(() => {
+    if (!formData.expiration_date) {
+      formData.expiration_date = getTodayDate();
+    }
+  }, [])
+
   return (
     <>
       {activeCampus?.latest_cash_register ?
-        <Button onClick={() => setModalOpen(true)} variant='secondary'>
-          <ShoppingBag className="mr-2 h-4 w-4" /> Comprar
+        <Button onClick={() => setModalOpen(true)} title='Agregar productos' variant='secondary'>
+          <ShoppingBag className="mr-2 h-4 w-4" /> Compras
         </Button>
         : null}
 
