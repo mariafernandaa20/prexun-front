@@ -1,24 +1,24 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { addDays, format } from "date-fns"
-import { es } from "date-fns/locale"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { DateRange } from "react-day-picker"
+import * as React from 'react';
+import { addDays, format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { DateRange } from 'react-day-picker';
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from '@/components/ui/popover';
 
 interface DatePickerWithRangeProps {
-  className?: string
-  date: DateRange | undefined
-  onDateChange: (date: DateRange | undefined) => void
+  className?: string;
+  date: DateRange | undefined;
+  onDateChange: (date: DateRange | undefined) => void;
 }
 
 export function DatePickerWithRange({
@@ -27,26 +27,26 @@ export function DatePickerWithRange({
   onDateChange,
 }: DatePickerWithRangeProps) {
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn('grid gap-2', className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             id="date"
-            variant={"outline"}
+            variant={'outline'}
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              'w-[300px] justify-start text-left font-normal',
+              !date && 'text-muted-foreground'
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, "dd/MM/yyyy", { locale: es })} -{" "}
-                  {format(date.to, "dd/MM/yyyy", { locale: es })}
+                  {format(date.from, 'dd/MM/yyyy', { locale: es })} -{' '}
+                  {format(date.to, 'dd/MM/yyyy', { locale: es })}
                 </>
               ) : (
-                format(date.from, "dd/MM/yyyy", { locale: es })
+                format(date.from, 'dd/MM/yyyy', { locale: es })
               )
             ) : (
               <span>Selecciona un rango de fechas</span>
@@ -72,11 +72,11 @@ export function DatePickerWithRange({
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  const today = new Date()
+                  const today = new Date();
                   onDateChange({
                     from: today,
                     to: today,
-                  })
+                  });
                 }}
               >
                 Hoy
@@ -85,12 +85,12 @@ export function DatePickerWithRange({
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  const today = new Date()
-                  const weekAgo = addDays(today, -7)
+                  const today = new Date();
+                  const weekAgo = addDays(today, -7);
                   onDateChange({
                     from: weekAgo,
                     to: today,
-                  })
+                  });
                 }}
               >
                 Última semana
@@ -99,12 +99,16 @@ export function DatePickerWithRange({
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  const today = new Date()
-                  const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate())
+                  const today = new Date();
+                  const monthAgo = new Date(
+                    today.getFullYear(),
+                    today.getMonth() - 1,
+                    today.getDate()
+                  );
                   onDateChange({
                     from: monthAgo,
                     to: today,
-                  })
+                  });
                 }}
               >
                 Último mes
@@ -113,12 +117,16 @@ export function DatePickerWithRange({
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  const today = new Date()
-                  const yearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate())
+                  const today = new Date();
+                  const yearAgo = new Date(
+                    today.getFullYear() - 1,
+                    today.getMonth(),
+                    today.getDate()
+                  );
                   onDateChange({
                     from: yearAgo,
                     to: today,
-                  })
+                  });
                 }}
               >
                 Último año
@@ -128,5 +136,5 @@ export function DatePickerWithRange({
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

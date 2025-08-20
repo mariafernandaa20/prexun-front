@@ -1,5 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
@@ -34,7 +40,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   const filteredOptions = useMemo(() => {
     if (!search) return options;
-    return options.filter(option =>
+    return options.filter((option) =>
       option.label.toLowerCase().includes(search.toLowerCase())
     );
   }, [search, options]);
@@ -42,7 +48,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   return (
     <Select
       value={value ?? undefined}
-      onValueChange={val => onChange(val === 'todos' ? null : val)}
+      onValueChange={(val) => onChange(val === 'todos' ? null : val)}
       disabled={disabled}
     >
       <SelectTrigger className="w-full">
@@ -54,7 +60,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             <Input
               placeholder={searchPlaceholder}
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-8"
             />
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -64,11 +70,16 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <SelectItem value="todos">{allOptionLabel}</SelectItem>
         )}
         {filteredOptions.length > 0 ? (
-          filteredOptions.map(option => (
-            <SelectItem key={option.value} value={option.value}><span className='text-neutral-500'>{placeholder}</span> <span className="font-bold">{option.label}</span></SelectItem>
+          filteredOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              <span className="text-neutral-500">{placeholder}</span>{' '}
+              <span className="font-bold">{option.label}</span>
+            </SelectItem>
           ))
         ) : (
-          <div className="p-2 text-center text-sm text-gray-500">No se encontraron opciones.</div>
+          <div className="p-2 text-center text-sm text-gray-500">
+            No se encontraron opciones.
+          </div>
         )}
       </SelectContent>
     </Select>

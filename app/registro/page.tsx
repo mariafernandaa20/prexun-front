@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -14,27 +14,33 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { MainNav } from "@/components/main-nav";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import axiosInstance from "@/lib/api/axiosConfig";
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { MainNav } from '@/components/main-nav';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import axiosInstance from '@/lib/api/axiosConfig';
 
 const formSchema = z.object({
-  firstname: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  lastname: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
-  email: z.string().email("Ingresa un email válido"),
-  phone: z.string().min(10, "El teléfono debe tener al menos 10 dígitos"),
-  campus_id: z.string().min(1, "Selecciona un campus"),
+  firstname: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+  lastname: z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),
+  email: z.string().email('Ingresa un email válido'),
+  phone: z.string().min(10, 'El teléfono debe tener al menos 10 dígitos'),
+  campus_id: z.string().min(1, 'Selecciona un campus'),
   carrer_id: z.string().optional(),
   facultad_id: z.string().optional(),
   prepa_id: z.string().optional(),
@@ -66,22 +72,22 @@ export default function RegistroPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstname: "",
-      lastname: "",
-      email: "",
-      phone: "",
-      campus_id: "",
-      carrer_id: "none",
-      facultad_id: "none",
-      prepa_id: "none",
-      municipio_id: "none",
-      tutor_name: "",
-      tutor_phone: "",
-      tutor_relationship: "",
-      average: "",
-      health_conditions: "",
-      how_found_out: "",
-      preferred_communication: "email",
+      firstname: '',
+      lastname: '',
+      email: '',
+      phone: '',
+      campus_id: '',
+      carrer_id: 'none',
+      facultad_id: 'none',
+      prepa_id: 'none',
+      municipio_id: 'none',
+      tutor_name: '',
+      tutor_phone: '',
+      tutor_relationship: '',
+      average: '',
+      health_conditions: '',
+      how_found_out: '',
+      preferred_communication: 'email',
     },
   });
 
@@ -92,9 +98,9 @@ export default function RegistroPage() {
         setFormData(response.data);
       } catch (error) {
         toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No se pudieron cargar los datos del formulario",
+          variant: 'destructive',
+          title: 'Error',
+          description: 'No se pudieron cargar los datos del formulario',
         });
       } finally {
         setIsLoadingData(false);
@@ -107,38 +113,54 @@ export default function RegistroPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true);
-      
+
       // Convert string values to numbers where needed, handle "none" values
       const submitData = {
         ...values,
         campus_id: parseInt(values.campus_id),
-        carrer_id: values.carrer_id && values.carrer_id !== "none" ? parseInt(values.carrer_id) : null,
-        facultad_id: values.facultad_id && values.facultad_id !== "none" ? parseInt(values.facultad_id) : null,
-        prepa_id: values.prepa_id && values.prepa_id !== "none" ? parseInt(values.prepa_id) : null,
-        municipio_id: values.municipio_id && values.municipio_id !== "none" ? parseInt(values.municipio_id) : null,
+        carrer_id:
+          values.carrer_id && values.carrer_id !== 'none'
+            ? parseInt(values.carrer_id)
+            : null,
+        facultad_id:
+          values.facultad_id && values.facultad_id !== 'none'
+            ? parseInt(values.facultad_id)
+            : null,
+        prepa_id:
+          values.prepa_id && values.prepa_id !== 'none'
+            ? parseInt(values.prepa_id)
+            : null,
+        municipio_id:
+          values.municipio_id && values.municipio_id !== 'none'
+            ? parseInt(values.municipio_id)
+            : null,
         average: values.average ? parseFloat(values.average) : null,
       };
 
-      const response = await axiosInstance.post('/public/students/register', submitData);
+      const response = await axiosInstance.post(
+        '/public/students/register',
+        submitData
+      );
 
       toast({
-        title: "¡Registro exitoso!",
+        title: '¡Registro exitoso!',
         description: response.data.message,
       });
 
       // Reset form
       form.reset();
-      
+
       // Redirect to login or success page
       setTimeout(() => {
         router.push('/login');
       }, 2000);
-
     } catch (error: any) {
       toast({
-        variant: "destructive",
-        title: "Error en el registro",
-        description: error.response?.data?.message || "Ocurrió un error al procesar tu registro",
+        variant: 'destructive',
+        title: 'Error en el registro',
+        description:
+          error.response?.data?.message ||
+          'Ocurrió un error al procesar tu registro',
       });
     } finally {
       setIsLoading(false);
@@ -165,17 +187,25 @@ export default function RegistroPage() {
       <div className="container px-4 py-8 mx-auto max-w-4xl">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold">Registro de Estudiante</CardTitle>
+            <CardTitle className="text-3xl font-bold">
+              Registro de Estudiante
+            </CardTitle>
             <CardDescription>
-              Completa el formulario para solicitar tu inscripción. Tu solicitud será revisada por nuestro equipo.
+              Completa el formulario para solicitar tu inscripción. Tu solicitud
+              será revisada por nuestro equipo.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 {/* Información Personal */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Información Personal</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">
+                    Información Personal
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -212,7 +242,11 @@ export default function RegistroPage() {
                         <FormItem>
                           <FormLabel>Correo Electrónico *</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="tu@email.com" {...field} />
+                            <Input
+                              type="email"
+                              placeholder="tu@email.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -235,7 +269,9 @@ export default function RegistroPage() {
                 </div>
                 {/* Información del Tutor */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Información del Tutor/Responsable</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">
+                    Información del Tutor/Responsable
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
@@ -270,7 +306,10 @@ export default function RegistroPage() {
                         <FormItem>
                           <FormLabel>Parentesco</FormLabel>
                           <FormControl>
-                            <Input placeholder="Padre, Madre, etc." {...field} />
+                            <Input
+                              placeholder="Padre, Madre, etc."
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -281,7 +320,9 @@ export default function RegistroPage() {
 
                 {/* Información Adicional */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b pb-2">Información Adicional</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">
+                    Información Adicional
+                  </h3>
                   <FormField
                     control={form.control}
                     name="health_conditions"
@@ -289,9 +330,9 @@ export default function RegistroPage() {
                       <FormItem>
                         <FormLabel>Condiciones de Salud</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Describe cualquier condición médica relevante..." 
-                            {...field} 
+                          <Textarea
+                            placeholder="Describe cualquier condición médica relevante..."
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -305,7 +346,10 @@ export default function RegistroPage() {
                       <FormItem>
                         <FormLabel>¿Cómo te enteraste de nosotros?</FormLabel>
                         <FormControl>
-                          <Input placeholder="Redes sociales, recomendación, etc." {...field} />
+                          <Input
+                            placeholder="Redes sociales, recomendación, etc."
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -317,14 +361,19 @@ export default function RegistroPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Medio de Comunicación Preferido</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecciona una opción" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="email">Correo Electrónico</SelectItem>
+                            <SelectItem value="email">
+                              Correo Electrónico
+                            </SelectItem>
                             <SelectItem value="phone">Teléfono</SelectItem>
                             <SelectItem value="whatsapp">WhatsApp</SelectItem>
                           </SelectContent>
@@ -337,11 +386,11 @@ export default function RegistroPage() {
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-6">
                   <Button className="flex-1" type="submit" disabled={isLoading}>
-                    {isLoading ? "Procesando..." : "Enviar Solicitud"}
+                    {isLoading ? 'Procesando...' : 'Enviar Solicitud'}
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     className="flex-1"
                     onClick={() => router.push('/login')}
                   >

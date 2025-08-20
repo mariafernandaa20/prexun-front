@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import GoogleAuth from "./GoogleAuth";
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import GoogleAuth from './GoogleAuth';
 
 export default function GooglePage() {
   return (

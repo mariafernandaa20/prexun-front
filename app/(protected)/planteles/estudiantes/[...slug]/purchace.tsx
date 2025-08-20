@@ -1,38 +1,46 @@
-'use client'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { createCharge, getProductos, getStudentAssignmentsByStudent } from '@/lib/api'
-import { useActiveCampusStore } from '@/lib/store/plantel-store'
-import { getTodayDate } from '@/lib/utils'
-import { PlusIcon, ShoppingBag } from 'lucide-react'
-import React, { useState, useEffect } from 'react'
+'use client';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  createCharge,
+  getProductos,
+  getStudentAssignmentsByStudent,
+} from '@/lib/api';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { getTodayDate } from '@/lib/utils';
+import { PlusIcon, ShoppingBag } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 interface PurchaseFormProps {
-  campusId: number
-  studentId: string
-  onPurchaseComplete?: (transaction: any) => void
+  campusId: number;
+  studentId: string;
+  onPurchaseComplete?: (transaction: any) => void;
 }
 
 interface FormData {
-  product_id: string
-  quantity: number
-  paid: number
-  payment_method: string
-  amount: number
-  comments?: string
-  transaction_type?: string
-  denominations?: any
-  customPrice?: number
-  customName?: string
-  isCustom: boolean
-  expiration_date: string
+  product_id: string;
+  quantity: number;
+  paid: number;
+  payment_method: string;
+  amount: number;
+  comments?: string;
+  transaction_type?: string;
+  denominations?: any;
+  customPrice?: number;
+  customName?: string;
+  isCustom: boolean;
+  expiration_date: string;
 }
 
-export default function Purchase({ campusId, studentId, onPurchaseComplete }: PurchaseFormProps) {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [assignments, setAssignments] = useState<any[]>([])
+export default function Purchase({
+  campusId,
+  studentId,
+  onPurchaseComplete,
+}: PurchaseFormProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [assignments, setAssignments] = useState<any[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     product_id: '',
@@ -46,29 +54,33 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
     customPrice: 0,
     customName: '',
     isCustom: false,
-    expiration_date: ''
-  })
+    expiration_date: '',
+  });
 
-  const [products, setProducts] = useState<any[]>([])
-  const activeCampus = useActiveCampusStore((state) => state.activeCampus)
+  const [products, setProducts] = useState<any[]>([]);
+  const activeCampus = useActiveCampusStore((state) => state.activeCampus);
   const fetchAssignments = async () => {
     try {
-      const response = await getStudentAssignmentsByStudent(studentId as any)
-      setAssignments(response.filter((assignment: any) => assignment.is_active) || [])
+      const response = await getStudentAssignmentsByStudent(studentId as any);
+      setAssignments(
+        response.filter((assignment: any) => assignment.is_active) || []
+      );
     } catch (error) {
-      console.error('Error fetching assignments:', error)
+      console.error('Error fetching assignments:', error);
     }
-  }
+  };
   useEffect(() => {
     const fetchProducts = async () => {
-      const response = await getProductos()
-      setProducts(response)
-    }
-    fetchProducts()
-  }, [])
+      const response = await getProductos();
+      setProducts(response);
+    };
+    fetchProducts();
+  }, []);
 
   const handleProductChange = (productId: string) => {
-    const selectedProduct = products.find(product => product.id === parseInt(productId))
+    const selectedProduct = products.find(
+      (product) => product.id === parseInt(productId)
+    );
     if (selectedProduct) {
       setFormData({
         ...formData,
@@ -78,10 +90,10 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         paid: 0,
         customPrice: selectedProduct.price,
         customName: selectedProduct.name,
-        isCustom: false
-      })
+        isCustom: false,
+      });
     }
-  }
+  };
 
   const handleQuantityChange = (quantity: number) => {
     if (formData.isCustom) {
@@ -89,58 +101,60 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
         ...formData,
         quantity,
         amount: (formData.customPrice || 0) * quantity,
-        paid: 0
-      })
+        paid: 0,
+      });
     } else {
-      const selectedProduct = products.find(product => product.id === parseInt(formData.product_id))
+      const selectedProduct = products.find(
+        (product) => product.id === parseInt(formData.product_id)
+      );
       if (selectedProduct) {
         setFormData({
           ...formData,
           quantity,
           amount: selectedProduct.price * quantity,
-          paid: 0
-        })
+          paid: 0,
+        });
       }
     }
-  }
+  };
 
   const handleCustomPriceChange = (price: number) => {
     setFormData({
       ...formData,
       customPrice: price,
       amount: price * formData.quantity,
-      isCustom: true
-    })
-  }
+      isCustom: true,
+    });
+  };
 
   const handleCustomNameChange = (name: string) => {
     setFormData({
       ...formData,
       customName: name,
       comments: `Compra de ${name}`,
-      isCustom: true
-    })
-  }
+      isCustom: true,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       const response = await createCharge({
         campus_id: Number(campusId),
         student_id: Number(studentId),
         amount: formData.amount,
-        payment_method: formData.payment_method as "cash" | "transfer" | "card",
+        payment_method: formData.payment_method as 'cash' | 'transfer' | 'card',
         paid: 0,
         notes: formData.comments,
         transaction_type: 'purchase',
         denominations: [],
         payment_date: null,
         expiration_date: formData.expiration_date || null,
-        debt_id: null
-      })
+        debt_id: null,
+      });
 
       if (response) {
-        onPurchaseComplete?.(response)
+        onPurchaseComplete?.(response);
         setFormData({
           product_id: '',
           quantity: 1,
@@ -152,28 +166,32 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
           customPrice: 0,
           customName: '',
           isCustom: false,
-          expiration_date: ''
-        })
-        setModalOpen(false)
+          expiration_date: '',
+        });
+        setModalOpen(false);
       }
     } catch (error) {
-      console.error('Error al procesar el pago:', error)
+      console.error('Error al procesar el pago:', error);
     }
-  }
+  };
 
   useEffect(() => {
     if (!formData.expiration_date) {
       formData.expiration_date = getTodayDate();
     }
-  }, [])
+  }, []);
 
   return (
     <>
-      {activeCampus?.latest_cash_register ?
-        <Button onClick={() => setModalOpen(true)} title='Agregar productos' variant='secondary'>
+      {activeCampus?.latest_cash_register ? (
+        <Button
+          onClick={() => setModalOpen(true)}
+          title="Agregar productos"
+          variant="secondary"
+        >
           <ShoppingBag className="mr-2 h-4 w-4" /> Compras
         </Button>
-        : null}
+      ) : null}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
@@ -237,7 +255,12 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                   <Input
                     type="date"
                     value={formData.expiration_date}
-                    onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        expiration_date: e.target.value,
+                      })
+                    }
                   />
                 </label>
               </div>
@@ -249,7 +272,9 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                     type="number"
                     step="0.01"
                     value={formData.customPrice}
-                    onChange={(e) => handleCustomPriceChange(parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      handleCustomPriceChange(parseFloat(e.target.value))
+                    }
                   />
                 </label>
               </div>
@@ -260,7 +285,9 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                   <Input
                     type="number"
                     value={formData.quantity}
-                    onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleQuantityChange(parseInt(e.target.value))
+                    }
                     required
                   />
                 </label>
@@ -271,7 +298,12 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                   Método de Pago
                   <select
                     value={formData.payment_method}
-                    onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        payment_method: e.target.value,
+                      })
+                    }
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     required
                   >
@@ -299,18 +331,18 @@ export default function Purchase({ campusId, studentId, onPurchaseComplete }: Pu
                   Comentarios
                   <Textarea
                     value={formData.comments}
-                    onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, comments: e.target.value })
+                    }
                   />
                 </label>
               </div>
 
-              <Button type="submit">
-                Registrar Pago
-              </Button>
+              <Button type="submit">Registrar Pago</Button>
             </form>
           </div>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

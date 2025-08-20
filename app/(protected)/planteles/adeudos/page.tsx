@@ -1,42 +1,59 @@
-'use client'
+'use client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { formatCurrency, formatTime } from '@/lib/utils';
 import { AlertTriangle, CheckCircle, CreditCard, Info } from 'lucide-react';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 
 const cards = [];
 const studentId = null;
 const paymentFormData = {};
-const setPaymentFormData = () => { };
-const handleTransactionUpdate = () => { };
-const fetchStudentDebts = () => { };
+const setPaymentFormData = () => {};
+const handleTransactionUpdate = () => {};
+const fetchStudentDebts = () => {};
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const statusConfig = {
-    pending: { label: 'Pendiente', variant: 'secondary' as const, icon: AlertTriangle },
-    partial: { label: 'Parcial', variant: 'default' as const, icon: CreditCard },
+    pending: {
+      label: 'Pendiente',
+      variant: 'secondary' as const,
+      icon: AlertTriangle,
+    },
+    partial: {
+      label: 'Parcial',
+      variant: 'default' as const,
+      icon: CreditCard,
+    },
     paid: { label: 'Pagado', variant: 'default' as const, icon: CheckCircle },
-    overdue: { label: 'Vencido', variant: 'destructive' as const, icon: AlertTriangle }
-  }
+    overdue: {
+      label: 'Vencido',
+      variant: 'destructive' as const,
+      icon: AlertTriangle,
+    },
+  };
 
-  const config = statusConfig[status] || statusConfig.pending
-  const Icon = config.icon
+  const config = statusConfig[status] || statusConfig.pending;
+  const Icon = config.icon;
 
   return (
     <Badge variant={config.variant} className="flex items-center gap-1 ">
       <Icon className="w-3 h-3" />
       {config.label}
     </Badge>
-  )
-}
-
+  );
+};
 
 export default function debtsPage() {
-
   const [debts, setdebts] = useState([]);
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
@@ -44,14 +61,16 @@ export default function debtsPage() {
   async function getdebts() {
     if (!activeCampus) return;
     try {
-      const response = await axiosInstance.get(`/debts/campus/${activeCampus.id}`);
+      const response = await axiosInstance.get(
+        `/debts/campus/${activeCampus.id}`
+      );
       setdebts(response.data || []);
     } catch (error) {
       console.error('Error fetching debts:', error);
     }
   }
 
-  console.log(debts)
+  console.log(debts);
 
   useEffect(() => {
     getdebts();
@@ -59,8 +78,8 @@ export default function debtsPage() {
 
   return (
     <div>
-      <div className='flex justify-between items-center mb-4'>
-        <h1 className='text-2xl font-bold'>Adeudos {activeCampus?.name}</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Adeudos {activeCampus?.name}</h1>
         <Button onClick={getdebts}>Recargar</Button>
       </div>
       <Table>
@@ -80,9 +99,13 @@ export default function debtsPage() {
           {debts.map((debt) => (
             <TableRow key={debt.id}>
               <TableCell>
-                <div className='flex items-center gap-4'>
-                  <a className='text-blue-500' href={`/planteles/estudiantes/${debt.student_id}`}>
-                    {debt.student?.firstname} {debt.student?.lastname}</a>
+                <div className="flex items-center gap-4">
+                  <a
+                    className="text-blue-500"
+                    href={`/planteles/estudiantes/${debt.student_id}`}
+                  >
+                    {debt.student?.firstname} {debt.student?.lastname}
+                  </a>
                   <Info />
                 </div>
               </TableCell>
@@ -116,9 +139,7 @@ export default function debtsPage() {
               <TableCell className="text-red-600">
                 {formatCurrency(debt.remaining_amount)}
               </TableCell>
-              <TableCell>
-                {formatTime({ time: debt.due_date })}
-              </TableCell>
+              <TableCell>{formatTime({ time: debt.due_date })}</TableCell>
               <TableCell>
                 <StatusBadge status={debt.status} />
               </TableCell>

@@ -32,7 +32,12 @@ import { MultiSelect } from '@/components/multi-select';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { ChevronLeft, ChevronRight, Eye, Share } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
 import InvoicePDF from '@/components/invoice_pdf';
 import Link from 'next/link';
 import AgregarIngreso from './AgregarIngreso';
@@ -48,10 +53,21 @@ export default function CobrosPage() {
   const [selectedImage, setSelectedImage] = useState('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
-  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
+    string[]
+  >(['all']);
   const [selectedCard, setSelectedCard] = useState<string>('all');
   const [cards, setCards] = useState<any[]>([]);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(['student', 'amount', 'paymentMethod', 'payment_date', 'notes', 'paid', 'actions', 'folio']);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([
+    'student',
+    'amount',
+    'paymentMethod',
+    'payment_date',
+    'notes',
+    'paid',
+    'actions',
+    'folio',
+  ]);
 
   const [availableColumnIds, setAvailableColumnIds] = useState<string[]>([]);
   const { activeCampus } = useActiveCampusStore();
@@ -61,45 +77,44 @@ export default function CobrosPage() {
   const { pagination, setPagination } = usePagination();
   const { config: uiConfig } = useUIConfig();
 
-
   const [loading, setLoading] = useState(false);
 
   const commonColumnDefinitions = [
     {
       id: 'id',
       label: 'ID',
-      render: (transaction: Transaction) => transaction.id
+      render: (transaction: Transaction) => transaction.id,
     },
     {
       id: 'folio',
       label: 'Folio',
-      render: (transaction: Transaction) => transaction.folio
+      render: (transaction: Transaction) => transaction.folio,
     },
     {
       id: 'folio_new',
       label: 'Nuevo Folio',
-      render: (transaction: Transaction) => transaction.folio_new
+      render: (transaction: Transaction) => transaction.folio_new,
     },
-        {
+    {
       id: 'otros_folios',
       label: 'Nuevo Cash',
-      render: (transaction: Transaction) => transaction.folio_cash
+      render: (transaction: Transaction) => transaction.folio_cash,
     },
-        {
+    {
       id: 'otros_folios',
       label: 'Nuevo Transfer',
-      render: (transaction: Transaction) => transaction.folio_transfer
+      render: (transaction: Transaction) => transaction.folio_transfer,
     },
     {
       id: 'student',
       label: 'Estudiante',
       render: (transaction: Transaction) =>
-        `${transaction.student?.firstname} ${transaction.student?.lastname}`
+        `${transaction.student?.firstname} ${transaction.student?.lastname}`,
     },
     {
       id: 'amount',
       label: 'Monto',
-      render: (transaction: Transaction) => `${transaction.amount}`
+      render: (transaction: Transaction) => `${transaction.amount}`,
     },
     {
       id: 'paymentMethod',
@@ -108,28 +123,28 @@ export default function CobrosPage() {
         if (transaction.payment_method === 'transfer') return 'Transferencia';
         if (transaction.payment_method === 'card') return 'Tarjeta';
         return transaction.payment_method;
-      }
+      },
     },
     {
       id: 'paid',
       label: 'Pagado',
-      render: (transaction: Transaction) => transaction.paid ? 'Si' : 'No'
+      render: (transaction: Transaction) => (transaction.paid ? 'Si' : 'No'),
     },
     {
       id: 'payment_date',
       label: 'Fecha de pago',
-      render: (transaction: Transaction) => transaction.payment_date
+      render: (transaction: Transaction) => transaction.payment_date,
     },
     {
       id: 'date',
       label: 'Fecha',
       render: (transaction: Transaction) =>
-        new Date(transaction.created_at).toLocaleDateString()
+        new Date(transaction.created_at).toLocaleDateString(),
     },
     {
       id: 'notes',
       label: 'Notas',
-      render: (transaction: Transaction) => transaction.notes
+      render: (transaction: Transaction) => transaction.notes,
     },
     {
       id: 'limit_date',
@@ -137,12 +152,12 @@ export default function CobrosPage() {
       render: (transaction: Transaction) =>
         transaction.expiration_date
           ? new Date(transaction.expiration_date).toLocaleDateString()
-          : 'No límite de pago'
+          : 'No límite de pago',
     },
     {
       id: 'comprobante',
       label: 'Comprobante',
-      render: (transaction: Transaction) => (
+      render: (transaction: Transaction) =>
         transaction.image ? (
           <div className="flex items-center gap-2">
             <img
@@ -159,30 +174,33 @@ export default function CobrosPage() {
               Ver
             </Button>
           </div>
-        ) : null
-      ),
-      alwaysVisible: true
+        ) : null,
+      alwaysVisible: true,
     },
     {
       id: 'actions',
       label: 'Acciones',
       render: (transaction: Transaction) => (
         <div className="flex items-center justify-right gap-2">
-          <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleShare(transaction)}
+          >
             <Share className="w-4 h-4 mr-2" />
           </Button>
           <InvoicePDF icon={true} invoice={transaction} />
-          <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
+          <Link href={`/recibo/${transaction.uuid}`} target="_blank">
             <Eye className="w-4 h-4 mr-2" />
           </Link>
-          {(user?.role === 'super_admin' || user?.role === 'contador') &&
+          {(user?.role === 'super_admin' || user?.role === 'contador') && (
             <EditarFolio
               transaction={transaction}
               onSuccess={() => fetchIngresos(pagination.currentPage)}
             />
-          }
+          )}
         </div>
-      )
+      ),
     },
   ];
 
@@ -192,18 +210,19 @@ export default function CobrosPage() {
     const sampleTransaction = transactions[0];
     const allKeys = Object.keys(sampleTransaction);
 
-    const knownColumnIds = commonColumnDefinitions.map(col => col.id);
+    const knownColumnIds = commonColumnDefinitions.map((col) => col.id);
     const dynamicColumns = allKeys
-      .filter(key =>
-        !knownColumnIds.includes(key) &&
-        typeof sampleTransaction[key as keyof Transaction] !== 'object' &&
-        key !== 'student' &&
-        key !== 'image' &&
-        key !== 'uuid' &&
-        key !== 'created_at' &&
-        key !== 'payment_method'
+      .filter(
+        (key) =>
+          !knownColumnIds.includes(key) &&
+          typeof sampleTransaction[key as keyof Transaction] !== 'object' &&
+          key !== 'student' &&
+          key !== 'image' &&
+          key !== 'uuid' &&
+          key !== 'created_at' &&
+          key !== 'payment_method'
       )
-      .map(key => ({
+      .map((key) => ({
         id: key,
         label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
         render: (transaction: Transaction) => {
@@ -214,25 +233,34 @@ export default function CobrosPage() {
           if (value === null || value === undefined) return '-';
 
           return String(value);
-        }
+        },
       }));
 
     return dynamicColumns;
   };
 
-  const [columnDefinitions, setColumnDefinitions] = useState<Array<any>>(commonColumnDefinitions);
+  const [columnDefinitions, setColumnDefinitions] = useState<Array<any>>(
+    commonColumnDefinitions
+  );
 
   useEffect(() => {
     if (!activeCampus) return;
     fetchIngresos(pagination.currentPage);
-  }, [activeCampus, pagination.currentPage, pagination.perPage, searchStudent, selectedPaymentMethods, selectedCard]);
+  }, [
+    activeCampus,
+    pagination.currentPage,
+    pagination.perPage,
+    searchStudent,
+    selectedPaymentMethods,
+    selectedCard,
+  ]);
 
   useEffect(() => {
     const fetchCards = async () => {
       if (!activeCampus) return;
       try {
         const response = await axios.get('/cards', {
-          params: { campus_id: activeCampus.id }
+          params: { campus_id: activeCampus.id },
         });
         setCards(response.data || []);
       } catch (error) {
@@ -248,14 +276,14 @@ export default function CobrosPage() {
       const allColumns = [...commonColumnDefinitions, ...dynamicCols];
       setColumnDefinitions(allColumns);
 
-      const allColumnIds = allColumns.map(col => col.id);
+      const allColumnIds = allColumns.map((col) => col.id);
       setAvailableColumnIds(allColumnIds);
 
-      const newColumnIds = dynamicCols.map(col => col.id);
+      const newColumnIds = dynamicCols.map((col) => col.id);
       const newVisibleColumnIds = [...visibleColumns];
 
       let hasNewColumns = false;
-      newColumnIds.forEach(id => {
+      newColumnIds.forEach((id) => {
         if (!visibleColumns.includes(id)) {
           newVisibleColumnIds.push(id);
           hasNewColumns = true;
@@ -272,11 +300,13 @@ export default function CobrosPage() {
     try {
       setLoading(true);
       const response = await getCharges(
-        Number(activeCampus.id), 
-        page, 
+        Number(activeCampus.id),
+        page,
         parseInt(pagination.perPage.toString()),
         searchStudent,
-        selectedPaymentMethods.includes('all') ? undefined : selectedPaymentMethods[0],
+        selectedPaymentMethods.includes('all')
+          ? undefined
+          : selectedPaymentMethods[0],
         selectedCard === 'all' ? undefined : selectedCard
       );
 
@@ -285,9 +315,8 @@ export default function CobrosPage() {
         currentPage: response.current_page,
         lastPage: response.last_page,
         total: response.total,
-        perPage: parseInt(pagination.perPage.toString())
+        perPage: parseInt(pagination.perPage.toString()),
       });
-
     } catch (error) {
       console.error('Error fetching transactions:', error);
     } finally {
@@ -296,8 +325,8 @@ export default function CobrosPage() {
   };
 
   const handleColumnSelect = (values: string[]) => {
-    const validValues = values.filter(value =>
-      availableColumnIds.includes(value) || value === 'all'
+    const validValues = values.filter(
+      (value) => availableColumnIds.includes(value) || value === 'all'
     );
     setVisibleColumns(validValues);
   };
@@ -308,8 +337,8 @@ export default function CobrosPage() {
   };
 
   const columnOptions = columnDefinitions
-    .filter(col => !col.alwaysVisible)
-    .map(col => ({ value: col.id, label: col.label }));
+    .filter((col) => !col.alwaysVisible)
+    .map((col) => ({ value: col.id, label: col.label }));
 
   const handleShare = (transaction: Transaction) => {
     const url = `https://admin.prexun.com/recibo/${transaction.uuid}`;
@@ -318,22 +347,21 @@ export default function CobrosPage() {
     toast({
       title: 'Enlace copiado al portapapeles',
       description: 'Puedes compartir este enlace con tus estudiantes',
-      variant: 'default'
+      variant: 'default',
     });
   };
 
   const getVisibleColumns = () => {
-    return columnDefinitions.filter(col =>
-      visibleColumns.includes(col.id) || col.alwaysVisible
+    return columnDefinitions.filter(
+      (col) => visibleColumns.includes(col.id) || col.alwaysVisible
     );
   };
 
   return (
     <div>
       <Card className="w-full overflow-hidden">
-        <CardHeader className='sticky top-0 z-20 bg-card'>
+        <CardHeader className="sticky top-0 z-20 bg-card">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-
             <Input
               placeholder="Buscar por nombre completo..."
               value={searchStudent}
@@ -342,7 +370,11 @@ export default function CobrosPage() {
             />
 
             <Select
-              value={selectedPaymentMethods.includes('all') ? 'all' : selectedPaymentMethods[0]}
+              value={
+                selectedPaymentMethods.includes('all')
+                  ? 'all'
+                  : selectedPaymentMethods[0]
+              }
               onValueChange={(value) => {
                 if (value === 'all') {
                   setSelectedPaymentMethods(['all']);
@@ -373,24 +405,22 @@ export default function CobrosPage() {
             </Select>
 
             {/* Selector de tarjetas - solo aparece cuando el método es "Tarjeta" */}
-            {!selectedPaymentMethods.includes('all') && selectedPaymentMethods[0] === 'card' && (
-              <Select
-                value={selectedCard}
-                onValueChange={setSelectedCard}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Seleccionar tarjeta" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las tarjetas</SelectItem>
-                  {cards.map((card) => (
-                    <SelectItem key={card.id} value={card.id.toString()}>
-                      {card.number} - {card.bank}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            {!selectedPaymentMethods.includes('all') &&
+              selectedPaymentMethods[0] === 'card' && (
+                <Select value={selectedCard} onValueChange={setSelectedCard}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccionar tarjeta" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las tarjetas</SelectItem>
+                    {cards.map((card) => (
+                      <SelectItem key={card.id} value={card.id.toString()}>
+                        {card.number} - {card.bank}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
             <MultiSelect
               options={columnOptions}
@@ -404,7 +434,10 @@ export default function CobrosPage() {
             />
 
             <AgregarIngreso />
-            <Link href="/planteles/ingresos/actualizar" className={buttonVariants({ variant: 'default', size: 'sm' })}>
+            <Link
+              href="/planteles/ingresos/actualizar"
+              className={buttonVariants({ variant: 'default', size: 'sm' })}
+            >
               <span className="hidden sm:inline">Actualizar Folios</span>
               <span className="sm:hidden">Actualizar</span>
             </Link>
@@ -414,14 +447,15 @@ export default function CobrosPage() {
         <CardContent>
           {loading ? (
             <div className="text-center py-4">Cargando...</div>
-
           ) : (
             <div className="h-full overflow-x-auto max-w-[80vw]">
               <Table>
                 <TableHeader className="sticky top-0 z-10 bg-card">
                   <TableRow>
-                    {getVisibleColumns().map(column => (
-                      <TableHead key={column.id} className="whitespace-nowrap">{column.label}</TableHead>
+                    {getVisibleColumns().map((column) => (
+                      <TableHead key={column.id} className="whitespace-nowrap">
+                        {column.label}
+                      </TableHead>
                     ))}
                   </TableRow>
                 </TableHeader>
@@ -429,8 +463,11 @@ export default function CobrosPage() {
                   {transactions.length > 0 ? (
                     transactions.map((transaction) => (
                       <TableRow key={transaction.id}>
-                        {getVisibleColumns().map(column => (
-                          <TableCell key={`${transaction.id}-${column.id}`} className="whitespace-nowrap">
+                        {getVisibleColumns().map((column) => (
+                          <TableCell
+                            key={`${transaction.id}-${column.id}`}
+                            className="whitespace-nowrap"
+                          >
                             {column.render(transaction)}
                           </TableCell>
                         ))}
@@ -450,7 +487,10 @@ export default function CobrosPage() {
         </CardContent>
 
         <CardFooter>
-          <PaginationComponent pagination={pagination} setPagination={setPagination} />
+          <PaginationComponent
+            pagination={pagination}
+            setPagination={setPagination}
+          />
         </CardFooter>
       </Card>
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>

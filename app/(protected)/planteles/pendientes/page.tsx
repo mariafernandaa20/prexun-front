@@ -8,10 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -30,7 +27,12 @@ import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { Transaction, Card as CardType } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardFooter,
+} from '@/components/ui/card';
 import ChargesForm from '@/components/dashboard/estudiantes/charges-form';
 import PaginationComponent from '@/components/ui/PaginationComponent';
 import { usePagination } from '@/hooks/usePagination';
@@ -45,15 +47,25 @@ const COLUMN_OPTIONS = [
   { value: 'notes', label: 'Notas' },
   { value: 'paid', label: 'Pagado' },
   { value: 'limit_date', label: 'Fecha límite de pago' },
-  { value: 'actions', label: 'Acciones' }
+  { value: 'actions', label: 'Acciones' },
 ];
 
-const DEFAULT_VISIBLE_COLUMNS = ['student', 'amount', 'paymentMethod', 'date', 'notes', 'paid', 'limit_date', 'actions', 'folio'];
+const DEFAULT_VISIBLE_COLUMNS = [
+  'student',
+  'amount',
+  'paymentMethod',
+  'date',
+  'notes',
+  'paid',
+  'limit_date',
+  'actions',
+  'folio',
+];
 
 const PAYMENT_METHOD_LABELS = {
   cash: 'Efectivo',
   transfer: 'Transferencia',
-  card: 'Tarjeta'
+  card: 'Tarjeta',
 };
 
 const TransactionActions: React.FC<{
@@ -65,7 +77,8 @@ const TransactionActions: React.FC<{
     ...transaction,
     denominations: {},
     notes: transaction.notes || '',
-    payment_date: transaction.payment_date || new Date().toISOString().split('T')[0],
+    payment_date:
+      transaction.payment_date || new Date().toISOString().split('T')[0],
     card_id: transaction.card_id || null,
     image: transaction.image || null,
   });
@@ -74,13 +87,13 @@ const TransactionActions: React.FC<{
     try {
       await axiosInstance.put(`/charges/${transaction.id}`, {
         ...formData,
-        paid: 1
+        paid: 1,
       });
       onTransactionUpdate({
         ...transaction,
         paid: 1,
         payment_date: formData.payment_date,
-        notes: formData.notes
+        notes: formData.notes,
       });
       setFormData({
         ...transaction,
@@ -117,8 +130,12 @@ export default function CobrosPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
   const [selectedStudents, setSelectedStudents] = useState<string[]>(['all']);
-  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(['all']);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_VISIBLE_COLUMNS);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
+    string[]
+  >(['all']);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(
+    DEFAULT_VISIBLE_COLUMNS
+  );
   const [expirationDate, setExpirationDate] = useState('');
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
@@ -136,7 +153,9 @@ export default function CobrosPage() {
         page: page,
         per_page: Number(pagination.perPage),
         search: searchStudent || null,
-        payment_method: selectedPaymentMethods.includes('all') ? null : selectedPaymentMethods[0]
+        payment_method: selectedPaymentMethods.includes('all')
+          ? null
+          : selectedPaymentMethods[0],
       };
 
       const response = await axiosInstance.get('/charges/not-paid', { params });
@@ -145,7 +164,7 @@ export default function CobrosPage() {
         currentPage: response.data.current_page,
         lastPage: response.data.last_page,
         total: response.data.total,
-        perPage: response.data.per_page
+        perPage: response.data.per_page,
       });
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -155,7 +174,14 @@ export default function CobrosPage() {
   useEffect(() => {
     if (!activeCampus) return;
     fetchTransactions(pagination.currentPage);
-  }, [activeCampus, pagination.currentPage, pagination.perPage, searchStudent, expirationDate, selectedPaymentMethods]);
+  }, [
+    activeCampus,
+    pagination.currentPage,
+    pagination.perPage,
+    searchStudent,
+    expirationDate,
+    selectedPaymentMethods,
+  ]);
 
   const handleStudentSelect = (values: string[]) => {
     setSelectedStudents(values);
@@ -176,39 +202,52 @@ export default function CobrosPage() {
     toast({
       title: 'Enlace copiado al portapapeles',
       description: 'Puedes compartir este enlace con tus estudiantes',
-      variant: 'default'
+      variant: 'default',
     });
   };
-  const filteredTransactions = transactions?.filter((transaction) => {
-    if (!transaction || !transaction.student) return false;
+  const filteredTransactions =
+    transactions?.filter((transaction) => {
+      if (!transaction || !transaction.student) return false;
 
-    const matchesStudent = selectedStudents.includes('all') ||
-      selectedStudents.includes(transaction.student.id || '');
+      const matchesStudent =
+        selectedStudents.includes('all') ||
+        selectedStudents.includes(transaction.student.id || '');
 
-    return matchesStudent;
-  }) || [];
+      return matchesStudent;
+    }) || [];
 
-  const uniqueStudents = transactions?.length ? transactions
-    .map(t => ({
-      value: t.student?.id || '',
-      label: `${t.student?.firstname} ${t.student?.lastname}`,
-    }))
-    .filter((student, index, self) =>
-      index === self.findIndex(s => s.value === student.value)
-    ) : [];
+  const uniqueStudents = transactions?.length
+    ? transactions
+        .map((t) => ({
+          value: t.student?.id || '',
+          label: `${t.student?.firstname} ${t.student?.lastname}`,
+        }))
+        .filter(
+          (student, index, self) =>
+            index === self.findIndex((s) => s.value === student.value)
+        )
+    : [];
 
   const renderTableHeaders = () => (
     <TableHeader>
       <TableRow>
         {visibleColumns.includes('folio') && <TableHead>Folio</TableHead>}
-        {visibleColumns.includes('student') && <TableHead>Estudiante</TableHead>}
+        {visibleColumns.includes('student') && (
+          <TableHead>Estudiante</TableHead>
+        )}
         {visibleColumns.includes('amount') && <TableHead>Monto</TableHead>}
-        {visibleColumns.includes('paymentMethod') && <TableHead>Método</TableHead>}
+        {visibleColumns.includes('paymentMethod') && (
+          <TableHead>Método</TableHead>
+        )}
         {visibleColumns.includes('paid') && <TableHead>Pagado</TableHead>}
-        {visibleColumns.includes('payment_date') && <TableHead>Fecha de pago</TableHead>}
+        {visibleColumns.includes('payment_date') && (
+          <TableHead>Fecha de pago</TableHead>
+        )}
         {visibleColumns.includes('date') && <TableHead>Fecha</TableHead>}
         {visibleColumns.includes('notes') && <TableHead>Notas</TableHead>}
-        {visibleColumns.includes('limit_date') && <TableHead>Fecha límite de pago</TableHead>}
+        {visibleColumns.includes('limit_date') && (
+          <TableHead>Fecha límite de pago</TableHead>
+        )}
         <TableHead>Comprobante</TableHead>
         {visibleColumns.includes('actions') && <TableHead>Acciones</TableHead>}
       </TableRow>
@@ -221,7 +260,7 @@ export default function CobrosPage() {
         <TableCell>{transaction.folio}</TableCell>
       )}
       {visibleColumns.includes('student') && (
-        <TableCell className='text-nowrap'>
+        <TableCell className="text-nowrap">
           {transaction.student?.firstname} {transaction.student?.lastname}
         </TableCell>
       )}
@@ -230,24 +269,30 @@ export default function CobrosPage() {
       )}
       {visibleColumns.includes('paymentMethod') && (
         <TableCell>
-          {PAYMENT_METHOD_LABELS[transaction.payment_method as keyof typeof PAYMENT_METHOD_LABELS] || transaction.payment_method}
+          {PAYMENT_METHOD_LABELS[
+            transaction.payment_method as keyof typeof PAYMENT_METHOD_LABELS
+          ] || transaction.payment_method}
         </TableCell>
       )}
       {visibleColumns.includes('paid') && (
         <TableCell>{transaction.paid ? 'Si' : 'No'}</TableCell>
       )}
       {visibleColumns.includes('payment_date') && (
-        <TableCell className='text-nowrap'>{transaction.payment_date}</TableCell>
+        <TableCell className="text-nowrap">
+          {transaction.payment_date}
+        </TableCell>
       )}
       {visibleColumns.includes('date') && (
-        <TableCell >{transaction.created_at}</TableCell>
+        <TableCell>{transaction.created_at}</TableCell>
       )}
       {visibleColumns.includes('notes') && (
         <TableCell>{transaction.notes}</TableCell>
       )}
       {visibleColumns.includes('limit_date') && (
-        <TableCell className='text-nowrap'>
-          {transaction.expiration_date ? transaction.expiration_date : 'No límite de pago'}
+        <TableCell className="text-nowrap">
+          {transaction.expiration_date
+            ? transaction.expiration_date
+            : 'No límite de pago'}
         </TableCell>
       )}
       <TableCell>
@@ -271,17 +316,21 @@ export default function CobrosPage() {
       </TableCell>
       {visibleColumns.includes('actions') && (
         <TableCell className="flex items-center justify-right gap-2">
-          <Button variant="ghost" size="icon" onClick={() => handleShare(transaction)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleShare(transaction)}
+          >
             <Share className="w-4 h-4 mr-2" />
           </Button>
           <InvoicePDF icon={true} invoice={transaction} />
-          <Link href={`/recibo/${transaction.uuid}`} target='_blank'>
+          <Link href={`/recibo/${transaction.uuid}`} target="_blank">
             <Eye className="w-4 h-4 mr-2" />
           </Link>
           <TransactionActions
             cards={cards}
             transaction={transaction}
-            onTransactionUpdate={() => { }}
+            onTransactionUpdate={() => {}}
           />
         </TableCell>
       )}
@@ -307,7 +356,11 @@ export default function CobrosPage() {
               className="w-[200px]"
             />
             <Select
-              value={selectedPaymentMethods.includes('all') ? 'all' : selectedPaymentMethods[0]}
+              value={
+                selectedPaymentMethods.includes('all')
+                  ? 'all'
+                  : selectedPaymentMethods[0]
+              }
               onValueChange={(value) => {
                 if (value === 'all') {
                   setSelectedPaymentMethods(['all']);
@@ -327,7 +380,10 @@ export default function CobrosPage() {
               </SelectContent>
             </Select>
             <MultiSelect
-              options={[{ value: 'all', label: 'Todos los estudiantes' }, ...uniqueStudents]}
+              options={[
+                { value: 'all', label: 'Todos los estudiantes' },
+                ...uniqueStudents,
+              ]}
               hiddeBadages={true}
               selectedValues={selectedStudents}
               onSelectedChange={handleStudentSelect}
@@ -372,7 +428,10 @@ export default function CobrosPage() {
 
       {/* Footer fijo */}
       <CardFooter className="border-t p-4">
-        <PaginationComponent pagination={pagination} setPagination={setPagination} />
+        <PaginationComponent
+          pagination={pagination}
+          setPagination={setPagination}
+        />
       </CardFooter>
     </Card>
   );

@@ -1,7 +1,5 @@
-import React from 'react'
+import React from 'react';
 
 export default function MaestroPage() {
-  return (
-    <div>MaestroPage</div>
-  )
+  return <div>MaestroPage</div>;
 }

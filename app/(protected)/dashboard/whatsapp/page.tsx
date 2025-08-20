@@ -1,15 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, MessageCircle, Send, CheckCircle, XCircle, Plus, Edit, Trash2, Settings, ChevronDown } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Loader2,
+  MessageCircle,
+  Send,
+  CheckCircle,
+  XCircle,
+  Plus,
+  Edit,
+  Trash2,
+  Settings,
+  ChevronDown,
+} from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 
@@ -62,7 +85,9 @@ export default function WhatsAppPage() {
       const response = await axiosInstance.get('/whatsapp/status');
       setStatus(response.data);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Error al verificar el estado de WhatsApp';
+      const errorMessage =
+        error.response?.data?.message ||
+        'Error al verificar el estado de WhatsApp';
       toast.error(errorMessage);
     } finally {
       setStatusLoading(false);
@@ -95,9 +120,11 @@ export default function WhatsAppPage() {
 
       if (errors) {
         // Show validation errors
-        Object.values(errors).flat().forEach((err: any) => {
-          toast.error(err);
-        });
+        Object.values(errors)
+          .flat()
+          .forEach((err: any) => {
+            toast.error(err);
+          });
       } else {
         toast.error(errorMessage);
       }
@@ -125,7 +152,9 @@ export default function WhatsAppPage() {
         setTemplatePhoneNumber('');
         setTemplateName('');
       } else {
-        toast.error(response.data.message || 'Error al enviar el mensaje de plantilla');
+        toast.error(
+          response.data.message || 'Error al enviar el mensaje de plantilla'
+        );
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error de conexión';
@@ -133,9 +162,11 @@ export default function WhatsAppPage() {
 
       if (errors) {
         // Show validation errors
-        Object.values(errors).flat().forEach((err: any) => {
-          toast.error(err);
-        });
+        Object.values(errors)
+          .flat()
+          .forEach((err: any) => {
+            toast.error(err);
+          });
       } else {
         toast.error(errorMessage);
       }
@@ -171,7 +202,7 @@ export default function WhatsAppPage() {
       const response = await axiosInstance.post('/whatsapp/templates', {
         name: newTemplateName,
         meta_id: newTemplateMetaId,
-        is_active: true
+        is_active: true,
       });
 
       if (response.data.success) {
@@ -187,9 +218,11 @@ export default function WhatsAppPage() {
       const errors = error.response?.data?.errors;
 
       if (errors) {
-        Object.values(errors).flat().forEach((err: any) => {
-          toast.error(err);
-        });
+        Object.values(errors)
+          .flat()
+          .forEach((err: any) => {
+            toast.error(err);
+          });
       } else {
         toast.error(errorMessage);
       }
@@ -203,27 +236,34 @@ export default function WhatsAppPage() {
     }
 
     try {
-      const response = await axiosInstance.put(`/whatsapp/templates/${editingTemplate.id}`, {
-        name: editingTemplate.name,
-        meta_id: editingTemplate.meta_id,
-        is_active: editingTemplate.is_active
-      });
+      const response = await axiosInstance.put(
+        `/whatsapp/templates/${editingTemplate.id}`,
+        {
+          name: editingTemplate.name,
+          meta_id: editingTemplate.meta_id,
+          is_active: editingTemplate.is_active,
+        }
+      );
 
       if (response.data.success) {
         toast.success('Plantilla actualizada exitosamente');
         setEditingTemplate(null);
         fetchTemplates();
       } else {
-        toast.error(response.data.message || 'Error al actualizar la plantilla');
+        toast.error(
+          response.data.message || 'Error al actualizar la plantilla'
+        );
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error de conexión';
       const errors = error.response?.data?.errors;
 
       if (errors) {
-        Object.values(errors).flat().forEach((err: any) => {
-          toast.error(err);
-        });
+        Object.values(errors)
+          .flat()
+          .forEach((err: any) => {
+            toast.error(err);
+          });
       } else {
         toast.error(errorMessage);
       }
@@ -308,13 +348,25 @@ export default function WhatsAppPage() {
             <div className="mt-4 space-y-2">
               <div className="text-sm">
                 <span className="font-medium">Token: </span>
-                <span className={status.token === 'Configured' ? 'text-green-600' : 'text-red-600'}>
+                <span
+                  className={
+                    status.token === 'Configured'
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                  }
+                >
                   {status.token}
                 </span>
               </div>
               <div className="text-sm">
                 <span className="font-medium">Phone Number ID: </span>
-                <span className={status.phone_number_id === 'Configured' ? 'text-green-600' : 'text-red-600'}>
+                <span
+                  className={
+                    status.phone_number_id === 'Configured'
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                  }
+                >
                   {status.phone_number_id}
                 </span>
               </div>
@@ -391,7 +443,8 @@ export default function WhatsAppPage() {
             <CardContent className="space-y-4">
               <Alert>
                 <AlertDescription>
-                  Los mensajes de plantilla son necesarios para contactar nuevos usuarios que no han iniciado una conversación contigo.
+                  Los mensajes de plantilla son necesarios para contactar nuevos
+                  usuarios que no han iniciado una conversación contigo.
                 </AlertDescription>
               </Alert>
 
@@ -407,36 +460,35 @@ export default function WhatsAppPage() {
                   Formato: +[código país][número]. Ejemplo: +525512345678
                 </p>
               </div>
-              {
-                templates && templates.length > 0 &&
-                (
-                  <div className="space-y-2">
-                    <Label htmlFor="template-name">Plantilla</Label>
-                    <Select value={templateName} onValueChange={setTemplateName}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona una plantilla" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {templates.length > 0 ? (
-                          templates.map((template) => (
-                            <SelectItem key={template.id} value={template.name}>
-                              {template.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="" disabled>
-                            {templatesLoading ? 'Cargando...' : 'No hay plantillas disponibles'}
+              {templates && templates.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="template-name">Plantilla</Label>
+                  <Select value={templateName} onValueChange={setTemplateName}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una plantilla" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templates.length > 0 ? (
+                        templates.map((template) => (
+                          <SelectItem key={template.id} value={template.name}>
+                            {template.name}
                           </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      Selecciona una plantilla de la lista. Si no ves plantillas, ve a la pestaña "Gestionar Plantillas".
-                    </p>
-                  </div>
-                )
-              }
-
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          {templatesLoading
+                            ? 'Cargando...'
+                            : 'No hay plantillas disponibles'}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Selecciona una plantilla de la lista. Si no ves plantillas,
+                    ve a la pestaña "Gestionar Plantillas".
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="language">Código de Idioma</Label>
@@ -504,7 +556,9 @@ export default function WhatsAppPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="new-template-name">Nombre de la Plantilla</Label>
+                    <Label htmlFor="new-template-name">
+                      Nombre de la Plantilla
+                    </Label>
                     <Input
                       id="new-template-name"
                       placeholder="Ej: Bienvenida"
@@ -547,20 +601,24 @@ export default function WhatsAppPage() {
                                 <Label>Nombre</Label>
                                 <Input
                                   value={editingTemplate.name}
-                                  onChange={(e) => setEditingTemplate({
-                                    ...editingTemplate,
-                                    name: e.target.value
-                                  })}
+                                  onChange={(e) =>
+                                    setEditingTemplate({
+                                      ...editingTemplate,
+                                      name: e.target.value,
+                                    })
+                                  }
                                 />
                               </div>
                               <div className="space-y-2">
                                 <Label>ID de Meta</Label>
                                 <Input
                                   value={editingTemplate.meta_id}
-                                  onChange={(e) => setEditingTemplate({
-                                    ...editingTemplate,
-                                    meta_id: e.target.value
-                                  })}
+                                  onChange={(e) =>
+                                    setEditingTemplate({
+                                      ...editingTemplate,
+                                      meta_id: e.target.value,
+                                    })
+                                  }
                                 />
                               </div>
                             </div>
@@ -586,7 +644,8 @@ export default function WhatsAppPage() {
                                 ID: {template.meta_id}
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                Estado: {template.is_active ? 'Activa' : 'Inactiva'}
+                                Estado:{' '}
+                                {template.is_active ? 'Activa' : 'Inactiva'}
                               </div>
                             </div>
                             <div className="flex gap-2">
@@ -615,7 +674,8 @@ export default function WhatsAppPage() {
 
               {templates.length === 0 && !templatesLoading && (
                 <div className="text-center py-8 text-muted-foreground">
-                  No hay plantillas cargadas. Haz clic en "Cargar Plantillas" para ver las disponibles.
+                  No hay plantillas cargadas. Haz clic en "Cargar Plantillas"
+                  para ver las disponibles.
                 </div>
               )}
             </CardContent>

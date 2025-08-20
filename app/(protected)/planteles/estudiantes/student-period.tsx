@@ -45,14 +45,14 @@ import {
   Student,
   Grupo,
   SemanaIntensiva,
-  Period
+  Period,
 } from '@/lib/types';
 import {
   getStudentAssignmentsByStudent,
   createStudentAssignment,
   updateStudentAssignment,
   deleteStudentAssignment,
-  toggleStudentAssignmentActive
+  toggleStudentAssignmentActive,
 } from '@/lib/api';
 
 interface StudentPeriodProps {
@@ -70,15 +70,20 @@ interface AssignmentFormData {
   is_active: boolean;
 }
 
-export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps) {
+export default function StudentPeriod({
+  student,
+  onRefresh,
+}: StudentPeriodProps) {
   const { toast } = useToast();
-  const { periods, grupos, carreras, facultades, semanasIntensivas, campuses } = useAuthStore();
+  const { periods, grupos, carreras, facultades, semanasIntensivas, campuses } =
+    useAuthStore();
 
   const [assignments, setAssignments] = useState<StudentAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingAssignment, setEditingAssignment] = useState<StudentAssignment | null>(null);
+  const [editingAssignment, setEditingAssignment] =
+    useState<StudentAssignment | null>(null);
   const [formData, setFormData] = useState<AssignmentFormData>({
     student_id: student.id || '',
     grupo_id: null,
@@ -153,16 +158,22 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
 
   const handleInputChange = (name: string, value: any) => {
     console.log(`Input changed: ${name} = ${value}`);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
   const validateForm = (): boolean => {
-    if ((!formData.grupo_id || formData.grupo_id === 0) || (!formData.semana_intensiva_id || formData.semana_intensiva_id === 0)) {
+    if (
+      !formData.grupo_id ||
+      formData.grupo_id === 0 ||
+      !formData.semana_intensiva_id ||
+      formData.semana_intensiva_id === 0
+    ) {
       toast({
         title: 'Error de validación',
-        description: 'Debe seleccionar al menos un grupo o una semana intensiva',
+        description:
+          'Debe seleccionar al menos un grupo o una semana intensiva',
         variant: 'destructive',
       });
       return false;
@@ -172,7 +183,8 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
       if (new Date(formData.valid_until) <= new Date(formData.valid_from)) {
         toast({
           title: 'Error de validación',
-          description: 'La fecha de fin debe ser posterior a la fecha de inicio',
+          description:
+            'La fecha de fin debe ser posterior a la fecha de inicio',
           variant: 'destructive',
         });
         return false;
@@ -185,7 +197,7 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log(formData)
+    console.log(formData);
     if (!validateForm()) return;
 
     try {
@@ -193,10 +205,11 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
         ...formData,
         valid_from: formData.valid_from || null,
         valid_until: formData.valid_until || null,
-      }; if (isEditing && editingAssignment?.id) {
+      };
+      if (isEditing && editingAssignment?.id) {
         const updateData = {
           ...submitData,
-          id: editingAssignment.id
+          id: editingAssignment.id,
         };
         await updateStudentAssignment(updateData);
         toast({
@@ -248,7 +261,8 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
       await toggleStudentAssignmentActive(assignmentId);
       toast({
         title: 'Estado actualizado',
-        description: 'El estado de la asignación se ha actualizado correctamente',
+        description:
+          'El estado de la asignación se ha actualizado correctamente',
       });
       await fetchAssignments();
       onRefresh?.();
@@ -263,18 +277,18 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
 
   const getGrupoName = (grupoId: number | null) => {
     if (!grupoId) return 'N/A';
-    const grupo = grupos.find(g => g.id === grupoId);
+    const grupo = grupos.find((g) => g.id === grupoId);
     return grupo?.name || `Grupo ${grupoId}`;
   };
 
   const getSemanaIntensivaName = (semanaId: number | null) => {
     if (!semanaId) return 'N/A';
-    const semana = semanasIntensivas.find(s => s.id === semanaId);
+    const semana = semanasIntensivas.find((s) => s.id === semanaId);
     return semana?.name || `Semana ${semanaId}`;
   };
 
   const getPeriodName = (periodId: string) => {
-    const period = periods.find(p => p.id === periodId);
+    const period = periods.find((p) => p.id === periodId);
     return period?.name || `Periodo ${periodId}`;
   };
 
@@ -282,8 +296,6 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('es-ES');
   };
-
-
 
   if (isLoading) {
     return (
@@ -293,7 +305,9 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center p-8">
-            <div className="text-muted-foreground">Cargando asignaciones...</div>
+            <div className="text-muted-foreground">
+              Cargando asignaciones...
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -325,8 +339,7 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                 <DialogDescription>
                   {isEditing
                     ? 'Modifica los datos de la asignación seleccionada'
-                    : 'Crea una nueva asignación para el estudiante'
-                  }
+                    : 'Crea una nueva asignación para el estudiante'}
                 </DialogDescription>
               </DialogHeader>
 
@@ -336,14 +349,19 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                     <Label htmlFor="period_id">Periodo *</Label>
                     <Select
                       value={formData.period_id}
-                      onValueChange={(value) => handleInputChange('period_id', value.toString())}
+                      onValueChange={(value) =>
+                        handleInputChange('period_id', value.toString())
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar periodo" />
                       </SelectTrigger>
                       <SelectContent>
                         {periods.map((period) => (
-                          <SelectItem key={period.id} value={period.id.toString()}>
+                          <SelectItem
+                            key={period.id}
+                            value={period.id.toString()}
+                          >
                             {period.name}
                           </SelectItem>
                         ))}
@@ -355,7 +373,10 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                     <Select
                       value={formData.grupo_id?.toString() || 'none'}
                       onValueChange={(value) =>
-                        handleInputChange('grupo_id', value === 'none' ? null : parseInt(value))
+                        handleInputChange(
+                          'grupo_id',
+                          value === 'none' ? null : parseInt(value)
+                        )
                       }
                     >
                       <SelectTrigger>
@@ -363,20 +384,37 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Ninguno</SelectItem>
-                        {grupos.filter(grupo => grupo.period_id.toString() === (formData.period_id ? formData.period_id.toString() : null)).map((grupo) => (
-                          <SelectItem key={grupo.id} value={grupo.id!.toString()}>
-                            {grupo.name} ({grupo.students_count || 0}/{grupo.capacity})
-                          </SelectItem>
-                        ))}
+                        {grupos
+                          .filter(
+                            (grupo) =>
+                              grupo.period_id.toString() ===
+                              (formData.period_id
+                                ? formData.period_id.toString()
+                                : null)
+                          )
+                          .map((grupo) => (
+                            <SelectItem
+                              key={grupo.id}
+                              value={grupo.id!.toString()}
+                            >
+                              {grupo.name} ({grupo.students_count || 0}/
+                              {grupo.capacity})
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="semana_intensiva_id">Semana Intensiva</Label>
+                    <Label htmlFor="semana_intensiva_id">
+                      Semana Intensiva
+                    </Label>
                     <Select
                       value={formData.semana_intensiva_id?.toString() || 'none'}
                       onValueChange={(value) =>
-                        handleInputChange('semana_intensiva_id', value === 'none' ? null : parseInt(value))
+                        handleInputChange(
+                          'semana_intensiva_id',
+                          value === 'none' ? null : parseInt(value)
+                        )
                       }
                     >
                       <SelectTrigger>
@@ -384,11 +422,23 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Ninguna</SelectItem>
-                        {semanasIntensivas.filter(semana => semana.period_id.toString() === (formData.period_id ? formData.period_id.toString() : null)).map((semana) => (
-                          <SelectItem key={semana.id} value={semana.id!.toString()}>
-                            {semana.name} ({semana.students_count || 0}/{semana.capacity})
-                          </SelectItem>
-                        ))}
+                        {semanasIntensivas
+                          .filter(
+                            (semana) =>
+                              semana.period_id.toString() ===
+                              (formData.period_id
+                                ? formData.period_id.toString()
+                                : null)
+                          )
+                          .map((semana) => (
+                            <SelectItem
+                              key={semana.id}
+                              value={semana.id!.toString()}
+                            >
+                              {semana.name} ({semana.students_count || 0}/
+                              {semana.capacity})
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -399,7 +449,9 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                       id="valid_from"
                       type="date"
                       value={formData.valid_from || ''}
-                      onChange={(e) => handleInputChange('valid_from', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('valid_from', e.target.value)
+                      }
                     />
                   </div>
 
@@ -409,7 +461,9 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                       id="valid_until"
                       type="date"
                       value={formData.valid_until || ''}
-                      onChange={(e) => handleInputChange('valid_until', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('valid_until', e.target.value)
+                      }
                     />
                   </div>
 
@@ -417,7 +471,9 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                     <Label htmlFor="is_active">Estado</Label>
                     <Select
                       value={formData.is_active.toString()}
-                      onValueChange={(value) => handleInputChange('is_active', value === 'true')}
+                      onValueChange={(value) =>
+                        handleInputChange('is_active', value === 'true')
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -431,7 +487,11 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                 </div>
 
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={handleCloseDialog}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCloseDialog}
+                  >
                     Cancelar
                   </Button>
                   <Button type="submit">
@@ -452,7 +512,8 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
               Sin asignaciones
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Este estudiante no tiene asignaciones a grupos o semanas intensivas
+              Este estudiante no tiene asignaciones a grupos o semanas
+              intensivas
             </p>
             {/* <Button onClick={handleOpenAddDialog} variant="outline">
               <Plus className="h-4 w-4 mr-2" />
@@ -499,7 +560,9 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                           )}
                           {assignment.semana_intensiva_id && (
                             <div className="text-sm text-muted-foreground">
-                              {getSemanaIntensivaName(assignment.semana_intensiva_id)}
+                              {getSemanaIntensivaName(
+                                assignment.semana_intensiva_id
+                              )}
                             </div>
                           )}
                         </div>
@@ -513,11 +576,15 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                         <div className="text-xs space-y-1">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            <span>Desde: {formatDate(assignment.valid_from)}</span>
+                            <span>
+                              Desde: {formatDate(assignment.valid_from)}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            <span>Hasta: {formatDate(assignment.valid_until)}</span>
+                            <span>
+                              Hasta: {formatDate(assignment.valid_until)}
+                            </span>
                           </div>
                         </div>
                       </TableCell>
@@ -528,7 +595,11 @@ export default function StudentPeriod({ student, onRefresh }: StudentPeriodProps
                           onClick={() => handleToggleActive(assignment.id!)}
                           className="p-0"
                         >
-                          <Badge variant={assignment.is_active ? 'default' : 'secondary'}>
+                          <Badge
+                            variant={
+                              assignment.is_active ? 'default' : 'secondary'
+                            }
+                          >
                             {assignment.is_active ? 'Activo' : 'Inactivo'}
                           </Badge>
                         </Button>

@@ -10,18 +10,18 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 import ReactMarkdown from 'react-markdown';
-import { 
-  Send, 
-  Search, 
-  MoreVertical, 
-  Phone, 
-  Video, 
+import {
+  Send,
+  Search,
+  MoreVertical,
+  Phone,
+  Video,
   Paperclip,
   Smile,
   Check,
   CheckCheck,
   RefreshCw,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 
 interface User {
@@ -52,15 +52,17 @@ interface ChatConversation {
 
 export default function ChatPage() {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
+  const [selectedConversation, setSelectedConversation] =
+    useState<ChatConversation | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter(
+    (conv) =>
+      conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   useEffect(() => {
@@ -84,12 +86,12 @@ export default function ChatPage() {
     try {
       const response = await axiosInstance.get(`/chat/history/${userId}`);
       const messages = response.data.messages || [];
-      
-      setConversations(prev => prev.map(conv => 
-        conv.user_id === userId 
-          ? { ...conv, messages }
-          : conv
-      ));
+
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.user_id === userId ? { ...conv, messages } : conv
+        )
+      );
     } catch (error) {
       toast.error('Error al cargar el historial');
       console.error(error);
@@ -100,7 +102,7 @@ export default function ChatPage() {
     if (!confirm('¿Estás seguro de que quieres eliminar esta conversación?')) {
       return;
     }
-    
+
     try {
       await axiosInstance.delete(`/chat/history/${userId}`);
       await loadAllChats();
@@ -123,7 +125,10 @@ export default function ChatPage() {
     try {
       const formData = new FormData();
       formData.append('content', messageToSend);
-      formData.append('target_user_id', selectedConversation.user_id.toString());
+      formData.append(
+        'target_user_id',
+        selectedConversation.user_id.toString()
+      );
 
       const response = await axiosInstance.post('/chat/send', formData, {
         headers: {
@@ -160,7 +165,7 @@ export default function ChatPage() {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) {
       return 'Hoy';
     } else if (diffDays === 2) {
@@ -168,9 +173,9 @@ export default function ChatPage() {
     } else if (diffDays <= 7) {
       return `${diffDays - 1} días`;
     } else {
-      return date.toLocaleDateString('es-ES', { 
-        day: '2-digit', 
-        month: '2-digit' 
+      return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
       });
     }
   };
@@ -185,18 +190,23 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex bg-background" style={{ height: 'calc(100vh - 50px)' }}>
+    <div
+      className="flex bg-background"
+      style={{ height: 'calc(100vh - 50px)' }}
+    >
       {/* Sidebar de contactos */}
       <div className="w-1/3 bg-card border-r border-border flex flex-col">
         {/* Header del sidebar */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-semibold text-foreground">Todos los Chats</h1>
+            <h1 className="text-xl font-semibold text-foreground">
+              Todos los Chats
+            </h1>
             <Button variant="ghost" size="icon" onClick={loadAllChats}>
               <RefreshCw className="h-5 w-5" />
             </Button>
           </div>
-          
+
           {/* Barra de búsqueda */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -216,7 +226,9 @@ export default function ChatPage() {
               <Card
                 key={conversation.user_id}
                 className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${
-                  selectedConversation?.user_id === conversation.user_id ? 'bg-accent border-primary' : ''
+                  selectedConversation?.user_id === conversation.user_id
+                    ? 'bg-accent border-primary'
+                    : ''
                 }`}
                 onClick={() => selectConversation(conversation)}
               >
@@ -224,11 +236,14 @@ export default function ChatPage() {
                   <div className="relative">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {conversation.user.name.split(' ').map(n => n[0]).join('')}
+                        {conversation.user.name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')}
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium text-foreground truncate">
@@ -251,13 +266,12 @@ export default function ChatPage() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-muted-foreground truncate">
-                        {conversation.last_message.content.length > 50 
+                        {conversation.last_message.content.length > 50
                           ? `${conversation.last_message.content.substring(0, 50)}...`
-                          : conversation.last_message.content
-                        }
+                          : conversation.last_message.content}
                       </p>
                       {conversation.unread_count > 0 && (
                         <Badge className="bg-green-500 text-white text-xs rounded-full px-2 py-1">
@@ -265,7 +279,7 @@ export default function ChatPage() {
                         </Badge>
                       )}
                     </div>
-                    
+
                     <p className="text-xs text-muted-foreground mt-1">
                       {conversation.user.email} • {conversation.user.role}
                     </p>
@@ -273,7 +287,7 @@ export default function ChatPage() {
                 </div>
               </Card>
             ))}
-            
+
             {filteredConversations.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No hay conversaciones disponibles
@@ -293,22 +307,30 @@ export default function ChatPage() {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {selectedConversation.user.name.split(' ').map(n => n[0]).join('')}
+                      {selectedConversation.user.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="font-semibold text-foreground">{selectedConversation.user.name}</h2>
+                    <h2 className="font-semibold text-foreground">
+                      {selectedConversation.user.name}
+                    </h2>
                     <p className="text-sm text-muted-foreground">
-                      {selectedConversation.user.email} • {selectedConversation.user.role}
+                      {selectedConversation.user.email} •{' '}
+                      {selectedConversation.user.role}
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
-                    onClick={() => clearConversation(selectedConversation.user_id)}
+                    onClick={() =>
+                      clearConversation(selectedConversation.user_id)
+                    }
                   >
                     <Trash2 className="h-5 w-5" />
                   </Button>
@@ -349,20 +371,27 @@ export default function ChatPage() {
                       <div className="text-sm prose prose-sm max-w-none">
                         <ReactMarkdown>{message.content}</ReactMarkdown>
                       </div>
-                      <div className={`flex items-center justify-end mt-1 space-x-1 ${
-                        message.role === 'assistant' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                      }`}>
+                      <div
+                        className={`flex items-center justify-end mt-1 space-x-1 ${
+                          message.role === 'assistant'
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
                         <span className="text-xs">
-                          {new Date(message.created_at).toLocaleTimeString('es-ES', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {new Date(message.created_at).toLocaleTimeString(
+                            'es-ES',
+                            {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }
+                          )}
                         </span>
                       </div>
                     </div>
                   </div>
                 )) || []}
-                
+
                 {isLoadingChat && (
                   <div className="flex justify-end">
                     <div className="bg-primary text-primary-foreground px-4 py-2 rounded-lg">
@@ -379,7 +408,7 @@ export default function ChatPage() {
                 <Button variant="ghost" size="icon">
                   <Paperclip className="h-5 w-5 text-muted-foreground" />
                 </Button>
-                
+
                 <div className="flex-1 relative">
                   <Input
                     placeholder="Escribe un mensaje..."
@@ -396,8 +425,8 @@ export default function ChatPage() {
                     <Smile className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </div>
-                
-                <Button 
+
+                <Button
                   onClick={sendMessage}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   disabled={!newMessage.trim() || isLoadingChat}

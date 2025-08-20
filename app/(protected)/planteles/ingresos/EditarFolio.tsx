@@ -23,7 +23,10 @@ interface EditarFolioProps {
   onSuccess: () => void;
 }
 
-export default function EditarFolio({ transaction, onSuccess }: EditarFolioProps) {
+export default function EditarFolio({
+  transaction,
+  onSuccess,
+}: EditarFolioProps) {
   const [open, setOpen] = useState(false);
   const [folio, setFolio] = useState(transaction.folio?.toString() || '');
   const [loading, setLoading] = useState(false);
@@ -70,8 +73,9 @@ export default function EditarFolio({ transaction, onSuccess }: EditarFolioProps
         <DialogHeader>
           <DialogTitle>Editar Folio</DialogTitle>
           <DialogDescription>
-            Actualiza el folio de la transacción de {transaction.student?.firstname} {transaction.student?.lastname}.
-            Al actualizar el numero automaticamente se actualiza al nuevo formato. 
+            Actualiza el folio de la transacción de{' '}
+            {transaction.student?.firstname} {transaction.student?.lastname}. Al
+            actualizar el numero automaticamente se actualiza al nuevo formato.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>

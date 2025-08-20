@@ -1,10 +1,17 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from 'react';
 import { teacherService } from '@/app/services/teacher';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 interface Group {
   id: number;
@@ -58,7 +65,7 @@ export default function TeacherGroupsPage() {
     );
   }
 
-  const selectedGroupData = groups.find(g => g.id === selectedGroup);
+  const selectedGroupData = groups.find((g) => g.id === selectedGroup);
 
   return (
     <div className="p-6 space-y-6">
@@ -66,7 +73,9 @@ export default function TeacherGroupsPage() {
 
       {groups.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500">No tienes grupos asignados actualmente.</p>
+          <p className="text-gray-500">
+            No tienes grupos asignados actualmente.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -81,9 +90,15 @@ export default function TeacherGroupsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">Tipo: {group.type}</p>
-                <p className="text-sm text-gray-600">Horario: {group.start_time} - {group.end_time}</p>
-                <p className="text-sm text-gray-600">Frecuencia: {group.frequency}</p>
-                <p className="text-sm text-gray-600">Estudiantes: {group.students?.length || 0} de {group.capacity}</p>
+                <p className="text-sm text-gray-600">
+                  Horario: {group.start_time} - {group.end_time}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Frecuencia: {group.frequency}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Estudiantes: {group.students?.length || 0} de {group.capacity}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -97,7 +112,9 @@ export default function TeacherGroupsPage() {
           </CardHeader>
           <CardContent>
             {selectedGroupData.students.length === 0 ? (
-              <p className="text-center py-4 text-gray-500">No hay alumnos registrados en este grupo.</p>
+              <p className="text-center py-4 text-gray-500">
+                No hay alumnos registrados en este grupo.
+              </p>
             ) : (
               <Table>
                 <TableHeader>
@@ -110,9 +127,11 @@ export default function TeacherGroupsPage() {
                 </TableHeader>
                 <TableBody>
                   {selectedGroupData.students
-                    .filter(student => student !== null)
+                    .filter((student) => student !== null)
                     .map((student, index) => (
-                      <TableRow key={`${selectedGroupData.id}-${student.matricula || `index-${index}`}`}>
+                      <TableRow
+                        key={`${selectedGroupData.id}-${student.matricula || `index-${index}`}`}
+                      >
                         <TableCell>{student.id || 'No asignada'}</TableCell>
                         <TableCell>{student.firstname}</TableCell>
                         <TableCell>{student.lastname}</TableCell>

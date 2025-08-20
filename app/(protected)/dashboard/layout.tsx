@@ -1,12 +1,12 @@
 'use client';
-import { AdminSidebar } from "@/components/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { AdminSidebar } from '@/components/sidebar';
+import { Separator } from '@/components/ui/separator';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { useAppInit } from "@/hooks/use-app-init";
+} from '@/components/ui/sidebar';
+import { useAppInit } from '@/hooks/use-app-init';
 
 export default function Page({ children }: { children: React.ReactNode }) {
   // Usar el hook personalizado para inicialización

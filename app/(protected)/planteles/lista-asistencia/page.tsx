@@ -48,9 +48,15 @@ export default function AttendanceListPage() {
   const fetchAttendanceForDate = async (date: Date, grupoId: string) => {
     try {
       const formattedDate = date.toISOString().split('T')[0];
-      const response = await axiosInstance.get(`/teacher/attendance/${grupoId}/${formattedDate}`);
-      
-      if (response.data.success && response.data.data && response.data.data.length > 0) {
+      const response = await axiosInstance.get(
+        `/teacher/attendance/${grupoId}/${formattedDate}`
+      );
+
+      if (
+        response.data.success &&
+        response.data.data &&
+        response.data.data.length > 0
+      ) {
         // Convertir los datos de asistencia al formato que espera el estado
         const attendanceMap: Record<string, boolean> = {};
         response.data.data.forEach((record: any) => {
@@ -118,7 +124,7 @@ export default function AttendanceListPage() {
         date: formattedDate,
         attendance: attendance,
       };
-      
+
       const response = await axiosInstance.post('/teacher/attendance', payload);
 
       toast.success('¡Asistencia Guardada!', {
@@ -134,7 +140,8 @@ export default function AttendanceListPage() {
       console.error('Error completo:', error);
       console.error('Detalles del error:', error.response?.data);
       toast.error('Error al Guardar', {
-        description: 'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
+        description:
+          'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
         duration: 4000,
         style: {
           background: '#fef2f2',
@@ -153,7 +160,8 @@ export default function AttendanceListPage() {
     );
   }
 
-  const selectedGroupStudents = grupos.find((g) => g.id === selectedGrupo)?.students || [];
+  const selectedGroupStudents =
+    grupos.find((g) => g.id === selectedGrupo)?.students || [];
 
   return (
     <div className="p-6 text-xs">
@@ -206,13 +214,20 @@ export default function AttendanceListPage() {
                   {selectedGroupStudents.map((student) => (
                     <TableRow key={student.id}>
                       <TableCell className="py-3 px-4">{student.id}</TableCell>
-                      <TableCell className="py-3 px-4">{student.firstname}</TableCell>
-                      <TableCell className="py-3 px-4">{student.lastname}</TableCell>
+                      <TableCell className="py-3 px-4">
+                        {student.firstname}
+                      </TableCell>
+                      <TableCell className="py-3 px-4">
+                        {student.lastname}
+                      </TableCell>
                       <TableCell className="py-3 px-4">
                         <Checkbox
                           checked={attendance[student.id] || false}
                           onCheckedChange={(checked) =>
-                            handleAttendanceChange(student.id, checked as boolean)
+                            handleAttendanceChange(
+                              student.id,
+                              checked as boolean
+                            )
                           }
                           className="h-5 w-5"
                         />
@@ -225,7 +240,9 @@ export default function AttendanceListPage() {
           </div>
 
           <div className="mt-6 flex justify-end">
-            <Button className="text-xs" onClick={handleSaveAttendance}>Guardar</Button>
+            <Button className="text-xs" onClick={handleSaveAttendance}>
+              Guardar
+            </Button>
           </div>
         </>
       )}

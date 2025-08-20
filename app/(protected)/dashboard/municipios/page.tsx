@@ -17,13 +17,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { getMunicipios, createMunicipio, updateMunicipio, deleteMunicipio } from '@/lib/api';
+import {
+  getMunicipios,
+  createMunicipio,
+  updateMunicipio,
+  deleteMunicipio,
+} from '@/lib/api';
 import type { Municipio } from '@/lib/types';
 
 export default function Page() {
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
   const [newMunicipio, setNewMunicipio] = useState<Municipio>({ name: '' });
-  const [editingMunicipio, setEditingMunicipio] = useState<Municipio | null>(null);
+  const [editingMunicipio, setEditingMunicipio] = useState<Municipio | null>(
+    null
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -77,10 +84,15 @@ export default function Page() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 placeholder="Nombre del municipio"
-                value={editingMunicipio ? editingMunicipio.name : newMunicipio.name}
+                value={
+                  editingMunicipio ? editingMunicipio.name : newMunicipio.name
+                }
                 onChange={(e) =>
                   editingMunicipio
-                    ? setEditingMunicipio({ ...editingMunicipio, name: e.target.value })
+                    ? setEditingMunicipio({
+                        ...editingMunicipio,
+                        name: e.target.value,
+                      })
                     : setNewMunicipio({ ...newMunicipio, name: e.target.value })
                 }
               />

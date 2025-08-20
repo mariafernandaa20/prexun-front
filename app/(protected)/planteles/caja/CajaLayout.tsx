@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,14 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Caja, Denomination } from '@/lib/types'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { useForm } from 'react-hook-form'
-import { Textarea } from '@/components/ui/textarea'
-import { formatCurrency } from '@/lib/utils'
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Caja, Denomination } from '@/lib/types';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useForm } from 'react-hook-form';
+import { Textarea } from '@/components/ui/textarea';
+import { formatCurrency } from '@/lib/utils';
 
 interface FormData {
   denominations: Denomination;
@@ -30,35 +30,74 @@ function calculateDenominationsTotal(denominations: Denomination): number {
   }, 0);
 }
 
-export default function CajaLayout({ children, caja, onOpen, onClose, actualAmount }: {
-  children: React.ReactNode
-  caja: Caja | null
-  onOpen: (initialAmount: number, initialAmountCash: Denomination, notes: string) => Promise<void>
-  onClose: (finalAmount: number, finalAmountCash: Denomination, next_day: number, next_day_cash: Denomination, notes: string) => Promise<void>
-  actualAmount: number
+export default function CajaLayout({
+  children,
+  caja,
+  onOpen,
+  onClose,
+  actualAmount,
+}: {
+  children: React.ReactNode;
+  caja: Caja | null;
+  onOpen: (
+    initialAmount: number,
+    initialAmountCash: Denomination,
+    notes: string
+  ) => Promise<void>;
+  onClose: (
+    finalAmount: number,
+    finalAmountCash: Denomination,
+    next_day: number,
+    next_day_cash: Denomination,
+    notes: string
+  ) => Promise<void>;
+  actualAmount: number;
 }) {
-  const [open, setOpen] = useState(false)
-  const [initialAmount, setInitialAmount] = useState('')
-  const [finalAmount, setFinalAmount] = useState('')
-  const [notes, setNotes] = useState('')
+  const [open, setOpen] = useState(false);
+  const [initialAmount, setInitialAmount] = useState('');
+  const [finalAmount, setFinalAmount] = useState('');
+  const [notes, setNotes] = useState('');
 
-  const { register, setValue, watch, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>({
     defaultValues: {
       denominations: {
-        '1000': 0, '500': 0, '200': 0, '100': 0,
-        '50': 0, '20': 0, '10': 0, '5': 0, '2': 0, '1': 0
+        '1000': 0,
+        '500': 0,
+        '200': 0,
+        '100': 0,
+        '50': 0,
+        '20': 0,
+        '10': 0,
+        '5': 0,
+        '2': 0,
+        '1': 0,
       },
       next_day_cash: {
-        '1000': 0, '500': 0, '200': 0, '100': 0,
-        '50': 0, '20': 0, '10': 0, '5': 0, '2': 0, '1': 0
-      }
-    }
+        '1000': 0,
+        '500': 0,
+        '200': 0,
+        '100': 0,
+        '50': 0,
+        '20': 0,
+        '10': 0,
+        '5': 0,
+        '2': 0,
+        '1': 0,
+      },
+    },
   });
 
   const formData = watch();
 
   const handleOpenCaja = async () => {
-    const denominationsTotal = calculateDenominationsTotal(formData.denominations);
+    const denominationsTotal = calculateDenominationsTotal(
+      formData.denominations
+    );
 
     await onOpen(Number(denominationsTotal), formData.denominations, notes);
     setOpen(false);
@@ -71,22 +110,30 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
   };
 
   const handleCloseCaja = async () => {
-    const denominationsTotal = calculateDenominationsTotal(formData.denominations);
+    const denominationsTotal = calculateDenominationsTotal(
+      formData.denominations
+    );
     const nextDay = calculateDenominationsTotal(formData.denominations);
 
     // Validación para cierre de caja
     if (denominationsTotal !== Number(actualAmount)) {
-      alert("El monto total no coincide con la suma de las denominaciones");
+      alert('El monto total no coincide con la suma de las denominaciones');
       return;
     }
 
     // Validación adicional con actualAmount
     if (denominationsTotal !== actualAmount) {
-      alert("El monto ingresado no coincide con el monto actual en caja");
+      alert('El monto ingresado no coincide con el monto actual en caja');
       return;
     }
 
-    await onClose(Number(denominationsTotal), formData.denominations, nextDay, formData.next_day_cash, notes);
+    await onClose(
+      Number(denominationsTotal),
+      formData.denominations,
+      nextDay,
+      formData.next_day_cash,
+      notes
+    );
     setOpen(false);
     setFinalAmount('');
     setNotes('');
@@ -103,7 +150,10 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
     };
     setValue('denominations', newDenominations);
   };
-  const handleNextDayDenominationChange = (denomination: string, value: string) => {
+  const handleNextDayDenominationChange = (
+    denomination: string,
+    value: string
+  ) => {
     const newDenominations = {
       ...formData.next_day_cash,
       [denomination]: Number(value) || 0,
@@ -132,27 +182,40 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
               </Label>
               <div className="space-y-2 col-span-3">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {['1000', '500', '200', '100', '50', '20', '10', '5', '2', '1'].map(
-                    (denom) => (
-                      <div key={denom} className="space-y-1">
-                        <Label>${denom}</Label>
-                        <Input
-                          type="number"
-                          value={formData.denominations[denom] || ''}
-                          onChange={(e) =>
-                            handleDenominationChange(denom, e.target.value)
-                          }
-                        />
-                      </div>
-                    )
-                  )}
+                  {[
+                    '1000',
+                    '500',
+                    '200',
+                    '100',
+                    '50',
+                    '20',
+                    '10',
+                    '5',
+                    '2',
+                    '1',
+                  ].map((denom) => (
+                    <div key={denom} className="space-y-1">
+                      <Label>${denom}</Label>
+                      <Input
+                        type="number"
+                        value={formData.denominations[denom] || ''}
+                        onChange={(e) =>
+                          handleDenominationChange(denom, e.target.value)
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  <span className="text-white"> Total en denominaciones:</span> {formatCurrency(calculateDenominationsTotal(formData.denominations))}
+                  <span className="text-white"> Total en denominaciones:</span>{' '}
+                  {formatCurrency(
+                    calculateDenominationsTotal(formData.denominations)
+                  )}
                 </p>
                 {caja && (
                   <p className="col-span-4 text-sm text-gray-500">
-                    <span className="text-white"> Monto actual en caja:</span> {formatCurrency(actualAmount)}
+                    <span className="text-white"> Monto actual en caja:</span>{' '}
+                    {formatCurrency(actualAmount)}
                   </p>
                 )}
               </div>
@@ -165,23 +228,36 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
                   </Label>
                   <div className="space-y-2 col-span-3">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {['1000', '500', '200', '100', '50', '20', '10', '5', '2', '1'].map(
-                        (denom) => (
-                          <div key={denom} className="space-y-1">
-                            <Label>${denom}</Label>
-                            <Input
-                              type="number"
-                              value={formData.next_day_cash[denom] || ''}
-                              onChange={(e) =>
-                                handleNextDayDenominationChange(denom, e.target.value)
-                              }
-                            />
-                          </div>
-                        )
-                      )}
+                      {[
+                        '1000',
+                        '500',
+                        '200',
+                        '100',
+                        '50',
+                        '20',
+                        '10',
+                        '5',
+                        '2',
+                        '1',
+                      ].map((denom) => (
+                        <div key={denom} className="space-y-1">
+                          <Label>${denom}</Label>
+                          <Input
+                            type="number"
+                            value={formData.next_day_cash[denom] || ''}
+                            onChange={(e) =>
+                              handleNextDayDenominationChange(
+                                denom,
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      ))}
                     </div>
                     <p className="text-sm text-gray-500 mt-2">
-                      Total en denominaciones: ${calculateDenominationsTotal(formData.next_day_cash)}
+                      Total en denominaciones: $
+                      {calculateDenominationsTotal(formData.next_day_cash)}
                     </p>
                   </div>
                 </div>
@@ -195,13 +271,12 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
                     onChange={(e) => setNotes(e.target.value)}
                     className="col-span-3"
                   />
-                </div></>
+                </div>
+              </>
             )}
           </div>
           <DialogFooter>
-            <Button
-              onClick={caja ? handleCloseCaja : handleOpenCaja}
-            >
+            <Button onClick={caja ? handleCloseCaja : handleOpenCaja}>
               {caja ? 'Cerrar Caja' : 'Abrir Caja'}
             </Button>
           </DialogFooter>
@@ -209,17 +284,14 @@ export default function CajaLayout({ children, caja, onOpen, onClose, actualAmou
       </Dialog>
       <div>
         <div>
-          <div className='flex items-center justify-end px-6'>
+          <div className="flex items-center justify-end px-6">
             <Button onClick={() => setOpen(true)}>
               {caja ? 'Cerrar Caja' : 'Abrir Caja'}
             </Button>
           </div>
         </div>
-        <div>
-          {children}
-        </div>
+        <div>{children}</div>
       </div>
     </div>
-  )
+  );
 }
-

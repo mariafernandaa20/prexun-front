@@ -44,7 +44,7 @@ export default function StudentNotes({ studentId }: Props) {
     try {
       setLoading(true);
       const response = await getStudentNotes(Number(studentId));
-      console.log(response)
+      console.log(response);
       setNotes(response.notes || []);
     } catch (error: any) {
       console.error('Error fetching notes:', error);
@@ -170,16 +170,17 @@ export default function StudentNotes({ studentId }: Props) {
 
   return (
     <div className="space-y-4">
-
-
-      <Card >
+      <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <FileText className="w-5 h-5" />
               Notas del Estudiante
             </h3>
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
               <DialogTrigger asChild>
                 <Button onClick={openCreateDialog} size="sm">
                   <Plus className="w-4 h-4 mr-2" />
@@ -223,8 +224,6 @@ export default function StudentNotes({ studentId }: Props) {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-
-
           {loading && notes.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">Cargando notas...</p>
@@ -250,7 +249,9 @@ export default function StudentNotes({ studentId }: Props) {
                     <div className="flex-1">
                       <div className="text-sm text-gray-500">
                         Por: {note.user?.name || 'Usuario desconocido'}
-                        <span className="ml-2">{formatDate(note.created_at)}</span>
+                        <span className="ml-2">
+                          {formatDate(note.created_at)}
+                        </span>
                       </div>
                     </div>
                     <div className="flex gap-1">
@@ -273,7 +274,6 @@ export default function StudentNotes({ studentId }: Props) {
                   </div>
                   <p className="whitespace-pre-wrap">{note.text}</p>
                 </div>
-
               ))}
             </div>
           )}
@@ -317,18 +317,20 @@ export default function StudentNotes({ studentId }: Props) {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. La nota será eliminada permanentemente.
+              Esta acción no se puede deshacer. La nota será eliminada
+              permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={loading}>
-              Cancelar
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteNote}
               disabled={loading}

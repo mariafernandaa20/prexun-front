@@ -41,35 +41,39 @@ export function GastoModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { register, handleSubmit, reset, setValue, watch } = useForm<Gasto & { image?: File }>({
-    defaultValues: gasto ? {
-      id: gasto.id,
-      concept: gasto.concept,
-      amount: gasto.amount,
-      date: gasto.date,
-      method: gasto.method,
-      denominations: null,
-      user_id: gasto.user_id,
-      admin_id: gasto.admin_id,
-      category: gasto.category,
-      campus_id: gasto.campus_id,
-      cash_register_id: activeCampus.latest_cash_register.id,
-      image: null,
-      user: gasto.user,
-      admin: gasto.admin
-    } : {
-      concept: '',
-      amount: 0,
-      date: new Date().toISOString().split('T')[0],
-      method: 'Efectivo',
-      denominations: null,
-      user_id: undefined, 
-      admin_id: undefined,
-      category: '',
-      campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
-      cash_register_id: activeCampus.latest_cash_register.id,
-      image: null,
-    },
+  const { register, handleSubmit, reset, setValue, watch } = useForm<
+    Gasto & { image?: File }
+  >({
+    defaultValues: gasto
+      ? {
+          id: gasto.id,
+          concept: gasto.concept,
+          amount: gasto.amount,
+          date: gasto.date,
+          method: gasto.method,
+          denominations: null,
+          user_id: gasto.user_id,
+          admin_id: gasto.admin_id,
+          category: gasto.category,
+          campus_id: gasto.campus_id,
+          cash_register_id: activeCampus.latest_cash_register.id,
+          image: null,
+          user: gasto.user,
+          admin: gasto.admin,
+        }
+      : {
+          concept: '',
+          amount: 0,
+          date: new Date().toISOString().split('T')[0],
+          method: 'Efectivo',
+          denominations: null,
+          user_id: undefined,
+          admin_id: undefined,
+          category: '',
+          campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
+          cash_register_id: activeCampus.latest_cash_register.id,
+          image: null,
+        },
   });
 
   const formData = watch();
@@ -122,19 +126,22 @@ export function GastoModal({
       toast({
         title: 'Error al enviar el formulario',
         description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive'
-      })
+        variant: 'destructive',
+      });
       console.error('Error al enviar el formulario:', error);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className='min-w-[800px]'>
+      <DialogContent className="min-w-[800px]">
         <DialogHeader>
           <DialogTitle>{gasto ? 'Editar Gasto' : 'Nuevo Gasto'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 max-h-[calc(100vh-150px)] grid grid-cols-2 overflow-y-auto gap-2">
+        <form
+          onSubmit={handleSubmit(onSubmitForm)}
+          className="space-y-4 max-h-[calc(100vh-150px)] grid grid-cols-2 overflow-y-auto gap-2"
+        >
           <div className="space-y-2">
             <Label htmlFor="admin_id">Administrador</Label>
             <Select
@@ -233,12 +240,16 @@ export function GastoModal({
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className='hidden'
+                className="hidden"
                 id="image-input"
               />
               <label htmlFor="image-input" className="cursor-pointer">
                 {previewUrl ? (
-                  <img src={previewUrl} alt="Preview" className="max-h-40 mx-auto" />
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="max-h-40 mx-auto"
+                  />
                 ) : (
                   <div className="text-gray-500">
                     Arrastra una imagen aquí o haz clic para seleccionar

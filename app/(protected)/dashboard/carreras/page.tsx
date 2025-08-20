@@ -82,7 +82,7 @@ export default function Page() {
       const carreraData = {
         name: selectedCarrera?.name,
         facultad_id: selectedCarrera?.facultad_id,
-        modulo_ids: selectedModulos
+        modulo_ids: selectedModulos,
       };
 
       if (selectedCarrera?.id) {
@@ -101,7 +101,7 @@ export default function Page() {
 
   const handleEdit = (carrera: Carrera) => {
     setSelectedCarrera({ ...carrera });
-    setSelectedModulos(carrera.modulos?.map(m => m.id) ||  []);
+    setSelectedModulos(carrera.modulos?.map((m) => m.id) || []);
     setIsDialogOpen(true);
   };
 
@@ -117,11 +117,13 @@ export default function Page() {
   };
 
   const handleFacultadChange = (value: string) => {
-    setSelectedCarrera((prev) => prev ? { ...prev, facultad_id: value } : null);
+    setSelectedCarrera((prev) =>
+      prev ? { ...prev, facultad_id: value } : null
+    );
   };
 
   const handleNameChange = (value: string) => {
-    setSelectedCarrera((prev) => prev ? { ...prev, name: value } : null);
+    setSelectedCarrera((prev) => (prev ? { ...prev, name: value } : null));
   };
 
   const handleModuloChange = (selectedIds: string[]) => {
@@ -134,22 +136,26 @@ export default function Page() {
         <h1 className="text-2xl font-bold">Carreras</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
-              setSelectedCarrera({ name: '', facultad_id: '' });
-              setSelectedModulos([]);
-            }}>
+            <Button
+              onClick={() => {
+                setSelectedCarrera({ name: '', facultad_id: '' });
+                setSelectedModulos([]);
+              }}
+            >
               Agregar Carrera
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {selectedCarrera?.id ? 'Editar Carrera' : 'Agregar Nueva Carrera'}
+                {selectedCarrera?.id
+                  ? 'Editar Carrera'
+                  : 'Agregar Nueva Carrera'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Select
-                value={Number(selectedCarrera?.facultad_id) as any || ''}
+                value={(Number(selectedCarrera?.facultad_id) as any) || ''}
                 onValueChange={handleFacultadChange}
               >
                 <SelectTrigger>
@@ -210,10 +216,15 @@ export default function Page() {
                   <TableRow key={carrera.id}>
                     <TableCell>{carrera.name}</TableCell>
                     <TableCell>
-                      {carrera.modulos?.map(modulo => modulo.name).join(', ') || 'Sin módulos'}
+                      {carrera.modulos
+                        ?.map((modulo) => modulo.name)
+                        .join(', ') || 'Sin módulos'}
                     </TableCell>
                     <TableCell className="space-x-2">
-                      <Button variant="outline" onClick={() => handleEdit(carrera)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleEdit(carrera)}
+                      >
                         Editar
                       </Button>
                       <Button
@@ -227,7 +238,10 @@ export default function Page() {
                 ))}
                 {carrerasFacultad.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={3}
+                      className="text-center text-muted-foreground"
+                    >
                       No hay carreras registradas para esta facultad
                     </TableCell>
                   </TableRow>

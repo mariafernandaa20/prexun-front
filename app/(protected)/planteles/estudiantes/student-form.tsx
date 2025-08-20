@@ -3,7 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, User, ExternalLink } from 'lucide-react';
-import { Campus, Cohort, Municipio, Carrera, Period, Student, Prepa, Facultad, Promocion, Grupo } from '@/lib/types';
+import {
+  Campus,
+  Cohort,
+  Municipio,
+  Carrera,
+  Period,
+  Student,
+  Prepa,
+  Facultad,
+  Promocion,
+  Grupo,
+} from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { addContactToGoogle } from '@/lib/googleContacts';
@@ -50,9 +61,11 @@ export function StudentForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingButton, setIsLoadingButton] = useState(false);
   const [existingStudent, setExistingStudent] = useState<any>(null);
-  const [showExistingStudentAlert, setShowExistingStudentAlert] = useState(false);
+  const [showExistingStudentAlert, setShowExistingStudentAlert] =
+    useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const { periods, grupos, carreras, facultades, semanasIntensivas, campuses } = useAuthStore();
+  const { periods, grupos, carreras, facultades, semanasIntensivas, campuses } =
+    useAuthStore();
 
   const [formData, setFormData] = useState<Student>({
     id: student?.id || null,
@@ -118,7 +131,12 @@ export function StudentForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.firstname || !formData.lastname || !formData.phone) {
+    if (
+      !formData.email ||
+      !formData.firstname ||
+      !formData.lastname ||
+      !formData.phone
+    ) {
       toast({
         title: 'Error de validación',
         description: 'Por favor complete todos los campos requeridos',
@@ -142,18 +160,19 @@ export function StudentForm({
     try {
       await onSubmit(formData);
 
-      const accessToken = useAuthStore(state => state.accessToken);
+      const accessToken = useAuthStore((state) => state.accessToken);
 
       if (accessToken) {
         try {
-          const grupo = grupos.find(g => g.id === Number(formData.grupo_id));
-          const studentName = `${grupo?.name || ''} ${formData.lastname} ${formData.firstname}`.trim();
+          const grupo = grupos.find((g) => g.id === Number(formData.grupo_id));
+          const studentName =
+            `${grupo?.name || ''} ${formData.lastname} ${formData.firstname}`.trim();
 
           await addContactToGoogle(accessToken, {
             name: studentName,
             email: formData.email,
             phone: formData.phone,
-            secondaryPhone: formData.tutor_phone || undefined
+            secondaryPhone: formData.tutor_phone || undefined,
           });
 
           toast({
@@ -163,7 +182,8 @@ export function StudentForm({
         } catch (err) {
           toast({
             title: 'Error al sincronizar con Google Contacts',
-            description: 'El estudiante fue guardado pero no se pudo añadir a tus contactos',
+            description:
+              'El estudiante fue guardado pero no se pudo añadir a tus contactos',
             variant: 'warning',
           });
         }
@@ -254,8 +274,10 @@ export function StudentForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 flex flex-col max-h-[80vh] w-full overflow-y-auto">
-
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 flex flex-col max-h-[80vh] w-full overflow-y-auto"
+    >
       {/* Alert for existing student */}
       {showExistingStudentAlert && existingStudent && (
         <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-400">
@@ -265,20 +287,51 @@ export function StudentForm({
           </AlertTitle>
           <AlertDescription className="text-amber-700 dark:text-amber-300">
             <p className="mb-3">
-              Ya existe un estudiante con el email <strong className="text-amber-900 dark:text-amber-100">{existingStudent.email}</strong>:
+              Ya existe un estudiante con el email{' '}
+              <strong className="text-amber-900 dark:text-amber-100">
+                {existingStudent.email}
+              </strong>
+              :
             </p>
             <div className="bg-white dark:bg-gray-800 p-3 rounded border border-amber-200 dark:border-amber-700 mb-3">
-              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">Nombre:</strong> {existingStudent.firstname} {existingStudent.lastname}</p>
-              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">ID:</strong> {existingStudent.id}</p>
-              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">Teléfono:</strong> {existingStudent.phone || 'No registrado'}</p>
-              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">Campus:</strong> {existingStudent.campus?.name || 'No asignado'}</p>
-              <p className="text-gray-900 dark:text-gray-100"><strong className="text-amber-800 dark:text-amber-300">Estado:</strong> {existingStudent.status}</p>
+              <p className="text-gray-900 dark:text-gray-100">
+                <strong className="text-amber-800 dark:text-amber-300">
+                  Nombre:
+                </strong>{' '}
+                {existingStudent.firstname} {existingStudent.lastname}
+              </p>
+              <p className="text-gray-900 dark:text-gray-100">
+                <strong className="text-amber-800 dark:text-amber-300">
+                  ID:
+                </strong>{' '}
+                {existingStudent.id}
+              </p>
+              <p className="text-gray-900 dark:text-gray-100">
+                <strong className="text-amber-800 dark:text-amber-300">
+                  Teléfono:
+                </strong>{' '}
+                {existingStudent.phone || 'No registrado'}
+              </p>
+              <p className="text-gray-900 dark:text-gray-100">
+                <strong className="text-amber-800 dark:text-amber-300">
+                  Campus:
+                </strong>{' '}
+                {existingStudent.campus?.name || 'No asignado'}
+              </p>
+              <p className="text-gray-900 dark:text-gray-100">
+                <strong className="text-amber-800 dark:text-amber-300">
+                  Estado:
+                </strong>{' '}
+                {existingStudent.status}
+              </p>
             </div>
             <div className="flex gap-2">
               <Button
                 type="button"
                 size="sm"
-                onClick={() => router.push(`/planteles/estudiantes/${existingStudent.id}`)}
+                onClick={() =>
+                  router.push(`/planteles/estudiantes/${existingStudent.id}`)
+                }
                 className="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-700 text-white"
               >
                 <User className="h-4 w-4 mr-1" />
@@ -311,11 +364,12 @@ export function StudentForm({
           />
           {!student?.id && (
             <p className="text-xs text-gray-500 mt-1">
-              Se verificará automáticamente si ya existe un estudiante con este email
+              Se verificará automáticamente si ya existe un estudiante con este
+              email
             </p>
           )}
         </div>
- <div className="space-y-2">
+        <div className="space-y-2">
           <Label htmlFor="status">Campus</Label>
           <Select
             name="campus_id"
@@ -331,9 +385,11 @@ export function StudentForm({
               <SelectValue placeholder="Selecciona el estatus" />
             </SelectTrigger>
             <SelectContent>
-              {
-                campuses.map((campus) => <SelectItem value={(campus.id).toString()}>{campus.name}</SelectItem>)
-              }
+              {campuses.map((campus) => (
+                <SelectItem value={campus.id.toString()}>
+                  {campus.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -421,7 +477,6 @@ export function StudentForm({
             placeholder="Apellido del estudiante"
           />
         </div>
-
 
         <div className="space-y-2">
           <Label htmlFor="phone">Teléfono</Label>
@@ -599,9 +654,7 @@ export function StudentForm({
             </div>
           </>
         ) : (
-          <>
-
-          </>
+          <></>
         )}
         <div className="space-y-2">
           <Label htmlFor="prepa_id">Preparatoria</Label>
@@ -716,7 +769,9 @@ export function StudentForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="preferred_communication">Medio de comunicación preferido</Label>
+          <Label htmlFor="preferred_communication">
+            Medio de comunicación preferido
+          </Label>
           <Select
             name="preferred_communication"
             value={formData.preferred_communication}
@@ -758,33 +813,39 @@ export function StudentForm({
               <SelectItem value="No entregado">No entregado</SelectItem>
               <SelectItem value="En fisico">En fisico</SelectItem>
               <SelectItem value="En línea">En línea</SelectItem>
-              <SelectItem value="En línea y en fisico">En línea y en fisico</SelectItem>
+              <SelectItem value="En línea y en fisico">
+                En línea y en fisico
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
-        {formData.type === 'facultad' && <div className="space-y-2">
-          <Label htmlFor="module_book">Libro de módulo</Label>
-          <Select
-            name="module_book"
-            value={formData.module_book}
-            onValueChange={(value) =>
-              handleChange({
-                name: 'module_book',
-                value: value,
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar medio de comunicación" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="No entregado">No entregado</SelectItem>
-              <SelectItem value="En fisico">En fisico</SelectItem>
-              <SelectItem value="En línea">En línea</SelectItem>
-              <SelectItem value="En línea y en fisico">En línea y en fisico</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>}
+        {formData.type === 'facultad' && (
+          <div className="space-y-2">
+            <Label htmlFor="module_book">Libro de módulo</Label>
+            <Select
+              name="module_book"
+              value={formData.module_book}
+              onValueChange={(value) =>
+                handleChange({
+                  name: 'module_book',
+                  value: value,
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar medio de comunicación" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="No entregado">No entregado</SelectItem>
+                <SelectItem value="En fisico">En fisico</SelectItem>
+                <SelectItem value="En línea">En línea</SelectItem>
+                <SelectItem value="En línea y en fisico">
+                  En línea y en fisico
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="status">Estatus</Label>
@@ -817,7 +878,9 @@ export function StudentForm({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={isLoadingButton}>{isLoadingButton ? 'Guardando...' : 'Guardar'}</Button>
+        <Button type="submit" disabled={isLoadingButton}>
+          {isLoadingButton ? 'Guardando...' : 'Guardar'}
+        </Button>
       </div>
     </form>
   );

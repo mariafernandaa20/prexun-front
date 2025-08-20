@@ -66,10 +66,12 @@ export default function Page() {
         <h1 className="text-2xl font-bold">Preparatorias</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingPrepa(null);
-              setNewPrepa({ name: '' });
-            }}>
+            <Button
+              onClick={() => {
+                setEditingPrepa(null);
+                setNewPrepa({ name: '' });
+              }}
+            >
               Agregar Preparatoria
             </Button>
           </DialogTrigger>

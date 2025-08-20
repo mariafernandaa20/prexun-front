@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuthStore } from "@/lib/store/auth-store";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import axiosInstance from "@/lib/api/axiosConfig";
-import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import axiosInstance from '@/lib/api/axiosConfig';
+import { Button } from '@/components/ui/button';
+import { Users } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 
 interface Student {
   id: number;
@@ -46,9 +46,9 @@ export default function ProfesoresPage() {
       setGrupos(response.data);
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar los grupos",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudieron cargar los grupos',
       });
     } finally {
       setIsLoading(false);
@@ -58,21 +58,21 @@ export default function ProfesoresPage() {
   const fetchStudentsForGroup = async (grupoId: number) => {
     try {
       const response = await axiosInstance.get(`/grupos/${grupoId}/students`);
-      const grupoIndex = grupos.findIndex(g => g.id === grupoId);
+      const grupoIndex = grupos.findIndex((g) => g.id === grupoId);
       if (grupoIndex !== -1) {
         const updatedGrupos = [...grupos];
         updatedGrupos[grupoIndex] = {
           ...updatedGrupos[grupoIndex],
-          students: response.data
+          students: response.data,
         };
         setGrupos(updatedGrupos);
         return response.data;
       }
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar los estudiantes"
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudieron cargar los estudiantes',
       });
     }
   };
@@ -92,10 +92,7 @@ export default function ProfesoresPage() {
 
   return (
     <div className="container mx-auto p-6">
-
       <h1 className="text-2xl font-bold mb-6">Mis Grupos</h1>
-      </div>
-  )
+    </div>
+  );
 }
-      
-      

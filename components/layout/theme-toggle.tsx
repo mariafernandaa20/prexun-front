@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Monitor, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Monitor, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 export function ThemeToggle() {
   const { setTheme } = useTheme();
@@ -25,19 +25,19 @@ export function ThemeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="z-50">
         <DropdownMenuItem
-          onClick={() => setTheme("light")}
+          onClick={() => setTheme('light')}
           className="hover:cursor-pointer"
         >
           Light
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme("dark")}
+          onClick={() => setTheme('dark')}
           className="hover:cursor-pointer"
         >
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme("system")}
+          onClick={() => setTheme('system')}
           className="hover:cursor-pointer"
         >
           System
@@ -51,13 +51,22 @@ export function ThemeToggleSidebar() {
   const { theme, setTheme } = useTheme();
   return (
     <div className="flex gap-2 group-data-[collapsible=icon]:flex-col">
-      <button onClick={() => setTheme("light")} className={`p-2 rounded-md text-white bg-primary`}>
+      <button
+        onClick={() => setTheme('light')}
+        className={`p-2 rounded-md text-white bg-primary`}
+      >
         <Sun className="w-4 h-4" />
       </button>
-      <button onClick={() => setTheme("dark")} className={`p-2 rounded-md text-white bg-primary`}>
+      <button
+        onClick={() => setTheme('dark')}
+        className={`p-2 rounded-md text-white bg-primary`}
+      >
         <Moon className="w-4 h-4" />
       </button>
-      <button onClick={() => setTheme("system")} className={`p-2 rounded-md text-white bg-primary`}>
+      <button
+        onClick={() => setTheme('system')}
+        className={`p-2 rounded-md text-white bg-primary`}
+      >
         <Monitor className="w-4 h-4" />
       </button>
     </div>

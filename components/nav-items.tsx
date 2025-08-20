@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
+import { usePathname } from 'next/navigation';
 import {
   Building,
   Folder,
@@ -8,15 +8,15 @@ import {
   MoreHorizontal,
   Trash2,
   type LucideIcon,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   SidebarGroup,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import Link from "next/link";
+} from '@/components/ui/sidebar';
+import Link from 'next/link';
 
 export function NavItems({
   projects,
@@ -37,21 +37,17 @@ export function NavItems({
           <SidebarMenuItem key={item.url}>
             <SidebarMenuButton
               asChild
-              className={`${pathname === item.url ? "bg-white text-black" : "text-white"} hover:bg-white hover:text-black`}
+              className={`${pathname === item.url ? 'bg-white text-black' : 'text-white'} hover:bg-white hover:text-black`}
             >
               <Link href={item.url}>
                 <item.icon />
                 <span>{item.name}</span>
               </Link>
-
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            className="text-white"
-          >
+          <SidebarMenuButton asChild className="text-white">
             <a href="/planteles">
               <Building />
               <span>Planteles</span>

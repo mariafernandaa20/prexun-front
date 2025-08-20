@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { bulkDeleteStudents, deleteStudent, bulkUpdateSemanaIntensiva, bulkMarkAsActive, bulkMarkAsInactive } from '@/lib/api';
+import {
+  bulkDeleteStudents,
+  deleteStudent,
+  bulkUpdateSemanaIntensiva,
+  bulkMarkAsActive,
+  bulkMarkAsInactive,
+} from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -18,7 +24,8 @@ const BulkActions: React.FC<BulkActionsProps> = ({
   setIsBulkActionLoading,
 }) => {
   const { toast } = useToast();
-  const [selectedSemanaIntensiva, setSelectedSemanaIntensiva] = useState<string>('');
+  const [selectedSemanaIntensiva, setSelectedSemanaIntensiva] =
+    useState<string>('');
   const { semanasIntensivas } = useAuthStore();
 
   const handleBulkDelete = async () => {
@@ -31,7 +38,12 @@ const BulkActions: React.FC<BulkActionsProps> = ({
       return;
     }
 
-    if (!confirm(`¿Está seguro de eliminar ${selectedStudents.length} estudiante(s)?`)) return;
+    if (
+      !confirm(
+        `¿Está seguro de eliminar ${selectedStudents.length} estudiante(s)?`
+      )
+    )
+      return;
 
     try {
       setIsBulkActionLoading(true);
@@ -66,7 +78,12 @@ const BulkActions: React.FC<BulkActionsProps> = ({
       return;
     }
 
-    if (!confirm(`¿Está seguro de eliminar permanentemente ${selectedStudents.length} estudiante(s)? Esta acción no se puede deshacer.`)) return;
+    if (
+      !confirm(
+        `¿Está seguro de eliminar permanentemente ${selectedStudents.length} estudiante(s)? Esta acción no se puede deshacer.`
+      )
+    )
+      return;
 
     try {
       setIsBulkActionLoading(true);
@@ -106,11 +123,19 @@ const BulkActions: React.FC<BulkActionsProps> = ({
       return;
     }
 
-    if (!confirm(`¿Está seguro de asignar ${selectedStudents.length} estudiante(s) a la semana intensiva seleccionada?`)) return;
+    if (
+      !confirm(
+        `¿Está seguro de asignar ${selectedStudents.length} estudiante(s) a la semana intensiva seleccionada?`
+      )
+    )
+      return;
 
     try {
       setIsBulkActionLoading(true);
-      const response = await bulkUpdateSemanaIntensiva(selectedStudents, selectedSemanaIntensiva);
+      const response = await bulkUpdateSemanaIntensiva(
+        selectedStudents,
+        selectedSemanaIntensiva
+      );
       await fetchStudents();
       setSelectedStudents([]);
       toast({
@@ -138,7 +163,12 @@ const BulkActions: React.FC<BulkActionsProps> = ({
       return;
     }
 
-    if (!confirm(`¿Está seguro de marcar como activos ${selectedStudents.length} estudiante(s)?`)) return;
+    if (
+      !confirm(
+        `¿Está seguro de marcar como activos ${selectedStudents.length} estudiante(s)?`
+      )
+    )
+      return;
 
     try {
       setIsBulkActionLoading(true);
@@ -170,7 +200,12 @@ const BulkActions: React.FC<BulkActionsProps> = ({
       return;
     }
 
-    if (!confirm(`¿Está seguro de marcar como inactivos ${selectedStudents.length} estudiante(s)?`)) return;
+    if (
+      !confirm(
+        `¿Está seguro de marcar como inactivos ${selectedStudents.length} estudiante(s)?`
+      )
+    )
+      return;
 
     try {
       setIsBulkActionLoading(true);
@@ -208,7 +243,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
       >
         Eliminar permanentemente
       </Button>
-      <div className='col-span-2 gap-4 flex items-center'>
+      <div className="col-span-2 gap-4 flex items-center">
         <select
           className={buttonVariants({ variant: 'secondary' })}
           value={selectedSemanaIntensiva}
@@ -222,13 +257,14 @@ const BulkActions: React.FC<BulkActionsProps> = ({
           ))}
         </select>
         <Button
-          className='w-full'
+          className="w-full"
           onClick={handleBulkAssignSemanaIntensiva}
           disabled={!selectedSemanaIntensiva || selectedStudents.length === 0}
         >
           Asignar a semana intensiva
         </Button>
-      </div>      <Button
+      </div>{' '}
+      <Button
         disabled={selectedStudents.length === 0}
         onClick={handleBulkMarkAsActive}
       >

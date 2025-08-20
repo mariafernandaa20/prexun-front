@@ -1,41 +1,43 @@
-'use client'
+'use client';
 
-import * as React from "react"
-import { Card } from "@/components/ui/card"
+import * as React from 'react';
+import { Card } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel"
-import { Facebook } from 'lucide-react'
+} from '@/components/ui/carousel';
+import { Facebook } from 'lucide-react';
 
 interface Testimonial {
-  id: number
-  author: string
-  image: string
-  date: string
-  content: string
+  id: number;
+  author: string;
+  image: string;
+  date: string;
+  content: string;
 }
 
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    author: "Isaac Ramirez",
-    image: "/placeholder.svg?height=50&width=50",
-    date: "hace 5 meses",
-    content: "Muy bien explicados los temas, los maestros te enseñan muy bien y te responden tus dudas y gracias a eso es que pude pasar el examen 👍"
+    author: 'Isaac Ramirez',
+    image: '/placeholder.svg?height=50&width=50',
+    date: 'hace 5 meses',
+    content:
+      'Muy bien explicados los temas, los maestros te enseñan muy bien y te responden tus dudas y gracias a eso es que pude pasar el examen 👍',
   },
   {
     id: 2,
-    author: "Wicho García",
-    image: "/placeholder.svg?height=50&width=50",
-    date: "hace 5 meses",
-    content: "Super Recomendado, un excelente plan de clases claramente explicado, y justo el tiempo adecuado, adicional el servicio y seguimiento excelente, gracias a que mi hijo se preparo aquí, logro pasar el examen a la prepa y quedar en la opcion #1\n\nGracias por todo !!"
+    author: 'Wicho García',
+    image: '/placeholder.svg?height=50&width=50',
+    date: 'hace 5 meses',
+    content:
+      'Super Recomendado, un excelente plan de clases claramente explicado, y justo el tiempo adecuado, adicional el servicio y seguimiento excelente, gracias a que mi hijo se preparo aquí, logro pasar el examen a la prepa y quedar en la opcion #1\n\nGracias por todo !!',
   },
   // Add more testimonials as needed
-]
+];
 
 export function TestimonialsSection() {
   return (
@@ -52,18 +54,28 @@ export function TestimonialsSection() {
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
             >
-              <circle cx="50" cy="50" r="45" fill="currentColor" opacity="0.2" />
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="currentColor"
+                opacity="0.2"
+              />
             </svg>
           </span>
         </h2>
         <p className="text-gray-600 mb-12">
-          Explora los comentarios de ex-alumnos sobre su experiencia con nosotros.
+          Explora los comentarios de ex-alumnos sobre su experiencia con
+          nosotros.
         </p>
 
         <Carousel className="mx-auto">
           <CarouselContent>
             {testimonials.map((testimonial) => (
-              <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
+              <CarouselItem
+                key={testimonial.id}
+                className="md:basis-1/2 lg:basis-1/3"
+              >
                 <Card className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <img
@@ -76,10 +88,14 @@ export function TestimonialsSection() {
                         <h3 className="font-medium">{testimonial.author}</h3>
                         <Facebook className="w-5 h-5 text-[#1877F2]" />
                       </div>
-                      <p className="text-sm text-gray-500">{testimonial.date}</p>
+                      <p className="text-sm text-gray-500">
+                        {testimonial.date}
+                      </p>
                     </div>
                   </div>
-                  <p className="text-left text-gray-600">{testimonial.content}</p>
+                  <p className="text-left text-gray-600">
+                    {testimonial.content}
+                  </p>
                   <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
                     <button className="hover:text-gray-700">Me gusta</button>
                     <button className="hover:text-gray-700">Comentar</button>
@@ -94,6 +110,5 @@ export function TestimonialsSection() {
         </Carousel>
       </div>
     </section>
-  )
+  );
 }
-

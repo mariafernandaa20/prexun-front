@@ -25,11 +25,13 @@ interface Student {
 export const teacherService = {
   async getTeacherGroups(teacherId: number) {
     try {
-      const response = await axiosInstance.get<Group[]>(`/teacher/${teacherId}/groups`);
+      const response = await axiosInstance.get<Group[]>(
+        `/teacher/${teacherId}/groups`
+      );
       return response.data;
     } catch (error) {
       console.error('Error al obtener grupos del profesor:', error);
       throw error;
     }
-  }
+  },
 };

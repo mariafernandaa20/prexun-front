@@ -12,7 +12,12 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Facultad } from '@/lib/types';
-import { getFacultades, createFacultad, updateFacultad, deleteFacultad } from '@/lib/api';
+import {
+  getFacultades,
+  createFacultad,
+  updateFacultad,
+  deleteFacultad,
+} from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 export default function FacultadesPage() {
@@ -32,68 +37,68 @@ export default function FacultadesPage() {
       setFacultades(data);
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar las facultades"
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudieron cargar las facultades',
       });
     }
   };
 
   const handleCreate = async () => {
     if (!newFacultad.trim()) return;
-    
+
     try {
       await createFacultad({ name: newFacultad });
       setNewFacultad('');
       loadFacultades();
       toast({
-        title: "Éxito",
-        description: "Facultad creada correctamente"
+        title: 'Éxito',
+        description: 'Facultad creada correctamente',
       });
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo crear la facultad"
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudo crear la facultad',
       });
     }
   };
 
   const handleUpdate = async (id: string) => {
     if (!editingName.trim()) return;
-    
+
     try {
       await updateFacultad({ id, name: editingName });
       setEditingId(null);
       loadFacultades();
       toast({
-        title: "Éxito",
-        description: "Facultad actualizada correctamente"
+        title: 'Éxito',
+        description: 'Facultad actualizada correctamente',
       });
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo actualizar la facultad"
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudo actualizar la facultad',
       });
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Estás seguro de eliminar esta facultad?')) return;
-    
+
     try {
       await deleteFacultad(id);
       loadFacultades();
       toast({
-        title: "Éxito",
-        description: "Facultad eliminada correctamente"
+        title: 'Éxito',
+        description: 'Facultad eliminada correctamente',
       });
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo eliminar la facultad"
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudo eliminar la facultad',
       });
     }
   };

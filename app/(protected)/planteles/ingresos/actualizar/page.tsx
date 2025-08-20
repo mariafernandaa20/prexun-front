@@ -1,8 +1,6 @@
-import React from 'react'
-import ActualizarFolios from './ActualizarFolios'
+import React from 'react';
+import ActualizarFolios from './ActualizarFolios';
 
 export default function ActualizarFoliosPage() {
-  return (
-    <ActualizarFolios/>
-  )
+  return <ActualizarFolios />;
 }

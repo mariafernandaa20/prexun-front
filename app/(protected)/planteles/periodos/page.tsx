@@ -1,5 +1,5 @@
-import { Periods } from "@/components/dashboard/periods"
+import { Periods } from '@/components/dashboard/periods';
 
 export default function PeriodsPage() {
-  return <Periods />
+  return <Periods />;
 }

@@ -1,22 +1,27 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChatAPI, ChatSession, ChatMessage } from "@/lib/api/chat";
-import { MessageSquare, User, FileText, BookOpen, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChatAPI, ChatSession, ChatMessage } from '@/lib/api/chat';
+import { MessageSquare, User, FileText, BookOpen, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface StudentChatManagerProps {
   studentId?: number;
   studentName?: string;
 }
 
-export default function StudentChatManager({ studentId, studentName }: StudentChatManagerProps) {
+export default function StudentChatManager({
+  studentId,
+  studentName,
+}: StudentChatManagerProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
+  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(
+    null
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,18 +31,20 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
 
   const loadStudentSessions = async () => {
     if (!studentId) return;
-    
+
     setIsLoading(true);
     try {
       const response = await ChatAPI.getConversationsByType('student_support');
       // Filtrar por student ID si se proporciona
-      const studentSessions = studentId 
-        ? response.conversations.filter(session => session.related_id === studentId)
+      const studentSessions = studentId
+        ? response.conversations.filter(
+            (session) => session.related_id === studentId
+          )
         : response.conversations;
-      
+
       setSessions(studentSessions);
     } catch (error) {
-      toast.error("Error al cargar las conversaciones del estudiante");
+      toast.error('Error al cargar las conversaciones del estudiante');
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +57,7 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
       setMessages(response.messages);
       setSelectedSession(session);
     } catch (error) {
-      toast.error("Error al cargar los mensajes de la conversación");
+      toast.error('Error al cargar los mensajes de la conversación');
     } finally {
       setIsLoading(false);
     }
@@ -58,16 +65,19 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
 
   const createNewStudentSession = async () => {
     if (!studentId) {
-      toast.error("ID de estudiante requerido");
+      toast.error('ID de estudiante requerido');
       return;
     }
 
     try {
-      const response = await ChatAPI.createSession('student_support', studentId);
-      toast.success("Nueva conversación creada");
+      const response = await ChatAPI.createSession(
+        'student_support',
+        studentId
+      );
+      toast.success('Nueva conversación creada');
       loadStudentSessions();
     } catch (error) {
-      toast.error("Error al crear nueva conversación");
+      toast.error('Error al crear nueva conversación');
     }
   };
 
@@ -105,7 +115,9 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
               <User className="h-5 w-5" />
-              {studentName ? `${studentName} - Conversaciones` : 'Conversaciones de Estudiante'}
+              {studentName
+                ? `${studentName} - Conversaciones`
+                : 'Conversaciones de Estudiante'}
             </CardTitle>
             {studentId && (
               <Button size="sm" onClick={createNewStudentSession}>
@@ -118,11 +130,11 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
           <ScrollArea className="h-[500px]">
             <div className="space-y-2 p-4">
               {sessions.map((session) => (
-                <Card 
+                <Card
                   key={session.session_id}
                   className={`cursor-pointer transition-colors ${
-                    selectedSession?.session_id === session.session_id 
-                      ? 'bg-blue-50 border-blue-200' 
+                    selectedSession?.session_id === session.session_id
+                      ? 'bg-blue-50 border-blue-200'
                       : 'hover:bg-gray-50'
                   }`}
                   onClick={() => loadSessionMessages(session)}
@@ -133,7 +145,9 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
                         {getConversationTypeIcon(session.conversation_type)}
                         <div>
                           <Badge variant="secondary" className="text-xs">
-                            {getConversationTypeLabel(session.conversation_type)}
+                            {getConversationTypeLabel(
+                              session.conversation_type
+                            )}
                           </Badge>
                           <p className="text-sm text-gray-600 mt-1">
                             {session.message_count} mensajes
@@ -146,22 +160,22 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
                     </div>
                     {session.last_message && (
                       <p className="text-sm text-gray-700 mt-2 truncate">
-                        {session.last_message.length > 50 
-                          ? `${session.last_message.substring(0, 50)}...` 
+                        {session.last_message.length > 50
+                          ? `${session.last_message.substring(0, 50)}...`
                           : session.last_message}
                       </p>
                     )}
                   </CardContent>
                 </Card>
               ))}
-              
+
               {sessions.length === 0 && !isLoading && (
                 <div className="text-center py-8 text-gray-500">
                   <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                   <p>No hay conversaciones para este estudiante</p>
                   {studentId && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="mt-2"
                       onClick={createNewStudentSession}
                     >
@@ -180,10 +194,9 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            {selectedSession 
+            {selectedSession
               ? `${getConversationTypeLabel(selectedSession.conversation_type)} - ${selectedSession.message_count} mensajes`
-              : 'Selecciona una conversación'
-            }
+              : 'Selecciona una conversación'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -191,15 +204,17 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
             <ScrollArea className="h-[450px]">
               <div className="space-y-4">
                 {messages.map((message, index) => (
-                  <div 
-                    key={message.id || index} 
+                  <div
+                    key={message.id || index}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-[80%] p-3 rounded-lg ${
-                      message.role === 'user'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}>
+                    <div
+                      className={`max-w-[80%] p-3 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-100 text-gray-900'
+                      }`}
+                    >
                       {message.images && message.images.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-2">
                           {message.images.map((imageUrl, imgIndex) => (
@@ -212,14 +227,11 @@ export default function StudentChatManager({ studentId, studentName }: StudentCh
                           ))}
                         </div>
                       )}
-                      <div className="text-sm">
-                        {message.content}
-                      </div>
+                      <div className="text-sm">{message.content}</div>
                       <p className="text-xs opacity-70 mt-1">
-                        {message.created_at 
+                        {message.created_at
                           ? new Date(message.created_at).toLocaleString()
-                          : new Date().toLocaleString()
-                        }
+                          : new Date().toLocaleString()}
                       </p>
                     </div>
                   </div>

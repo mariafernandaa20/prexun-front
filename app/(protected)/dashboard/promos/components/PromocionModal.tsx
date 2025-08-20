@@ -74,7 +74,11 @@ export default function PromocionModal({
     onClose();
   };
 
-  const updatePago = (index: number, field: 'amount' | 'date' | 'description', value: string | number) => {
+  const updatePago = (
+    index: number,
+    field: 'amount' | 'date' | 'description',
+    value: string | number
+  ) => {
     const newPagos = [...formData.pagos];
     if (!newPagos[index]) {
       newPagos[index] = { amount: 0, date: '', description: '' };
@@ -87,7 +91,10 @@ export default function PromocionModal({
   };
 
   const agregarPago = () => {
-    const newPagos = [...formData.pagos, { amount: 0, date: '', description: '' }];
+    const newPagos = [
+      ...formData.pagos,
+      { amount: 0, date: '', description: '' },
+    ];
     setFormData({ ...formData, pagos: newPagos });
   };
 
@@ -103,8 +110,9 @@ export default function PromocionModal({
         </DialogHeader>
         <form
           onSubmit={handleSubmit}
-          className={`grid gap-2 ${formData.type === 'Parcialidad' ? 'grid-cols-3' : 'grid-cols-2'
-            }`}
+          className={`grid gap-2 ${
+            formData.type === 'Parcialidad' ? 'grid-cols-3' : 'grid-cols-2'
+          }`}
         >
           <div>
             <div className="space-y-2">
@@ -191,9 +199,9 @@ export default function PromocionModal({
                   onChange={(e) => updatePago(0, 'amount', e.target.value)}
                   required
                 />
-                <Label htmlFor='description'>Descripción</Label>
+                <Label htmlFor="description">Descripción</Label>
                 <Textarea
-                  id='description'
+                  id="description"
                   value={formData.pagos[0]?.description || ''}
                   onChange={(e) => updatePago(0, 'description', e.target.value)}
                   required
@@ -202,7 +210,9 @@ export default function PromocionModal({
               {formData.pagos.slice(1).map((_, index) => (
                 <div key={index + 1} className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label htmlFor={`pago_${index + 1}`}>Pago {index + 1}</Label>
+                    <Label htmlFor={`pago_${index + 1}`}>
+                      Pago {index + 1}
+                    </Label>
                     <Button
                       type="button"
                       variant="ghost"
@@ -227,15 +237,15 @@ export default function PromocionModal({
                         <path d="M18 6L6 18M6 6l12 12" />
                       </svg>
                     </Button>
-
-
                   </div>
                   <div>
-                    <Label htmlFor='description'>Descripción</Label>
+                    <Label htmlFor="description">Descripción</Label>
                     <Textarea
-                      id='description'
+                      id="description"
                       value={formData.pagos[index + 1]?.description || ''}
-                      onChange={(e) => updatePago(index + 1, 'description', e.target.value)}
+                      onChange={(e) =>
+                        updatePago(index + 1, 'description', e.target.value)
+                      }
                       required
                     />
                   </div>
@@ -244,14 +254,18 @@ export default function PromocionModal({
                     type="number"
                     step="100"
                     value={formData.pagos[index + 1]?.amount || ''}
-                    onChange={(e) => updatePago(index + 1, 'amount', e.target.value)}
+                    onChange={(e) =>
+                      updatePago(index + 1, 'amount', e.target.value)
+                    }
                     required
                   />
                   <Input
                     id={`pago_${index + 1}_date`}
                     type="date"
                     value={formData.pagos[index + 1]?.date || ''}
-                    onChange={(e) => updatePago(index + 1, 'date', e.target.value)}
+                    onChange={(e) =>
+                      updatePago(index + 1, 'date', e.target.value)
+                    }
                     required
                   />
                 </div>

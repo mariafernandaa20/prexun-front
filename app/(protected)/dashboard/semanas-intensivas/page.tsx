@@ -13,7 +13,14 @@ import { Input } from '@/components/ui/input';
 import { Plus, Pencil } from 'lucide-react';
 import { Campus, Grupo, Period } from '@/lib/types';
 import GrupoModal from '../../../../components/dashboard/GrupoModal';
-import { createSemanas, getCampuses, getGrupos, getPeriods, getSemanas, updateSemanas } from '@/lib/api';
+import {
+  createSemanas,
+  getCampuses,
+  getGrupos,
+  getPeriods,
+  getSemanas,
+  updateSemanas,
+} from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function GruposPage() {
@@ -53,19 +60,19 @@ export default function GruposPage() {
     try {
       const grupoData = {
         ...grupo,
-        campus_ids: grupo.campuses
+        campus_ids: grupo.campuses,
       };
 
       if (grupo.id) {
-        await updateSemanas(grupoData)
+        await updateSemanas(grupoData);
       } else {
-        await createSemanas(grupoData)
+        await createSemanas(grupoData);
       }
-      fetchGrupos()
-      setIsOpen(false)
-      setGrupo(null)
+      fetchGrupos();
+      setIsOpen(false);
+      setGrupo(null);
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error:', error);
     }
   };
 
@@ -124,12 +131,16 @@ export default function GruposPage() {
                 <div className="flex flex-wrap gap-1">
                   {grupo.campuses.map((campus, index) => {
                     // Si es un string, buscar el campus por ID
-                    const campusInfo = typeof campus === 'string' 
-                      ? campuses.find(c => c.id?.toString() === campus)
-                      : campus;
-                    
+                    const campusInfo =
+                      typeof campus === 'string'
+                        ? campuses.find((c) => c.id?.toString() === campus)
+                        : campus;
+
                     return (
-                      <span key={campusInfo?.id || index} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                      <span
+                        key={campusInfo?.id || index}
+                        className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
+                      >
                         {campusInfo?.name || campus}
                       </span>
                     );
@@ -149,9 +160,15 @@ export default function GruposPage() {
             </TableCell>
             <TableCell>{grupo.start_date}</TableCell>
             <TableCell>{grupo.end_date}</TableCell>
-            <TableCell>{grupo.students_count}/{grupo.capacity}</TableCell>
             <TableCell>
-              <Button variant="ghost" size="icon" onClick={() => handleEdit(grupo)}>
+              {grupo.students_count}/{grupo.capacity}
+            </TableCell>
+            <TableCell>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleEdit(grupo)}
+              >
                 <Pencil className="h-4 w-4" />
               </Button>
             </TableCell>
@@ -166,7 +183,10 @@ export default function GruposPage() {
       <div className="p-4">
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Grupos de semanas intensivas <span className='text-red-500'>Beta</span></h1>
+            <h1 className="text-2xl font-bold">
+              Grupos de semanas intensivas{' '}
+              <span className="text-red-500">Beta</span>
+            </h1>
             <div className="flex gap-2 items-center">
               <Input
                 placeholder="Buscar grupos..."
@@ -181,11 +201,12 @@ export default function GruposPage() {
             </div>
           </div>
 
-
           {isLoading ? (
             <div className="text-center">Cargando...</div>
           ) : filteredGrupos.length === 0 ? (
-            <div className="text-center">No se encontraron grupos de semanas intensivas</div>
+            <div className="text-center">
+              No se encontraron grupos de semanas intensivas
+            </div>
           ) : (
             <div className="flex flex-col gap-6">
               {periods.map((period) => {
@@ -194,7 +215,7 @@ export default function GruposPage() {
 
                 return (
                   <Card key={period.id}>
-                    <CardHeader className='sticky top-0 z-8 bg-card'>
+                    <CardHeader className="sticky top-0 z-8 bg-card">
                       <CardTitle>{period.name}</CardTitle>
                     </CardHeader>
                     <CardContent>

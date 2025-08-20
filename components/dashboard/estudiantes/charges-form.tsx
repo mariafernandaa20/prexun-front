@@ -67,7 +67,7 @@ export default function ChargesForm({
   mode = 'create',
   debt = null,
   buttonText,
-  title
+  title,
 }: ChargesFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -83,7 +83,7 @@ export default function ChargesForm({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
-      currency: 'MXN'
+      currency: 'MXN',
     }).format(amount);
   };
 
@@ -92,7 +92,7 @@ export default function ChargesForm({
       const updatedData = {
         ...localFormData,
         amount: debt.remaining_amount,
-        notes: localFormData.notes || `Pago para adeudo: ${debt.concept}`
+        notes: localFormData.notes || `Pago para adeudo: ${debt.concept}`,
       };
       setLocalFormData(updatedData);
       if (setFormData) {
@@ -116,26 +116,29 @@ export default function ChargesForm({
     setLoading(true);
 
     try {
-      const submitData = debt ? {
-        ...localFormData,
-        campus_id: currentCampusId,
-        debt_id: debt.id,
-        transaction_type: 'income'
-      } : {
-        ...localFormData,
-        campus_id: currentCampusId
-      };
+      const submitData = debt
+        ? {
+            ...localFormData,
+            campus_id: currentCampusId,
+            debt_id: debt.id,
+            transaction_type: 'income',
+          }
+        : {
+            ...localFormData,
+            campus_id: currentCampusId,
+          };
 
-      const updatedTransaction = mode === 'create'
-        ? await createCharge(submitData)
-        : await updateCharge({
-          ...submitData,
-          denominations: null,
-          paid: 1,
-          cash_register_id: activeCampus.latest_cash_register.id,
-          payment_date: localFormData.payment_date,
-          image: localFormData.image,
-        });
+      const updatedTransaction =
+        mode === 'create'
+          ? await createCharge(submitData)
+          : await updateCharge({
+              ...submitData,
+              denominations: null,
+              paid: 1,
+              cash_register_id: activeCampus.latest_cash_register.id,
+              payment_date: localFormData.payment_date,
+              image: localFormData.image,
+            });
 
       setOpen(false);
       if (onTransactionUpdate) {
@@ -161,29 +164,39 @@ export default function ChargesForm({
 
   return (
     <>
-      {
-        activeCampus?.latest_cash_register ? icon ? (
+      {activeCampus?.latest_cash_register ? (
+        icon ? (
           <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
             <Receipt className="w-4 h-4 " />
           </Button>
         ) : (
-          <Button variant='ghost' onClick={() => setOpen(true)}>
-            {buttonText || (mode === 'create' ? <FilePlus /> : (formData.paid === 1 ? <PencilIcon /> : <CreditCard />))}
+          <Button variant="ghost" onClick={() => setOpen(true)}>
+            {buttonText ||
+              (mode === 'create' ? (
+                <FilePlus />
+              ) : formData.paid === 1 ? (
+                <PencilIcon />
+              ) : (
+                <CreditCard />
+              ))}
           </Button>
-        ) : null
-      }
+        )
+      ) : null}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
-              {title || (mode === 'create' ? 'Registrar Nuevo Pago' : 'Registrar Pago')}
+              {title ||
+                (mode === 'create' ? 'Registrar Nuevo Pago' : 'Registrar Pago')}
             </DialogTitle>
           </DialogHeader>
 
           {debt && (
             <div className="mb-4 p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg border">
-              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Información del Adeudo</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                Información del Adeudo
+              </h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <span className="text-gray-500 font-bold">Concepto:</span>
@@ -191,15 +204,21 @@ export default function ChargesForm({
                 </div>
                 <div>
                   <span className="text-gray-500 font-bold">Monto Total:</span>
-                  <p className="font-medium text-gray-500">{formatCurrency(debt.total_amount)}</p>
+                  <p className="font-medium text-gray-500">
+                    {formatCurrency(debt.total_amount)}
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-500">Pagado:</span>
-                  <p className="font-medium text-green-600">{formatCurrency(debt.paid_amount)}</p>
+                  <p className="font-medium text-green-600">
+                    {formatCurrency(debt.paid_amount)}
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-500">Pendiente:</span>
-                  <p className="font-medium text-red-600">{formatCurrency(debt.remaining_amount)}</p>
+                  <p className="font-medium text-red-600">
+                    {formatCurrency(debt.remaining_amount)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -276,25 +295,26 @@ export default function ChargesForm({
                   </SelectContent>
                 </Select>
                 {errors.payment_method && (
-                  <p className="text-red-500 text-sm">{errors.payment_method}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.payment_method}
+                  </p>
                 )}
               </div>
 
-              {localFormData.payment_method === 'transfer' &&
-                (
-                  <div className="space-y-2">
-                    <Label>Comprobante</Label>
-                    <Input
-                      type='file'
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        console.log('File selected:', file);
-                        updateFormData({ image: file });
-                      }}
-                    />
-                  </div>
-                )}
+              {localFormData.payment_method === 'transfer' && (
+                <div className="space-y-2">
+                  <Label>Comprobante</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      console.log('File selected:', file);
+                      updateFormData({ image: file });
+                    }}
+                  />
+                </div>
+              )}
               {localFormData.payment_method === 'transfer' && (
                 <div className="space-y-2">
                   <Label>Tarjeta</Label>
@@ -311,20 +331,21 @@ export default function ChargesForm({
                     </SelectTrigger>
                     <SelectContent>
                       {cards
-                        .filter(card => {
+                        .filter((card) => {
                           // Filtrar por campus - solo mostrar tarjetas del campus activo
-                          const campusMatch = card.campus_id === currentCampusId;
+                          const campusMatch =
+                            card.campus_id === currentCampusId;
                           // Filtrar por SAT si está habilitado (feature flag)
                           const satMatch = !SAT || card.sat;
                           return campusMatch && satMatch;
                         })
-                        .map(card => (
+                        .map((card) => (
                           <SelectItem key={card.id} value={card.id.toString()}>
-                            <span className='flex items-center gap-2'>
+                            <span className="flex items-center gap-2">
                               {card.sat ? (
-                                <div className='text-green-500 bg-green-500 rounded-full size-2 pr-2' />
+                                <div className="text-green-500 bg-green-500 rounded-full size-2 pr-2" />
                               ) : (
-                                <div className='text-red-500 bg-red-500 rounded-full size-2 pr-2' />
+                                <div className="text-red-500 bg-red-500 rounded-full size-2 pr-2" />
                               )}
                               {card.name}
                             </span>
@@ -340,9 +361,7 @@ export default function ChargesForm({
                 <Textarea
                   rows={6}
                   value={localFormData.notes}
-                  onChange={(e) =>
-                    updateFormData({ notes: e.target.value })
-                  }
+                  onChange={(e) => updateFormData({ notes: e.target.value })}
                 />
               </div>
             </div>
@@ -376,7 +395,15 @@ export default function ChargesForm({
             )} */}
 
             <Button type="submit" disabled={loading}>
-              {loading ? 'Procesando...' : (debt ? 'Registrar Pago de Adeudo' : (mode === 'create' ? 'Registrar Pago' : (formData.paid === 1 ? 'Actualizar' : 'Pagar')))}
+              {loading
+                ? 'Procesando...'
+                : debt
+                  ? 'Registrar Pago de Adeudo'
+                  : mode === 'create'
+                    ? 'Registrar Pago'
+                    : formData.paid === 1
+                      ? 'Actualizar'
+                      : 'Pagar'}
             </Button>
           </form>
         </DialogContent>
@@ -384,4 +411,3 @@ export default function ChargesForm({
     </>
   );
 }
-

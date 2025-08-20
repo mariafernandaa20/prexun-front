@@ -1,8 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { getModules, createModule, updateModule, deleteModule } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import {
+  getModules,
+  createModule,
+  updateModule,
+  deleteModule,
+} from '@/lib/api';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -10,9 +15,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface Modulo {
   id: string;
@@ -22,7 +27,7 @@ interface Modulo {
 
 export default function ModuloPage() {
   const [modules, setModules] = useState<Modulo[]>([]);
-  const [newModuleName, setNewModuleName] = useState("");
+  const [newModuleName, setNewModuleName] = useState('');
   const [editingModule, setEditingModule] = useState<Modulo | null>(null);
 
   useEffect(() => {
@@ -34,7 +39,7 @@ export default function ModuloPage() {
       const data = await getModules();
       setModules(data);
     } catch (error) {
-      toast.error("Error al cargar los módulos");
+      toast.error('Error al cargar los módulos');
     }
   };
 
@@ -42,11 +47,11 @@ export default function ModuloPage() {
     if (!newModuleName.trim()) return;
     try {
       await createModule({ name: newModuleName });
-      setNewModuleName("");
+      setNewModuleName('');
       loadModules();
-      toast.success("Módulo creado exitosamente");
+      toast.success('Módulo creado exitosamente');
     } catch (error) {
-      toast.error("Error al crear el módulo");
+      toast.error('Error al crear el módulo');
     }
   };
 
@@ -55,9 +60,9 @@ export default function ModuloPage() {
       await updateModule(module);
       setEditingModule(null);
       loadModules();
-      toast.success("Módulo actualizado exitosamente");
+      toast.success('Módulo actualizado exitosamente');
     } catch (error) {
-      toast.error("Error al actualizar el módulo");
+      toast.error('Error al actualizar el módulo');
     }
   };
 
@@ -65,16 +70,16 @@ export default function ModuloPage() {
     try {
       await deleteModule(id);
       loadModules();
-      toast.success("Módulo eliminado exitosamente");
+      toast.success('Módulo eliminado exitosamente');
     } catch (error) {
-      toast.error("Error al eliminar el módulo");
+      toast.error('Error al eliminar el módulo');
     }
   };
 
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-5">Gestión de Módulos</h1>
-      
+
       <div className="flex gap-2 mb-6">
         <Input
           placeholder="Nombre del nuevo módulo"
@@ -103,7 +108,10 @@ export default function ModuloPage() {
                   <Input
                     value={editingModule.name}
                     onChange={(e) =>
-                      setEditingModule({ ...editingModule, name: e.target.value })
+                      setEditingModule({
+                        ...editingModule,
+                        name: e.target.value,
+                      })
                     }
                   />
                 ) : (

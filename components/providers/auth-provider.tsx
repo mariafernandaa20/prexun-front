@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { useEffect } from 'react';
+import { useAuthStore } from '@/lib/store/auth-store';
 import Cookies from 'js-cookie';
-import { auth } from "@/lib/auth";
+import { auth } from '@/lib/auth';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, user } = useAuthStore();
-  
+
   useEffect(() => {
     const verifyAuth = async () => {
       // Solo verificar si no hay usuario y hay token
       const token = Cookies.get('auth-token');
-      
+
       if (token && !user) {
         try {
           const userData = await auth.getUser();

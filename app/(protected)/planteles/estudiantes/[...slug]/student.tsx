@@ -1,26 +1,32 @@
-"use client";
-import React, { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Student, Transaction, Card as CardType } from "@/lib/types";
-import { Table, TableCell, TableHead, TableHeader, TableRow, TableBody } from '@/components/ui/table'
+'use client';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Student, Transaction, Card as CardType } from '@/lib/types';
+import {
+  Table,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableBody,
+} from '@/components/ui/table';
 import { getStudent } from '@/lib/api';
-import ChargesForm from '@/components/dashboard/estudiantes/charges-form'
+import ChargesForm from '@/components/dashboard/estudiantes/charges-form';
 import { formatTime, getPaymentMethodLabel } from '@/lib/utils';
 import Purchace from './purchace';
-import { useActiveCampusStore } from '@/lib/store/plantel-store'
-import Link from 'next/link'
-import { Eye } from 'lucide-react'
-import UpdatePersonalInfo from '@/components/dashboard/UpdatePersonalInfo'
-import axiosInstance from '@/lib/api/axiosConfig'
-import SectionContainer from '@/components/SectionContainer'
-import StudentPeriod from '../student-period'
-import StudentLogs from './StudentLogs'
-import StudentNotes from './StudentNotes'
-import StudentDebtsManager from '@/components/dashboard/estudiantes/StudentDebtsManager'
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import Link from 'next/link';
+import { Eye } from 'lucide-react';
+import UpdatePersonalInfo from '@/components/dashboard/UpdatePersonalInfo';
+import axiosInstance from '@/lib/api/axiosConfig';
+import SectionContainer from '@/components/SectionContainer';
+import StudentPeriod from '../student-period';
+import StudentLogs from './StudentLogs';
+import StudentNotes from './StudentNotes';
+import StudentDebtsManager from '@/components/dashboard/estudiantes/StudentDebtsManager';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -29,7 +35,12 @@ interface TransactionsTableProps {
   showNotes: boolean;
 }
 
-const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onUpdateTransaction, cards, showNotes }) => (
+const TransactionsTable: React.FC<TransactionsTableProps> = ({
+  transactions,
+  onUpdateTransaction,
+  cards,
+  showNotes,
+}) => (
   <Table>
     <TableHeader>
       <TableRow>
@@ -60,11 +71,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onU
               <ChargesForm
                 campusId={transaction.campus_id}
                 cards={cards}
-                fetchStudents={() => { }}
+                fetchStudents={() => {}}
                 student_id={transaction.student_id}
                 transaction={transaction}
                 formData={transaction}
-                setFormData={() => { }}
+                setFormData={() => {}}
                 onTransactionUpdate={onUpdateTransaction}
                 mode="update"
                 student={null}
@@ -76,13 +87,21 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, onU
           <TableCell>{transaction?.folio_new}</TableCell>
           <TableCell>{transaction?.folio_cash}</TableCell>
           <TableCell>{transaction?.folio_transfer}</TableCell>
-          <TableCell>{getPaymentMethodLabel(transaction.payment_method)}</TableCell>
+          <TableCell>
+            {getPaymentMethodLabel(transaction.payment_method)}
+          </TableCell>
           <TableCell>${transaction.amount}</TableCell>
           <TableCell>{formatTime({ time: transaction.created_at })}</TableCell>
-          <TableCell>{formatTime({ time: transaction.payment_date })}</TableCell>
-          <TableCell>{transaction.expiration_date ? formatTime({ time: transaction.expiration_date }) : "Sin vencimiento"}</TableCell>
+          <TableCell>
+            {formatTime({ time: transaction.payment_date })}
+          </TableCell>
+          <TableCell>
+            {transaction.expiration_date
+              ? formatTime({ time: transaction.expiration_date })
+              : 'Sin vencimiento'}
+          </TableCell>
           {showNotes && <TableCell>{transaction.notes}</TableCell>}
-          <TableCell>{transaction.paid !== 0 ? "Sí" : "No"}</TableCell>
+          <TableCell>{transaction.paid !== 0 ? 'Sí' : 'No'}</TableCell>
         </TableRow>
       ))}
     </TableBody>
@@ -111,7 +130,9 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
       setStudent(response);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Error al cargar estudiante"));
+      setError(
+        err instanceof Error ? err : new Error('Error al cargar estudiante')
+      );
     } finally {
       setLoading(false);
     }
@@ -120,7 +141,9 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
   const fetchCards = async () => {
     if (!campusId) return;
     try {
-      const response = await axiosInstance.get("/cards", { params: { campus_id: campusId } });
+      const response = await axiosInstance.get('/cards', {
+        params: { campus_id: campusId },
+      });
       setCards(response.data);
     } catch {
       setCards([]);
@@ -136,27 +159,39 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
   }, [campusId]);
 
   const updateTransaction = (updatedTransaction: Transaction) => {
-    setStudent(prevStudent => {
+    setStudent((prevStudent) => {
       if (!prevStudent) return null;
-      const transactionExists = prevStudent.transactions.some(t => t.id === updatedTransaction.id);
+      const transactionExists = prevStudent.transactions.some(
+        (t) => t.id === updatedTransaction.id
+      );
       return {
         ...prevStudent,
         transactions: transactionExists
-          ? prevStudent.transactions.map(transaction =>
-            transaction.id === updatedTransaction.id ? updatedTransaction : transaction
-          )
-          : [...prevStudent.transactions, updatedTransaction]
+          ? prevStudent.transactions.map((transaction) =>
+              transaction.id === updatedTransaction.id
+                ? updatedTransaction
+                : transaction
+            )
+          : [...prevStudent.transactions, updatedTransaction],
       };
     });
   };
 
-  return { student, loading, error, updateTransaction, refetch: fetchStudent, cards };
+  return {
+    student,
+    loading,
+    error,
+    updateTransaction,
+    refetch: fetchStudent,
+    cards,
+  };
 }
 
 export function StudentComponent({ slug }: { slug: string[] }) {
-  const studentId = Number(slug.join("/"));
+  const studentId = Number(slug.join('/'));
   const campusId = useActiveCampusStore((state) => state.activeCampus?.id);
-  const { student, loading, error, updateTransaction, refetch, cards } = useStudentData(studentId, campusId);
+  const { student, loading, error, updateTransaction, refetch, cards } =
+    useStudentData(studentId, campusId);
   const [showNotes, setShowNotes] = useState(false);
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -168,7 +203,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
 
   const studentForUpdatePersonalInfo = {
     ...student,
-    id: typeof student.id === "string" ? Number(student.id) : student.id
+    id: typeof student.id === 'string' ? Number(student.id) : student.id,
   };
 
   return (
@@ -176,7 +211,9 @@ export function StudentComponent({ slug }: { slug: string[] }) {
       <Card className="w-full">
         <CardHeader className="sticky top-0 z-8 bg-card">
           <div className="flex flex-col lg:flex-row justify-between items-center">
-            <h1 className="text-2xl font-bold">{student.firstname} {student.lastname}</h1>
+            <h1 className="text-2xl font-bold">
+              {student.firstname} {student.lastname}
+            </h1>
             <div className="flex gap-2">
               <Purchace
                 campusId={campusId}
@@ -192,23 +229,71 @@ export function StudentComponent({ slug }: { slug: string[] }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
               <div className="space-y-2">
                 <h3 className="font-semibold">Información Personal</h3>
-                <p><span className="text-muted-foreground">Matricula:</span> {student.id}</p>
-                <p><span className="text-muted-foreground">Moodle User:</span> {student.id}</p>
-                <p><span className="text-muted-foreground">Email:</span> {student.email || "No registrado"}</p>
-                <p><span className="text-muted-foreground">Teléfono:</span> {student.phone || "No registrado"}</p>
+                <p>
+                  <span className="text-muted-foreground">Matricula:</span>{' '}
+                  {student.id}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Moodle User:</span>{' '}
+                  {student.id}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Email:</span>{' '}
+                  {student.email || 'No registrado'}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Teléfono:</span>{' '}
+                  {student.phone || 'No registrado'}
+                </p>
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold">Estado Académico</h3>
-                <p><span className="text-muted-foreground">Estatus:</span> {student.status || "Activo"}</p>
-                <p><span className="text-muted-foreground">Grupo:</span> {student.grupo_id || "No asignado"}</p>
-                <p><span className="text-muted-foreground">Semana Intensiva:</span> {student.semana_intensiva_id || "No asignado"}</p>
-                <p><span className="text-muted-foreground">Fecha de registro:</span> {formatTime({ time: student.created_at })}</p>
+                <p>
+                  <span className="text-muted-foreground">Estatus:</span>{' '}
+                  {student.status || 'Activo'}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Grupo:</span>{' '}
+                  {student.grupo_id || 'No asignado'}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">
+                    Semana Intensiva:
+                  </span>{' '}
+                  {student.semana_intensiva_id || 'No asignado'}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">
+                    Fecha de registro:
+                  </span>{' '}
+                  {formatTime({ time: student.created_at })}
+                </p>
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold">Resumen de Pagos</h3>
-                <p><span className="text-muted-foreground">Total de transacciones:</span> {student.transactions?.length || 0}</p>
-                <p><span className="text-muted-foreground">Pagos pendientes:</span> {student.transactions?.filter(t => t.paid === 0).length || 0}</p>
-                <p><span className="text-muted-foreground">Último pago:</span> {student.transactions?.length ? formatTime({ time: student.transactions[student.transactions.length - 1].payment_date }) : "Sin pagos"}</p>
+                <p>
+                  <span className="text-muted-foreground">
+                    Total de transacciones:
+                  </span>{' '}
+                  {student.transactions?.length || 0}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">
+                    Pagos pendientes:
+                  </span>{' '}
+                  {student.transactions?.filter((t) => t.paid === 0).length ||
+                    0}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Último pago:</span>{' '}
+                  {student.transactions?.length
+                    ? formatTime({
+                        time: student.transactions[
+                          student.transactions.length - 1
+                        ].payment_date,
+                      })
+                    : 'Sin pagos'}
+                </p>
               </div>
             </div>
           </SectionContainer>
@@ -225,10 +310,16 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <div className='flex items-center gap-4'>
-                <h2 className="text-xl font-semibold">Historial de Transacciones</h2>
-                <Label className='flex items-center gap-2'>
-                  Mostrar notas <Checkbox checked={showNotes} onCheckedChange={() => setShowNotes(!showNotes)} />
+              <div className="flex items-center gap-4">
+                <h2 className="text-xl font-semibold">
+                  Historial de Transacciones
+                </h2>
+                <Label className="flex items-center gap-2">
+                  Mostrar notas{' '}
+                  <Checkbox
+                    checked={showNotes}
+                    onCheckedChange={() => setShowNotes(!showNotes)}
+                  />
                 </Label>
               </div>
             </CardHeader>

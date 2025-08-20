@@ -18,15 +18,20 @@ import { usePagination } from '@/hooks/usePagination';
 import { useUIConfig } from '@/hooks/useUIConfig';
 
 import { MultiSelect } from '@/components/multi-select';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, RefreshCwIcon } from 'lucide-react';
 import SectionContainer from '@/components/SectionContainer';
 
 import { getColumnDefinitions, getColumnOptions } from './columns';
-import { StudentsTable } from "./StudentsTable";
-import { StudentDialog } from "./StudentDialog";
-import PaginationComponent from "@/components/ui/PaginationComponent";
+import { StudentsTable } from './StudentsTable';
+import { StudentDialog } from './StudentDialog';
+import PaginationComponent from '@/components/ui/PaginationComponent';
 import BulkActions from './BulkActions';
 import Filters from './Filters';
 import WhatsAppMessageModal from '@/components/students/WhatsAppMessageModal';
@@ -35,7 +40,9 @@ const INITIAL_VISIBLE_COLUMNS_KEY = 'studentTableColumns';
 
 export default function Page() {
   const [students, setStudents] = useState<Student[]>([]);
-  const [municipios, setMunicipios] = useState<Array<{ id: string; name: string }>>([]);
+  const [municipios, setMunicipios] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [prepas, setPrepas] = useState<Array<{ id: string; name: string }>>([]);
   const [promos, setPromos] = useState<Promocion[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -51,7 +58,9 @@ export default function Page() {
 
   // Filter states
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
-  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
+  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<
+    string | null
+  >(null);
   const [periodFilter, setPeriodFilter] = useState<string>('');
   const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>('');
   const [carreraFilter, setCarreraFilter] = useState<string | null>(null);
@@ -78,7 +87,12 @@ export default function Page() {
     if (!activeCampus?.id) return;
 
     // Check if any search field is being used
-    const isSearching = searchFirstname || searchLastname || searchEmail || searchPhone || searchMatricula;
+    const isSearching =
+      searchFirstname ||
+      searchLastname ||
+      searchEmail ||
+      searchPhone ||
+      searchMatricula;
 
     const params = {
       campus_id: activeCampus.id,
@@ -90,13 +104,14 @@ export default function Page() {
       searchDate: searchDate,
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
-      grupo: !isSearching && grupoFilter || undefined,
-      semanaIntensivaFilter: !isSearching && semanaIntensivaFilter || undefined,
-      period: !isSearching && periodFilter || undefined,
-      assignedPeriod: !isSearching && assignedPeriodFilter || undefined,
-      carrera: !isSearching && carreraFilter || undefined,
-      facultad: !isSearching && facultadFilter || undefined,
-      modulo: !isSearching && moduloFilter || undefined,
+      grupo: (!isSearching && grupoFilter) || undefined,
+      semanaIntensivaFilter:
+        (!isSearching && semanaIntensivaFilter) || undefined,
+      period: (!isSearching && periodFilter) || undefined,
+      assignedPeriod: (!isSearching && assignedPeriodFilter) || undefined,
+      carrera: (!isSearching && carreraFilter) || undefined,
+      facultad: (!isSearching && facultadFilter) || undefined,
+      modulo: (!isSearching && moduloFilter) || undefined,
     };
 
     try {
@@ -137,7 +152,7 @@ export default function Page() {
     facultadFilter,
     moduloFilter,
     toast,
-    setPagination
+    setPagination,
   ]);
 
   const handleOpenEditModal = useCallback((student: Student) => {
@@ -145,21 +160,27 @@ export default function Page() {
     setIsModalOpen(true);
   }, []);
 
-  const handleDeleteForever = useCallback(async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este estudiante permanentemente?')) return;
+  const handleDeleteForever = useCallback(
+    async (id: string) => {
+      if (
+        !confirm('¿Estás seguro de eliminar este estudiante permanentemente?')
+      )
+        return;
 
-    try {
-      await deleteStudent(id, true);
-      await fetchStudents();
-      toast({ title: 'Estudiante eliminado correctamente' });
-    } catch (error: any) {
-      toast({
-        title: 'Error al eliminar estudiante',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
-      });
-    }
-  }, [fetchStudents, toast]);
+      try {
+        await deleteStudent(id, true);
+        await fetchStudents();
+        toast({ title: 'Estudiante eliminado correctamente' });
+      } catch (error: any) {
+        toast({
+          title: 'Error al eliminar estudiante',
+          description: error.response?.data?.message || 'Intente nuevamente',
+          variant: 'destructive',
+        });
+      }
+    },
+    [fetchStudents, toast]
+  );
 
   const handleOpenWhatsAppModal = useCallback((student: Student) => {
     setWhatsAppStudent(student);
@@ -167,7 +188,13 @@ export default function Page() {
   }, []);
 
   const columnDefinitions = useMemo(
-    () => getColumnDefinitions(user, handleOpenEditModal, handleDeleteForever, handleOpenWhatsAppModal),
+    () =>
+      getColumnDefinitions(
+        user,
+        handleOpenEditModal,
+        handleDeleteForever,
+        handleOpenWhatsAppModal
+      ),
     [user, handleOpenEditModal, handleDeleteForever, handleOpenWhatsAppModal]
   );
 
@@ -189,7 +216,7 @@ export default function Page() {
   });
 
   const visibleColumnDefs = useMemo(
-    () => columnDefinitions.filter(col => visibleColumns.includes(col.id)),
+    () => columnDefinitions.filter((col) => visibleColumns.includes(col.id)),
     [columnDefinitions, visibleColumns]
   );
 
@@ -209,17 +236,17 @@ export default function Page() {
   const handleColumnSelect = useCallback((selectedColumns: string[]) => {
     setVisibleColumns(selectedColumns);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(INITIAL_VISIBLE_COLUMNS_KEY, JSON.stringify(selectedColumns));
+      localStorage.setItem(
+        INITIAL_VISIBLE_COLUMNS_KEY,
+        JSON.stringify(selectedColumns)
+      );
     }
   }, []);
 
   const fetchInitialData = useCallback(async () => {
     try {
-      const [municipiosResponse, prepasResponse, promosResponse] = await Promise.all([
-        getMunicipios(),
-        getPrepas(),
-        getPromos(),
-      ]);
+      const [municipiosResponse, prepasResponse, promosResponse] =
+        await Promise.all([getMunicipios(), getPrepas(), getPromos()]);
 
       setMunicipios(municipiosResponse);
       setPrepas(prepasResponse);
@@ -233,38 +260,41 @@ export default function Page() {
     }
   }, [toast]);
 
-  const handleSubmit = useCallback(async (formData: Student) => {
-    try {
-      if (selectedStudent) {
-        await updateStudent({ ...formData });
-        toast({ title: 'Estudiante actualizado correctamente' });
-        await fetchStudents();
-        setIsModalOpen(false);
-      } else {
-        const response = await createStudent({ ...formData });
-        toast({ title: 'Estudiante creado correctamente' });
-        setIsModalOpen(false);
-        
-        // Redirect to the new student's detail page
-        if (response?.id) {
-          router.push(`/planteles/estudiantes/${response.id}`);
-        } else {
+  const handleSubmit = useCallback(
+    async (formData: Student) => {
+      try {
+        if (selectedStudent) {
+          await updateStudent({ ...formData });
+          toast({ title: 'Estudiante actualizado correctamente' });
           await fetchStudents();
+          setIsModalOpen(false);
+        } else {
+          const response = await createStudent({ ...formData });
+          toast({ title: 'Estudiante creado correctamente' });
+          setIsModalOpen(false);
+
+          // Redirect to the new student's detail page
+          if (response?.id) {
+            router.push(`/planteles/estudiantes/${response.id}`);
+          } else {
+            await fetchStudents();
+          }
         }
+      } catch (error: any) {
+        toast({
+          title: 'Error al guardar estudiante',
+          description: error.response?.data?.message || 'Intente nuevamente',
+          variant: 'destructive',
+        });
       }
-    } catch (error: any) {
-      toast({
-        title: 'Error al guardar estudiante',
-        description: error.response?.data?.message || 'Intente nuevamente',
-        variant: 'destructive',
-      });
-    }
-  }, [selectedStudent, fetchStudents, toast, router]);
+    },
+    [selectedStudent, fetchStudents, toast, router]
+  );
 
   const handleSelectStudent = useCallback((studentId: string) => {
-    setSelectedStudents(prev =>
+    setSelectedStudents((prev) =>
       prev.includes(studentId)
-        ? prev.filter(id => id !== studentId)
+        ? prev.filter((id) => id !== studentId)
         : [...prev, studentId]
     );
   }, []);
@@ -273,7 +303,7 @@ export default function Page() {
     if (selectAll) {
       setSelectedStudents([]);
     } else {
-      setSelectedStudents(students.map(student => student.id));
+      setSelectedStudents(students.map((student) => student.id));
     }
     setSelectAll(!selectAll);
   }, [selectAll, students]);
@@ -290,7 +320,7 @@ export default function Page() {
     if (!filtersInitialized) return;
 
     if (pagination.currentPage !== 1) {
-      setPagination(prev => ({ ...prev, currentPage: 1 }));
+      setPagination((prev) => ({ ...prev, currentPage: 1 }));
     } else {
       fetchStudents();
     }
@@ -311,7 +341,7 @@ export default function Page() {
     moduloFilter,
     pagination.currentPage,
     setPagination,
-    fetchStudents
+    fetchStudents,
   ]);
 
   // Fetch students when pagination changes
@@ -319,11 +349,18 @@ export default function Page() {
     if (filtersInitialized) {
       fetchStudents();
     }
-  }, [pagination.currentPage, pagination.perPage, filtersInitialized, fetchStudents]);
+  }, [
+    pagination.currentPage,
+    pagination.perPage,
+    filtersInitialized,
+    fetchStudents,
+  ]);
 
   // Update selectAll state based on selected students
   useEffect(() => {
-    setSelectAll(students.length > 0 && selectedStudents.length === students.length);
+    setSelectAll(
+      students.length > 0 && selectedStudents.length === students.length
+    );
   }, [selectedStudents, students]);
 
   if (!activeCampus) {
@@ -333,16 +370,28 @@ export default function Page() {
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
-        <CardHeader className='sticky top-0 z-20 bg-card'>
+        <CardHeader className="sticky top-0 z-20 bg-card">
           <SectionContainer>
             <div>
-              <div className='flex items-center justify-between gap-2 mb-4 lg:mb-0'>
+              <div className="flex items-center justify-between gap-2 mb-4 lg:mb-0">
                 <h1 className="text-2xl font-bold">Estudiantes</h1>
-                <div className='flex items-center gap-2'>
-                  <Button size='icon' onClick={() => { setSelectedStudent(null); setIsModalOpen(true); }} title='Nuevo Estudiante'>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="icon"
+                    onClick={() => {
+                      setSelectedStudent(null);
+                      setIsModalOpen(true);
+                    }}
+                    title="Nuevo Estudiante"
+                  >
                     <Plus />
                   </Button>
-                  <Button size='icon' variant='secondary' onClick={fetchStudents} title='Refrescar Estudiantes'>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={fetchStudents}
+                    title="Refrescar Estudiantes"
+                  >
                     <RefreshCwIcon />
                   </Button>
                 </div>
@@ -415,7 +464,10 @@ export default function Page() {
         </CardContent>
         <CardFooter>
           <SectionContainer>
-            <PaginationComponent pagination={pagination} setPagination={setPagination} />
+            <PaginationComponent
+              pagination={pagination}
+              setPagination={setPagination}
+            />
           </SectionContainer>
         </CardFooter>
       </Card>

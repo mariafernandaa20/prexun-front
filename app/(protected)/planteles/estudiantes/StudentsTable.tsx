@@ -1,6 +1,13 @@
-import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Student, User } from "@/lib/types";
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Student, User } from '@/lib/types';
 
 interface StudentsTableProps {
   students: Student[];
@@ -25,7 +32,7 @@ export const StudentsTable = ({
   user,
   handleOpenEditModal,
   handleDeleteForever,
-  handleOpenWhatsAppModal
+  handleOpenWhatsAppModal,
 }: StudentsTableProps) => {
   return (
     <Table>
@@ -48,7 +55,10 @@ export const StudentsTable = ({
       <TableBody>
         {students.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={visibleColumnDefs.length + 1} className="text-center h-32">
+            <TableCell
+              colSpan={visibleColumnDefs.length + 1}
+              className="text-center h-32"
+            >
               No se encontraron estudiantes
             </TableCell>
           </TableRow>
@@ -63,8 +73,17 @@ export const StudentsTable = ({
                 />
               </TableCell>
               {visibleColumnDefs.map((column) => (
-                <TableCell key={`${student.id}-${column.id}`} className="whitespace-nowrap">
-                  {column.render(student, user, handleOpenEditModal, handleDeleteForever, handleOpenWhatsAppModal)}
+                <TableCell
+                  key={`${student.id}-${column.id}`}
+                  className="whitespace-nowrap"
+                >
+                  {column.render(
+                    student,
+                    user,
+                    handleOpenEditModal,
+                    handleDeleteForever,
+                    handleOpenWhatsAppModal
+                  )}
                 </TableCell>
               ))}
             </TableRow>

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useAuthStore } from "@/lib/store/auth-store";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -15,11 +15,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { User } from "@/lib/types";
-import { MainNav } from "@/components/main-nav";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { User } from '@/lib/types';
+import { MainNav } from '@/components/main-nav';
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -35,15 +35,14 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log('Submitting login with values:', values);
 
-    console.log("Submitting login with values:", values);
-    
     try {
       setIsLoading(true);
 
@@ -54,26 +53,23 @@ export default function LoginPage() {
 
       document.cookie = `user-role=${user.role}; path=/`;
 
-      console.log("Login successful, user role:", user.role, document.cookie);
-
+      console.log('Login successful, user role:', user.role, document.cookie);
 
       toast({
-        title: "Éxito",
+        title: 'Éxito',
         description: `Bienvenido ${user.name}`,
       });
 
-      if (user.role === "admin") {
-        router.push("/planteles");
+      if (user.role === 'admin') {
+        router.push('/planteles');
       } else {
-        router.push("/dashboard");
+        router.push('/dashboard');
       }
-
-  
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Credenciales inválidas",
+        variant: 'destructive',
+        title: 'Error',
+        description: error.response?.data?.message || 'Credenciales inválidas',
       });
     } finally {
       setIsLoading(false);
@@ -126,7 +122,7 @@ export default function LoginPage() {
                 )}
               />
               <Button className="w-full" type="submit" disabled={isLoading}>
-                {isLoading ? "Cargando..." : "Iniciar sesión"}
+                {isLoading ? 'Cargando...' : 'Iniciar sesión'}
               </Button>
             </form>
           </Form>

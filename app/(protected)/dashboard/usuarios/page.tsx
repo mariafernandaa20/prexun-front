@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -90,16 +89,21 @@ export default function page() {
         response.map(async (user) => {
           if (user.role === 'maestro') {
             try {
-              const gruposResponse = await axiosInstance.get(`/teacher/${user.id}/groups`);
+              const gruposResponse = await axiosInstance.get(
+                `/teacher/${user.id}/groups`
+              );
               return {
                 ...user,
-                grupos: gruposResponse.data || []
+                grupos: gruposResponse.data || [],
               };
             } catch (error) {
-              console.error(`Error al cargar grupos para el maestro ${user.id}:`, error);
+              console.error(
+                `Error al cargar grupos para el maestro ${user.id}:`,
+                error
+              );
               return {
                 ...user,
-                grupos: []
+                grupos: [],
               };
             }
           }
@@ -110,9 +114,9 @@ export default function page() {
       setIsLoading(false);
     } catch (error) {
       console.error('Error al cargar usuarios:', error);
-      toast({ 
+      toast({
         title: 'Error al cargar usuarios',
-        description: 'Por favor, verifica tu conexión e intenta nuevamente'
+        description: 'Por favor, verifica tu conexión e intenta nuevamente',
       });
       setIsLoading(false);
       setUsers([]); // Establecer un array vacío en caso de error
@@ -153,9 +157,11 @@ export default function page() {
       let gruposDelMaestro = [];
       if (user.role === 'maestro') {
         const response = await axiosInstance.get(`/teacher/${user.id}/groups`); // Removido el /api/ extra
-        gruposDelMaestro = response.data.map((grupo: any) => grupo.id.toString());
+        gruposDelMaestro = response.data.map((grupo: any) =>
+          grupo.id.toString()
+        );
       }
-      
+
       setFormData({
         id: user.id,
         name: user.name,
@@ -166,15 +172,15 @@ export default function page() {
           ? user.campuses.map((campus) => campus.id.toString())
           : [],
         grupos: gruposDelMaestro,
-        suspendido: user.suspendido || false
+        suspendido: user.suspendido || false,
       });
       setShowGrupos(user.role === 'maestro');
       setIsModalOpen(true);
     } catch (error) {
       console.error('Error al cargar los grupos del maestro:', error);
-      toast({ 
+      toast({
         title: 'Error al cargar los grupos del maestro',
-        description: 'Por favor, intente nuevamente'
+        description: 'Por favor, intente nuevamente',
       });
       // Aún mostramos el modal para permitir la edición
       setIsModalOpen(true);
@@ -187,9 +193,12 @@ export default function page() {
       if (selectedUser) {
         const response = await updateUser(formData as unknown as User);
         if (formData.role === 'maestro' && formData.grupos) {
-          const groupAssignResponse = await axiosInstance.post(`/teacher/${formData.id}/groups/assign`, {
-            grupo_ids: formData.grupos.map(id => parseInt(id))
-          });
+          const groupAssignResponse = await axiosInstance.post(
+            `/teacher/${formData.id}/groups/assign`,
+            {
+              grupo_ids: formData.grupos.map((id) => parseInt(id)),
+            }
+          );
         }
         await fetchUsers();
         toast({ title: 'Usuario actualizado correctamente' });
@@ -197,9 +206,12 @@ export default function page() {
         const response = await createUser(formData as unknown as User);
         if (formData.role === 'maestro' && formData.grupos) {
           // Corregir la URL para nuevos usuarios
-          const groupAssignResponse = await axiosInstance.post(`/teacher/${response.data.data.id}/groups/assign`, {
-            grupo_ids: formData.grupos
-          });
+          const groupAssignResponse = await axiosInstance.post(
+            `/teacher/${response.data.data.id}/groups/assign`,
+            {
+              grupo_ids: formData.grupos,
+            }
+          );
         }
         await fetchUsers();
         toast({ title: 'Usuario creado correctamente' });
@@ -208,12 +220,12 @@ export default function page() {
     } catch (error: any) {
       console.error('Error completo:', error);
       toast({
-        variant: "destructive",
-        title: "Error al actualizar usuario",
-        description: error.response?.data?.message || error.message
+        variant: 'destructive',
+        title: 'Error al actualizar usuario',
+        description: error.response?.data?.message || error.message,
       });
     }
-};
+  };
 
   const handleDelete = async () => {
     if (!selectedUser) return;
@@ -255,7 +267,17 @@ export default function page() {
     fetchCampuses();
   }, []);
 
-  const handleRoleChange = (value: 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'chatbot' | 'otro') => {
+  const handleRoleChange = (
+    value:
+      | 'admin'
+      | 'user'
+      | 'super_admin'
+      | 'contador'
+      | 'maestro'
+      | 'proveedor'
+      | 'chatbot'
+      | 'otro'
+  ) => {
     setFormData((prev) => ({
       ...prev,
       role: value,
@@ -296,16 +318,23 @@ export default function page() {
           <TableBody>
             {users ? (
               users.map((user) => (
-                <TableRow key={user.id} className={user.suspendido ? 'bg-red-50 dark:bg-red-950/20' : ''}>
+                <TableRow
+                  key={user.id}
+                  className={
+                    user.suspendido ? 'bg-red-50 dark:bg-red-950/20' : ''
+                  }
+                >
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      user.suspendido 
-                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' 
-                        : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        user.suspendido
+                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                          : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      }`}
+                    >
                       {user.suspendido ? 'Suspendido' : 'Activo'}
                     </span>
                   </TableCell>
@@ -417,9 +446,9 @@ export default function page() {
                 <div>
                   <Label>Grupos</Label>
                   <MultiSelect
-                    options={grupos.map(grupo => ({
-                      value: (grupo.id).toString(),
-                      label: grupo.name
+                    options={grupos.map((grupo) => ({
+                      value: grupo.id.toString(),
+                      label: grupo.name,
                     }))}
                     hiddeBadages={false}
                     selectedValues={formData.grupos || []}
@@ -432,20 +461,18 @@ export default function page() {
                 </div>
               )}
               <MultiSelect
-                  options={campuses.map((campus) => ({
-                    value: campus.id.toString(),
-                    label: campus.name,
-                  }))}
-                  selectedValues={formData.campuses}
-                  onSelectedChange={handleCampusChange}
-                  title="Planteles"
-                  placeholder="Seleccionar planteles"
-                  searchPlaceholder="Buscar plantel..."
-                  emptyMessage="No se encontraron planteles"
-                />
-              <div>
-
-              </div>
+                options={campuses.map((campus) => ({
+                  value: campus.id.toString(),
+                  label: campus.name,
+                }))}
+                selectedValues={formData.campuses}
+                onSelectedChange={handleCampusChange}
+                title="Planteles"
+                placeholder="Seleccionar planteles"
+                searchPlaceholder="Buscar plantel..."
+                emptyMessage="No se encontraron planteles"
+              />
+              <div></div>
               <div>
                 <Label htmlFor="password">
                   {!selectedUser ? 'Contraseña' : 'Nueva Contraseña'}
@@ -472,7 +499,10 @@ export default function page() {
                     }));
                   }}
                 />
-                <Label htmlFor="suspendido" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <Label
+                  htmlFor="suspendido"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
                   Usuario suspendido
                 </Label>
               </div>
@@ -502,8 +532,8 @@ export default function page() {
             <AlertDialogHeader>
               <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
               <AlertDialogDescription>
-                Esta acción no se puede deshacer. Se eliminará permanentemente el
-                usuario.
+                Esta acción no se puede deshacer. Se eliminará permanentemente
+                el usuario.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

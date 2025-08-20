@@ -13,7 +13,13 @@ import { Input } from '@/components/ui/input';
 import { Plus, Pencil } from 'lucide-react';
 import { Campus, Grupo, Period } from '@/lib/types';
 import GrupoModal from '../../../../components/dashboard/GrupoModal';
-import { createGrupo, getCampuses, getGrupos, getPeriods, updateGrupo } from '@/lib/api';
+import {
+  createGrupo,
+  getCampuses,
+  getGrupos,
+  getPeriods,
+  updateGrupo,
+} from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function GruposPage() {
@@ -55,19 +61,19 @@ export default function GruposPage() {
       // Preparar los datos del grupo incluyendo campus_ids
       const grupoData = {
         ...grupo,
-        campus_ids: grupo.campuses // Enviar como campus_ids para el backend
+        campus_ids: grupo.campuses, // Enviar como campus_ids para el backend
       };
 
       if (grupo.id) {
-        await updateGrupo(grupoData)
+        await updateGrupo(grupoData);
       } else {
-        await createGrupo(grupoData)
+        await createGrupo(grupoData);
       }
-      fetchGrupos()
-      setIsOpen(false)
-      setGrupo(null)
+      fetchGrupos();
+      setIsOpen(false);
+      setGrupo(null);
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error:', error);
     }
   };
 
@@ -126,12 +132,16 @@ export default function GruposPage() {
                 <div className="flex flex-wrap gap-1">
                   {grupo.campuses.map((campus, index) => {
                     // Si es un string, buscar el campus por ID
-                    const campusInfo = typeof campus === 'string' 
-                      ? campuses.find(c => c.id?.toString() === campus)
-                      : campus;
-                    
+                    const campusInfo =
+                      typeof campus === 'string'
+                        ? campuses.find((c) => c.id?.toString() === campus)
+                        : campus;
+
                     return (
-                      <span key={campusInfo?.id || index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                      <span
+                        key={campusInfo?.id || index}
+                        className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                      >
                         {campusInfo?.name || campus}
                       </span>
                     );
@@ -151,9 +161,15 @@ export default function GruposPage() {
             </TableCell>
             <TableCell>{grupo.start_date}</TableCell>
             <TableCell>{grupo.end_date}</TableCell>
-            <TableCell>{grupo.students_count}/{grupo.capacity}</TableCell>
             <TableCell>
-              <Button variant="ghost" size="icon" onClick={() => handleEdit(grupo)}>
+              {grupo.students_count}/{grupo.capacity}
+            </TableCell>
+            <TableCell>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleEdit(grupo)}
+              >
                 <Pencil className="h-4 w-4" />
               </Button>
             </TableCell>
@@ -183,8 +199,6 @@ export default function GruposPage() {
             </div>
           </div>
 
-
-
           {isLoading ? (
             <div className="text-center">Cargando...</div>
           ) : filteredGrupos.length === 0 ? (
@@ -197,7 +211,7 @@ export default function GruposPage() {
 
                 return (
                   <Card key={period.id}>
-                    <CardHeader className='sticky top-0 z-8 bg-card'>
+                    <CardHeader className="sticky top-0 z-8 bg-card">
                       <CardTitle>{period.name}</CardTitle>
                     </CardHeader>
                     <CardContent>

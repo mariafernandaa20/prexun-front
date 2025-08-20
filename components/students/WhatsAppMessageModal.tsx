@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import { Student } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Send, User, Phone } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa6';
@@ -17,7 +22,11 @@ interface WhatsAppMessageModalProps {
   student: Student | null;
 }
 
-export default function WhatsAppMessageModal({ isOpen, onClose, student }: WhatsAppMessageModalProps) {
+export default function WhatsAppMessageModal({
+  isOpen,
+  onClose,
+  student,
+}: WhatsAppMessageModalProps) {
   const [customMessage, setCustomMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,9 +45,9 @@ export default function WhatsAppMessageModal({ isOpen, onClose, student }: Whats
     try {
       await axiosInstance.post('/whatsapp/send-message', {
         phone_number: student.phone,
-        message: customMessage
+        message: customMessage,
       });
-      
+
       toast.success('Mensaje enviado correctamente');
       handleClose();
     } catch (error: any) {
@@ -78,11 +87,15 @@ export default function WhatsAppMessageModal({ isOpen, onClose, student }: Whats
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-gray-600" />
-              <span className="font-medium">{student.firstname} {student.lastname}</span>
+              <span className="font-medium">
+                {student.firstname} {student.lastname}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-gray-600" />
-              <span className="text-sm">{formatPhoneNumber(student.phone || 'Sin teléfono')}</span>
+              <span className="text-sm">
+                {formatPhoneNumber(student.phone || 'Sin teléfono')}
+              </span>
             </div>
             {student.email && (
               <Badge variant="outline" className="text-xs w-fit">
@@ -95,7 +108,9 @@ export default function WhatsAppMessageModal({ isOpen, onClose, student }: Whats
         {/* Mensaje personalizado */}
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">Mensaje Personalizado</label>
+            <label className="text-sm font-medium mb-2 block">
+              Mensaje Personalizado
+            </label>
             <Textarea
               placeholder={`Hola ${student.firstname}, ...`}
               value={customMessage}
@@ -110,7 +125,9 @@ export default function WhatsAppMessageModal({ isOpen, onClose, student }: Whats
             <div className="bg-green-50 dark:bg-neutral-900 border border-green-200 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <FaWhatsapp className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">Vista Previa</span>
+                <span className="text-sm font-medium text-green-800">
+                  Vista Previa
+                </span>
               </div>
               <div className="bg-white dark:bg-neutral-950 p-3 rounded-lg border text-sm">
                 {customMessage}
@@ -124,8 +141,8 @@ export default function WhatsAppMessageModal({ isOpen, onClose, student }: Whats
           <Button variant="outline" onClick={handleClose} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button 
-            onClick={handleSendMessage} 
+          <Button
+            onClick={handleSendMessage}
             disabled={isLoading || !customMessage.trim()}
             className="flex items-center gap-2"
           >

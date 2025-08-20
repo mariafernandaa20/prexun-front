@@ -1,106 +1,118 @@
-import React, { useState, useEffect } from 'react'
-import { Button } from '../ui/button'
-import { PenIcon } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { Button } from '../ui/button';
+import { PenIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
-import { updateStudent } from '@/lib/api/studentApi'
-import { getGrupos, getSemanas } from '@/lib/api'
+} from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { updateStudent } from '@/lib/api/studentApi';
+import { getGrupos, getSemanas } from '@/lib/api';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select"
-import { toast } from '@/hooks/use-toast'
+} from '../ui/select';
+import { toast } from '@/hooks/use-toast';
 
 interface Student {
-  id: number
-  email: string
-  firstname: string
-  lastname: string
-  grupo_id?: number
+  id: number;
+  email: string;
+  firstname: string;
+  lastname: string;
+  grupo_id?: number;
 }
 
 interface Grupo {
-  id?: number
-  name: string
-  capacity: number
-  students_count?: number
+  id?: number;
+  name: string;
+  capacity: number;
+  students_count?: number;
 }
 
 export default function UpdatePersonalInfo({ student }: { student: Student }) {
-  const [grupos, setGrupos] = useState<Grupo[]>([])
-  const [semanas, setSemanas] = useState<Grupo[]>([])
-  const [open, setOpen] = useState(false)
+  const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const [semanas, setSemanas] = useState<Grupo[]>([]);
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     id: student.id,
     email: student.email,
     firstname: student.firstname,
     lastname: student.lastname,
-    grupo_id: student.grupo_id || "",
-    semana_intensiva_id: student.grupo_id || "",
-  })
+    grupo_id: student.grupo_id || '',
+    semana_intensiva_id: student.grupo_id || '',
+  });
 
   useEffect(() => {
     const fetchGrupos = async () => {
       try {
-        const grupos = await getGrupos()
+        const grupos = await getGrupos();
         const semanas = await getSemanas();
 
-        setSemanas(semanas)
-        setGrupos(grupos)
+        setSemanas(semanas);
+        setGrupos(grupos);
       } catch (error) {
-        console.error('Error al cargar grupos:', error)
+        console.error('Error al cargar grupos:', error);
       }
-    }
+    };
 
-    fetchGrupos()
-  }, [])
+    fetchGrupos();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSelectChange = (value: string, name: string) => {
     setFormData({
       ...formData,
-      [name]: value
-    })
-  }
+      [name]: value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const response = await updateStudent(formData)
-    
-    if(response.message){
-      toast({title: 'Información actualizada', description: 'Tu información personal ha sido actualizada correctamente.'})
-      setOpen(false)
+    e.preventDefault();
+    const response = await updateStudent(formData);
+
+    if (response.message) {
+      toast({
+        title: 'Información actualizada',
+        description:
+          'Tu información personal ha sido actualizada correctamente.',
+      });
+      setOpen(false);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Información actualizada',
+        description:
+          'Tu información personal ha sido actualizada correctamente.',
+      });
     }
-    else {
-      toast({variant: 'destructive', title: 'Información actualizada', description: 'Tu información personal ha sido actualizada correctamente.'})    
-    }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Editar <PenIcon className="ml-2" /></Button>
+        <Button>
+          Editar <PenIcon className="ml-2" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Actualizar Información Personal</DialogTitle>
-          <div className='text-gray-500'>Este formulario actualiza directamente a moodle</div>
+          <div className="text-gray-500">
+            Este formulario actualiza directamente a moodle
+          </div>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -183,5 +195,5 @@ export default function UpdatePersonalInfo({ student }: { student: Student }) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

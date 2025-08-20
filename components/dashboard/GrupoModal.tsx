@@ -39,7 +39,6 @@ export default function GrupoModal({
   periods,
   campuses,
 }: GrupoModalProps) {
-
   const [formData, setFormData] = useState<Grupo & { campuses: string[] }>({
     name: '',
     type: '',
@@ -58,10 +57,13 @@ export default function GrupoModal({
   useEffect(() => {
     if (grupo) {
       const frequency = Array.isArray(grupo.frequency) ? grupo.frequency : [];
-      const campusIds = grupo.campuses ?
-        grupo.campuses.map(campus =>
-          typeof campus === 'string' ? campus : campus.id?.toString() || ''
-        ).filter(id => id !== '') : [];
+      const campusIds = grupo.campuses
+        ? grupo.campuses
+            .map((campus) =>
+              typeof campus === 'string' ? campus : campus.id?.toString() || ''
+            )
+            .filter((id) => id !== '')
+        : [];
 
       setFormData({
         ...grupo,
@@ -175,15 +177,15 @@ export default function GrupoModal({
             {grupo ? 'Editar Grupo' : 'Crear Nuevo Grupo'}
           </DialogTitle>
         </DialogHeader>
-        <div className='text-neutral-700 dark:text-neutral-300'>
-          <span className='text-red-500'>*</span> Campos requeridos
+        <div className="text-neutral-700 dark:text-neutral-300">
+          <span className="text-red-500">*</span> Campos requeridos
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="space-y-2">
                 <Label htmlFor="period_id">
-                  <span className='text-red-500'>*</span> Periodo
+                  <span className="text-red-500">*</span> Periodo
                 </Label>
                 <Select
                   onValueChange={handlePeriodChange}
@@ -204,7 +206,7 @@ export default function GrupoModal({
 
               <div className="space-y-2">
                 <Label htmlFor="name">
-                  <span className='text-red-500'>*</span>  Nombre del Grupo
+                  <span className="text-red-500">*</span> Nombre del Grupo
                 </Label>
                 <Input
                   id="name"
@@ -217,7 +219,7 @@ export default function GrupoModal({
 
               <div>
                 <Label>
-                  <span className='text-red-500'>*</span>  Planteles
+                  <span className="text-red-500">*</span> Planteles
                 </Label>
                 <MultiSelect
                   options={campuses.map((campus) => ({
@@ -234,7 +236,7 @@ export default function GrupoModal({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="type">
-                  <span className='text-red-500'>*</span> Tipo
+                  <span className="text-red-500">*</span> Tipo
                 </Label>
                 <Select onValueChange={handleTypeChange} value={formData.type}>
                   <SelectTrigger>
@@ -250,7 +252,7 @@ export default function GrupoModal({
             <div>
               <div className="space-y-2">
                 <Label htmlFor="capacity">
-                  <span className='text-red-500'>*</span> Capacidad
+                  <span className="text-red-500">*</span> Capacidad
                 </Label>
                 <Input
                   id="capacity"

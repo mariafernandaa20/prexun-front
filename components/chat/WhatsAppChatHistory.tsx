@@ -1,17 +1,19 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChatAPI, ChatSession, ChatMessage } from "@/lib/api/chat";
-import { MessageSquare, Phone, Send, FileText, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChatAPI, ChatSession, ChatMessage } from '@/lib/api/chat';
+import { MessageSquare, Phone, Send, FileText, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function WhatsAppChatHistory() {
   const [whatsappSessions, setWhatsappSessions] = useState<ChatSession[]>([]);
-  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
+  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(
+    null
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,10 +24,11 @@ export default function WhatsAppChatHistory() {
   const loadWhatsAppSessions = async () => {
     setIsLoading(true);
     try {
-      const response = await ChatAPI.getConversationsByType('whatsapp_outbound');
+      const response =
+        await ChatAPI.getConversationsByType('whatsapp_outbound');
       setWhatsappSessions(response.conversations);
     } catch (error) {
-      toast.error("Error al cargar el historial de WhatsApp");
+      toast.error('Error al cargar el historial de WhatsApp');
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +41,7 @@ export default function WhatsAppChatHistory() {
       setMessages(response.messages);
       setSelectedSession(session);
     } catch (error) {
-      toast.error("Error al cargar los mensajes de WhatsApp");
+      toast.error('Error al cargar los mensajes de WhatsApp');
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +74,9 @@ export default function WhatsAppChatHistory() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            <span className="font-medium">Plantilla: {metadata.template_name}</span>
+            <span className="font-medium">
+              Plantilla: {metadata.template_name}
+            </span>
           </div>
           <div className="text-sm text-gray-600">
             Enviada a: {formatPhoneNumber(metadata.phone_number)}
@@ -85,12 +90,14 @@ export default function WhatsAppChatHistory() {
     if (parts.length >= 2) {
       const phoneNumber = extractPhoneFromContent(parts[0]);
       const actualMessage = parts.slice(1).join(': ');
-      
+
       return (
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Send className="h-4 w-4" />
-            <span className="font-medium">Mensaje a: {formatPhoneNumber(phoneNumber)}</span>
+            <span className="font-medium">
+              Mensaje a: {formatPhoneNumber(phoneNumber)}
+            </span>
           </div>
           <div className="text-sm bg-gray-50 p-2 rounded">
             "{actualMessage}"
@@ -111,13 +118,15 @@ export default function WhatsAppChatHistory() {
               <Phone className="h-5 w-5" />
               Historial de WhatsApp
             </CardTitle>
-            <Button 
+            <Button
               onClick={loadWhatsAppSessions}
               disabled={isLoading}
               variant="outline"
               size="sm"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
+              />
               Actualizar
             </Button>
           </div>
@@ -130,11 +139,11 @@ export default function WhatsAppChatHistory() {
               <ScrollArea className="h-[400px]">
                 <div className="space-y-2">
                   {whatsappSessions.map((session) => (
-                    <Card 
+                    <Card
                       key={session.session_id}
                       className={`cursor-pointer transition-colors ${
-                        selectedSession?.session_id === session.session_id 
-                          ? 'bg-green-50 border-green-200' 
+                        selectedSession?.session_id === session.session_id
+                          ? 'bg-green-50 border-green-200'
                           : 'hover:bg-gray-50'
                       }`}
                       onClick={() => loadSessionMessages(session)}
@@ -144,34 +153,42 @@ export default function WhatsAppChatHistory() {
                           <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4 text-green-600" />
                             <div>
-                              <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                              <Badge
+                                variant="secondary"
+                                className="text-xs bg-green-100 text-green-800"
+                              >
                                 WhatsApp
                               </Badge>
                               <p className="text-sm text-gray-600 mt-1">
-                                {session.message_count} mensaje{session.message_count !== 1 ? 's' : ''}
+                                {session.message_count} mensaje
+                                {session.message_count !== 1 ? 's' : ''}
                               </p>
                             </div>
                           </div>
                           <span className="text-xs text-gray-500">
-                            {new Date(session.last_activity).toLocaleDateString()}
+                            {new Date(
+                              session.last_activity
+                            ).toLocaleDateString()}
                           </span>
                         </div>
                         {session.last_message && (
                           <p className="text-sm text-gray-700 mt-2 truncate">
-                            {session.last_message.length > 60 
-                              ? `${session.last_message.substring(0, 60)}...` 
+                            {session.last_message.length > 60
+                              ? `${session.last_message.substring(0, 60)}...`
                               : session.last_message}
                           </p>
                         )}
                       </CardContent>
                     </Card>
                   ))}
-                  
+
                   {whatsappSessions.length === 0 && !isLoading && (
                     <div className="text-center py-8 text-gray-500">
                       <Phone className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                       <p>No hay mensajes de WhatsApp enviados</p>
-                      <p className="text-sm mt-1">Los mensajes aparecerán aquí cuando envíes por WhatsApp</p>
+                      <p className="text-sm mt-1">
+                        Los mensajes aparecerán aquí cuando envíes por WhatsApp
+                      </p>
                     </div>
                   )}
                 </div>
@@ -181,35 +198,41 @@ export default function WhatsAppChatHistory() {
             {/* Detalles de la Sesión Seleccionada */}
             <div className="space-y-4">
               <h3 className="font-medium text-lg">
-                {selectedSession 
+                {selectedSession
                   ? `Detalles de la Sesión (${selectedSession.message_count} mensajes)`
-                  : 'Selecciona una conversación'
-                }
+                  : 'Selecciona una conversación'}
               </h3>
-              
+
               {selectedSession ? (
                 <Card>
                   <CardContent className="p-4">
                     <ScrollArea className="h-[350px]">
                       <div className="space-y-4">
                         {messages.map((message, index) => (
-                          <div 
-                            key={message.id || index} 
+                          <div
+                            key={message.id || index}
                             className="p-3 bg-white border rounded-lg shadow-sm"
                           >
                             <div className="flex items-start gap-3">
                               {getMessageTypeIcon(message.metadata)}
                               <div className="flex-1">
-                                {formatMessageContent(message.content, message.metadata)}
+                                {formatMessageContent(
+                                  message.content,
+                                  message.metadata
+                                )}
                                 <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
                                   <span>
-                                    {message.created_at 
-                                      ? new Date(message.created_at).toLocaleString()
-                                      : new Date().toLocaleString()
-                                    }
+                                    {message.created_at
+                                      ? new Date(
+                                          message.created_at
+                                        ).toLocaleString()
+                                      : new Date().toLocaleString()}
                                   </span>
                                   {message.metadata?.platform && (
-                                    <Badge variant="outline" className="text-xs">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
                                       {message.metadata.platform}
                                     </Badge>
                                   )}

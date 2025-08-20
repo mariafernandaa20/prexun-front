@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import { PlantelSidebar } from "@/components/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { PlantelSidebar } from '@/components/sidebar';
+import { Separator } from '@/components/ui/separator';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { useAppInit } from "@/hooks/use-app-init";
-import { useUIConfig } from "@/hooks/useUIConfig";
+} from '@/components/ui/sidebar';
+import { useAppInit } from '@/hooks/use-app-init';
+import { useUIConfig } from '@/hooks/useUIConfig';
 
 export default function Page({ children }: { children: React.ReactNode }) {
   useUIConfig();

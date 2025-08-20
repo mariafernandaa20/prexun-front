@@ -13,7 +13,6 @@ declare module 'jspdf' {
   }
 }
 
-
 const formatTime = (time) => {
   if (!time) return 'N/A';
 
@@ -27,17 +26,16 @@ const formatTime = (time) => {
   return date.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true
+    hour12: true,
   });
 };
-
 
 const generateWatermark = (doc, isPaid) => {
   doc.setFontSize(60);
   doc.setTextColor(200, 200, 200);
   doc.setFont(undefined, 'bold');
   doc.text(
-    isPaid ? "PAGADO" : "NO PAGADO",
+    isPaid ? 'PAGADO' : 'NO PAGADO',
     doc.internal.pageSize.width / 2 + 15,
     doc.internal.pageSize.height / 2 + 20,
     { align: 'center', angle: 45 }
@@ -49,14 +47,21 @@ const generateHeader = (doc) => {
   doc.addImage('/logo-horizontal.png', 'png', 15, 20, 40, 23);
   doc.setFontSize(18);
   doc.setFont(undefined, 'bold');
-  doc.text("Comprobante de pago", 195, 30, { align: "right" });
+  doc.text('Comprobante de pago', 195, 30, { align: 'right' });
 };
 
-const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, currentY) => {
+const generateCompanyInfo = (
+  doc,
+  campus,
+  card = null,
+  leftCol,
+  rightCol,
+  currentY
+) => {
   // Título
   doc.setFontSize(12);
   doc.setFont(undefined, 'bold');
-  doc.text("Prexun Asesorías", leftCol, currentY);
+  doc.text('Prexun Asesorías', leftCol, currentY);
 
   // Restaurar fuente normal
   doc.setFont(undefined, 'normal');
@@ -71,7 +76,7 @@ const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, curren
   const addressLines = doc.splitTextToSize(address, rightCol - leftCol - 10);
   doc.text(addressLines, leftCol, currentY);
 
-  currentY += (addressLines.length * 7);
+  currentY += addressLines.length * 7;
 
   // // Titular
   // doc.text(`Titular: ${campus?.titular}`, leftCol, currentY);
@@ -91,22 +96,43 @@ const generateCompanyInfo = (doc, campus, card = null, leftCol, rightCol, curren
 
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
   doc.setFontSize(11);
-  const folioFormatted = invoice.folio_new + (invoice.folio || invoice.folio_cash || invoice.folio_transfer).toString().padStart(3, '0');
+  const folioFormatted =
+    invoice.folio_new +
+    (invoice.folio || invoice.folio_cash || invoice.folio_transfer)
+      .toString()
+      .padStart(3, '0');
 
   const details = [
-    ["Comprobante de Pago:", invoice.paid ? folioFormatted : 'No pagado'],
-    ["Estudiante:", (invoice.student?.firstname + ' ' + invoice.student?.lastname || 'N/A')],
+    ['Comprobante de Pago:', invoice.paid ? folioFormatted : 'No pagado'],
+    [
+      'Estudiante:',
+      invoice.student?.firstname + ' ' + invoice.student?.lastname || 'N/A',
+    ],
 
-    ["Fecha:", new Date(invoice.payment_date ? invoice.payment_date : invoice.created_at).toLocaleDateString('es-MX', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC'
-    })],
+    [
+      'Fecha:',
+      new Date(
+        invoice.payment_date ? invoice.payment_date : invoice.created_at
+      ).toLocaleDateString('es-MX', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }),
+    ],
 
-    ["Hora de pago:", invoice.paid === 1 ?
-      dayjs(invoice.updated_at).format('HH:mm A') : 'No pagada'],
-    ["Metodo de pago:", invoice.payment_method ? PaymentMethod[invoice.payment_method] : 'No especificado']
+    [
+      'Hora de pago:',
+      invoice.paid === 1
+        ? dayjs(invoice.updated_at).format('HH:mm A')
+        : 'No pagada',
+    ],
+    [
+      'Metodo de pago:',
+      invoice.payment_method
+        ? PaymentMethod[invoice.payment_method]
+        : 'No especificado',
+    ],
   ];
 
   details.forEach((row, index) => {
@@ -124,29 +150,27 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
       // Dibujar el rectángulo (con un poco de padding)
       doc.rect(
         rightCol + 90 - textWidth - 2, // X position (ajustado para alineación derecha)
-        currentY + (index * 5) - 4,    // Y position (ajustado arriba del texto)
-        textWidth + 4,                 // Width (con padding)
-        6,                             // Height
-        'F'                            // 'F' significa "fill"
+        currentY + index * 5 - 4, // Y position (ajustado arriba del texto)
+        textWidth + 4, // Width (con padding)
+        6, // Height
+        'F' // 'F' significa "fill"
       );
 
       // Restaurar el color de relleno original
       doc.setFillColor(currentFillColor);
     }
 
-    doc.text(row[0], rightCol, currentY + (index * 5), { align: 'left' });
-    doc.text(row[1], rightCol + 90, currentY + (index * 5), { align: 'right' });
+    doc.text(row[0], rightCol, currentY + index * 5, { align: 'left' });
+    doc.text(row[1], rightCol + 90, currentY + index * 5, { align: 'right' });
   });
 };
 
 const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
-
   const formatPrice = (amount: number | undefined): string => {
     return typeof amount === 'number' && !isNaN(amount)
       ? `$${amount.toLocaleString()}`
       : '$0';
   };
-
 
   const formatFrequency = (frequencyStr: string | undefined): string => {
     try {
@@ -165,20 +189,24 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
       if (invoice.debt?.assignment) {
         return {
           assignment: invoice.debt.assignment,
-          source: 'debt'
+          source: 'debt',
         };
       }
 
       // Then check if student has active assignments
-      const activeAssignments = invoice.student?.assignments?.filter(assignment => assignment.is_active);
+      const activeAssignments = invoice.student?.assignments?.filter(
+        (assignment) => assignment.is_active
+      );
       if (activeAssignments && activeAssignments.length > 0) {
         // Get the most recent assignment
-        const latestAssignment = activeAssignments.sort((a, b) =>
-          new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime()
+        const latestAssignment = activeAssignments.sort(
+          (a, b) =>
+            new Date(b.assigned_at).getTime() -
+            new Date(a.assigned_at).getTime()
         )[0];
         return {
           assignment: latestAssignment,
-          source: 'student'
+          source: 'student',
         };
       }
 
@@ -186,7 +214,7 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
       if (invoice.student?.grupo) {
         return {
           assignment: null,
-          source: 'grupo'
+          source: 'grupo',
         };
       }
 
@@ -199,7 +227,10 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
       return 'Servicio no especificado';
     }
 
-    if (assignmentInfo.source === 'debt' || assignmentInfo.source === 'student') {
+    if (
+      assignmentInfo.source === 'debt' ||
+      assignmentInfo.source === 'student'
+    ) {
       const assignment = assignmentInfo.assignment;
       const period = assignment.period;
       const grupo = assignment.grupo;
@@ -214,45 +245,53 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
           day: 'numeric',
           month: 'long',
           year: 'numeric',
-          timeZone: 'UTC'
+          timeZone: 'UTC',
         });
         endDate = new Date(grupo.end_date).toLocaleDateString('es-MX', {
           day: 'numeric',
           month: 'long',
           year: 'numeric',
-          timeZone: 'UTC'
+          timeZone: 'UTC',
         });
       } else if (semanaIntensiva?.start_date && semanaIntensiva?.end_date) {
-        startDate = new Date(semanaIntensiva.start_date).toLocaleDateString('es-MX', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          timeZone: 'UTC'
-        });
-        endDate = new Date(semanaIntensiva.end_date).toLocaleDateString('es-MX', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          timeZone: 'UTC'
-        });
+        startDate = new Date(semanaIntensiva.start_date).toLocaleDateString(
+          'es-MX',
+          {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC',
+          }
+        );
+        endDate = new Date(semanaIntensiva.end_date).toLocaleDateString(
+          'es-MX',
+          {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC',
+          }
+        );
       }
 
-      const serviceInfo = [
-        period?.name || 'Período no especificado'
-      ];
+      const serviceInfo = [period?.name || 'Período no especificado'];
 
       if (grupo) {
-        serviceInfo.push(`Grupo: ${grupo.name} | ${grupo.type || 'Tipo no especificado'}`);
+        serviceInfo.push(
+          `Grupo: ${grupo.name} | ${grupo.type || 'Tipo no especificado'}`
+        );
       }
 
       if (semanaIntensiva) {
-        serviceInfo.push(`Semana Intensiva: ${semanaIntensiva.name} | ${semanaIntensiva.type || 'Tipo no especificado'}`);
+        serviceInfo.push(
+          `Semana Intensiva: ${semanaIntensiva.name} | ${semanaIntensiva.type || 'Tipo no especificado'}`
+        );
       }
 
       serviceInfo.push(
         `${startDate} - ${endDate}`,
         `Frecuencia clases: ${formatFrequency(grupo?.frequency || semanaIntensiva?.frequency)}`,
-        `${(grupo?.start_time || semanaIntensiva?.start_time) ? formatTime(grupo?.start_time || semanaIntensiva?.start_time) : 'N/A'} - ${(grupo?.end_time || semanaIntensiva?.end_time) ? formatTime(grupo?.end_time || semanaIntensiva?.end_time) : 'N/A'}`,
+        `${grupo?.start_time || semanaIntensiva?.start_time ? formatTime(grupo?.start_time || semanaIntensiva?.start_time) : 'N/A'} - ${grupo?.end_time || semanaIntensiva?.end_time ? formatTime(grupo?.end_time || semanaIntensiva?.end_time) : 'N/A'}`,
         `${invoice.notes ?? ''}`
       );
 
@@ -264,20 +303,20 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
 
     const startDate = grupo.start_date
       ? new Date(grupo.start_date).toLocaleDateString('es-MX', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'UTC'
-      })
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'UTC',
+        })
       : 'Fecha no disponible';
 
     const endDate = grupo.end_date
       ? new Date(grupo.end_date).toLocaleDateString('es-MX', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'UTC'
-      })
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          timeZone: 'UTC',
+        })
       : 'Fecha no disponible';
 
     const groupInfo = [
@@ -285,7 +324,7 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
       `${startDate} - ${endDate}`,
       `Frecuencia clases: ${formatFrequency(grupo.frequency)}`,
       `${grupo.start_time ? formatTime(grupo.start_time) : 'N/A'} - ${grupo.end_time ? formatTime(grupo.end_time) : 'N/A'}`,
-      `${invoice.notes ?? ''}`
+      `${invoice.notes ?? ''}`,
     ];
 
     return groupInfo.join('\n');
@@ -293,25 +332,28 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
 
   doc.autoTable({
     startY: currentY + 50,
-    head: [["PRODUCTOS Y SERVICIOS", "VALOR"]],
-    body: [[
-      {
-        content: buildServiceDescription(invoice),
-        styles: {
-          cellWidth: 'auto',
-          cellPadding: 4,
-          fontSize: 11,
-          lineHeight: 1.5
-        }
-      },
-      {
-        content: "$" + (invoice.amount ? invoice.amount.toLocaleString() : '0'),
-        styles: {
-          halign: 'center',
-          fontSize: 11
-        }
-      }
-    ]],
+    head: [['PRODUCTOS Y SERVICIOS', 'VALOR']],
+    body: [
+      [
+        {
+          content: buildServiceDescription(invoice),
+          styles: {
+            cellWidth: 'auto',
+            cellPadding: 4,
+            fontSize: 11,
+            lineHeight: 1.5,
+          },
+        },
+        {
+          content:
+            '$' + (invoice.amount ? invoice.amount.toLocaleString() : '0'),
+          styles: {
+            halign: 'center',
+            fontSize: 11,
+          },
+        },
+      ],
+    ],
     headStyles: { fillColor: [200, 200, 200] },
     styles: {
       fontSize: 11,
@@ -320,9 +362,9 @@ const generateProductsTable = (doc: jsPDF, invoice: any, currentY: number) => {
     },
     columnStyles: {
       0: { cellWidth: 'auto' },
-      1: { cellWidth: 40 }
+      1: { cellWidth: 40 },
     },
-    theme: 'grid'
+    theme: 'grid',
   });
 };
 
@@ -331,7 +373,8 @@ const generateTotals = (doc, finalY, invoice) => {
   doc.setFont(undefined, 'bold');
 
   // Validar que amount existe y es un número válido
-  const amount = invoice.amount && !isNaN(invoice.amount) ? Number(invoice.amount) : 0;
+  const amount =
+    invoice.amount && !isNaN(invoice.amount) ? Number(invoice.amount) : 0;
 
   // Calculations with 2 decimal tolerance
   const subtotal = +(amount / 1.16).toFixed(2);
@@ -339,21 +382,22 @@ const generateTotals = (doc, finalY, invoice) => {
   const total = amount.toFixed(2);
 
   // Add text to the document
-  doc.text("Subtotal:", 140, finalY + 20);
-  doc.text("$" + subtotal.toLocaleString(), 200, finalY + 20, { align: "right" });
+  doc.text('Subtotal:', 140, finalY + 20);
+  doc.text('$' + subtotal.toLocaleString(), 200, finalY + 20, {
+    align: 'right',
+  });
 
-  doc.text("IVA:", 140, finalY + 25);
-  doc.text("$" + iva.toLocaleString(), 200, finalY + 25, { align: "right" });
+  doc.text('IVA:', 140, finalY + 25);
+  doc.text('$' + iva.toLocaleString(), 200, finalY + 25, { align: 'right' });
 
-  doc.text("Total:", 140, finalY + 30);
-  doc.text("$" + total.toLocaleString(), 200, finalY + 30, { align: "right" });
+  doc.text('Total:', 140, finalY + 30);
+  doc.text('$' + total.toLocaleString(), 200, finalY + 30, { align: 'right' });
 };
-
 
 const generateComments = (doc, finalY, leftCol) => {
   doc.setFont(undefined, 'bold');
   doc.setFontSize(12);
-  doc.text("Comentarios", leftCol, finalY + 50);
+  doc.text('Comentarios', leftCol, finalY + 50);
   doc.setFont(undefined, 'normal');
   doc.setFontSize(10);
 
@@ -369,12 +413,12 @@ const generateComments = (doc, finalY, leftCol) => {
     'Nuestro material está protegido por derechos de autor, hacer uso con fines diferentes al establecido es perseguido por la ley.',
     'En las sesiones de clase y evaluaciones no se permite usar o tener en las manos teléfonos celulares.',
     'Los padres o tutores encargados del alumno deberán solicitar informes de su desempeño durante el curso.',
-    'Si por alguna situación esporádica el Estado suspende las clases presenciales, las clases serán en línea.'
+    'Si por alguna situación esporádica el Estado suspende las clases presenciales, las clases serán en línea.',
   ];
 
   let currentY = finalY + 60;
   lines.forEach((line, index) => {
-    const splitLines = doc.splitTextToSize((index + 1) + '. ' + line, maxWidth);
+    const splitLines = doc.splitTextToSize(index + 1 + '. ' + line, maxWidth);
     doc.text(splitLines, leftCol, currentY);
     currentY += 5 * splitLines.length;
   });
@@ -382,7 +426,7 @@ const generateComments = (doc, finalY, leftCol) => {
   // Add QR code to the right side
   doc.addImage('/qr.png', 'png', 160, finalY + 50, 40, 40);
   doc.setFontSize(8);
-  doc.text("Términos y Condiciones", 180, finalY + 95, { align: "center" });
+  doc.text('Términos y Condiciones', 180, finalY + 95, { align: 'center' });
 };
 
 const generatePDF = (invoice) => {
@@ -393,7 +437,14 @@ const generatePDF = (invoice) => {
 
   generateWatermark(doc, invoice.paid);
   generateHeader(doc);
-  generateCompanyInfo(doc, invoice.campus, invoice.card, leftCol, rightCol, currentY);
+  generateCompanyInfo(
+    doc,
+    invoice.campus,
+    invoice.card,
+    leftCol,
+    rightCol,
+    currentY
+  );
   generateInvoiceDetails(doc, invoice, rightCol, currentY);
   generateProductsTable(doc, invoice, currentY);
 
@@ -402,7 +453,11 @@ const generatePDF = (invoice) => {
   generateTotals(doc, finalY, invoice);
   generateComments(doc, finalY, leftCol);
 
-  const folioForFilename = invoice.folio_new + (invoice.folio || invoice.folio_cash || invoice.folio_transfer).toString().padStart(3, '0');
+  const folioForFilename =
+    invoice.folio_new +
+    (invoice.folio || invoice.folio_cash || invoice.folio_transfer)
+      .toString()
+      .padStart(3, '0');
   doc.save(`comprobante-${folioForFilename}.pdf`);
 };
 

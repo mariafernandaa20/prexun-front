@@ -1,39 +1,39 @@
-"use client";
+'use client';
 
-import { MainNav } from "@/components/main-nav";
-import { Card, CardContent } from "@/components/ui/card";
-import { useAuthStore } from "@/lib/store/auth-store";
-import { BookOpen, CheckCircle2, GraduationCap } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { MainNav } from '@/components/main-nav';
+import { Card, CardContent } from '@/components/ui/card';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { BookOpen, CheckCircle2, GraduationCap } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
   const { user } = useAuthStore();
   if (user) {
-    router.push("/dashboard");
+    router.push('/dashboard');
   }
   const benefits = [
     {
-      title: "Maestros especializados",
+      title: 'Maestros especializados',
       description:
-        "Equipo de maestros altamente calificados y especializados en sus respectivas áreas de conocimiento.",
+        'Equipo de maestros altamente calificados y especializados en sus respectivas áreas de conocimiento.',
     },
     {
-      title: "Material Didáctico",
+      title: 'Material Didáctico',
       description:
-        "Libros totalmente de imprenta, elaborados para complementar tus clases y ayudarte a dominar cada tema de manera efectiva.",
+        'Libros totalmente de imprenta, elaborados para complementar tus clases y ayudarte a dominar cada tema de manera efectiva.',
     },
     {
-      title: "Terapia Antiestrés y Anti-nervios",
+      title: 'Terapia Antiestrés y Anti-nervios',
       description:
-        "Sesión para ayudarte a manejar el estrés y ansiedad antes de tu examen para que puedas tener el mejor desempeño posible.",
+        'Sesión para ayudarte a manejar el estrés y ansiedad antes de tu examen para que puedas tener el mejor desempeño posible.',
     },
     {
-      title: "Pruebas y simulaciones completas",
+      title: 'Pruebas y simulaciones completas',
       description:
-        "Evaluaciones, ejercicios extra y exámenes de simulación donde podrás medir tu progreso y reforzar conocimientos con ayuda de las retroalimentaciones de cada prueba donde se verá la solución de cada reactivo.",
+        'Evaluaciones, ejercicios extra y exámenes de simulación donde podrás medir tu progreso y reforzar conocimientos con ayuda de las retroalimentaciones de cada prueba donde se verá la solución de cada reactivo.',
     },
   ];
   return (
@@ -135,7 +135,9 @@ export default function Home() {
                     <CheckCircle2 className="w-6 h-6 text-[#131f46] flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="font-medium text-lg">{benefit.title}</h3>
-                      <p className="text-gray-600 dark:text-gray-400">{benefit.description}</p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {benefit.description}
+                      </p>
                     </div>
                   </div>
                 ))}

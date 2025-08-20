@@ -1,6 +1,6 @@
-'use client'
-import React, { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+'use client';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -8,32 +8,43 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { useActiveCampusStore } from '@/lib/store/plantel-store'
-import { Gasto } from '@/lib/types'
-import { createGasto, deleteGasto, getGastos } from '@/lib/api'
-import { Pencil, Trash, Eye } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { MultiSelect } from '@/components/multi-select'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { GastoModal } from '../gastos/components/GastoModal'
-import PaginationComponent from '@/components/ui/PaginationComponent'
-import { usePagination } from '@/hooks/usePagination'
+} from '@/components/ui/table';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { Gasto } from '@/lib/types';
+import { createGasto, deleteGasto, getGastos } from '@/lib/api';
+import { Pencil, Trash, Eye } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { MultiSelect } from '@/components/multi-select';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
+import { GastoModal } from '../gastos/components/GastoModal';
+import PaginationComponent from '@/components/ui/PaginationComponent';
+import { usePagination } from '@/hooks/usePagination';
 
 export default function GastosPage() {
-  const [gastos, setGastos] = useState<Gasto[]>([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedGasto, setSelectedGasto] = useState<Gasto | null>(null)
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [filteredGastos, setFilteredGastos] = useState<Gasto[]>([])
-  const [imageModalOpen, setImageModalOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState('')
+  const [gastos, setGastos] = useState<Gasto[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedGasto, setSelectedGasto] = useState<Gasto | null>(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [filteredGastos, setFilteredGastos] = useState<Gasto[]>([]);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
   const { pagination, setPagination } = usePagination();
@@ -42,53 +53,55 @@ export default function GastosPage() {
     {
       id: 'fecha',
       label: 'Fecha',
-      render: (gasto: Gasto) => format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es })
+      render: (gasto: Gasto) =>
+        format(new Date(gasto.date), 'dd/MM/yyyy', { locale: es }),
     },
     {
       id: 'empleado',
       label: 'Empleado',
-      render: (gasto: Gasto) => gasto?.admin?.name
+      render: (gasto: Gasto) => gasto?.admin?.name,
     },
     {
       id: 'recibe',
       label: 'Recibe',
-      render: (gasto: Gasto) => gasto?.user?.name
+      render: (gasto: Gasto) => gasto?.user?.name,
     },
     {
       id: 'concepto',
       label: 'Concepto',
-      render: (gasto: Gasto) => gasto.concept
+      render: (gasto: Gasto) => gasto.concept,
     },
     {
       id: 'categoria',
       label: 'Categoria',
-      render: (gasto: Gasto) => gasto.category
+      render: (gasto: Gasto) => gasto.category,
     },
     {
       id: 'monto',
       label: 'Monto',
-      render: (gasto: Gasto) => `$${gasto.amount}`
+      render: (gasto: Gasto) => `$${gasto.amount}`,
     },
     {
       id: 'comprobante',
       label: 'Comprobante',
-      render: (gasto: Gasto) => gasto.image ? (
-        <div className="flex items-center gap-2">
-          <img
-            src={gasto.image as string}
-            alt="Miniatura"
-            className="w-10 h-10 object-cover rounded"
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenImage(gasto.image as string)}
-          >
-            <Eye className="w-4 h-4 mr-1" />
-            Ver
-          </Button>
-        </div>
-      ) : null
+      render: (gasto: Gasto) =>
+        gasto.image ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={gasto.image as string}
+              alt="Miniatura"
+              className="w-10 h-10 object-cover rounded"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenImage(gasto.image as string)}
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              Ver
+            </Button>
+          </div>
+        ) : null,
     },
     {
       id: 'acciones',
@@ -110,7 +123,7 @@ export default function GastosPage() {
             <Trash />
           </Button>
         </>
-      )
+      ),
     },
   ];
 
@@ -123,26 +136,26 @@ export default function GastosPage() {
     'categoria',
     'monto',
     'comprobante',
-    'acciones'
+    'acciones',
   ]);
 
   // Convertir tableColumns en opciones para el MultiSelect
-  const columnOptions = tableColumns.map(col => ({
+  const columnOptions = tableColumns.map((col) => ({
     label: col.label,
-    value: col.id
+    value: col.id,
   }));
 
-  const categories = Array.from(new Set(gastos.map(gasto => gasto.category)))
+  const categories = Array.from(new Set(gastos.map((gasto) => gasto.category)));
 
   const handleOpenModal = (gasto?: Gasto) => {
-    setSelectedGasto(gasto || null)
-    setIsModalOpen(true)
-  }
+    setSelectedGasto(gasto || null);
+    setIsModalOpen(true);
+  };
 
   const handleOpenImage = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setImageModalOpen(true);
-  }
+  };
 
   const onSubmit = async (data: Gasto) => {
     await createGasto(data as Gasto & { image?: File });
@@ -156,7 +169,7 @@ export default function GastosPage() {
   };
 
   useEffect(() => {
-    if (!activeCampus) return
+    if (!activeCampus) return;
 
     fetchGastos();
   }, [activeCampus]);
@@ -168,7 +181,7 @@ export default function GastosPage() {
       currentPage: response.current_page,
       lastPage: response.last_page,
       total: response.total,
-      perPage: parseInt(pagination.perPage.toString())
+      perPage: parseInt(pagination.perPage.toString()),
     });
     setFilteredGastos(response);
   };
@@ -177,14 +190,18 @@ export default function GastosPage() {
     let filtered = [...gastos];
 
     if (startDate && endDate) {
-      filtered = filtered.filter(gasto => {
+      filtered = filtered.filter((gasto) => {
         const gastoDate = new Date(gasto.date);
-        return gastoDate >= new Date(startDate) && gastoDate <= new Date(endDate);
+        return (
+          gastoDate >= new Date(startDate) && gastoDate <= new Date(endDate)
+        );
       });
     }
 
     if (selectedCategory && selectedCategory !== 'all') {
-      filtered = filtered.filter(gasto => gasto.category === selectedCategory);
+      filtered = filtered.filter(
+        (gasto) => gasto.category === selectedCategory
+      );
     }
 
     setFilteredGastos(filtered);
@@ -195,16 +212,16 @@ export default function GastosPage() {
   };
 
   // Filtrar las columnas que son visibles
-  const visibleTableColumns = tableColumns.filter(column =>
+  const visibleTableColumns = tableColumns.filter((column) =>
     visibleColumns.includes(column.id)
   );
 
   return (
-    <Card className='w-full'>
-      <CardHeader className='sticky z-[20] top-0 z-8 bg-card'>
+    <Card className="w-full">
+      <CardHeader className="sticky z-[20] top-0 z-8 bg-card">
         <div className="flex flex-col lg:flex-row justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gastos del Plantel</h1>
-          <div className='flex flex-col lg:flex-row items-center gap-2'>
+          <div className="flex flex-col lg:flex-row items-center gap-2">
             <div className="flex flex-col">
               <label>Fecha Inicio</label>
               <Input
@@ -223,7 +240,10 @@ export default function GastosPage() {
             </div>
             <div className="flex flex-col">
               <label>Categoría</label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar categoría" />
                 </SelectTrigger>
@@ -251,7 +271,9 @@ export default function GastosPage() {
               />
             </div>
             {activeCampus?.latest_cash_register ? (
-              <Button className='mt-6' onClick={() => handleOpenModal()}>Nuevo Gasto</Button>
+              <Button className="mt-6" onClick={() => handleOpenModal()}>
+                Nuevo Gasto
+              </Button>
             ) : null}
           </div>
         </div>
@@ -261,7 +283,7 @@ export default function GastosPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                {visibleTableColumns.map(column => (
+                {visibleTableColumns.map((column) => (
                   <TableHead key={column.id}>{column.label}</TableHead>
                 ))}
               </TableRow>
@@ -269,7 +291,7 @@ export default function GastosPage() {
             <TableBody>
               {filteredGastos.map((gasto) => (
                 <TableRow key={gasto.id}>
-                  {visibleTableColumns.map(column => (
+                  {visibleTableColumns.map((column) => (
                     <TableCell key={`${gasto.id}-${column.id}`}>
                       {column.render(gasto)}
                     </TableCell>
@@ -281,7 +303,10 @@ export default function GastosPage() {
         </CardContent>
       </div>
       <CardFooter className="flex flex-col sm:flex-row justify-between items-center border-t p-4 gap-2">
-        <PaginationComponent pagination={pagination} setPagination={setPagination} />
+        <PaginationComponent
+          pagination={pagination}
+          setPagination={setPagination}
+        />
       </CardFooter>
       {activeCampus?.latest_cash_register ? (
         <GastoModal
@@ -298,5 +323,5 @@ export default function GastosPage() {
         </DialogContent>
       </Dialog>
     </Card>
-  )
+  );
 }

@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useAuthStore } from "@/lib/store/auth-store";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { ThemeToggle, ThemeToggleSidebar } from "./layout/theme-toggle";
-import Image from "next/image";
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { User, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ThemeToggle, ThemeToggleSidebar } from './layout/theme-toggle';
+import Image from 'next/image';
 
 export function MainNav() {
   const { user, logout } = useAuthStore();
@@ -21,11 +21,11 @@ export function MainNav() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    router.push('/login');
   };
 
   return (
-<nav className="bg-[#131f46] py-4">
+    <nav className="bg-[#131f46] py-4">
       <div className="container mx-auto px-4 flex items-center justify-between">
         <Link href="/" className="flex items-center">
           <Image
@@ -40,7 +40,10 @@ export function MainNav() {
           <Link href="/" className="text-white hover:text-gray-200">
             Inicio
           </Link>
-          <Link href="/quienes-somos" className="text-white hover:text-gray-200">
+          <Link
+            href="/quienes-somos"
+            className="text-white hover:text-gray-200"
+          >
             ¿Quienes somos?
           </Link>
           <Link href="/cursos" className="text-white hover:text-gray-200">
@@ -49,7 +52,10 @@ export function MainNav() {
           <Link href="/planteles" className="text-white hover:text-gray-200">
             Planteles
           </Link>
-          <Link href="/bolsa-de-trabajo" className="text-white hover:text-gray-200">
+          <Link
+            href="/bolsa-de-trabajo"
+            className="text-white hover:text-gray-200"
+          >
             Bolsa de trabajo
           </Link>
           <Link href="/plataforma" className="text-white hover:text-gray-200">
@@ -71,8 +77,7 @@ export function MainNav() {
           </Link>
         </div>
 
-        <ThemeToggle/>
-
+        <ThemeToggle />
       </div>
     </nav>
   );

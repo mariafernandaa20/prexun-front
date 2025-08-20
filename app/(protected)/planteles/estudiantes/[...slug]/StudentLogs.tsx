@@ -1,7 +1,7 @@
 import SectionContainer from '@/components/SectionContainer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { getStudentEvents } from '@/lib/api';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 
 interface LogEntry {
   id: string;
@@ -68,17 +68,23 @@ export default function StudentLogs({ studentId }: Props) {
                     {new Date(log.created_at).toLocaleString()}
                   </td>
                   <td className="border px-4 py-2">{log.event_type}</td>
-                  <td className="border px-4 py-2">{log.user?.name || 'Desconocido'}</td>
+                  <td className="border px-4 py-2">
+                    {log.user?.name || 'Desconocido'}
+                  </td>
                   <td className="border px-4 py-2">{log.description}</td>
                   <td className="border px-4 py-2">
                     {log.changed_fields?.length ? (
                       <ul className="list-disc pl-4">
                         {log.changed_fields.map((field) => (
                           <li key={field}>
-                            <span className="font-semibold">{field}:</span>{" "}
-                            <span className="text-red-600">{log.data_before?.[field] ?? '—'}</span>{" "}
+                            <span className="font-semibold">{field}:</span>{' '}
+                            <span className="text-red-600">
+                              {log.data_before?.[field] ?? '—'}
+                            </span>{' '}
                             <span className="mx-1">→</span>
-                            <span className="text-green-600">{log.data_after?.[field] ?? '—'}</span>
+                            <span className="text-green-600">
+                              {log.data_after?.[field] ?? '—'}
+                            </span>
                           </li>
                         ))}
                       </ul>

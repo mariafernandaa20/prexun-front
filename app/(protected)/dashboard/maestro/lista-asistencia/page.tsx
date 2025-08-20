@@ -47,7 +47,7 @@ export default function AsistenciaPage() {
       setIsLoading(false);
     } catch (error) {
       toast('Error al cargar grupos', {
-        description: 'No se pudieron cargar los grupos del maestro'
+        description: 'No se pudieron cargar los grupos del maestro',
       });
       setIsLoading(false);
     }
@@ -59,9 +59,9 @@ export default function AsistenciaPage() {
 
   // Manejar cambio de asistencia
   const handleAttendanceChange = (studentId: string, checked: boolean) => {
-    setAttendance(prev => ({
+    setAttendance((prev) => ({
       ...prev,
-      [studentId]: checked
+      [studentId]: checked,
     }));
   };
 
@@ -71,36 +71,34 @@ export default function AsistenciaPage() {
       await axiosInstance.post('/teacher/attendance', {
         grupo_id: selectedGrupo,
         date: selectedDate,
-        attendance: attendance
+        attendance: attendance,
       });
-      
+
       toast('Asistencia guardada', {
-        description: 'La asistencia se guardó correctamente'
+        description: 'La asistencia se guardó correctamente',
       });
     } catch (error) {
       toast('Error al guardar', {
-        description: 'No se pudo guardar la asistencia'
+        description: 'No se pudo guardar la asistencia',
       });
     }
   };
 
-  const selectedGroupStudents = grupos.find(g => g.id === selectedGrupo)?.students || [];
+  const selectedGroupStudents =
+    grupos.find((g) => g.id === selectedGrupo)?.students || [];
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Lista de Asistencia</h1>
-      
+
       <div className="flex gap-4 mb-6">
         <div className="w-1/3">
-          <Select
-            value={selectedGrupo}
-            onValueChange={setSelectedGrupo}
-          >
+          <Select value={selectedGrupo} onValueChange={setSelectedGrupo}>
             <SelectTrigger>
               <SelectValue placeholder="Selecciona un grupo" />
             </SelectTrigger>
             <SelectContent>
-              {grupos.map(grupo => (
+              {grupos.map((grupo) => (
                 <SelectItem key={grupo.id} value={grupo.id}>
                   {grupo.name}
                 </SelectItem>
@@ -108,7 +106,7 @@ export default function AsistenciaPage() {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="w-1/3">
           <Calendar
             mode="single"
@@ -129,13 +127,13 @@ export default function AsistenciaPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {selectedGroupStudents.map(student => (
+              {selectedGroupStudents.map((student) => (
                 <TableRow key={student.id}>
                   <TableCell>{student.name}</TableCell>
                   <TableCell>
                     <Checkbox
                       checked={attendance[student.id] || false}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         handleAttendanceChange(student.id, checked as boolean)
                       }
                     />
@@ -146,9 +144,7 @@ export default function AsistenciaPage() {
           </Table>
 
           <div className="mt-4 flex justify-end">
-            <Button onClick={handleSaveAttendance}>
-              Guardar Asistencia
-            </Button>
+            <Button onClick={handleSaveAttendance}>Guardar Asistencia</Button>
           </div>
         </>
       )}

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   AudioWaveform,
   BaggageClaimIcon,
@@ -26,12 +26,12 @@ import {
   DollarSign,
   MessageSquare,
   MessageCircle,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { NavMain } from "@/components/nav-main";
-import { NavItems } from "@/components/nav-items";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { NavMain } from '@/components/nav-main';
+import { NavItems } from '@/components/nav-items';
+import { NavUser } from '@/components/nav-user';
+import { TeamSwitcher } from '@/components/team-switcher';
 import {
   Sidebar,
   SidebarContent,
@@ -39,73 +39,73 @@ import {
   SidebarHeader,
   SidebarRail,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { ThemeToggleSidebar } from "./layout/theme-toggle";
-import Image from "next/image";
-import { Separator } from "./ui/separator";
-import { url } from "inspector";
-import { FcGoogle } from "react-icons/fc";
-import { FaWhatsapp } from "react-icons/fa6";
+} from '@/components/ui/sidebar';
+import { ThemeToggleSidebar } from './layout/theme-toggle';
+import Image from 'next/image';
+import { Separator } from './ui/separator';
+import { url } from 'inspector';
+import { FcGoogle } from 'react-icons/fc';
+import { FaWhatsapp } from 'react-icons/fa6';
 
 // This is sample data.
 export const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: 'shadcn',
+    email: 'm@example.com',
+    avatar: '/avatars/shadcn.jpg',
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: 'Acme Inc',
       logo: Building,
-      plan: "Enterprise",
+      plan: 'Enterprise',
     },
     {
-      name: "Acme Corp.",
+      name: 'Acme Corp.',
       logo: Building,
-      plan: "Startup",
+      plan: 'Startup',
     },
     {
-      name: "Evil Corp.",
+      name: 'Evil Corp.',
       logo: Building,
-      plan: "Free",
+      plan: 'Free',
     },
   ],
   navMain: [
     {
-      title: "Variables",
-      url: "#",
+      title: 'Variables',
+      url: '#',
       icon: Settings2,
       isActive: true,
       items: [
         {
-          title: "Municipios",
-          url: "/dashboard/municipios",
+          title: 'Municipios',
+          url: '/dashboard/municipios',
           icon: Map,
         },
         {
-          title: "Preparatorias",
-          url: "/dashboard/preparatorias",
+          title: 'Preparatorias',
+          url: '/dashboard/preparatorias',
           icon: School,
         },
         {
-          title: "Facultades",
-          url: "/dashboard/facultades",
+          title: 'Facultades',
+          url: '/dashboard/facultades',
           icon: GraduationCap,
         },
         {
-          title: "Carreras",
-          url: "/dashboard/carreras",
+          title: 'Carreras',
+          url: '/dashboard/carreras',
           icon: BookOpen,
         },
         {
-          title: "Módulos",
-          url: "/dashboard/modulos",
+          title: 'Módulos',
+          url: '/dashboard/modulos',
           icon: Frame,
         },
         {
-          title: "Ajustes",
-          url: "/dashboard/ajustes",
+          title: 'Ajustes',
+          url: '/dashboard/ajustes',
           icon: Frame,
         },
       ],
@@ -114,146 +114,146 @@ export const data = {
 
   projects: [
     {
-      name: "Design Engineering",
-      url: "#",
+      name: 'Design Engineering',
+      url: '#',
       icon: Bot,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
+      name: 'Sales & Marketing',
+      url: '#',
       icon: Receipt,
     },
     {
-      name: "Travel",
-      url: "#",
+      name: 'Travel',
+      url: '#',
       icon: Map,
     },
   ],
 
   admin_navigation: [
     {
-      name: "Dashboard",
-      url: "/dashboard",
+      name: 'Dashboard',
+      url: '/dashboard',
       icon: LayoutDashboard,
     },
     {
-      name: "Tarjetas",
-      url: "/dashboard/cards",
+      name: 'Tarjetas',
+      url: '/dashboard/cards',
       icon: CreditCard,
     },
     {
-      name: "Cohortes",
-      url: "/dashboard/cohortes",
+      name: 'Cohortes',
+      url: '/dashboard/cohortes',
       icon: GraduationCap,
     },
     {
-      name: "Planteles",
-      url: "/dashboard/planteles",
+      name: 'Planteles',
+      url: '/dashboard/planteles',
       icon: Building,
     },
     {
-      name: "Usuarios",
-      url: "/dashboard/usuarios",
+      name: 'Usuarios',
+      url: '/dashboard/usuarios',
       icon: Users,
     },
     {
-      name: "Periodos",
-      url: "/dashboard/periodos",
+      name: 'Periodos',
+      url: '/dashboard/periodos',
       icon: CalendarClock,
     },
     {
-      name: "Promociones",
-      url: "/dashboard/promos",
+      name: 'Promociones',
+      url: '/dashboard/promos',
       icon: BaggageClaimIcon,
     },
     {
-      name: "Grupos",
-      url: "/dashboard/grupos",
+      name: 'Grupos',
+      url: '/dashboard/grupos',
       icon: Users,
     },
     {
-      name: "Semanas Intensivas",
-      url: "/dashboard/semanas-intensivas",
+      name: 'Semanas Intensivas',
+      url: '/dashboard/semanas-intensivas',
       icon: CalendarClock,
     },
     {
-      name: "Productos",
-      url: "/dashboard/productos",
+      name: 'Productos',
+      url: '/dashboard/productos',
       icon: ShoppingBag,
     },
     {
-      name: "Instrucciones",
-      url: "/chat",
+      name: 'Instrucciones',
+      url: '/chat',
       icon: MessageSquare,
     },
     {
-      name: "WhatsApp",
-      url: "/dashboard/whatsapp",
+      name: 'WhatsApp',
+      url: '/dashboard/whatsapp',
       icon: MessageCircle,
     },
   ],
 
   plantel_navigation: [
     {
-      name: "Dashboard",
-      url: "/planteles",
+      name: 'Dashboard',
+      url: '/planteles',
       icon: LayoutDashboard,
     },
     {
-      name: "Estudiantes",
-      url: "/planteles/estudiantes",
+      name: 'Estudiantes',
+      url: '/planteles/estudiantes',
       icon: Users,
     },
     {
-      name: "Adeudos",
-      url: "/planteles/adeudos",
+      name: 'Adeudos',
+      url: '/planteles/adeudos',
       icon: Receipt,
     },
     {
-      name: "Ingresos",
-      url: "/planteles/ingresos",
+      name: 'Ingresos',
+      url: '/planteles/ingresos',
       icon: Receipt,
     },
     {
-      name: "Pendientes",
-      url: "/planteles/pendientes",
+      name: 'Pendientes',
+      url: '/planteles/pendientes',
       icon: AlertCircle,
     },
     {
-      name: "Egresos",
-      url: "/planteles/gastos",
+      name: 'Egresos',
+      url: '/planteles/gastos',
       icon: DollarSign,
     },
     {
-      name: "Caja",
-      url: "/planteles/caja",
+      name: 'Caja',
+      url: '/planteles/caja',
       icon: CreditCard,
     },
     {
-      name: "Grupos",
-      url: "/planteles/grupos",
+      name: 'Grupos',
+      url: '/planteles/grupos',
       icon: Users,
     },
     {
-      name: "Asistencias",
-      url: "/planteles/lista-asistencia",
+      name: 'Asistencias',
+      url: '/planteles/lista-asistencia',
       icon: BookOpen,
     },
     {
-      name: "google",
-      url: "/planteles/google",
+      name: 'google',
+      url: '/planteles/google',
       icon: FcGoogle as any,
     },
     {
-      name: "WhatsApp",
-      url: "/planteles/chat",
+      name: 'WhatsApp',
+      url: '/planteles/chat',
       icon: FaWhatsapp as any,
-    }
+    },
   ],
   chatbot_navigation: [
     {
-      name: "Chat",
-      url: "/chat",
+      name: 'Chat',
+      url: '/chat',
       icon: MessageSquare,
     },
   ],
@@ -285,8 +285,16 @@ export function AdminSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <h2 className="text-xl font-bold px-2 py-4 group-data-[collapsible=icon]:hidden text-white">Prexun Asesorías</h2>
-        <Image className="group-data-[collapsible=icon]:block hidden py-4 " src="/prexun.png" alt="Prexun Logo" width={50} height={50} />
+        <h2 className="text-xl font-bold px-2 py-4 group-data-[collapsible=icon]:hidden text-white">
+          Prexun Asesorías
+        </h2>
+        <Image
+          className="group-data-[collapsible=icon]:block hidden py-4 "
+          src="/prexun.png"
+          alt="Prexun Logo"
+          width={50}
+          height={50}
+        />
       </SidebarHeader>
       <SidebarContent>
         <NavItems projects={data.admin_navigation} />
@@ -327,8 +335,13 @@ export function ChatSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <h2 className="text-xl font-bold px-2 py-4 group-data-[collapsible=icon]:hidden text-white">Chat Assistant</h2>
-        <MessageSquare className="group-data-[collapsible=icon]:block hidden py-4 mx-auto" size={32} />
+        <h2 className="text-xl font-bold px-2 py-4 group-data-[collapsible=icon]:hidden text-white">
+          Chat Assistant
+        </h2>
+        <MessageSquare
+          className="group-data-[collapsible=icon]:block hidden py-4 mx-auto"
+          size={32}
+        />
       </SidebarHeader>
       <SidebarContent>
         <NavItems projects={data.chatbot_navigation} />

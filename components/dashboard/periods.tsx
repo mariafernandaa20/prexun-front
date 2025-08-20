@@ -84,7 +84,8 @@ export function Periods() {
       const endDate = new Date(formData.end_date);
 
       if (endDate < startDate) {
-        errors.end_date = 'La fecha de fin debe ser posterior a la fecha de inicio';
+        errors.end_date =
+          'La fecha de fin debe ser posterior a la fecha de inicio';
         isValid = false;
       }
     }
@@ -170,7 +171,7 @@ export function Periods() {
     <div className="w-full max-w-[100vw] overflow-x-hidden">
       <div className="p-4">
         <Card>
-          <CardHeader className='sticky top-0 z-8 bg-card'>
+          <CardHeader className="sticky top-0 z-8 bg-card">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl font-bold">Períodos</h1>
               <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -210,7 +211,9 @@ export function Periods() {
                         className={formErrors.name ? 'border-red-500' : ''}
                       />
                       {formErrors.name && (
-                        <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.name}
+                        </p>
                       )}
                     </div>
                     {/* <div>
@@ -236,12 +239,19 @@ export function Periods() {
                         type="date"
                         value={formData.start_date}
                         onChange={(e) =>
-                          setFormData({ ...formData, start_date: e.target.value })
+                          setFormData({
+                            ...formData,
+                            start_date: e.target.value,
+                          })
                         }
-                        className={formErrors.start_date ? 'border-red-500' : ''}
+                        className={
+                          formErrors.start_date ? 'border-red-500' : ''
+                        }
                       />
                       {formErrors.start_date && (
-                        <p className="text-red-500 text-sm mt-1">{formErrors.start_date}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.start_date}
+                        </p>
                       )}
                     </div>
                     <div>
@@ -256,7 +266,9 @@ export function Periods() {
                         className={formErrors.end_date ? 'border-red-500' : ''}
                       />
                       {formErrors.end_date && (
-                        <p className="text-red-500 text-sm mt-1">{formErrors.end_date}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {formErrors.end_date}
+                        </p>
                       )}
                     </div>
                     {error && (
@@ -270,8 +282,10 @@ export function Periods() {
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           {currentPeriod ? 'Actualizando...' : 'Creando...'}
                         </>
+                      ) : currentPeriod ? (
+                        'Actualizar'
                       ) : (
-                        currentPeriod ? 'Actualizar' : 'Crear'
+                        'Crear'
                       )}
                     </Button>
                   </form>

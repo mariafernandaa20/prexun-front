@@ -1,9 +1,16 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAuthStore } from "@/lib/store/auth-store";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useAuthStore } from '@/lib/store/auth-store';
 import axiosInstance from '@/lib/api/axiosConfig';
 
 interface Group {
@@ -43,24 +50,25 @@ export default function TeachergruposPage() {
 
   useEffect(() => {
     if (!selectedGroup) return;
-    
-    axiosInstance.get(`/grupos/${selectedGroup}/students`)
+
+    axiosInstance
+      .get(`/grupos/${selectedGroup}/students`)
       .then((response) => {
         setAlumnos(response.data);
         const lista = response.data.map((alumno: Student) => ({
           student_id: alumno.id,
-          status: "presente"
+          status: 'presente',
         }));
         setAsistencia(lista);
         setMostrarTabla(true); // mostrar tabla al seleccionar grupo
       })
       .catch((err) => {
         console.error(err);
-        alert("Error al cargar los alumnos del grupo");
+        alert('Error al cargar los alumnos del grupo');
       });
   }, [selectedGroup]);
 
-  const selectedGroupData = grupos.find(g => g.id === selectedGroup);
+  const selectedGroupData = grupos.find((g) => g.id === selectedGroup);
 
   return (
     <div className="p-6 space-y-6">
@@ -68,7 +76,9 @@ export default function TeachergruposPage() {
 
       {grupos.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500">No tienes grupos asignados actualmente.</p>
+          <p className="text-gray-500">
+            No tienes grupos asignados actualmente.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -83,11 +93,18 @@ export default function TeachergruposPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">Tipo: {group.type}</p>
-                <p className="text-sm text-gray-600">Horario: {group.start_time} - {group.end_time}</p>
-                <p className="text-sm text-gray-600">Frecuencia: {Object.entries(JSON.parse(group.frequency as any))
-                  .map(([day, value]) => value)
-                  .join(', ')}</p>
-                <p className="text-sm text-gray-600">Estudiantes: {group.students_count || 0} de {group.capacity}</p>
+                <p className="text-sm text-gray-600">
+                  Horario: {group.start_time} - {group.end_time}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Frecuencia:{' '}
+                  {Object.entries(JSON.parse(group.frequency as any))
+                    .map(([day, value]) => value)
+                    .join(', ')}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Estudiantes: {group.students_count || 0} de {group.capacity}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -117,12 +134,17 @@ export default function TeachergruposPage() {
               <TableBody>
                 {alumnos.map((alumno) => (
                   <TableRow key={alumno.id}>
-                    <TableCell>{alumno.firstname} {alumno.lastname}</TableCell>
+                    <TableCell>
+                      {alumno.firstname} {alumno.lastname}
+                    </TableCell>
                     <TableCell>{alumno.email}</TableCell>
                     <TableCell>
                       <select
                         className="border rounded px-2 py-1"
-                        value={asistencia.find(a => a.student_id === alumno.id)?.status || "presente"}
+                        value={
+                          asistencia.find((a) => a.student_id === alumno.id)
+                            ?.status || 'presente'
+                        }
                         onChange={(e) => {
                           const nuevaLista = asistencia.map((a) =>
                             a.student_id === alumno.id
@@ -145,7 +167,7 @@ export default function TeachergruposPage() {
             <button
               className="mt-4 bg-primary text-white px-4 py-2 rounded"
               onClick={async () => {
-                const fecha = new Date().toISOString().split("T")[0];
+                const fecha = new Date().toISOString().split('T')[0];
                 const payload = {
                   grupo_id: selectedGroup,
                   fecha,
@@ -154,10 +176,12 @@ export default function TeachergruposPage() {
 
                 try {
                   await axiosInstance.post('/asistencias', payload);
-                  alert("Asistencia guardada correctamente");
+                  alert('Asistencia guardada correctamente');
                 } catch (err: any) {
                   console.error(err);
-                  const message = err.response?.data?.message || "Error al guardar asistencia";
+                  const message =
+                    err.response?.data?.message ||
+                    'Error al guardar asistencia';
                   alert(message);
                 }
               }}

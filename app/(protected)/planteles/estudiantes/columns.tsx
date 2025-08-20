@@ -13,7 +13,13 @@ interface ColumnDefinition {
   id: string;
   label: string;
   defaultVisible: boolean;
-  render: (student: Student, user?: User | null, handleOpenEditModal?: (student: Student) => void, handleDeleteForever?: (id: string) => void, handleOpenWhatsAppModal?: (student: Student) => void) => React.ReactNode;
+  render: (
+    student: Student,
+    user?: User | null,
+    handleOpenEditModal?: (student: Student) => void,
+    handleDeleteForever?: (id: string) => void,
+    handleOpenWhatsAppModal?: (student: Student) => void
+  ) => React.ReactNode;
 }
 
 export const getColumnDefinitions = (
@@ -22,187 +28,203 @@ export const getColumnDefinitions = (
   handleDeleteForever: (id: string) => void,
   handleOpenWhatsAppModal: (student: Student) => void
 ): ColumnDefinition[] => [
-    {
-      id: 'matricula',
-      label: 'Matrícula',
-      defaultVisible: false,
-      render: (student: Student) => student.id
-    },
-    {
-      id: 'status',
-      label: 'Estatus',
-      defaultVisible: true,
-      render: (student: Student) => (
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${student.status === 'Activo' ? 'bg-green-500' :
-              student.status === 'Inactivo' ? 'bg-gray-500' :
-                student.status === 'Baja' ? 'bg-red-500' :
-                  student.status === 'Suspendido' ? 'bg-yellow-500' :
-                    student.status === 'Transferido' ? 'bg-blue-500' :
-                      'bg-gray-400'
-              }`}
-          />
-          <span>{student.status}</span>
-        </div>
-      )
-    },
-    {
-      id: 'created_at',
-      label: 'Fecha de Inscripción',
-      defaultVisible: false,
-      render: (student: Student) => new Date(student.created_at).toLocaleDateString()
-    },
-    {
-      id: 'firstname',
-      label: 'Nombre',
-      defaultVisible: true,
-      render: (student: Student) => student.firstname
-    },
-    {
-      id: 'lastname',
-      label: 'Apellido',
-      defaultVisible: true,
-      render: (student: Student) => student.lastname
-    },
-    {
-      id: 'email',
-      label: 'Email',
-      defaultVisible: true,
-      render: (student: Student) => student.email
-    },
-    {
-      id: 'phone',
-      label: 'Teléfono',
-      defaultVisible: true,
-      render: (student: Student) => student.phone
-    },
-    {
-      id: 'type',
-      label: 'Curso',
-      defaultVisible: false,
-      render: (student: Student) => student.type
-    },
-    {
-      id: 'period',
-      label: 'Periodo',
-      defaultVisible: false,
-      render: (student: Student) => student.period ? student.period.name : '-'
-    },
-    {
-      id: 'grupo',
-      label: 'Grupo',
-      defaultVisible: true,
-      render: (student: Student) => student?.grupo?.name ? student.grupo.name : '-'
-    },
-    {
-      id: 'carrera',
-      label: 'Carrera',
-      defaultVisible: false,
-      render: (student: Student) => student?.carrera?.name || '-'
-    },
-    {
-      id: 'facultad',
-      label: 'Facultad',
-      defaultVisible: false,
-      render: (student: Student) => student?.facultad?.name || '-'
-    },
-    {
-      id: 'prepa',
-      label: 'Preparatoria',
-      defaultVisible: false,
-      render: (student: Student) => student?.prepa?.name || '-'
-    },
-    {
-      id: 'municipio',
-      label: 'Municipio',
-      defaultVisible: false,
-      render: (student: Student) => student?.municipio?.name || '-'
-    },
-    {
-      id: 'tutor_name',
-      label: 'Tutor',
-      defaultVisible: false,
-      render: (student: Student) => student.tutor_name || '-'
-    },
-    {
-      id: 'tutor_phone',
-      label: 'Teléfono del Tutor',
-      defaultVisible: false,
-      render: (student: Student) => student.tutor_phone || '-'
-    },
-    {
-      id: 'tutor_relationship',
-      label: 'Relación con el Tutor',
-      defaultVisible: false,
-      render: (student: Student) => student.tutor_relationship || '-'
-    },
-    {
-      id: 'status',
-      label: 'Estado',
-      defaultVisible: false,
-      render: (student: Student) => student.status || '-'
-    },
-    {
-      id: 'health_conditions',
-      label: 'Condiciones de Salud',
-      defaultVisible: false,
-      render: (student: Student) => student.health_conditions || '-'
-    },
-    {
-      id: 'how_found_out',
-      label: 'Cómo se Enteró',
-      defaultVisible: false,
-      render: (student: Student) => student.how_found_out || '-'
-    },
-    {
-      id: 'preferred_communication',
-      label: 'Medio de Comunicación',
-      defaultVisible: false,
-      render: (student: Student) => student.preferred_communication || '-'
-    },
-    {
-      id: 'actions',
-      label: 'Acciones',
-      defaultVisible: true,
-      render: (student: Student, user?: User | null, handleOpenEditModal?: (student: Student) => void, handleDeleteForever?: (id: string) => void, handleOpenWhatsAppModal?: (student: Student) => void) => (
-        <div className="flex gap-2">
-          <AdeudosModal student={student} />
-          <Link
-            className={buttonVariants({ variant: 'ghost' })}
-            href={`/planteles/estudiantes/${student.id}`}
-            title="Ver estudiante"
-          >
-            <Eye className="h-4 w-4" />
-          </Link>
+  {
+    id: 'matricula',
+    label: 'Matrícula',
+    defaultVisible: false,
+    render: (student: Student) => student.id,
+  },
+  {
+    id: 'status',
+    label: 'Estatus',
+    defaultVisible: true,
+    render: (student: Student) => (
+      <div className="flex items-center gap-2">
+        <div
+          className={`w-2 h-2 rounded-full ${
+            student.status === 'Activo'
+              ? 'bg-green-500'
+              : student.status === 'Inactivo'
+                ? 'bg-gray-500'
+                : student.status === 'Baja'
+                  ? 'bg-red-500'
+                  : student.status === 'Suspendido'
+                    ? 'bg-yellow-500'
+                    : student.status === 'Transferido'
+                      ? 'bg-blue-500'
+                      : 'bg-gray-400'
+          }`}
+        />
+        <span>{student.status}</span>
+      </div>
+    ),
+  },
+  {
+    id: 'created_at',
+    label: 'Fecha de Inscripción',
+    defaultVisible: false,
+    render: (student: Student) =>
+      new Date(student.created_at).toLocaleDateString(),
+  },
+  {
+    id: 'firstname',
+    label: 'Nombre',
+    defaultVisible: true,
+    render: (student: Student) => student.firstname,
+  },
+  {
+    id: 'lastname',
+    label: 'Apellido',
+    defaultVisible: true,
+    render: (student: Student) => student.lastname,
+  },
+  {
+    id: 'email',
+    label: 'Email',
+    defaultVisible: true,
+    render: (student: Student) => student.email,
+  },
+  {
+    id: 'phone',
+    label: 'Teléfono',
+    defaultVisible: true,
+    render: (student: Student) => student.phone,
+  },
+  {
+    id: 'type',
+    label: 'Curso',
+    defaultVisible: false,
+    render: (student: Student) => student.type,
+  },
+  {
+    id: 'period',
+    label: 'Periodo',
+    defaultVisible: false,
+    render: (student: Student) => (student.period ? student.period.name : '-'),
+  },
+  {
+    id: 'grupo',
+    label: 'Grupo',
+    defaultVisible: true,
+    render: (student: Student) =>
+      student?.grupo?.name ? student.grupo.name : '-',
+  },
+  {
+    id: 'carrera',
+    label: 'Carrera',
+    defaultVisible: false,
+    render: (student: Student) => student?.carrera?.name || '-',
+  },
+  {
+    id: 'facultad',
+    label: 'Facultad',
+    defaultVisible: false,
+    render: (student: Student) => student?.facultad?.name || '-',
+  },
+  {
+    id: 'prepa',
+    label: 'Preparatoria',
+    defaultVisible: false,
+    render: (student: Student) => student?.prepa?.name || '-',
+  },
+  {
+    id: 'municipio',
+    label: 'Municipio',
+    defaultVisible: false,
+    render: (student: Student) => student?.municipio?.name || '-',
+  },
+  {
+    id: 'tutor_name',
+    label: 'Tutor',
+    defaultVisible: false,
+    render: (student: Student) => student.tutor_name || '-',
+  },
+  {
+    id: 'tutor_phone',
+    label: 'Teléfono del Tutor',
+    defaultVisible: false,
+    render: (student: Student) => student.tutor_phone || '-',
+  },
+  {
+    id: 'tutor_relationship',
+    label: 'Relación con el Tutor',
+    defaultVisible: false,
+    render: (student: Student) => student.tutor_relationship || '-',
+  },
+  {
+    id: 'status',
+    label: 'Estado',
+    defaultVisible: false,
+    render: (student: Student) => student.status || '-',
+  },
+  {
+    id: 'health_conditions',
+    label: 'Condiciones de Salud',
+    defaultVisible: false,
+    render: (student: Student) => student.health_conditions || '-',
+  },
+  {
+    id: 'how_found_out',
+    label: 'Cómo se Enteró',
+    defaultVisible: false,
+    render: (student: Student) => student.how_found_out || '-',
+  },
+  {
+    id: 'preferred_communication',
+    label: 'Medio de Comunicación',
+    defaultVisible: false,
+    render: (student: Student) => student.preferred_communication || '-',
+  },
+  {
+    id: 'actions',
+    label: 'Acciones',
+    defaultVisible: true,
+    render: (
+      student: Student,
+      user?: User | null,
+      handleOpenEditModal?: (student: Student) => void,
+      handleDeleteForever?: (id: string) => void,
+      handleOpenWhatsAppModal?: (student: Student) => void
+    ) => (
+      <div className="flex gap-2">
+        <AdeudosModal student={student} />
+        <Link
+          className={buttonVariants({ variant: 'ghost' })}
+          href={`/planteles/estudiantes/${student.id}`}
+          title="Ver estudiante"
+        >
+          <Eye className="h-4 w-4" />
+        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => handleOpenEditModal && handleOpenEditModal(student)}
+          title="Editar estudiante"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+        {user?.role === 'super_admin' && (
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleOpenEditModal && handleOpenEditModal(student)}
-            title="Editar estudiante"
+            className="text-red-500 hover:text-red-700"
+            onClick={() =>
+              handleDeleteForever && handleDeleteForever(student.id!)
+            }
+            title="Eliminar estudiante"
           >
-            <Pencil className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
-          {user?.role === 'super_admin' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className='text-red-500 hover:text-red-700'
-              onClick={() => handleDeleteForever && handleDeleteForever(student.id!)}
-              title="Eliminar estudiante"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      )
-    },
-  ];
+        )}
+      </div>
+    ),
+  },
+];
 
 export const getColumnOptions = (columnDefinitions: ColumnDefinition[]) => {
-  return columnDefinitions.map(col => ({
+  return columnDefinitions.map((col) => ({
     value: col.id,
     label: col.label,
-    defaultVisible: col.defaultVisible
+    defaultVisible: col.defaultVisible,
   }));
 };

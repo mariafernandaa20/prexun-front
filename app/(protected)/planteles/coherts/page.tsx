@@ -5,9 +5,27 @@ export default function CohertsPage() {
       <div className="grid gap-2">
         {/* Example data */}
         {[
-          { id: 1, nombre: "2024-A", estudiantes: 25, fechaInicio: "2024-01-15", estado: "En curso" },
-          { id: 2, nombre: "2024-B", estudiantes: 30, fechaInicio: "2024-03-01", estado: "En curso" },
-          { id: 3, nombre: "2023-C", estudiantes: 28, fechaInicio: "2023-09-01", estado: "Finalizado" },
+          {
+            id: 1,
+            nombre: '2024-A',
+            estudiantes: 25,
+            fechaInicio: '2024-01-15',
+            estado: 'En curso',
+          },
+          {
+            id: 2,
+            nombre: '2024-B',
+            estudiantes: 30,
+            fechaInicio: '2024-03-01',
+            estado: 'En curso',
+          },
+          {
+            id: 3,
+            nombre: '2023-C',
+            estudiantes: 28,
+            fechaInicio: '2023-09-01',
+            estado: 'Finalizado',
+          },
         ].map((cohorte) => (
           <div key={cohorte.id} className="p-4 border rounded-lg">
             <p>Nombre: {cohorte.nombre}</p>
@@ -19,4 +37,4 @@ export default function CohertsPage() {
       </div>
     </div>
   );
-} 
+}

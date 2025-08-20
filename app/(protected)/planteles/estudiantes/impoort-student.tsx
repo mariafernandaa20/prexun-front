@@ -1,73 +1,85 @@
-import { Button } from '@/components/ui/button'
-import { Upload } from 'lucide-react'
-import React, { useState, useRef } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { useToast } from '@/hooks/use-toast'
-import { importStudents } from '@/lib/api'
+import { Button } from '@/components/ui/button';
+import { Upload } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { importStudents } from '@/lib/api';
 
-export function ImportStudent({fetchStudents, campusId}: {fetchStudents: () => void, campusId: string}) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
-  const { toast } = useToast()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export function ImportStudent({
+  fetchStudents,
+  campusId,
+}: {
+  fetchStudents: () => void;
+  campusId: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
+    e.preventDefault();
+    setIsDragging(true);
+  };
 
   const handleDragLeave = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    
-    const droppedFile = e.dataTransfer.files[0]
-    handleFileSelection(droppedFile)
-  }
+    e.preventDefault();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files[0];
+    handleFileSelection(droppedFile);
+  };
 
   const handleFileSelection = (selectedFile: File) => {
     if (selectedFile?.type !== 'text/csv') {
       toast({
         title: 'Error',
         description: 'Solo se permiten archivos CSV',
-        variant: 'destructive'
-      })
-      return
+        variant: 'destructive',
+      });
+      return;
     }
-    setFile(selectedFile)
-  }
+    setFile(selectedFile);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      handleFileSelection(selectedFile)
+      handleFileSelection(selectedFile);
     }
-  }
+  };
   const handleFileUpload = async () => {
-    if (!file) return
+    if (!file) return;
 
     try {
-      const response = await importStudents(file, campusId)
-      
+      const response = await importStudents(file, campusId);
+
       toast({
         title: 'Éxito',
-        description: response.message
-      })
-      setIsOpen(false)
-      setFile(null)
-      fetchStudents()
+        description: response.message,
+      });
+      setIsOpen(false);
+      setFile(null);
+      fetchStudents();
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Error al importar estudiantes',
-        variant: 'destructive'
-      })
+        description:
+          error.response?.data?.message || 'Error al importar estudiantes',
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   return (
     <>
@@ -105,7 +117,10 @@ export function ImportStudent({fetchStudents, campusId}: {fetchStudents: () => v
             ) : (
               <div>
                 <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2">Arrastra y suelta un archivo CSV aquí o haz clic para seleccionar</p>
+                <p className="mt-2">
+                  Arrastra y suelta un archivo CSV aquí o haz clic para
+                  seleccionar
+                </p>
               </div>
             )}
           </div>
@@ -121,5 +136,5 @@ export function ImportStudent({fetchStudents, campusId}: {fetchStudents: () => v
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

@@ -9,8 +9,6 @@ import { syncStudentModules } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 
-
-
 interface FiltersProps {
   setPeriodFilter: (value: string) => void;
   periodFilter: any;
@@ -52,7 +50,7 @@ const Filters: React.FC<FiltersProps> = ({
   setSearchDate,
   setSearchPhone,
   setSearchMatricula,
-  children
+  children,
 }) => {
   const [showAllFilters, setShowAllFilters] = useState(false);
   const [firstnameInput, setFirstnameInput] = useState('');
@@ -63,8 +61,8 @@ const Filters: React.FC<FiltersProps> = ({
   const [matriculaInput, setMatriculaInput] = useState<string>('');
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const { periods, grupos, carreras, facultades, modulos, semanasIntensivas } = useAuthStore();
-
+  const { periods, grupos, carreras, facultades, modulos, semanasIntensivas } =
+    useAuthStore();
 
   const debouncedFirstname = useDebounce(firstnameInput, 500);
   const debouncedLastname = useDebounce(lastnameInput, 500);
@@ -115,7 +113,10 @@ const Filters: React.FC<FiltersProps> = ({
             type="email"
           />
           <SearchableSelect
-            options={periods.map(period => ({ value: period.id, label: period.name }))}
+            options={periods.map((period) => ({
+              value: period.id,
+              label: period.name,
+            }))}
             value={assignedPeriodFilter}
             placeholder="Periodo (Nuevo)"
             onChange={setAssignedPeriodFilter}
@@ -123,24 +124,44 @@ const Filters: React.FC<FiltersProps> = ({
             allOptionLabel="Todos"
           />
           <SearchableSelect
-            options={grupos.filter(grupo => !periodFilter || grupo.period_id.toString() === periodFilter.toString()).map(grupo => ({ value: grupo.id.toString(), label: grupo.name }))}
+            options={grupos
+              .filter(
+                (grupo) =>
+                  !periodFilter ||
+                  grupo.period_id.toString() === periodFilter.toString()
+              )
+              .map((grupo) => ({
+                value: grupo.id.toString(),
+                label: grupo.name,
+              }))}
             value={undefined}
             placeholder="Grupo"
-            onChange={val => setGrupoFilter(val)}
+            onChange={(val) => setGrupoFilter(val)}
             showAllOption={true}
             allOptionLabel="Todos"
           />
           <SearchableSelect
-            options={semanasIntensivas.filter(semana => !periodFilter || semana.period_id.toString() === periodFilter.toString()).map(semana => ({ value: semana.id.toString(), label: semana.name }))}
+            options={semanasIntensivas
+              .filter(
+                (semana) =>
+                  !periodFilter ||
+                  semana.period_id.toString() === periodFilter.toString()
+              )
+              .map((semana) => ({
+                value: semana.id.toString(),
+                label: semana.name,
+              }))}
             value={undefined}
             placeholder="Semana intensiva"
-            onChange={val => setSemanaIntensivaFilter(val)}
+            onChange={(val) => setSemanaIntensivaFilter(val)}
             showAllOption={true}
             allOptionLabel="Todos"
           />
           <>{children && children}</>
         </div>
-        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${showAllFilters ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
             <Input
               placeholder="Buscar por nombre..."
@@ -168,7 +189,10 @@ const Filters: React.FC<FiltersProps> = ({
               type="number"
             />
             <SearchableSelect
-              options={periods.map(period => ({ value: period.id, label: period.name }))}
+              options={periods.map((period) => ({
+                value: period.id,
+                label: period.name,
+              }))}
               value={periodFilter}
               placeholder="Periodo (Viejo)"
               onChange={setPeriodFilter}
@@ -176,26 +200,35 @@ const Filters: React.FC<FiltersProps> = ({
               allOptionLabel="Todos"
             />
             <SearchableSelect
-              options={carreras.map(carrera => ({ value: carrera.id?.toString() || '', label: carrera.name }))}
+              options={carreras.map((carrera) => ({
+                value: carrera.id?.toString() || '',
+                label: carrera.name,
+              }))}
               value={carreraFilter}
               placeholder="Carrera"
-              onChange={val => setCarreraFilter?.(val)}
+              onChange={(val) => setCarreraFilter?.(val)}
               showAllOption={true}
               allOptionLabel="Todas"
             />
             <SearchableSelect
-              options={facultades.map(facultad => ({ value: facultad.id?.toString() || '', label: facultad.name }))}
+              options={facultades.map((facultad) => ({
+                value: facultad.id?.toString() || '',
+                label: facultad.name,
+              }))}
               value={facultadFilter}
               placeholder="Facultad"
-              onChange={val => setFacultadFilter?.(val)}
+              onChange={(val) => setFacultadFilter?.(val)}
               showAllOption={true}
               allOptionLabel="Todas"
             />
             <SearchableSelect
-              options={modulos.map(modulo => ({ value: modulo.id?.toString() || '', label: modulo.name || '' }))}
+              options={modulos.map((modulo) => ({
+                value: modulo.id?.toString() || '',
+                label: modulo.name || '',
+              }))}
               value={undefined}
               placeholder="Módulo"
-              onChange={val => setModuloFilter?.(val)}
+              onChange={(val) => setModuloFilter?.(val)}
               showAllOption={true}
               allOptionLabel="Todos"
             />
@@ -205,11 +238,14 @@ const Filters: React.FC<FiltersProps> = ({
                 try {
                   setIsSyncing(true);
                   await syncStudentModules();
-                  toast({ title: 'Sincronización de módulos completada correctamente' });
+                  toast({
+                    title: 'Sincronización de módulos completada correctamente',
+                  });
                 } catch (error: any) {
                   toast({
                     title: 'Error al sincronizar módulos',
-                    description: error.response?.data?.message || 'Intente nuevamente',
+                    description:
+                      error.response?.data?.message || 'Intente nuevamente',
                     variant: 'destructive',
                   });
                 } finally {
@@ -217,20 +253,23 @@ const Filters: React.FC<FiltersProps> = ({
                 }
               }}
               disabled={isSyncing}
-              title='Sincronizar Módulos'
+              title="Sincronizar Módulos"
             >
               {isSyncing ? 'Sincronizando...' : 'Sincronizar Módulos'}
             </Button>
           </div>
         </div>
-
       </div>
       <div className="flex justify-start">
         <button
           onClick={() => setShowAllFilters(!showAllFilters)}
           className="flex items-center gap-1 text-sm px-3 py-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
           aria-expanded={showAllFilters}
-          aria-label={showAllFilters ? "Ocultar filtros adicionales" : "Mostrar filtros adicionales"}
+          aria-label={
+            showAllFilters
+              ? 'Ocultar filtros adicionales'
+              : 'Mostrar filtros adicionales'
+          }
         >
           {showAllFilters ? (
             <>

@@ -1,119 +1,152 @@
-'use client'
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Table, TableCell, TableHead, TableHeader, TableRow, TableBody } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { PlusIcon, CreditCard, AlertTriangle, CheckCircle, FilePlus2 } from 'lucide-react'
-import axiosInstance from '@/lib/api/axiosConfig'
-import { formatTime } from '@/lib/utils'
-import { useActiveCampusStore } from '@/lib/store/plantel-store'
-import { createCharge, getCards } from '@/lib/api'
-import { getStudentAssignmentsByStudent } from '@/lib/api'
-import ChargesForm from './charges-form'
-import type { Transaction, Card as CardType } from '@/lib/types'
+'use client';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Table,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableBody,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import {
+  PlusIcon,
+  CreditCard,
+  AlertTriangle,
+  CheckCircle,
+  FilePlus2,
+} from 'lucide-react';
+import axiosInstance from '@/lib/api/axiosConfig';
+import { formatTime } from '@/lib/utils';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { createCharge, getCards } from '@/lib/api';
+import { getStudentAssignmentsByStudent } from '@/lib/api';
+import ChargesForm from './charges-form';
+import type { Transaction, Card as CardType } from '@/lib/types';
 
 interface Debt {
-  id: number
-  student_id: number
-  assignment_id?: number
-  concept: string
-  total_amount: number
-  paid_amount: number
-  remaining_amount: number
-  due_date: string
-  status: 'pending' | 'partial' | 'paid' | 'overdue'
-  description?: string
-  created_at: string
-  updated_at: string
-  assignment?: Assignment
-  transactions?: any[]
+  id: number;
+  student_id: number;
+  assignment_id?: number;
+  concept: string;
+  total_amount: number;
+  paid_amount: number;
+  remaining_amount: number;
+  due_date: string;
+  status: 'pending' | 'partial' | 'paid' | 'overdue';
+  description?: string;
+  created_at: string;
+  updated_at: string;
+  assignment?: Assignment;
+  transactions?: any[];
 }
 
 interface Period {
-  id: number
-  name: string
-  price: number
-  start_date: string
-  end_date: string
+  id: number;
+  name: string;
+  price: number;
+  start_date: string;
+  end_date: string;
 }
 
 interface Assignment {
-  id: number
-  student_id: number
-  period_id: number
-  grupo_id?: number | null
-  semana_intensiva_id?: number | null
-  assigned_at: string
-  valid_until?: string | null
-  is_active: boolean
+  id: number;
+  student_id: number;
+  period_id: number;
+  grupo_id?: number | null;
+  semana_intensiva_id?: number | null;
+  assigned_at: string;
+  valid_until?: string | null;
+  is_active: boolean;
   period?: {
-    id: number
-    name: string
-    price: number
-  }
+    id: number;
+    name: string;
+    price: number;
+  };
   grupo?: {
-    id: number
-    name: string
-  }
+    id: number;
+    name: string;
+  };
   semanaIntensiva?: {
-    id: number
-    name: string
-  }
+    id: number;
+    name: string;
+  };
 }
 
 interface StudentDebtsManagerProps {
-  studentId: number
-  onTransactionUpdate?: (transaction: any) => void
+  studentId: number;
+  onTransactionUpdate?: (transaction: any) => void;
 }
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const statusConfig = {
-    pending: { label: 'Pendiente', variant: 'secondary' as const, icon: AlertTriangle },
-    partial: { label: 'Parcial', variant: 'default' as const, icon: CreditCard },
+    pending: {
+      label: 'Pendiente',
+      variant: 'secondary' as const,
+      icon: AlertTriangle,
+    },
+    partial: {
+      label: 'Parcial',
+      variant: 'default' as const,
+      icon: CreditCard,
+    },
     paid: { label: 'Pagado', variant: 'default' as const, icon: CheckCircle },
-    overdue: { label: 'Vencido', variant: 'destructive' as const, icon: AlertTriangle }
-  }
+    overdue: {
+      label: 'Vencido',
+      variant: 'destructive' as const,
+      icon: AlertTriangle,
+    },
+  };
 
-  const config = statusConfig[status] || statusConfig.pending
-  const Icon = config.icon
+  const config = statusConfig[status] || statusConfig.pending;
+  const Icon = config.icon;
 
   return (
     <Badge variant={config.variant} className="flex items-center gap-1">
       <Icon className="w-3 h-3" />
       {config.label}
     </Badge>
-  )
-}
+  );
+};
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
-    currency: 'MXN'
-  }).format(amount)
-}
+    currency: 'MXN',
+  }).format(amount);
+};
 
-export default function StudentDebtsManager({ studentId, onTransactionUpdate }: StudentDebtsManagerProps) {
-  const [debts, setDebts] = useState<Debt[]>([])
-  const [assignments, setAssignments] = useState<Assignment[]>([])
-  const [cards, setCards] = useState<CardType[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+export default function StudentDebtsManager({
+  studentId,
+  onTransactionUpdate,
+}: StudentDebtsManagerProps) {
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [cards, setCards] = useState<CardType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const activeCampus = useActiveCampusStore((state) => state.activeCampus)
+  const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
   const [debtFormData, setDebtFormData] = useState({
     assignment_id: '',
     concept: '',
     total_amount: '',
     due_date: '',
-    description: ''
-  })
+    description: '',
+  });
 
   // Estado para el formulario de pago unificado
   const [paymentFormData, setPaymentFormData] = useState<Transaction>({
@@ -128,101 +161,103 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
     payment_date: new Date().toISOString().split('T')[0],
     card_id: '',
     debt_id: null,
-    image: undefined
-  })
+    image: undefined,
+  });
 
-  const [errors, setErrors] = useState<any>({})
+  const [errors, setErrors] = useState<any>({});
 
   useEffect(() => {
     if (studentId && activeCampus) {
-      fetchStudentDebts()
-      fetchAssignments()
-      fetchCards()
+      fetchStudentDebts();
+      fetchAssignments();
+      fetchCards();
     }
-  }, [studentId, activeCampus])
+  }, [studentId, activeCampus]);
 
   // Actualizar formData cuando cambie el campus activo
   useEffect(() => {
     if (activeCampus) {
-      setPaymentFormData(prev => ({
+      setPaymentFormData((prev) => ({
         ...prev,
-        campus_id: activeCampus.id
-      }))
+        campus_id: activeCampus.id,
+      }));
       // Recargar tarjetas del nuevo campus
-      fetchCards()
+      fetchCards();
     }
-  }, [activeCampus])
+  }, [activeCampus]);
 
   const fetchCards = async () => {
     try {
       if (!activeCampus) return;
-      const response = await getCards(activeCampus.id)
-      setCards(response || [])
+      const response = await getCards(activeCampus.id);
+      setCards(response || []);
     } catch (error) {
-      console.error('Error fetching cards:', error)
+      console.error('Error fetching cards:', error);
     }
-  }
+  };
 
   const fetchStudentDebts = async () => {
     try {
-      setLoading(true)
-      const response = await axiosInstance.get(`/debts/student/${studentId}`)
-      setDebts(response.data.debts || [])
+      setLoading(true);
+      const response = await axiosInstance.get(`/debts/student/${studentId}`);
+      setDebts(response.data.debts || []);
     } catch (error) {
-      console.error('Error fetching student debts:', error)
+      console.error('Error fetching student debts:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchAssignments = async () => {
     try {
-      const response = await getStudentAssignmentsByStudent(studentId)
-      setAssignments(response.filter((assignment: Assignment) => assignment.is_active) || [])
+      const response = await getStudentAssignmentsByStudent(studentId);
+      setAssignments(
+        response.filter((assignment: Assignment) => assignment.is_active) || []
+      );
     } catch (error) {
-      console.error('Error fetching assignments:', error)
+      console.error('Error fetching assignments:', error);
     }
-  }
+  };
 
   const handleCreateDebt = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-    setErrors({})
+    e.preventDefault();
+    setSubmitting(true);
+    setErrors({});
 
     try {
       await axiosInstance.post('/debts', {
         ...debtFormData,
         student_id: studentId,
-        total_amount: parseFloat(debtFormData.total_amount)
-      })
+        total_amount: parseFloat(debtFormData.total_amount),
+      });
 
       setDebtFormData({
         assignment_id: '',
         concept: '',
         total_amount: '',
         due_date: '',
-        description: ''
-      })
-      setShowCreateForm(false)
-      fetchStudentDebts()
+        description: '',
+      });
+      setShowCreateForm(false);
+      fetchStudentDebts();
     } catch (error: any) {
       if (error.response?.data?.errors) {
-        setErrors(error.response.data.errors)
+        setErrors(error.response.data.errors);
       } else {
-        console.error('Error creating debt:', error)
+        console.error('Error creating debt:', error);
       }
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleTransactionUpdate = (transaction: Transaction) => {
     if (onTransactionUpdate) {
-      onTransactionUpdate(transaction)
+      onTransactionUpdate(transaction);
     }
-    setSelectedDebt(null)
-    fetchStudentDebts()
-  }
+    setSelectedDebt(null);
+    fetchStudentDebts();
+  };
 
   const resetPaymentForm = () => {
     setPaymentFormData({
@@ -237,18 +272,18 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
       payment_date: new Date().toISOString().split('T')[0],
       card_id: '',
       debt_id: null,
-      image: undefined
-    })
-  }
+      image: undefined,
+    });
+  };
 
   const getTotalSummary = () => {
     return {
       total: debts.reduce((sum, debt) => sum + debt.total_amount, 0),
       paid: debts.reduce((sum, debt) => sum + debt.paid_amount, 0),
       remaining: debts.reduce((sum, debt) => sum + debt.remaining_amount, 0),
-      overdue: debts.filter(debt => debt.status === 'overdue').length
-    }
-  }
+      overdue: debts.filter((debt) => debt.status === 'overdue').length,
+    };
+  };
 
   if (loading) {
     return (
@@ -257,17 +292,17 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const summary = getTotalSummary()
+  const summary = getTotalSummary();
 
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Gestión de Adeudos</h2>
-          <Button variant='secondary' onClick={() => setShowCreateForm(true)}>
+          <Button variant="secondary" onClick={() => setShowCreateForm(true)}>
             <FilePlus2 className="mr-2 h-4 w-4" />
             Nuevo Adeudo
           </Button>
@@ -352,9 +387,7 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                   <TableCell className="text-red-600">
                     {formatCurrency(debt.remaining_amount)}
                   </TableCell>
-                  <TableCell>
-                    {formatTime({ time: debt.due_date })}
-                  </TableCell>
+                  <TableCell>{formatTime({ time: debt.due_date })}</TableCell>
                   <TableCell>
                     <StatusBadge status={debt.status} />
                   </TableCell>
@@ -398,7 +431,12 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                   Asignación
                   <select
                     value={debtFormData?.assignment_id}
-                    onChange={(e) => setDebtFormData({ ...debtFormData, assignment_id: e.target.value })}
+                    onChange={(e) =>
+                      setDebtFormData({
+                        ...debtFormData,
+                        assignment_id: e.target.value,
+                      })
+                    }
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     required
                   >
@@ -406,15 +444,20 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                     {assignments.map((assignment) => (
                       <option key={assignment.id} value={assignment.id}>
                         {assignment.period?.name}
-                        {assignment.grupo?.name && ` - Grupo: ${assignment.grupo.name}`}
-                        {assignment.semanaIntensiva?.name && ` - Semana: ${assignment.semanaIntensiva.name}`}
-                        {assignment.period?.price && ` - ${formatCurrency(assignment.period.price)}`}
+                        {assignment.grupo?.name &&
+                          ` - Grupo: ${assignment.grupo.name}`}
+                        {assignment.semanaIntensiva?.name &&
+                          ` - Semana: ${assignment.semanaIntensiva.name}`}
+                        {assignment.period?.price &&
+                          ` - ${formatCurrency(assignment.period.price)}`}
                       </option>
                     ))}
                   </select>
                 </label>
                 {errors.assignment_id && (
-                  <p className="text-red-500 text-sm mt-1">{errors.assignment_id[0]}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.assignment_id[0]}
+                  </p>
                 )}
               </div>
 
@@ -424,13 +467,20 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                   <Input
                     type="text"
                     value={debtFormData.concept}
-                    onChange={(e) => setDebtFormData({ ...debtFormData, concept: e.target.value })}
+                    onChange={(e) =>
+                      setDebtFormData({
+                        ...debtFormData,
+                        concept: e.target.value,
+                      })
+                    }
                     placeholder="Ej: Colegiatura, Material, Examen..."
                     required
                   />
                 </label>
                 {errors.concept && (
-                  <p className="text-red-500 text-sm mt-1">{errors.concept[0]}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.concept[0]}
+                  </p>
                 )}
               </div>
 
@@ -441,13 +491,20 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                     type="number"
                     step="0.01"
                     value={debtFormData.total_amount}
-                    onChange={(e) => setDebtFormData({ ...debtFormData, total_amount: e.target.value })}
+                    onChange={(e) =>
+                      setDebtFormData({
+                        ...debtFormData,
+                        total_amount: e.target.value,
+                      })
+                    }
                     placeholder="0.00"
                     required
                   />
                 </label>
                 {errors.total_amount && (
-                  <p className="text-red-500 text-sm mt-1">{errors.total_amount[0]}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.total_amount[0]}
+                  </p>
                 )}
               </div>
 
@@ -457,12 +514,19 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                   <Input
                     type="date"
                     value={debtFormData.due_date}
-                    onChange={(e) => setDebtFormData({ ...debtFormData, due_date: e.target.value })}
+                    onChange={(e) =>
+                      setDebtFormData({
+                        ...debtFormData,
+                        due_date: e.target.value,
+                      })
+                    }
                     required
                   />
                 </label>
                 {errors.due_date && (
-                  <p className="text-red-500 text-sm mt-1">{errors.due_date[0]}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.due_date[0]}
+                  </p>
                 )}
               </div>
 
@@ -471,7 +535,12 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                   Descripción (Opcional)
                   <Textarea
                     value={debtFormData.description}
-                    onChange={(e) => setDebtFormData({ ...debtFormData, description: e.target.value })}
+                    onChange={(e) =>
+                      setDebtFormData({
+                        ...debtFormData,
+                        description: e.target.value,
+                      })
+                    }
                     placeholder="Información adicional sobre el adeudo..."
                     rows={3}
                   />
@@ -482,7 +551,11 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
                 <Button type="submit" disabled={submitting}>
                   {submitting ? 'Creando...' : 'Nuevo Adeudo'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCreateForm(false)}
+                >
                   Cancelar
                 </Button>
               </div>
@@ -491,5 +564,5 @@ export default function StudentDebtsManager({ studentId, onTransactionUpdate }: 
         </Dialog>
       </CardContent>
     </Card>
-  )
+  );
 }

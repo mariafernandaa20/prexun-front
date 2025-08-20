@@ -12,7 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
@@ -30,16 +36,22 @@ import {
   createSiteSetting,
   updateSiteSetting,
   updateMultipleSiteSettings,
-  deleteSiteSetting
+  deleteSiteSetting,
 } from '@/lib/api';
-import { SiteSetting, SiteSettingGroup, SiteSettingFormData } from '@/lib/types';
+import {
+  SiteSetting,
+  SiteSettingGroup,
+  SiteSettingFormData,
+} from '@/lib/types';
 
 export default function AjustesPage() {
   const [settings, setSettings] = useState<SiteSettingGroup>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingSetting, setEditingSetting] = useState<SiteSetting | null>(null);
+  const [editingSetting, setEditingSetting] = useState<SiteSetting | null>(
+    null
+  );
   const [newSetting, setNewSetting] = useState<SiteSettingFormData>({
     key: '',
     label: '',
@@ -47,7 +59,7 @@ export default function AjustesPage() {
     type: 'text',
     description: '',
     group: 'general',
-    sort_order: 0
+    sort_order: 0,
   });
   const { toast } = useToast();
 
@@ -59,7 +71,7 @@ export default function AjustesPage() {
     { value: 'textarea', label: 'Texto Largo' },
     { value: 'email', label: 'Email' },
     { value: 'url', label: 'URL' },
-    { value: 'json', label: 'JSON' }
+    { value: 'json', label: 'JSON' },
   ];
 
   useEffect(() => {
@@ -76,7 +88,7 @@ export default function AjustesPage() {
       toast({
         title: 'Error',
         description: 'No se pudieron cargar las configuraciones',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -86,23 +98,23 @@ export default function AjustesPage() {
   const handleSaveSettings = async (groupSettings: SiteSetting[]) => {
     try {
       setSaving(true);
-      const settingsToUpdate = groupSettings.map(setting => ({
+      const settingsToUpdate = groupSettings.map((setting) => ({
         id: setting.id,
-        value: setting.value
+        value: setting.value,
       }));
 
       await updateMultipleSiteSettings(settingsToUpdate);
-      
+
       toast({
         title: 'Configuraciones guardadas',
-        description: 'Las configuraciones se han actualizado correctamente'
+        description: 'Las configuraciones se han actualizado correctamente',
       });
     } catch (error) {
       console.error('Error saving settings:', error);
       toast({
         title: 'Error',
         description: 'No se pudieron guardar las configuraciones',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setSaving(false);
@@ -120,19 +132,19 @@ export default function AjustesPage() {
         type: 'text',
         description: '',
         group: 'general',
-        sort_order: 0
+        sort_order: 0,
       });
       fetchSettings();
       toast({
         title: 'Configuración creada',
-        description: 'La nueva configuración se ha creado correctamente'
+        description: 'La nueva configuración se ha creado correctamente',
       });
     } catch (error) {
       console.error('Error creating setting:', error);
       toast({
         title: 'Error',
         description: 'No se pudo crear la configuración',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
@@ -143,14 +155,14 @@ export default function AjustesPage() {
       fetchSettings();
       toast({
         title: 'Configuración actualizada',
-        description: 'La configuración se ha actualizado correctamente'
+        description: 'La configuración se ha actualizado correctamente',
       });
     } catch (error) {
       console.error('Error updating setting:', error);
       toast({
         title: 'Error',
         description: 'No se pudo actualizar la configuración',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
@@ -161,29 +173,34 @@ export default function AjustesPage() {
       fetchSettings();
       toast({
         title: 'Configuración eliminada',
-        description: 'La configuración se ha eliminado correctamente'
+        description: 'La configuración se ha eliminado correctamente',
       });
     } catch (error) {
       console.error('Error deleting setting:', error);
       toast({
         title: 'Error',
         description: 'No se pudo eliminar la configuración',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
 
-  const updateSettingValue = (groupKey: string, settingId: number, newValue: string) => {
-    setSettings(prev => ({
+  const updateSettingValue = (
+    groupKey: string,
+    settingId: number,
+    newValue: string
+  ) => {
+    setSettings((prev) => ({
       ...prev,
-      [groupKey]: prev[groupKey].map(setting =>
+      [groupKey]: prev[groupKey].map((setting) =>
         setting.id === settingId ? { ...setting, value: newValue } : setting
-      )
+      ),
     }));
   };
 
   const renderSettingInput = (setting: SiteSetting, groupKey: string) => {
-    const onChange = (value: string) => updateSettingValue(groupKey, setting.id!, value);
+    const onChange = (value: string) =>
+      updateSettingValue(groupKey, setting.id!, value);
 
     switch (setting.type) {
       case 'boolean':
@@ -216,11 +233,12 @@ export default function AjustesPage() {
               <SelectValue placeholder="Seleccionar opción" />
             </SelectTrigger>
             <SelectContent>
-              {setting.options && Object.entries(setting.options).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
+              {setting.options &&
+                Object.entries(setting.options).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         );
@@ -267,9 +285,12 @@ export default function AjustesPage() {
       payments: 'Pagos',
       notifications: 'Notificaciones',
       interface: 'Interfaz',
-      security: 'Seguridad'
+      security: 'Seguridad',
     };
-    return displayNames[groupKey] || groupKey.charAt(0).toUpperCase() + groupKey.slice(1);
+    return (
+      displayNames[groupKey] ||
+      groupKey.charAt(0).toUpperCase() + groupKey.slice(1)
+    );
   };
 
   if (loading) {
@@ -289,7 +310,7 @@ export default function AjustesPage() {
             Configura las opciones globales del sistema
           </p>
         </div>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -310,7 +331,9 @@ export default function AjustesPage() {
                 <Input
                   id="key"
                   value={newSetting.key}
-                  onChange={(e) => setNewSetting({...newSetting, key: e.target.value})}
+                  onChange={(e) =>
+                    setNewSetting({ ...newSetting, key: e.target.value })
+                  }
                   placeholder="config_key"
                 />
               </div>
@@ -319,7 +342,9 @@ export default function AjustesPage() {
                 <Input
                   id="label"
                   value={newSetting.label}
-                  onChange={(e) => setNewSetting({...newSetting, label: e.target.value})}
+                  onChange={(e) =>
+                    setNewSetting({ ...newSetting, label: e.target.value })
+                  }
                   placeholder="Nombre visible"
                 />
               </div>
@@ -327,13 +352,15 @@ export default function AjustesPage() {
                 <Label htmlFor="type">Tipo</Label>
                 <Select
                   value={newSetting.type}
-                  onValueChange={(value: any) => setNewSetting({...newSetting, type: value})}
+                  onValueChange={(value: any) =>
+                    setNewSetting({ ...newSetting, type: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {settingTypes.map(type => (
+                    {settingTypes.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
                       </SelectItem>
@@ -346,7 +373,9 @@ export default function AjustesPage() {
                 <Input
                   id="group"
                   value={newSetting.group}
-                  onChange={(e) => setNewSetting({...newSetting, group: e.target.value})}
+                  onChange={(e) =>
+                    setNewSetting({ ...newSetting, group: e.target.value })
+                  }
                   placeholder="general"
                 />
               </div>
@@ -355,7 +384,12 @@ export default function AjustesPage() {
                 <Textarea
                   id="description"
                   value={newSetting.description}
-                  onChange={(e) => setNewSetting({...newSetting, description: e.target.value})}
+                  onChange={(e) =>
+                    setNewSetting({
+                      ...newSetting,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Descripción de la configuración"
                 />
               </div>
@@ -364,9 +398,7 @@ export default function AjustesPage() {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleCreateSetting}>
-                Crear
-              </Button>
+              <Button onClick={handleCreateSetting}>Crear</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -387,7 +419,8 @@ export default function AjustesPage() {
               <CardHeader>
                 <CardTitle>{getGroupDisplayName(groupKey)}</CardTitle>
                 <CardDescription>
-                  Configuraciones del grupo {getGroupDisplayName(groupKey).toLowerCase()}
+                  Configuraciones del grupo{' '}
+                  {getGroupDisplayName(groupKey).toLowerCase()}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -418,7 +451,7 @@ export default function AjustesPage() {
                     </div>
                   </div>
                 ))}
-                
+
                 <div className="flex justify-end pt-4">
                   <Button
                     onClick={() => handleSaveSettings(groupSettings)}
