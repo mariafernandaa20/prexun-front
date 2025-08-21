@@ -81,6 +81,7 @@ export interface Student {
   municipio?: Municipio;
   prepa?: Prepa;
   facultad?: Facultad;
+  period_assignments?: any[];
   carrera?: Carrera;
   general_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';
   module_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';

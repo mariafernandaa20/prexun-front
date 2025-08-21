@@ -107,7 +107,7 @@ export const getColumnDefinitions = (
     label: 'Grupo',
     defaultVisible: true,
     render: (student: Student) =>
-      student?.grupo?.name ? student.grupo.name : '-',
+      student?.period_assignments?.[0]?.grupo?.name ? student.period_assignments[0].grupo.name : '-',
   },
   {
     id: 'carrera',
