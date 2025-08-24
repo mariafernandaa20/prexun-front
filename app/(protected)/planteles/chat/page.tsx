@@ -47,6 +47,7 @@ interface ChatConversation {
   user: User;
   last_message: ChatMessage;
   unread_count: number;
+  contact_info: any;
   messages: ChatMessage[];
 }
 
@@ -59,12 +60,6 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
 
-  const filteredConversations = conversations.filter(
-    (conv) =>
-      conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conv.user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   useEffect(() => {
     loadAllChats();
   }, []);
@@ -72,8 +67,8 @@ export default function ChatPage() {
   const loadAllChats = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get('/chat/all-conversations');
-      setConversations(response.data.conversations || []);
+      const response = await axiosInstance.get('/whatsapp/conversations');
+      setConversations(response.data.data.conversations || []);
     } catch (error) {
       toast.error('Error al cargar las conversaciones');
       console.error(error);
@@ -189,6 +184,8 @@ export default function ChatPage() {
     );
   }
 
+  console.log(conversations)
+  
   return (
     <div
       className="flex bg-background"
@@ -222,7 +219,7 @@ export default function ChatPage() {
         {/* Lista de contactos */}
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {filteredConversations.map((conversation) => (
+            {conversations.map((conversation) => (
               <Card
                 key={conversation.user_id}
                 className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${
@@ -236,10 +233,7 @@ export default function ChatPage() {
                   <div className="relative">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {conversation.user.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
+                      
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -247,19 +241,16 @@ export default function ChatPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium text-foreground truncate">
-                        {conversation.user.name}
+                        {conversation?.contact_info?.display_name}
                       </h3>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs text-muted-foreground">
-                          {formatDate(conversation.last_message.created_at)}
+                           {formatDate(conversation.last_message.created_at)}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            clearConversation(conversation.user_id);
-                          }}
+  
                           className="h-6 w-6 p-0 hover:bg-red-100"
                         >
                           <Trash2 className="h-3 w-3 text-red-500" />
@@ -269,11 +260,12 @@ export default function ChatPage() {
 
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-muted-foreground truncate">
-                        {conversation.last_message.content.length > 50
+                         {conversation.last_message.content.length > 50 
                           ? `${conversation.last_message.content.substring(0, 50)}...`
-                          : conversation.last_message.content}
+                          : conversation.last_message.content
+                        } 
                       </p>
-                      {conversation.unread_count > 0 && (
+                     {conversation.unread_count > 0 && (
                         <Badge className="bg-green-500 text-white text-xs rounded-full px-2 py-1">
                           {conversation.unread_count}
                         </Badge>
@@ -281,14 +273,14 @@ export default function ChatPage() {
                     </div>
 
                     <p className="text-xs text-muted-foreground mt-1">
-                      {conversation.user.email} • {conversation.user.role}
+                      {/* {conversation.user.email} • {conversation.user.role} */}
                     </p>
                   </div>
                 </div>
               </Card>
             ))}
-
-            {filteredConversations.length === 0 && (
+            
+            {conversations.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No hay conversaciones disponibles
               </div>
@@ -307,10 +299,7 @@ export default function ChatPage() {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {selectedConversation.user.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
+                      {/* {selectedConversation.user.name.split(' ').map(n => n[0]).join('')} */}
                     </AvatarFallback>
                   </Avatar>
                   <div>
