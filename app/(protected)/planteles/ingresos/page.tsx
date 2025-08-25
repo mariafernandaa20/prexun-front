@@ -92,29 +92,14 @@ export default function CobrosPage() {
         if (!transaction.paid) {
           return 'No Pagado';
         }
-        
-        const folioNumber = transaction.folio || 
-                           transaction.folio_cash || 
-                           transaction.folio_transfer || 
-                           0;
-        
+
+        const folioNumber = transaction.folio ||
+          transaction.folio_cash ||
+          transaction.folio_transfer ||
+          0;
+
         return transaction.folio_new + ' ' + folioNumber.toString().padStart(4, '0');
       },
-    },
-    {
-      id: 'folio_new',
-      label: 'Nuevo Folio',
-      render: (transaction: Transaction) => transaction.folio_new,
-    },
-    {
-      id: 'otros_folios',
-      label: 'Nuevo Cash',
-      render: (transaction: Transaction) => transaction.folio_cash,
-    },
-    {
-      id: 'otros_folios',
-      label: 'Nuevo Transfer',
-      render: (transaction: Transaction) => transaction.folio_transfer,
     },
     {
       id: 'student',
