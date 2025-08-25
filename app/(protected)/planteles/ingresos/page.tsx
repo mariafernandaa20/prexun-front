@@ -88,7 +88,19 @@ export default function CobrosPage() {
     {
       id: 'folio',
       label: 'Folio',
-      render: (transaction: Transaction) => transaction.folio,
+      render: (transaction: Transaction) => {
+        return transaction.paid
+          ? transaction.folio_new +
+            ' ' +
+            (
+              transaction.folio ||
+              transaction.folio_cash ||
+              transaction.folio_transfer
+            )
+              .toString()
+              .padStart(4, '0')
+          : 'No Pagado';
+      },
     },
     {
       id: 'folio_new',
@@ -109,7 +121,7 @@ export default function CobrosPage() {
       id: 'student',
       label: 'Estudiante',
       render: (transaction: Transaction) =>
-       <a className='text-blue-500' href={`/planteles/estudiantes/${transaction.student?.id}`}>{`${transaction.student?.firstname} ${transaction.student?.lastname}`}</a>,
+        <a className='text-blue-500' href={`/planteles/estudiantes/${transaction.student?.id}`}>{`${transaction.student?.firstname} ${transaction.student?.lastname}`}</a>,
     },
     {
       id: 'amount',
