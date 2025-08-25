@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   CheckCircle,
   FilePlus2,
+  Eye,
 } from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { formatTime } from '@/lib/utils';
@@ -137,6 +138,8 @@ export default function StudentDebtsManager({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPaymentsModal, setShowPaymentsModal] = useState(false);
+  const [selectedDebtForPayments, setSelectedDebtForPayments] = useState<Debt | null>(null);
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
@@ -276,6 +279,21 @@ export default function StudentDebtsManager({
     });
   };
 
+  const getPaymentMethodText = (method: string) => {
+    const methods = {
+      'card': 'Tarjeta',
+      'cash': 'Efectivo',
+      'transfer': 'Transferencia',
+      'check': 'Cheque'
+    };
+    return methods[method as keyof typeof methods] || method;
+  };
+
+  const handleShowPayments = (debt: Debt) => {
+    setSelectedDebtForPayments(debt);
+    setShowPaymentsModal(true);
+  };
+
   const getTotalSummary = () => {
     return {
       total: debts.reduce((sum, debt) => sum + debt.total_amount, 0),
@@ -296,6 +314,8 @@ export default function StudentDebtsManager({
   }
 
   const summary = getTotalSummary();
+
+  console.log(debts)
 
   return (
     <Card>
@@ -393,6 +413,17 @@ export default function StudentDebtsManager({
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      {debt.transactions && debt.transactions.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleShowPayments(debt)}
+                          className="flex items-center gap-1"
+                        >
+                          <Eye className="w-3 h-3" />
+                          Ver Pagos
+                        </Button>
+                      )}
                       {debt.status !== 'paid' && (
                         <ChargesForm
                           fetchStudents={fetchStudentDebts}
@@ -560,6 +591,79 @@ export default function StudentDebtsManager({
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Payments Modal */}
+        <Dialog open={showPaymentsModal} onOpenChange={setShowPaymentsModal}>
+          <DialogHeader>
+            <DialogTitle>
+              Pagos del Adeudo: {selectedDebtForPayments?.concept}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogContent className="max-w-3xl max-h-[60v  h] overflow-y-auto">
+
+            {selectedDebtForPayments?.transactions && selectedDebtForPayments.transactions.length > 0 ? (
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600 mb-4">
+                  <p><strong>Monto Total:</strong> {formatCurrency(selectedDebtForPayments.total_amount)}</p>
+                  <p><strong>Total Pagado:</strong> {formatCurrency(selectedDebtForPayments.paid_amount)}</p>
+                  <p><strong>Pendiente:</strong> {formatCurrency(selectedDebtForPayments.remaining_amount)}</p>
+                </div>
+
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Monto</TableHead>
+                      <TableHead>Método</TableHead>
+                      <TableHead>Folio</TableHead>
+                      <TableHead>Notas</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedDebtForPayments.transactions.map((transaction: any) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>
+                          {formatTime({ time: transaction.payment_date })}
+                        </TableCell>
+                        <TableCell className="text-green-600 font-semibold">
+                          {formatCurrency(parseFloat(transaction.amount))}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {getPaymentMethodText(transaction.payment_method)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {transaction.folio_new || transaction.folio || 'N/A'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm text-gray-600 max-w-32 truncate" title={transaction.notes}>
+                            {transaction.notes || 'Sin notas'}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <CreditCard className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p>No hay pagos registrados para este adeudo</p>
+              </div>
+            )}
+            <div className="flex justify-end pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowPaymentsModal(false)}
+              >
+                Cerrar
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </CardContent>
