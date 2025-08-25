@@ -216,7 +216,7 @@ const Filters: React.FC<FiltersProps> = ({
                   value: grupo.id.toString(),
                   label: grupo.name,
                 }))}
-              value={undefined}
+              value={assignedGrupoFilter}
               placeholder="Grupo (Viejo)"
               onChange={(val) => setGrupoFilter(val)}
               showAllOption={true}

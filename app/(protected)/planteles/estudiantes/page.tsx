@@ -58,7 +58,7 @@ export default function Page() {
 
   // Filter states
   const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<
-  string | null
+    string | null
   >(null);
   const [periodFilter, setPeriodFilter] = useState<string>('');
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
@@ -110,6 +110,7 @@ export default function Page() {
         (!isSearching && semanaIntensivaFilter) || undefined,
       period: (!isSearching && periodFilter) || undefined,
       assignedPeriod: (!isSearching && assignedPeriodFilter) || undefined,
+      assignedGrupo: (!isSearching && assignedGrupoFilter) || undefined,
       carrera: (!isSearching && carreraFilter) || undefined,
       facultad: (!isSearching && facultadFilter) || undefined,
       modulo: (!isSearching && moduloFilter) || undefined,
@@ -149,6 +150,7 @@ export default function Page() {
     semanaIntensivaFilter,
     periodFilter,
     assignedPeriodFilter,
+    assignedGrupoFilter,
     carreraFilter,
     facultadFilter,
     moduloFilter,
