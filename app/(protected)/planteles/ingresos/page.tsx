@@ -89,17 +89,16 @@ export default function CobrosPage() {
       id: 'folio',
       label: 'Folio',
       render: (transaction: Transaction) => {
-        return transaction.paid
-          ? transaction.folio_new +
-            ' ' +
-            (
-              transaction.folio ||
-              transaction.folio_cash ||
-              transaction.folio_transfer
-            )
-              .toString()
-              .padStart(4, '0')
-          : 'No Pagado';
+        if (!transaction.paid) {
+          return 'No Pagado';
+        }
+        
+        const folioNumber = transaction.folio || 
+                           transaction.folio_cash || 
+                           transaction.folio_transfer || 
+                           0;
+        
+        return transaction.folio_new + ' ' + folioNumber.toString().padStart(4, '0');
       },
     },
     {
