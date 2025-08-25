@@ -43,12 +43,36 @@ interface ChatMessage {
 }
 
 interface ChatConversation {
-  user_id: number;
-  user: User;
-  last_message: ChatMessage;
-  unread_count: number;
-  contact_info: any;
-  messages: ChatMessage[];
+  phone_number: string;
+  message_count: number;
+  received_count: number;
+  sent_count: number;
+  last_message_time: string;
+  last_message: {
+    id: number;
+    content: string;
+    direction: 'sent' | 'received';
+    message_type: string;
+    created_at: string;
+  } | null;
+  contact_info: {
+    name?: string;
+    display_name: string;
+    avatar?: string;
+    is_student: boolean;
+    student_id?: number;
+  };
+  messages?: WhatsAppMessage[];
+}
+
+interface WhatsAppMessage {
+  id: number;
+  mensaje: string;
+  phone_number: string;
+  direction: 'sent' | 'received';
+  message_type: string;
+  created_at: string;
+  user_id?: number;
 }
 
 export default function ChatPage() {
@@ -67,24 +91,41 @@ export default function ChatPage() {
   const loadAllChats = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get('/whatsapp/conversations');
+      // Intentar primero las conversaciones híbridas de WhatsApp
+      const response = await axiosInstance.get('/whatsapp/chat/conversations');
       setConversations(response.data.data.conversations || []);
     } catch (error) {
-      toast.error('Error al cargar las conversaciones');
-      console.error(error);
+      // Fallback a conversaciones normales de WhatsApp si las híbridas fallan
+      try {
+        const fallbackResponse = await axiosInstance.get('/whatsapp/conversations');
+        setConversations(fallbackResponse.data.data.conversations || []);
+      } catch (fallbackError) {
+        toast.error('Error al cargar las conversaciones');
+        console.error('Error loading conversations:', error, fallbackError);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadConversationHistory = async (userId: number) => {
+  const loadConversationHistory = async (phoneNumber: string) => {
     try {
-      const response = await axiosInstance.get(`/chat/history/${userId}`);
-      const messages = response.data.messages || [];
+      // Intentar primero el endpoint híbrido
+      let response;
+      try {
+        response = await axiosInstance.get(`/whatsapp/chat/history/${encodeURIComponent(phoneNumber)}`);
+      } catch (error) {
+        // Fallback al endpoint original
+        response = await axiosInstance.get(`/whatsapp/conversation`, {
+          params: { phone_number: phoneNumber }
+        });
+      }
+      
+      const messages = response.data.messages || response.data.data?.messages || [];
 
       setConversations((prev) =>
         prev.map((conv) =>
-          conv.user_id === userId ? { ...conv, messages } : conv
+          conv.phone_number === phoneNumber ? { ...conv, messages } : conv
         )
       );
     } catch (error) {
@@ -93,15 +134,17 @@ export default function ChatPage() {
     }
   };
 
-  const clearConversation = async (userId: number) => {
+  const clearConversation = async (phoneNumber: string) => {
     if (!confirm('¿Estás seguro de que quieres eliminar esta conversación?')) {
       return;
     }
 
     try {
-      await axiosInstance.delete(`/chat/history/${userId}`);
+      await axiosInstance.delete(`/whatsapp/conversation`, {
+        data: { phone_number: phoneNumber }
+      });
       await loadAllChats();
-      if (selectedConversation?.user_id === userId) {
+      if (selectedConversation?.phone_number === phoneNumber) {
         setSelectedConversation(null);
       }
       toast.success('Conversación eliminada');
@@ -118,20 +161,12 @@ export default function ChatPage() {
     setNewMessage('');
 
     try {
-      const formData = new FormData();
-      formData.append('content', messageToSend);
-      formData.append(
-        'target_user_id',
-        selectedConversation.user_id.toString()
-      );
-
-      const response = await axiosInstance.post('/chat/send', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await axiosInstance.post('/whatsapp/send-message', {
+        phone_number: selectedConversation.phone_number,
+        message: messageToSend
       });
 
-      await loadConversationHistory(selectedConversation.user_id);
+      await loadConversationHistory(selectedConversation.phone_number);
       await loadAllChats();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error al enviar mensaje');
@@ -151,7 +186,7 @@ export default function ChatPage() {
   const selectConversation = async (conversation: ChatConversation) => {
     setSelectedConversation(conversation);
     if (!conversation.messages || conversation.messages.length === 0) {
-      await loadConversationHistory(conversation.user_id);
+      await loadConversationHistory(conversation.phone_number);
     }
   };
 
@@ -189,7 +224,7 @@ export default function ChatPage() {
   return (
     <div
       className="flex bg-background"
-      style={{ height: 'calc(100vh - 50px)' }}
+      style={{ height: 'calc(100vh - 100px)' }}
     >
       {/* Sidebar de contactos */}
       <div className="w-1/3 bg-card border-r border-border flex flex-col">
@@ -221,9 +256,9 @@ export default function ChatPage() {
           <div className="p-2">
             {conversations.map((conversation) => (
               <Card
-                key={conversation.user_id}
+                key={conversation.phone_number}
                 className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${
-                  selectedConversation?.user_id === conversation.user_id
+                  selectedConversation?.phone_number === conversation.phone_number
                     ? 'bg-accent border-primary'
                     : ''
                 }`}
@@ -233,7 +268,7 @@ export default function ChatPage() {
                   <div className="relative">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                      
+                        {conversation?.contact_info?.display_name?.charAt(0)?.toUpperCase() || 'W'}
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -241,16 +276,19 @@ export default function ChatPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium text-foreground truncate">
-                        {conversation?.contact_info?.display_name}
+                        {conversation?.contact_info?.display_name || conversation.phone_number}
                       </h3>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs text-muted-foreground">
-                           {formatDate(conversation.last_message.created_at)}
+                           {conversation.last_message && formatDate(conversation.last_message.created_at)}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
-  
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearConversation(conversation.phone_number);
+                          }}
                           className="h-6 w-6 p-0 hover:bg-red-100"
                         >
                           <Trash2 className="h-3 w-3 text-red-500" />
@@ -260,20 +298,20 @@ export default function ChatPage() {
 
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-muted-foreground truncate">
-                         {conversation.last_message.content.length > 50 
+                         {conversation.last_message && conversation.last_message.content && conversation.last_message.content.length > 50 
                           ? `${conversation.last_message.content.substring(0, 50)}...`
-                          : conversation.last_message.content
+                          : conversation.last_message?.content || 'Sin mensajes'
                         } 
                       </p>
-                     {conversation.unread_count > 0 && (
+                     {conversation.received_count > 0 && (
                         <Badge className="bg-green-500 text-white text-xs rounded-full px-2 py-1">
-                          {conversation.unread_count}
+                          {conversation.received_count}
                         </Badge>
                       )}
                     </div>
 
                     <p className="text-xs text-muted-foreground mt-1">
-                      {/* {conversation.user.email} • {conversation.user.role} */}
+                      {conversation.phone_number}
                     </p>
                   </div>
                 </div>
@@ -299,16 +337,15 @@ export default function ChatPage() {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {/* {selectedConversation.user.name.split(' ').map(n => n[0]).join('')} */}
+                      {selectedConversation?.contact_info?.display_name?.charAt(0)?.toUpperCase() || 'W'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <h2 className="font-semibold text-foreground">
-                      {selectedConversation.user.name}
+                      {selectedConversation.contact_info?.display_name || selectedConversation.phone_number}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {selectedConversation.user.email} •{' '}
-                      {selectedConversation.user.role}
+                      {selectedConversation.phone_number}
                     </p>
                   </div>
                 </div>
@@ -318,7 +355,7 @@ export default function ChatPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      clearConversation(selectedConversation.user_id)
+                      clearConversation(selectedConversation.phone_number)
                     }
                   >
                     <Trash2 className="h-5 w-5" />
@@ -336,33 +373,21 @@ export default function ChatPage() {
                 {selectedConversation.messages?.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.role === 'assistant' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${message.direction === 'sent' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
                       className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        message.role === 'assistant'
+                        message.direction === 'sent'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card text-card-foreground border border-border'
                       }`}
                     >
-                      {message.images && message.images.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {message.images.map((imageUrl, imgIndex) => (
-                            <img
-                              key={imgIndex}
-                              src={imageUrl}
-                              alt={`Imagen ${imgIndex + 1}`}
-                              className="max-w-48 max-h-48 object-cover rounded-lg border"
-                            />
-                          ))}
-                        </div>
-                      )}
                       <div className="text-sm prose prose-sm max-w-none">
-                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                        <ReactMarkdown>{message.mensaje}</ReactMarkdown>
                       </div>
                       <div
                         className={`flex items-center justify-end mt-1 space-x-1 ${
-                          message.role === 'assistant'
+                          message.direction === 'sent'
                             ? 'text-primary-foreground/70'
                             : 'text-muted-foreground'
                         }`}
