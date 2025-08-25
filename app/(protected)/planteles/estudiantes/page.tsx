@@ -402,7 +402,7 @@ export default function Page() {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col lg:flex-row gap-2">
+            <div className="flex flex-col gap-2">
               <Filters
                 setPeriodFilter={handlePeriodFilterChange}
                 periodFilter={periodFilter}
@@ -437,17 +437,18 @@ export default function Page() {
                   emptyMessage="No se encontraron columnas"
                 />
               </Filters>
+              <div className='block'>
+                {selectedStudents.length > 0 && (
+                  <BulkActions
+                    selectedStudents={selectedStudents}
+                    fetchStudents={fetchStudents}
+                    setSelectedStudents={setSelectedStudents}
+                    setIsBulkActionLoading={setIsBulkActionLoading}
+                  />
+                )}
+              </div>
             </div>
           </SectionContainer>
-
-          {selectedStudents.length > 0 && (
-            <BulkActions
-              selectedStudents={selectedStudents}
-              fetchStudents={fetchStudents}
-              setSelectedStudents={setSelectedStudents}
-              setIsBulkActionLoading={setIsBulkActionLoading}
-            />
-          )}
         </CardHeader>
         <CardContent>
           <SectionContainer>
