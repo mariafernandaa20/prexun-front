@@ -21,8 +21,6 @@ export default function RootLayout({
 }>) {
   const develop = process.env.NEXT_PUBLIC_DEVELOPMENT === 'true' || false;
 
-  console.log(process.env.NEXT_PUBLIC_DEVELOPMENT);
-
   return (
     <html lang="es" suppressHydrationWarning>
       <head>

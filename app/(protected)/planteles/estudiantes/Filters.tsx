@@ -99,8 +99,6 @@ const Filters: React.FC<FiltersProps> = ({
     setSearchMatricula(debouncedMatricula ? Number(debouncedMatricula) : null);
   }, [debouncedMatricula, setSearchMatricula]);
 
-  console.log('period' + periodFilter)
-
   return (
     <div className="flex flex-col gap-2 w-full max-w-[1/2]">
       <div className="space-y-2">

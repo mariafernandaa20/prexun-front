@@ -218,8 +218,6 @@ export default function ChatPage() {
       </div>
     );
   }
-
-  console.log(conversations)
   
   return (
     <div

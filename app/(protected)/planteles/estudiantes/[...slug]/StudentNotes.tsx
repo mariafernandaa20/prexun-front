@@ -44,7 +44,6 @@ export default function StudentNotes({ studentId }: Props) {
     try {
       setLoading(true);
       const response = await getStudentNotes(Number(studentId));
-      console.log(response);
       setNotes(response.notes || []);
     } catch (error: any) {
       console.error('Error fetching notes:', error);

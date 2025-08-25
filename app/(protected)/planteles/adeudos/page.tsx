@@ -70,8 +70,6 @@ export default function debtsPage() {
     }
   }
 
-  console.log(debts);
-
   useEffect(() => {
     getdebts();
   }, [activeCampus]);

@@ -72,9 +72,9 @@ export const StudentsTable = ({
                   aria-label={`Seleccionar ${student.firstname} ${student.lastname}`}
                 />
               </TableCell>
-              {visibleColumnDefs.map((column) => (
+              {visibleColumnDefs.map((column, i) => (
                 <TableCell
-                  key={`${student.id}-${column.id}`}
+                  key={`${student.id}-${column.id}-${i}`}
                   className="whitespace-nowrap"
                 >
                   {column.render(

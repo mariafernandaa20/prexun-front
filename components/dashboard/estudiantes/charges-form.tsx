@@ -279,7 +279,6 @@ export default function ChargesForm({
                 <Select
                   value={localFormData.payment_method}
                   onValueChange={(value) => {
-                    console.log(value);
                     updateFormData({
                       payment_method: value as 'cash' | 'transfer' | 'card',
                     });
@@ -309,7 +308,6 @@ export default function ChargesForm({
                     accept="image/*"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      console.log('File selected:', file);
                       updateFormData({ image: file });
                     }}
                   />

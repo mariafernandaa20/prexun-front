@@ -157,7 +157,6 @@ export default function StudentPeriod({
   };
 
   const handleInputChange = (name: string, value: any) => {
-    console.log(`Input changed: ${name} = ${value}`);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -196,8 +195,6 @@ export default function StudentPeriod({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    console.log(formData);
     if (!validateForm()) return;
 
     try {

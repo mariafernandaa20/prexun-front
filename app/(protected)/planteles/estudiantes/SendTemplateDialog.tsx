@@ -98,7 +98,6 @@ const SendTemplateDialog: React.FC<SendTemplateDialogProps> = ({
   }, [isOpen]);
 
   const selectedTemplateName = templates.find(t => t.id === selectedTemplate)?.name;
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -134,9 +133,7 @@ const SendTemplateDialog: React.FC<SendTemplateDialogProps> = ({
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="" disabled>
-                    {isLoading ? "Cargando..." : "No hay plantillas disponibles"}
-                  </SelectItem>
+                  <div>No hay plantillas disponibles</div>
                 )}
               </SelectContent>
             </Select>

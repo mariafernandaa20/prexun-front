@@ -370,8 +370,6 @@ export default function Page() {
     return <div className="text-center py-4">Seleccione un campus</div>;
   }
 
-  console.log(students)
-
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">

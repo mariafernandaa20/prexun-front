@@ -159,12 +159,6 @@ export const getColumnDefinitions = (
     render: (student: Student) => student.tutor_relationship || '-',
   },
   {
-    id: 'status',
-    label: 'Estado',
-    defaultVisible: false,
-    render: (student: Student) => student.status || '-',
-  },
-  {
     id: 'health_conditions',
     label: 'Condiciones de Salud',
     defaultVisible: false,
