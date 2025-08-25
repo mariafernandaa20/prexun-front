@@ -109,7 +109,7 @@ export default function CobrosPage() {
       id: 'student',
       label: 'Estudiante',
       render: (transaction: Transaction) =>
-        `${transaction.student?.firstname} ${transaction.student?.lastname}`,
+       <a className='text-blue-500' href={`/planteles/estudiantes/${transaction.student?.id}`}>{`${transaction.student?.firstname} ${transaction.student?.lastname}`}</a>,
     },
     {
       id: 'amount',

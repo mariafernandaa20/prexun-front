@@ -47,9 +47,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
         <TableHead>ID</TableHead>
         <TableHead>Acciones</TableHead>
         <TableHead>Folio</TableHead>
-        <TableHead>Nuevo</TableHead>
-        <TableHead>Efectivo</TableHead>
-        <TableHead>Transferencia</TableHead>
         <TableHead>Método</TableHead>
         <TableHead>Monto</TableHead>
         <TableHead>Fecha</TableHead>
@@ -71,11 +68,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               <ChargesForm
                 campusId={transaction.campus_id}
                 cards={cards}
-                fetchStudents={() => {}}
+                fetchStudents={() => { }}
                 student_id={transaction.student_id}
                 transaction={transaction}
                 formData={transaction}
-                setFormData={() => {}}
+                setFormData={() => { }}
                 onTransactionUpdate={onUpdateTransaction}
                 mode="update"
                 student={null}
@@ -83,10 +80,26 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               />
             </div>
           </TableCell>
-          <TableCell>{transaction?.folio}</TableCell>
-          <TableCell>{transaction?.folio_new}</TableCell>
-          <TableCell>{transaction?.folio_cash}</TableCell>
-          <TableCell>{transaction?.folio_transfer}</TableCell>
+          <TableCell>
+            <TableCell>
+              {transaction?.paid ? (
+                <>
+                  {transaction?.folio_new + " "}
+                  {(
+                    transaction?.folio ??
+                    transaction?.folio_cash ??
+                    transaction?.folio_transfer ??
+                    0
+                  )
+                    .toString()
+                    .padStart(4, "0")}
+                </>
+              ) : (
+                "No Pagado"
+              )}
+            </TableCell>
+
+          </TableCell>
           <TableCell>
             {getPaymentMethodLabel(transaction.payment_method)}
           </TableCell>
@@ -168,10 +181,10 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
         ...prevStudent,
         transactions: transactionExists
           ? prevStudent.transactions.map((transaction) =>
-              transaction.id === updatedTransaction.id
-                ? updatedTransaction
-                : transaction
-            )
+            transaction.id === updatedTransaction.id
+              ? updatedTransaction
+              : transaction
+          )
           : [...prevStudent.transactions, updatedTransaction],
       };
     });
@@ -288,10 +301,10 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                   <span className="text-muted-foreground">Último pago:</span>{' '}
                   {student.transactions?.length
                     ? formatTime({
-                        time: student.transactions[
-                          student.transactions.length - 1
-                        ].payment_date,
-                      })
+                      time: student.transactions[
+                        student.transactions.length - 1
+                      ].payment_date,
+                    })
                     : 'Sin pagos'}
                 </p>
               </div>
