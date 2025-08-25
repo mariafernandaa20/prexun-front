@@ -29,6 +29,7 @@ export default function RootLayout({
           data-key="tb4VnCQ9veS+etZWvizOmA"
           async
         ></script>
+        <link rel="icon" href="/favicon.ico" />
         {develop && (
           <script
             dangerouslySetInnerHTML={{
