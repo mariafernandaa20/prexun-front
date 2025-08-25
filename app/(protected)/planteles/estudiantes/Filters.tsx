@@ -28,6 +28,8 @@ interface FiltersProps {
   setSearchDate: (value: string) => void;
   setSearchPhone: (value: string) => void;
   setSearchMatricula: (value: number | null) => void;
+  assignedGrupoFilter: string | null;
+  setAssignedGrupoFilter: (value: string | null) => void;
   children?: React.ReactNode;
 }
 
@@ -50,6 +52,8 @@ const Filters: React.FC<FiltersProps> = ({
   setSearchDate,
   setSearchPhone,
   setSearchMatricula,
+  assignedGrupoFilter,
+  setAssignedGrupoFilter,
   children,
 }) => {
   const [showAllFilters, setShowAllFilters] = useState(false);
@@ -95,6 +99,8 @@ const Filters: React.FC<FiltersProps> = ({
     setSearchMatricula(debouncedMatricula ? Number(debouncedMatricula) : null);
   }, [debouncedMatricula, setSearchMatricula]);
 
+  console.log('period' + periodFilter)
+
   return (
     <div className="flex flex-col gap-2 w-full max-w-[1/2]">
       <div className="space-y-2">
@@ -127,16 +133,16 @@ const Filters: React.FC<FiltersProps> = ({
             options={grupos
               .filter(
                 (grupo) =>
-                  !periodFilter ||
-                  grupo.period_id.toString() === periodFilter.toString()
+                  !assignedPeriodFilter ||
+                  grupo.period_id.toString() === assignedPeriodFilter.toString()
               )
               .map((grupo) => ({
                 value: grupo.id.toString(),
                 label: grupo.name,
               }))}
-            value={undefined}
-            placeholder="Grupo"
-            onChange={(val) => setGrupoFilter(val)}
+            value={assignedGrupoFilter}
+            placeholder="Grupo (Nuevo)"
+            onChange={(val) => setAssignedGrupoFilter(val)}
             showAllOption={true}
             allOptionLabel="Todos"
           />
@@ -196,6 +202,23 @@ const Filters: React.FC<FiltersProps> = ({
               value={periodFilter}
               placeholder="Periodo (Viejo)"
               onChange={setPeriodFilter}
+              showAllOption={true}
+              allOptionLabel="Todos"
+            />
+            <SearchableSelect
+              options={grupos
+                .filter(
+                  (grupo) =>
+                    !periodFilter ||
+                    grupo.period_id.toString() === periodFilter.toString()
+                )
+                .map((grupo) => ({
+                  value: grupo.id.toString(),
+                  label: grupo.name,
+                }))}
+              value={undefined}
+              placeholder="Grupo (Viejo)"
+              onChange={(val) => setGrupoFilter(val)}
               showAllOption={true}
               allOptionLabel="Todos"
             />

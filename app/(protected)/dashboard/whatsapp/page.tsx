@@ -378,8 +378,8 @@ export default function WhatsAppPage() {
       {/* Message Sending Tabs */}
       <Tabs defaultValue="simple" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="simple">Mensaje Simple</TabsTrigger>
           <TabsTrigger value="template">Mensaje de Plantilla</TabsTrigger>
+          <TabsTrigger value="simple">Mensaje Simple</TabsTrigger>
           <TabsTrigger value="manage">Gestionar Plantillas</TabsTrigger>
         </TabsList>
 

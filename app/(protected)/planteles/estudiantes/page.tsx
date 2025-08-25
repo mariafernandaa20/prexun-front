@@ -57,12 +57,13 @@ export default function Page() {
   const [whatsAppStudent, setWhatsAppStudent] = useState<Student | null>(null);
 
   // Filter states
-  const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<
-    string | null
+  string | null
   >(null);
   const [periodFilter, setPeriodFilter] = useState<string>('');
+  const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>('');
+  const [assignedGrupoFilter, setAssignedGrupoFilter] = useState<string>('');
   const [carreraFilter, setCarreraFilter] = useState<string | null>(null);
   const [facultadFilter, setFacultadFilter] = useState<string | null>(null);
   const [moduloFilter, setModuloFilter] = useState<string | null>(null);
@@ -419,6 +420,8 @@ export default function Page() {
                 setSearchDate={setSearchDate}
                 setSearchPhone={setSearchPhone}
                 setSearchMatricula={setSearchMatricula}
+                setAssignedGrupoFilter={setAssignedGrupoFilter}
+                assignedGrupoFilter={assignedGrupoFilter}
               >
                 <MultiSelect
                   className="w-full"
