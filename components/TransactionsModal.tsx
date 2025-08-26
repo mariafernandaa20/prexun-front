@@ -76,8 +76,21 @@ export default function TransactionsModal({ debt }) {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {transaction.folio_new || transaction.folio || 'N/A'}
-                        </div>
+ {transaction?.paid ? (
+  <>
+    {transaction?.folio_new + " "}
+    {(
+      transaction?.folio ??
+      transaction?.folio_cash ??
+      transaction?.folio_transfer ??
+      0
+    )
+      .toString()
+      .padStart(4, "0")}
+  </>
+) : (
+  "No Pagado"
+)}                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-gray-600 max-w-32 truncate" title={transaction.notes}>
