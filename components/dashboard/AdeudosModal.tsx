@@ -33,6 +33,7 @@ import {
 } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import Link from 'next/link';
+import TransactionsModal from '../TransactionsModal';
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const statusConfig = {
@@ -207,6 +208,7 @@ export default function AdeudosModal({ student }) {
                         <TableHead className="text-right">Pendiente</TableHead>
                         <TableHead className="w-[120px]">Vencimiento</TableHead>
                         <TableHead className="w-[100px]">Estado</TableHead>
+                        <TableHead className="w-[100px]">Pagos</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -257,8 +259,12 @@ export default function AdeudosModal({ student }) {
                           <TableCell>
                             <StatusBadge status={debt.status} />
                           </TableCell>
+                          <TableCell>
+                            <TransactionsModal debt={debt} />
+                          </TableCell>
                         </TableRow>
                       ))}
+                      
                     </TableBody>
                   </Table>
                 </div>

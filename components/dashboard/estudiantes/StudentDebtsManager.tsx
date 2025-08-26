@@ -34,6 +34,7 @@ import { createCharge, getCards } from '@/lib/api';
 import { getStudentAssignmentsByStudent } from '@/lib/api';
 import ChargesForm from './charges-form';
 import type { Transaction, Card as CardType } from '@/lib/types';
+import TransactionsModal from '@/components/TransactionsModal';
 
 interface Debt {
   id: number;
@@ -414,15 +415,7 @@ export default function StudentDebtsManager({
                   <TableCell>
                     <div className="flex gap-2">
                       {debt.transactions && debt.transactions.length > 0 && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleShowPayments(debt)}
-                          className="flex items-center gap-1"
-                        >
-                          <Eye className="w-3 h-3" />
-                          Ver Pagos
-                        </Button>
+                        <TransactionsModal debt={debt} />
                       )}
                       {debt.status !== 'paid' && (
                         <ChargesForm
