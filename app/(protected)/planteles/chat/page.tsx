@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -48,6 +48,7 @@ interface ChatConversation {
   received_count: number;
   sent_count: number;
   last_message_time: string;
+  user: any[];
   last_message: {
     id: number;
     content: string;
@@ -79,6 +80,7 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [selectedConversation, setSelectedConversation] =
     useState<ChatConversation | null>(null);
+  const [selectedMessages, setSelectedMessages] = useState<WhatsAppMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -109,6 +111,7 @@ export default function ChatPage() {
   };
 
   const loadConversationHistory = async (phoneNumber: string) => {
+    setIsLoadingChat(true);
     try {
       // Intentar primero el endpoint híbrido
       let response;
@@ -120,9 +123,11 @@ export default function ChatPage() {
           params: { phone_number: phoneNumber }
         });
       }
-      
+
       const messages = response.data.messages || response.data.data?.messages || [];
 
+      // Actualizar tanto el estado local como el array de conversaciones
+      setSelectedMessages(messages);
       setConversations((prev) =>
         prev.map((conv) =>
           conv.phone_number === phoneNumber ? { ...conv, messages } : conv
@@ -131,6 +136,8 @@ export default function ChatPage() {
     } catch (error) {
       toast.error('Error al cargar el historial');
       console.error(error);
+    } finally {
+      setIsLoadingChat(false);
     }
   };
 
@@ -140,12 +147,11 @@ export default function ChatPage() {
     }
 
     try {
-      await axiosInstance.delete(`/whatsapp/conversation`, {
-        data: { phone_number: phoneNumber }
-      });
+      await axiosInstance.delete(`/whatsapp/chat/history/${encodeURIComponent(phoneNumber)}`);
       await loadAllChats();
       if (selectedConversation?.phone_number === phoneNumber) {
         setSelectedConversation(null);
+        setSelectedMessages([]); // Limpiar mensajes también
       }
       toast.success('Conversación eliminada');
     } catch (error) {
@@ -161,12 +167,14 @@ export default function ChatPage() {
     setNewMessage('');
 
     try {
-      const response = await axiosInstance.post('/whatsapp/send-message', {
+      const response = await axiosInstance.post('/whatsapp/chat/send', {
         phone_number: selectedConversation.phone_number,
         message: messageToSend
       });
 
+      // Recargar los mensajes de la conversación actual
       await loadConversationHistory(selectedConversation.phone_number);
+      // Recargar la lista de conversaciones para actualizar el último mensaje
       await loadAllChats();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error al enviar mensaje');
@@ -185,9 +193,9 @@ export default function ChatPage() {
 
   const selectConversation = async (conversation: ChatConversation) => {
     setSelectedConversation(conversation);
-    if (!conversation.messages || conversation.messages.length === 0) {
-      await loadConversationHistory(conversation.phone_number);
-    }
+    setSelectedMessages([]); // Limpiar mensajes anteriores
+    // Siempre cargar los mensajes para asegurar que estén actualizados
+    await loadConversationHistory(conversation.phone_number);
   };
 
   const formatDate = (dateString: string) => {
@@ -218,7 +226,7 @@ export default function ChatPage() {
       </div>
     );
   }
-  
+
   return (
     <div
       className="flex bg-background"
@@ -255,11 +263,10 @@ export default function ChatPage() {
             {conversations.map((conversation) => (
               <Card
                 key={conversation.phone_number}
-                className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${
-                  selectedConversation?.phone_number === conversation.phone_number
-                    ? 'bg-accent border-primary'
-                    : ''
-                }`}
+                className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${selectedConversation?.phone_number === conversation.phone_number
+                  ? 'bg-accent border-primary'
+                  : ''
+                  }`}
                 onClick={() => selectConversation(conversation)}
               >
                 <div className="flex items-center space-x-3">
@@ -278,7 +285,7 @@ export default function ChatPage() {
                       </h3>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs text-muted-foreground">
-                           {conversation.last_message && formatDate(conversation.last_message.created_at)}
+                          {conversation.last_message && formatDate(conversation.last_message.created_at)}
                         </span>
                         <Button
                           variant="ghost"
@@ -296,12 +303,12 @@ export default function ChatPage() {
 
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-muted-foreground truncate">
-                         {conversation.last_message && conversation.last_message.content && conversation.last_message.content.length > 50 
+                        {conversation.last_message && conversation.last_message.content && conversation.last_message.content.length > 50
                           ? `${conversation.last_message.content.substring(0, 50)}...`
                           : conversation.last_message?.content || 'Sin mensajes'
-                        } 
+                        }
                       </p>
-                     {conversation.received_count > 0 && (
+                      {conversation.received_count > 0 && (
                         <Badge className="bg-green-500 text-white text-xs rounded-full px-2 py-1">
                           {conversation.received_count}
                         </Badge>
@@ -315,7 +322,7 @@ export default function ChatPage() {
                 </div>
               </Card>
             ))}
-            
+
             {conversations.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No hay conversaciones disponibles
@@ -340,10 +347,10 @@ export default function ChatPage() {
                   </Avatar>
                   <div>
                     <h2 className="font-semibold text-foreground">
-                      {selectedConversation.contact_info?.display_name || selectedConversation.phone_number}
+                      {selectedConversation.contact_info?.display_name || selectedConversation?.phone_number}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {selectedConversation.phone_number}
+                      {selectedConversation?.phone_number}
                     </p>
                   </div>
                 </div>
@@ -353,7 +360,7 @@ export default function ChatPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      clearConversation(selectedConversation.phone_number)
+                      clearConversation(selectedConversation?.phone_number)
                     }
                   >
                     <Trash2 className="h-5 w-5" />
@@ -368,41 +375,46 @@ export default function ChatPage() {
             {/* Mensajes */}
             <ScrollArea className="flex-1 p-4 bg-muted/50">
               <div className="space-y-4">
-                {selectedConversation.messages?.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.direction === 'sent' ? 'justify-end' : 'justify-start'}`}
-                  >
+                {isLoadingChat && selectedMessages.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                    <span>Cargando mensajes...</span>
+                  </div>
+                ) : (
+                  selectedMessages?.map((message) => (
                     <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        message.direction === 'sent'
+                      key={message.id}
+                      className={`flex ${message.direction === 'sent' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.direction === 'sent'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card text-card-foreground border border-border'
-                      }`}
-                    >
-                      <div className="text-sm prose prose-sm max-w-none">
-                        <ReactMarkdown>{message.mensaje}</ReactMarkdown>
-                      </div>
-                      <div
-                        className={`flex items-center justify-end mt-1 space-x-1 ${
-                          message.direction === 'sent'
+                          }`}
+                      >
+                        <div className="text-sm prose prose-sm max-w-none">
+                          <ReactMarkdown>{message.mensaje}</ReactMarkdown>
+                        </div>
+                        <div
+                          className={`flex items-center justify-end mt-1 space-x-1 ${message.direction === 'sent'
                             ? 'text-primary-foreground/70'
                             : 'text-muted-foreground'
-                        }`}
-                      >
-                        <span className="text-xs">
-                          {new Date(message.created_at).toLocaleTimeString(
-                            'es-ES',
-                            {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            }
-                          )}
-                        </span>
+                            }`}
+                        >
+                          <span className="text-xs">
+                            {new Date(message.created_at).toLocaleTimeString(
+                              'es-ES',
+                              {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )) || []}
+                  )) || []
+                )}
 
                 {isLoadingChat && (
                   <div className="flex justify-end">
@@ -439,7 +451,7 @@ export default function ChatPage() {
                 </div>
 
                 <Button
-                  onClick={sendMessage}
+                  onClick={() => sendMessage()}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   disabled={!newMessage.trim() || isLoadingChat}
                 >
