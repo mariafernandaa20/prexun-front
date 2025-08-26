@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -8,8 +8,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import axiosInstance from '@/lib/api/axiosConfig';
 import ReactMarkdown from 'react-markdown';
+import { useWhatsAppChat } from '@/hooks/useWhatsAppChat';
 import {
   Send,
   Search,
@@ -24,181 +24,59 @@ import {
   Trash2,
 } from 'lucide-react';
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
-
-interface ChatMessage {
-  id: number;
-  user_id: number;
-  role: 'user' | 'assistant';
-  content: string;
-  images?: string[];
-  metadata?: any;
-  created_at: string;
-  user?: User;
-}
-
-interface ChatConversation {
-  phone_number: string;
-  message_count: number;
-  received_count: number;
-  sent_count: number;
-  last_message_time: string;
-  user: any[];
-  last_message: {
-    id: number;
-    content: string;
-    direction: 'sent' | 'received';
-    message_type: string;
-    created_at: string;
-  } | null;
-  contact_info: {
-    name?: string;
-    display_name: string;
-    avatar?: string;
-    is_student: boolean;
-    student_id?: number;
-  };
-  messages?: WhatsAppMessage[];
-}
-
-interface WhatsAppMessage {
-  id: number;
-  mensaje: string;
-  phone_number: string;
-  direction: 'sent' | 'received';
-  message_type: string;
-  created_at: string;
-  user_id?: number;
-}
-
 export default function ChatPage() {
-  const [conversations, setConversations] = useState<ChatConversation[]>([]);
-  const [selectedConversation, setSelectedConversation] =
-    useState<ChatConversation | null>(null);
-  const [selectedMessages, setSelectedMessages] = useState<WhatsAppMessage[]>([]);
-  const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingChat, setIsLoadingChat] = useState(false);
+  
+  const {
+    conversations,
+    selectedConversation,
+    messages,
+    newMessage,
+    setNewMessage,
+    selectedPhoneNumber,
+    isLoadingConversations,
+    isLoadingMessages,
+    isSending,
+    selectConversation,
+    sendMessage,
+    deleteConversation,
+    refreshConversations,
+    refreshMessages,
+  } = useWhatsAppChat();
 
-  useEffect(() => {
-    loadAllChats();
-  }, []);
-
-  const loadAllChats = async () => {
-    setIsLoading(true);
-    try {
-      // Intentar primero las conversaciones híbridas de WhatsApp
-      const response = await axiosInstance.get('/whatsapp/chat/conversations');
-      setConversations(response.data.data.conversations || []);
-    } catch (error) {
-      // Fallback a conversaciones normales de WhatsApp si las híbridas fallan
-      try {
-        const fallbackResponse = await axiosInstance.get('/whatsapp/conversations');
-        setConversations(fallbackResponse.data.data.conversations || []);
-      } catch (fallbackError) {
-        toast.error('Error al cargar las conversaciones');
-        console.error('Error loading conversations:', error, fallbackError);
-      }
-    } finally {
-      setIsLoading(false);
+  // Funciones auxiliares
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
-  const loadConversationHistory = async (phoneNumber: string) => {
-    setIsLoadingChat(true);
+  const handleSendMessage = async () => {
     try {
-      // Intentar primero el endpoint híbrido
-      let response;
-      try {
-        response = await axiosInstance.get(`/whatsapp/chat/history/${encodeURIComponent(phoneNumber)}`);
-      } catch (error) {
-        // Fallback al endpoint original
-        response = await axiosInstance.get(`/whatsapp/conversation`, {
-          params: { phone_number: phoneNumber }
-        });
-      }
-
-      const messages = response.data.messages || response.data.data?.messages || [];
-
-      // Actualizar tanto el estado local como el array de conversaciones
-      setSelectedMessages(messages);
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.phone_number === phoneNumber ? { ...conv, messages } : conv
-        )
-      );
-    } catch (error) {
-      toast.error('Error al cargar el historial');
+      await sendMessage();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Error al enviar mensaje');
       console.error(error);
-    } finally {
-      setIsLoadingChat(false);
     }
   };
 
-  const clearConversation = async (phoneNumber: string) => {
+  const handleDeleteConversation = async (phoneNumber: string) => {
     if (!confirm('¿Estás seguro de que quieres eliminar esta conversación?')) {
       return;
     }
 
     try {
-      await axiosInstance.delete(`/whatsapp/chat/history/${encodeURIComponent(phoneNumber)}`);
-      await loadAllChats();
-      if (selectedConversation?.phone_number === phoneNumber) {
-        setSelectedConversation(null);
-        setSelectedMessages([]); // Limpiar mensajes también
-      }
+      await deleteConversation(phoneNumber);
       toast.success('Conversación eliminada');
     } catch (error) {
       toast.error('Error al eliminar la conversación');
     }
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || isLoadingChat || !selectedConversation) return;
-
-    setIsLoadingChat(true);
-    const messageToSend = newMessage;
-    setNewMessage('');
-
-    try {
-      const response = await axiosInstance.post('/whatsapp/chat/send', {
-        phone_number: selectedConversation.phone_number,
-        message: messageToSend
-      });
-
-      // Recargar los mensajes de la conversación actual
-      await loadConversationHistory(selectedConversation.phone_number);
-      // Recargar la lista de conversaciones para actualizar el último mensaje
-      await loadAllChats();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al enviar mensaje');
-      console.error(error);
-    } finally {
-      setIsLoadingChat(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const selectConversation = async (conversation: ChatConversation) => {
-    setSelectedConversation(conversation);
-    setSelectedMessages([]); // Limpiar mensajes anteriores
-    // Siempre cargar los mensajes para asegurar que estén actualizados
-    await loadConversationHistory(conversation.phone_number);
-  };
-
-  const formatDate = (dateString: string) => {
+  const handleSelectConversation = (conversation: any) => {
+    selectConversation(conversation.phone_number);
+  };  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
@@ -218,7 +96,13 @@ export default function ChatPage() {
     }
   };
 
-  if (isLoading) {
+  // Filtrar conversaciones por búsqueda
+  const filteredConversations = conversations.filter(conversation =>
+    conversation.contact_info?.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conversation.phone_number.includes(searchQuery)
+  );
+
+  if (isLoadingConversations) {
     return (
       <div className="flex items-center justify-center h-screen">
         <RefreshCw className="h-8 w-8 animate-spin" />
@@ -240,9 +124,17 @@ export default function ChatPage() {
             <h1 className="text-xl font-semibold text-foreground">
               Todos los Chats
             </h1>
-            <Button variant="ghost" size="icon" onClick={loadAllChats}>
-              <RefreshCw className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="icon" onClick={refreshConversations}>
+                <RefreshCw className="h-5 w-5" />
+              </Button>
+              {isLoadingConversations && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <RefreshCw className="h-4 w-4 animate-spin mr-1" />
+                  <span>Actualizando...</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Barra de búsqueda */}
@@ -260,14 +152,14 @@ export default function ChatPage() {
         {/* Lista de contactos */}
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {conversations.map((conversation) => (
+            {filteredConversations.map((conversation) => (
               <Card
                 key={conversation.phone_number}
-                className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${selectedConversation?.phone_number === conversation.phone_number
+                className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${selectedPhoneNumber === conversation.phone_number
                   ? 'bg-accent border-primary'
                   : ''
                   }`}
-                onClick={() => selectConversation(conversation)}
+                onClick={() => handleSelectConversation(conversation)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
@@ -292,7 +184,7 @@ export default function ChatPage() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            clearConversation(conversation.phone_number);
+                            handleDeleteConversation(conversation.phone_number);
                           }}
                           className="h-6 w-6 p-0 hover:bg-red-100"
                         >
@@ -323,7 +215,8 @@ export default function ChatPage() {
               </Card>
             ))}
 
-            {conversations.length === 0 && (
+                        
+            {filteredConversations.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No hay conversaciones disponibles
               </div>
@@ -360,7 +253,7 @@ export default function ChatPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      clearConversation(selectedConversation?.phone_number)
+                      handleDeleteConversation(selectedConversation?.phone_number)
                     }
                   >
                     <Trash2 className="h-5 w-5" />
@@ -375,13 +268,13 @@ export default function ChatPage() {
             {/* Mensajes */}
             <ScrollArea className="flex-1 p-4 bg-muted/50">
               <div className="space-y-4">
-                {isLoadingChat && selectedMessages.length === 0 ? (
+                {isLoadingMessages && messages.length === 0 ? (
                   <div className="flex items-center justify-center py-8">
                     <RefreshCw className="h-6 w-6 animate-spin mr-2" />
                     <span>Cargando mensajes...</span>
                   </div>
                 ) : (
-                  selectedMessages?.map((message) => (
+                  messages?.map((message) => (
                     <div
                       key={message.id}
                       className={`flex ${message.direction === 'sent' ? 'justify-end' : 'justify-start'}`}
@@ -416,7 +309,7 @@ export default function ChatPage() {
                   )) || []
                 )}
 
-                {isLoadingChat && (
+                {isSending && (
                   <div className="flex justify-end">
                     <div className="bg-primary text-primary-foreground px-4 py-2 rounded-lg">
                       <RefreshCw className="h-4 w-4 animate-spin" />
@@ -451,11 +344,11 @@ export default function ChatPage() {
                 </div>
 
                 <Button
-                  onClick={() => sendMessage()}
+                  onClick={handleSendMessage}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  disabled={!newMessage.trim() || isLoadingChat}
+                  disabled={!newMessage.trim() || isSending}
                 >
-                  {isLoadingChat ? (
+                  {isSending ? (
                     <RefreshCw className="h-4 w-4 animate-spin" />
                   ) : (
                     <Send className="h-4 w-4" />
