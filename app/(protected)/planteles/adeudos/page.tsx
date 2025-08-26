@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import TransactionsModal from '@/components/TransactionsModal';
 
 const cards = [];
 const studentId = null;
@@ -167,15 +168,7 @@ export default function debtsPage() {
               </TableCell>
               <TableCell>
                 {debt.transactions && debt.transactions.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleShowPayments(debt)}
-                    className="flex items-center gap-1"
-                  >
-                    <Eye className="w-3 h-3" />
-                    Ver Pagos
-                  </Button>
+                  <TransactionsModal debt={debt} />
                 )}
               </TableCell>
             </TableRow>

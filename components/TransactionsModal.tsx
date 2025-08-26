@@ -86,11 +86,11 @@ export default function TransactionsModal({ debt }) {
                       </TableCell>
                       <TableCell>
                         <Button
-                          variant="link"
+                          variant="ghost"
                           size="sm"
                         >
                           <Link href={`/recibo/${transaction.uuid}`} target="_blank">
-                            <Eye className="w-4 h-4 mr-2" />
+                            <Eye className="w-4 h-4 mr-2 " />
                           </Link>
                         </Button>
                       </TableCell>

@@ -316,8 +316,6 @@ export default function StudentDebtsManager({
 
   const summary = getTotalSummary();
 
-  console.log(debts)
-
   return (
     <Card>
       <CardHeader>
