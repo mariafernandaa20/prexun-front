@@ -200,6 +200,11 @@ export const data = {
       icon: LayoutDashboard,
     },
     {
+      name: 'Caja',
+      url: '/planteles/caja',
+      icon: CreditCard,
+    },
+    {
       name: 'Estudiantes',
       url: '/planteles/estudiantes',
       icon: Users,
