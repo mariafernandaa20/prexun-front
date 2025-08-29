@@ -394,7 +394,7 @@ export default function StudentPeriod({
                               key={grupo.id}
                               value={grupo.id!.toString()}
                             >
-                              {grupo.name} ({grupo.students_count || 0}/
+                              {grupo.name} ({grupo.active_assignments_count || 0}/
                               {grupo.capacity})
                             </SelectItem>
                           ))}
@@ -432,7 +432,7 @@ export default function StudentPeriod({
                               key={semana.id}
                               value={semana.id!.toString()}
                             >
-                              {semana.name} ({semana.students_count || 0}/
+                              {semana.name} ({semana.active_assignments_count || 0}/
                               {semana.capacity})
                             </SelectItem>
                           ))}
