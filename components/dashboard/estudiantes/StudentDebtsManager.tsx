@@ -140,7 +140,8 @@ export default function StudentDebtsManager({
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPaymentsModal, setShowPaymentsModal] = useState(false);
-  const [selectedDebtForPayments, setSelectedDebtForPayments] = useState<Debt | null>(null);
+  const [selectedDebtForPayments, setSelectedDebtForPayments] =
+    useState<Debt | null>(null);
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
@@ -282,10 +283,10 @@ export default function StudentDebtsManager({
 
   const getPaymentMethodText = (method: string) => {
     const methods = {
-      'card': 'Tarjeta',
-      'cash': 'Efectivo',
-      'transfer': 'Transferencia',
-      'check': 'Cheque'
+      card: 'Tarjeta',
+      cash: 'Efectivo',
+      transfer: 'Transferencia',
+      check: 'Cheque',
     };
     return methods[method as keyof typeof methods] || method;
   };
@@ -593,13 +594,22 @@ export default function StudentDebtsManager({
             </DialogTitle>
           </DialogHeader>
           <DialogContent className="max-w-3xl max-h-[60v  h] overflow-y-auto">
-
-            {selectedDebtForPayments?.transactions && selectedDebtForPayments.transactions.length > 0 ? (
+            {selectedDebtForPayments?.transactions &&
+            selectedDebtForPayments.transactions.length > 0 ? (
               <div className="space-y-4">
                 <div className="text-sm text-gray-600 mb-4">
-                  <p><strong>Monto Total:</strong> {formatCurrency(selectedDebtForPayments.total_amount)}</p>
-                  <p><strong>Total Pagado:</strong> {formatCurrency(selectedDebtForPayments.paid_amount)}</p>
-                  <p><strong>Pendiente:</strong> {formatCurrency(selectedDebtForPayments.remaining_amount)}</p>
+                  <p>
+                    <strong>Monto Total:</strong>{' '}
+                    {formatCurrency(selectedDebtForPayments.total_amount)}
+                  </p>
+                  <p>
+                    <strong>Total Pagado:</strong>{' '}
+                    {formatCurrency(selectedDebtForPayments.paid_amount)}
+                  </p>
+                  <p>
+                    <strong>Pendiente:</strong>{' '}
+                    {formatCurrency(selectedDebtForPayments.remaining_amount)}
+                  </p>
                 </div>
 
                 <Table>
@@ -613,31 +623,38 @@ export default function StudentDebtsManager({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedDebtForPayments.transactions.map((transaction: any) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell>
-                          {formatTime({ time: transaction.payment_date })}
-                        </TableCell>
-                        <TableCell className="text-green-600 font-semibold">
-                          {formatCurrency(parseFloat(transaction.amount))}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {getPaymentMethodText(transaction.payment_method)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            {transaction.folio_new || transaction.folio || 'N/A'}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-gray-600 max-w-32 truncate" title={transaction.notes}>
-                            {transaction.notes || 'Sin notas'}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {selectedDebtForPayments.transactions.map(
+                      (transaction: any) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell>
+                            {formatTime({ time: transaction.payment_date })}
+                          </TableCell>
+                          <TableCell className="text-green-600 font-semibold">
+                            {formatCurrency(parseFloat(transaction.amount))}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {getPaymentMethodText(transaction.payment_method)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {transaction.folio_new ||
+                                transaction.folio ||
+                                'N/A'}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div
+                              className="text-sm text-gray-600 max-w-32 truncate"
+                              title={transaction.notes}
+                            >
+                              {transaction.notes || 'Sin notas'}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    )}
                   </TableBody>
                 </Table>
               </div>

@@ -2,8 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api/axiosConfig';
 
@@ -21,7 +35,6 @@ const SendTemplateDialog: React.FC<SendTemplateDialogProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
 
   const fetchTemplates = async () => {
     setIsLoading(true);
@@ -66,18 +79,18 @@ const SendTemplateDialog: React.FC<SendTemplateDialogProps> = ({
 
     try {
       setIsBulkActionLoading(true);
-      
+
       // TODO: Implementar llamada a la API para enviar plantilla
       // await sendTemplateToStudents(selectedTemplate, selectedStudents);
-      
+
       // Simulación temporal
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       toast({
         title: 'Plantilla enviada',
         description: `Plantilla enviada exitosamente a ${selectedStudents.length} estudiante(s)`,
       });
-      
+
       setIsOpen(false);
       setSelectedTemplate('');
     } catch (error: any) {
@@ -97,7 +110,9 @@ const SendTemplateDialog: React.FC<SendTemplateDialogProps> = ({
     }
   }, [isOpen]);
 
-  const selectedTemplateName = templates.find(t => t.id === selectedTemplate)?.name;
+  const selectedTemplateName = templates.find(
+    (t) => t.id === selectedTemplate
+  )?.name;
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -110,20 +125,27 @@ const SendTemplateDialog: React.FC<SendTemplateDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Enviar Plantilla de WhatsApp</DialogTitle>
           <DialogDescription>
-            Selecciona una plantilla para enviar a {selectedStudents.length} estudiante(s) seleccionado(s).
+            Selecciona una plantilla para enviar a {selectedStudents.length}{' '}
+            estudiante(s) seleccionado(s).
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div>
             <Label htmlFor="template-select">Plantilla</Label>
-            <Select 
-              value={selectedTemplate} 
+            <Select
+              value={selectedTemplate}
               onValueChange={setSelectedTemplate}
               disabled={isLoading}
             >
               <SelectTrigger>
-                <SelectValue placeholder={isLoading ? "Cargando plantillas..." : "Selecciona una plantilla"} />
+                <SelectValue
+                  placeholder={
+                    isLoading
+                      ? 'Cargando plantillas...'
+                      : 'Selecciona una plantilla'
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {templates.length > 0 ? (
@@ -145,7 +167,9 @@ const SendTemplateDialog: React.FC<SendTemplateDialogProps> = ({
           {selectedTemplateName && (
             <div className="p-3 bg-muted rounded-md">
               <p className="text-sm font-medium">Plantilla seleccionada:</p>
-              <p className="text-sm text-muted-foreground">{selectedTemplateName}</p>
+              <p className="text-sm text-muted-foreground">
+                {selectedTemplateName}
+              </p>
             </div>
           )}
         </div>
@@ -154,8 +178,8 @@ const SendTemplateDialog: React.FC<SendTemplateDialogProps> = ({
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancelar
           </Button>
-          <Button 
-            onClick={handleSendTemplate} 
+          <Button
+            onClick={handleSendTemplate}
             disabled={!selectedTemplate || isLoading}
             className="w-full sm:w-auto"
           >

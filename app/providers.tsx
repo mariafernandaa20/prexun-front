@@ -5,7 +5,7 @@ import { SWRConfig } from 'swr';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const CLIENTID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-  
+
   return (
     <GoogleOAuthProvider clientId={CLIENTID}>
       <SWRConfig

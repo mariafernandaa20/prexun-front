@@ -30,7 +30,6 @@ const BulkActions: React.FC<BulkActionsProps> = ({
     useState<string>('');
   const { semanasIntensivas } = useAuthStore();
 
-
   const handleBulkDelete = async () => {
     if (selectedStudents.length === 0) {
       toast({
@@ -232,22 +231,22 @@ const BulkActions: React.FC<BulkActionsProps> = ({
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 w-full">
-      <div className='flex gap-2'>
+      <div className="flex gap-2">
         <Button
-          className='w-full'
+          className="w-full"
           variant="destructive"
           onClick={handleBulkDelete}
-          title='Eliminar seleccionados'
+          title="Eliminar seleccionados"
           disabled={selectedStudents.length === 0}
         >
           <Trash />
         </Button>
         <Button
-          className='w-full'
+          className="w-full"
           variant="destructive"
           onClick={handleBulkDeleteForever}
           disabled={selectedStudents.length === 0}
-          title='Eliminar permanentemente'
+          title="Eliminar permanentemente"
         >
           <Trash />
         </Button>
@@ -286,11 +285,10 @@ const BulkActions: React.FC<BulkActionsProps> = ({
         Marcar como Inactivo
       </Button>
 
-      <SendTemplateDialog 
+      <SendTemplateDialog
         selectedStudents={selectedStudents}
         setIsBulkActionLoading={setIsBulkActionLoading}
       />
-
     </div>
   );
 };

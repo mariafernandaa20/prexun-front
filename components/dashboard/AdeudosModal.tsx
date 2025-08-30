@@ -264,7 +264,6 @@ export default function AdeudosModal({ student }) {
                           </TableCell>
                         </TableRow>
                       ))}
-                      
                     </TableBody>
                   </Table>
                 </div>

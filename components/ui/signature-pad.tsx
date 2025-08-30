@@ -85,11 +85,7 @@ export function SignaturePadModal({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button
-                type="button"
-                onClick={saveSignature}
-                disabled={isEmpty}
-              >
+              <Button type="button" onClick={saveSignature} disabled={isEmpty}>
                 Guardar Firma
               </Button>
             </div>

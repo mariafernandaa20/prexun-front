@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import {
   Table,
   TableCell,
@@ -34,19 +34,25 @@ export default function TransactionsModal({ debt }) {
       </Button>
 
       <Dialog open={showPaymentsModal} onOpenChange={setShowPaymentsModal}>
-
         <DialogContent className="max-w-3xl max-h-[60v  h] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              Pagos del Adeudo
-            </DialogTitle>
+            <DialogTitle>Pagos del Adeudo</DialogTitle>
           </DialogHeader>
           {debt?.transactions && debt.transactions.length > 0 ? (
             <div className="space-y-4">
               <div className="text-sm text-gray-600 mb-4">
-                <p><strong>Monto Total:</strong> {formatCurrency(debt.total_amount)}</p>
-                <p><strong>Total Pagado:</strong> {formatCurrency(debt.paid_amount)}</p>
-                <p><strong>Pendiente:</strong> {formatCurrency(debt.remaining_amount)}</p>
+                <p>
+                  <strong>Monto Total:</strong>{' '}
+                  {formatCurrency(debt.total_amount)}
+                </p>
+                <p>
+                  <strong>Total Pagado:</strong>{' '}
+                  {formatCurrency(debt.paid_amount)}
+                </p>
+                <p>
+                  <strong>Pendiente:</strong>{' '}
+                  {formatCurrency(debt.remaining_amount)}
+                </p>
               </div>
 
               <Table>
@@ -76,33 +82,37 @@ export default function TransactionsModal({ debt }) {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
- {transaction?.paid ? (
-  <>
-    {transaction?.folio_new + " "}
-    {(
-      transaction?.folio ??
-      transaction?.folio_cash ??
-      transaction?.folio_transfer ??
-      0
-    )
-      .toString()
-      .padStart(4, "0")}
-  </>
-) : (
-  "No Pagado"
-)}                        </div>
+                          {transaction?.paid ? (
+                            <>
+                              {transaction?.folio_new + ' '}
+                              {(
+                                transaction?.folio ??
+                                transaction?.folio_cash ??
+                                transaction?.folio_transfer ??
+                                0
+                              )
+                                .toString()
+                                .padStart(4, '0')}
+                            </>
+                          ) : (
+                            'No Pagado'
+                          )}{' '}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm text-gray-600 max-w-32 truncate" title={transaction.notes}>
+                        <div
+                          className="text-sm text-gray-600 max-w-32 truncate"
+                          title={transaction.notes}
+                        >
                           {transaction.notes || 'Sin notas'}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                        >
-                          <Link href={`/recibo/${transaction.uuid}`} target="_blank">
+                        <Button variant="ghost" size="sm">
+                          <Link
+                            href={`/recibo/${transaction.uuid}`}
+                            target="_blank"
+                          >
                             <Eye className="w-4 h-4 mr-2 " />
                           </Link>
                         </Button>
@@ -129,5 +139,5 @@ export default function TransactionsModal({ debt }) {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

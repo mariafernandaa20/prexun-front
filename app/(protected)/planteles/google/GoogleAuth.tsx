@@ -87,7 +87,7 @@ export default function GoogleAuth() {
       {!successMessage && (
         <button
           onClick={handleLogin}
-          className='flex items-center gap-2 '
+          className="flex items-center gap-2 "
           style={{
             backgroundColor: '#fff',
             color: 'black',
@@ -111,7 +111,7 @@ export default function GoogleAuth() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
             onClick={handleLogout}
-            className='flex items-center gap-2'
+            className="flex items-center gap-2"
             style={{
               backgroundColor: '#dc3545',
               color: 'white',

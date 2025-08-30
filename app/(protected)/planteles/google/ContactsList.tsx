@@ -40,11 +40,11 @@ export default function ContactsList() {
     }
   }, [accessToken]);
 
-  const filteredContacts = contacts.filter(contact => {
+  const filteredContacts = contacts.filter((contact) => {
     const name = contact.names?.[0]?.displayName || '';
     const email = contact.emailAddresses?.[0]?.value || '';
     const phone = contact.phoneNumbers?.[0]?.value || '';
-    
+
     return (
       name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -86,7 +86,7 @@ export default function ContactsList() {
             Actualizar
           </Button>
         </div>
-        
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
@@ -106,7 +106,9 @@ export default function ContactsList() {
           </div>
         ) : filteredContacts.length === 0 ? (
           <div className="text-center p-8 text-gray-500">
-            {searchTerm ? 'No se encontraron contactos con ese término' : 'No hay contactos disponibles'}
+            {searchTerm
+              ? 'No se encontraron contactos con ese término'
+              : 'No hay contactos disponibles'}
           </div>
         ) : (
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -119,38 +121,41 @@ export default function ContactsList() {
                   <div className="bg-blue-100 rounded-full p-2">
                     <User className="h-4 w-4 text-blue-600" />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-gray-900 dark:text-white truncate">
                       {contact.names?.[0]?.displayName || 'Sin nombre'}
                     </h3>
-                    
-                    {contact.emailAddresses && contact.emailAddresses.length > 0 && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Mail className="h-3 w-3 text-gray-400" />
-                        <span className="text-sm text-gray-600 truncate">
-                          {contact.emailAddresses[0].value}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {contact.phoneNumbers && contact.phoneNumbers.length > 0 && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Phone className="h-3 w-3 text-gray-400" />
-                        <span className="text-sm text-gray-600">
-                          {contact.phoneNumbers[0].value}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {contact.phoneNumbers && contact.phoneNumbers.length > 1 && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Phone className="h-3 w-3 text-gray-400" />
-                        <span className="text-sm text-gray-500">
-                          {contact.phoneNumbers[1].value}
-                        </span>
-                      </div>
-                    )}
+
+                    {contact.emailAddresses &&
+                      contact.emailAddresses.length > 0 && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Mail className="h-3 w-3 text-gray-400" />
+                          <span className="text-sm text-gray-600 truncate">
+                            {contact.emailAddresses[0].value}
+                          </span>
+                        </div>
+                      )}
+
+                    {contact.phoneNumbers &&
+                      contact.phoneNumbers.length > 0 && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Phone className="h-3 w-3 text-gray-400" />
+                          <span className="text-sm text-gray-600">
+                            {contact.phoneNumbers[0].value}
+                          </span>
+                        </div>
+                      )}
+
+                    {contact.phoneNumbers &&
+                      contact.phoneNumbers.length > 1 && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Phone className="h-3 w-3 text-gray-400" />
+                          <span className="text-sm text-gray-500">
+                            {contact.phoneNumbers[1].value}
+                          </span>
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>

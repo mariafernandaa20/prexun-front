@@ -93,19 +93,26 @@ export default function CobrosPage() {
           return 'No Pagado';
         }
 
-        const folioNumber = transaction.folio ||
+        const folioNumber =
+          transaction.folio ||
           transaction.folio_cash ||
           transaction.folio_transfer ||
           0;
 
-        return transaction.folio_new + ' ' + folioNumber.toString().padStart(4, '0');
+        return (
+          transaction.folio_new + ' ' + folioNumber.toString().padStart(4, '0')
+        );
       },
     },
     {
       id: 'student',
       label: 'Estudiante',
-      render: (transaction: Transaction) =>
-        <a className='text-blue-500' href={`/planteles/estudiantes/${transaction.student?.id}`}>{`${transaction.student?.firstname} ${transaction.student?.lastname}`}</a>,
+      render: (transaction: Transaction) => (
+        <a
+          className="text-blue-500"
+          href={`/planteles/estudiantes/${transaction.student?.id}`}
+        >{`${transaction.student?.firstname} ${transaction.student?.lastname}`}</a>
+      ),
     },
     {
       id: 'amount',

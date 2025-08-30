@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import React, { useState } from 'react';
 import { SignaturePad, SignaturePreview } from '@/components/ui/SignaturePad';
 
@@ -18,7 +18,7 @@ export default function TestSignature() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Prueba de Firma Digital</h1>
-      
+
       {signature ? (
         <SignaturePreview
           signature={signature}

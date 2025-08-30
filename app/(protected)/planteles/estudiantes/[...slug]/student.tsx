@@ -68,11 +68,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               <ChargesForm
                 campusId={transaction.campus_id}
                 cards={cards}
-                fetchStudents={() => { }}
+                fetchStudents={() => {}}
                 student_id={transaction.student_id}
                 transaction={transaction}
                 formData={transaction}
-                setFormData={() => { }}
+                setFormData={() => {}}
                 onTransactionUpdate={onUpdateTransaction}
                 mode="update"
                 student={null}
@@ -84,7 +84,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             <TableCell>
               {transaction?.paid ? (
                 <>
-                  {transaction?.folio_new + " "}
+                  {transaction?.folio_new + ' '}
                   {(
                     transaction?.folio ??
                     transaction?.folio_cash ??
@@ -92,13 +92,12 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                     0
                   )
                     .toString()
-                    .padStart(4, "0")}
+                    .padStart(4, '0')}
                 </>
               ) : (
-                "No Pagado"
+                'No Pagado'
               )}
             </TableCell>
-
           </TableCell>
           <TableCell>
             {getPaymentMethodLabel(transaction.payment_method)}
@@ -181,10 +180,10 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
         ...prevStudent,
         transactions: transactionExists
           ? prevStudent.transactions.map((transaction) =>
-            transaction.id === updatedTransaction.id
-              ? updatedTransaction
-              : transaction
-          )
+              transaction.id === updatedTransaction.id
+                ? updatedTransaction
+                : transaction
+            )
           : [...prevStudent.transactions, updatedTransaction],
       };
     });
@@ -301,10 +300,10 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                   <span className="text-muted-foreground">Último pago:</span>{' '}
                   {student.transactions?.length
                     ? formatTime({
-                      time: student.transactions[
-                        student.transactions.length - 1
-                      ].payment_date,
-                    })
+                        time: student.transactions[
+                          student.transactions.length - 1
+                        ].payment_date,
+                      })
                     : 'Sin pagos'}
                 </p>
               </div>

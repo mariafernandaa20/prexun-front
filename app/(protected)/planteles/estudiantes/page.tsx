@@ -435,7 +435,7 @@ export default function Page() {
                   emptyMessage="No se encontraron columnas"
                 />
               </Filters>
-              <div className='block'>
+              <div className="block">
                 {selectedStudents.length > 0 && (
                   <BulkActions
                     selectedStudents={selectedStudents}

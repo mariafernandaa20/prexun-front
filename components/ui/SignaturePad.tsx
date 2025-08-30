@@ -1,8 +1,18 @@
 'use client';
-import React, { useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import React, {
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface SignaturePadProps {
   isOpen: boolean;
@@ -18,7 +28,7 @@ interface SignaturePadRef {
 }
 
 export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
-  ({ isOpen, onClose, onSave, title = "Agregar Firma" }, ref) => {
+  ({ isOpen, onClose, onSave, title = 'Agregar Firma' }, ref) => {
     const sigCanvas = useRef<SignatureCanvas>(null);
     const [isEmpty, setIsEmpty] = useState(true);
 
@@ -42,7 +52,7 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
           }
         }
         return '';
-      }
+      },
     }));
 
     const handleClear = () => {
@@ -53,12 +63,15 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
     const trimCanvas = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
       const ctx = canvas.getContext('2d');
       if (!ctx) return canvas;
-      
+
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
-      
-      let top = canvas.height, bottom = 0, left = canvas.width, right = 0;
-      
+
+      let top = canvas.height,
+        bottom = 0,
+        left = canvas.width,
+        right = 0;
+
       // Find the bounds of non-transparent pixels
       for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
@@ -71,31 +84,41 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
           }
         }
       }
-      
+
       // Add some padding
       const padding = 10;
       top = Math.max(0, top - padding);
       bottom = Math.min(canvas.height, bottom + padding);
       left = Math.max(0, left - padding);
       right = Math.min(canvas.width, right + padding);
-      
+
       const trimmedWidth = right - left;
       const trimmedHeight = bottom - top;
-      
+
       if (trimmedWidth <= 0 || trimmedHeight <= 0) return canvas;
-      
+
       // Create new canvas with trimmed size
       const trimmedCanvas = document.createElement('canvas');
       trimmedCanvas.width = trimmedWidth;
       trimmedCanvas.height = trimmedHeight;
       const trimmedCtx = trimmedCanvas.getContext('2d');
-      
+
       if (trimmedCtx) {
         trimmedCtx.fillStyle = 'white';
         trimmedCtx.fillRect(0, 0, trimmedWidth, trimmedHeight);
-        trimmedCtx.drawImage(canvas, left, top, trimmedWidth, trimmedHeight, 0, 0, trimmedWidth, trimmedHeight);
+        trimmedCtx.drawImage(
+          canvas,
+          left,
+          top,
+          trimmedWidth,
+          trimmedHeight,
+          0,
+          0,
+          trimmedWidth,
+          trimmedHeight
+        );
       }
-      
+
       return trimmedCanvas;
     };
 
@@ -123,14 +146,14 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
               <SignatureCanvas
                 ref={sigCanvas}
                 canvasProps={{
                   className: 'w-full h-48 border rounded',
-                  style: { background: 'white' }
+                  style: { background: 'white' },
                 }}
                 onBegin={handleBegin}
               />
@@ -140,26 +163,18 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={handleClear}
                 disabled={isEmpty}
               >
                 Limpiar
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onClose}
-              >
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancelar
               </Button>
-              <Button 
-                type="button"
-                onClick={handleSave}
-                disabled={isEmpty}
-              >
+              <Button type="button" onClick={handleSave} disabled={isEmpty}>
                 Guardar Firma
               </Button>
             </div>
@@ -182,7 +197,7 @@ interface SignaturePreviewProps {
 export const SignaturePreview: React.FC<SignaturePreviewProps> = ({
   signature,
   onRemove,
-  onEdit
+  onEdit,
 }) => {
   if (!signature) return null;
 

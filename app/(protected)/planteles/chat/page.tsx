@@ -26,7 +26,7 @@ import {
 
 export default function ChatPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const {
     conversations,
     selectedConversation,
@@ -76,7 +76,8 @@ export default function ChatPage() {
 
   const handleSelectConversation = (conversation: any) => {
     selectConversation(conversation.phone_number);
-  };  const formatDate = (dateString: string) => {
+  };
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
@@ -97,9 +98,12 @@ export default function ChatPage() {
   };
 
   // Filtrar conversaciones por búsqueda
-  const filteredConversations = conversations.filter(conversation =>
-    conversation.contact_info?.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conversation.phone_number.includes(searchQuery)
+  const filteredConversations = conversations.filter(
+    (conversation) =>
+      conversation.contact_info?.display_name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      conversation.phone_number.includes(searchQuery)
   );
 
   if (isLoadingConversations) {
@@ -125,7 +129,11 @@ export default function ChatPage() {
               Todos los Chats
             </h1>
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="icon" onClick={refreshConversations}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={refreshConversations}
+              >
                 <RefreshCw className="h-5 w-5" />
               </Button>
               {isLoadingConversations && (
@@ -155,17 +163,20 @@ export default function ChatPage() {
             {filteredConversations.map((conversation) => (
               <Card
                 key={conversation.phone_number}
-                className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${selectedPhoneNumber === conversation.phone_number
-                  ? 'bg-accent border-primary'
-                  : ''
-                  }`}
+                className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${
+                  selectedPhoneNumber === conversation.phone_number
+                    ? 'bg-accent border-primary'
+                    : ''
+                }`}
                 onClick={() => handleSelectConversation(conversation)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {conversation?.contact_info?.display_name?.charAt(0)?.toUpperCase() || 'W'}
+                        {conversation?.contact_info?.display_name
+                          ?.charAt(0)
+                          ?.toUpperCase() || 'W'}
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -173,11 +184,13 @@ export default function ChatPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium text-foreground truncate">
-                        {conversation?.contact_info?.display_name || conversation.phone_number}
+                        {conversation?.contact_info?.display_name ||
+                          conversation.phone_number}
                       </h3>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs text-muted-foreground">
-                          {conversation.last_message && formatDate(conversation.last_message.created_at)}
+                          {conversation.last_message &&
+                            formatDate(conversation.last_message.created_at)}
                         </span>
                         <Button
                           variant="ghost"
@@ -195,10 +208,12 @@ export default function ChatPage() {
 
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-muted-foreground truncate">
-                        {conversation.last_message && conversation.last_message.content && conversation.last_message.content.length > 50
+                        {conversation.last_message &&
+                        conversation.last_message.content &&
+                        conversation.last_message.content.length > 50
                           ? `${conversation.last_message.content.substring(0, 50)}...`
-                          : conversation.last_message?.content || 'Sin mensajes'
-                        }
+                          : conversation.last_message?.content ||
+                            'Sin mensajes'}
                       </p>
                       {conversation.received_count > 0 && (
                         <Badge className="bg-green-500 text-white text-xs rounded-full px-2 py-1">
@@ -215,7 +230,6 @@ export default function ChatPage() {
               </Card>
             ))}
 
-                        
             {filteredConversations.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 No hay conversaciones disponibles
@@ -235,12 +249,15 @@ export default function ChatPage() {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {selectedConversation?.contact_info?.display_name?.charAt(0)?.toUpperCase() || 'W'}
+                      {selectedConversation?.contact_info?.display_name
+                        ?.charAt(0)
+                        ?.toUpperCase() || 'W'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <h2 className="font-semibold text-foreground">
-                      {selectedConversation.contact_info?.display_name || selectedConversation?.phone_number}
+                      {selectedConversation.contact_info?.display_name ||
+                        selectedConversation?.phone_number}
                     </h2>
                     <p className="text-sm text-muted-foreground">
                       {selectedConversation?.phone_number}
@@ -253,7 +270,9 @@ export default function ChatPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      handleDeleteConversation(selectedConversation?.phone_number)
+                      handleDeleteConversation(
+                        selectedConversation?.phone_number
+                      )
                     }
                   >
                     <Trash2 className="h-5 w-5" />
@@ -280,19 +299,21 @@ export default function ChatPage() {
                       className={`flex ${message.direction === 'sent' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.direction === 'sent'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-card text-card-foreground border border-border'
-                          }`}
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          message.direction === 'sent'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-card text-card-foreground border border-border'
+                        }`}
                       >
                         <div className="text-sm prose prose-sm max-w-none">
                           <ReactMarkdown>{message.mensaje}</ReactMarkdown>
                         </div>
                         <div
-                          className={`flex items-center justify-end mt-1 space-x-1 ${message.direction === 'sent'
-                            ? 'text-primary-foreground/70'
-                            : 'text-muted-foreground'
-                            }`}
+                          className={`flex items-center justify-end mt-1 space-x-1 ${
+                            message.direction === 'sent'
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground'
+                          }`}
                         >
                           <span className="text-xs">
                             {new Date(message.created_at).toLocaleTimeString(

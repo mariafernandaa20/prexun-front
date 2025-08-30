@@ -119,9 +119,9 @@ export default function ChargesForm({
   useEffect(() => {
     const updatedFormData = {
       ...formData,
-      payment_date: formData.payment_date 
+      payment_date: formData.payment_date
         ? formatDateTimeFromLaravel(formData.payment_date)
-        : getTodayDateTime()
+        : getTodayDateTime(),
     };
     setLocalFormData(updatedFormData);
   }, [formData]);
@@ -155,7 +155,9 @@ export default function ChargesForm({
               denominations: null,
               paid: 1,
               cash_register_id: activeCampus.latest_cash_register.id,
-              payment_date: formatDateTimeForLaravel(localFormData.payment_date),
+              payment_date: formatDateTimeForLaravel(
+                localFormData.payment_date
+              ),
               image: localFormData.image,
             });
 
