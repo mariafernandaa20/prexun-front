@@ -44,7 +44,6 @@ export default function AttendanceListPage() {
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // Función para cargar las asistencias de una fecha específica
   const fetchAttendanceForDate = async (date: Date, grupoId: string) => {
     try {
       const formattedDate = date.toISOString().split('T')[0];
@@ -57,23 +56,19 @@ export default function AttendanceListPage() {
         response.data.data &&
         response.data.data.length > 0
       ) {
-        // Convertir los datos de asistencia al formato que espera el estado
         const attendanceMap: Record<string, boolean> = {};
         response.data.data.forEach((record: any) => {
           attendanceMap[record.student_id] = record.present;
         });
         setAttendance(attendanceMap);
       } else {
-        // Si no hay asistencias para esa fecha, marcar todas como presentes por defecto
         const defaultAttendance: Record<string, boolean> = {};
         selectedGroupStudents.forEach((student) => {
           defaultAttendance[student.id] = true;
         });
         setAttendance(defaultAttendance);
       }
-    } catch (error) {
-      console.error('Error al cargar asistencias:', error);
-      // Si hay un error, marcar todas las asistencias como presentes por defecto
+    } catch {
       const defaultAttendance: Record<string, boolean> = {};
       selectedGroupStudents.forEach((student) => {
         defaultAttendance[student.id] = true;
@@ -82,7 +77,6 @@ export default function AttendanceListPage() {
     }
   };
 
-  // Efecto para cargar asistencias cuando cambie la fecha o el grupo
   useEffect(() => {
     if (selectedGrupo && selectedDate) {
       fetchAttendanceForDate(selectedDate, selectedGrupo);
@@ -95,7 +89,7 @@ export default function AttendanceListPage() {
       const response = await axiosInstance.get(`/groups`);
       setGrupos(response.data);
       setIsLoading(false);
-    } catch (error) {
+    } catch {
       toast('Error loading groups', {
         description: 'Could not load teacher groups',
       });
@@ -127,27 +121,45 @@ export default function AttendanceListPage() {
 
       const response = await axiosInstance.post('/teacher/attendance', payload);
 
+      const consoleMessage = {
+        status: 'success',
+        action: 'attendance_saved',
+        data: {
+          grupo_id: selectedGrupo,
+          fecha: formattedDate,
+          total_estudiantes: Object.keys(attendance).length,
+          presentes: Object.values(attendance).filter(present => present).length,
+          ausentes: Object.values(attendance).filter(present => !present).length,
+          timestamp: new Date().toISOString(),
+          response: response.data
+        }
+      };
+      
+      console.log('Asistencia guardada', consoleMessage);
+
       toast.success('¡Asistencia Guardada!', {
         description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,
         duration: 5000,
-        style: {
-          background: '#ecfdf5',
-          border: '1px solid #059669',
-          color: '#065f46',
-        },
       });
-    } catch (error) {
-      console.error('Error completo:', error);
-      console.error('Detalles del error:', error.response?.data);
+    } catch (error: any) {
+      const errorMessage = {
+        status: 'error',
+        action: 'attendance_save_failed',
+        data: {
+          error: error.message,
+          grupo_id: selectedGrupo,
+          fecha: selectedDate.toISOString().split('T')[0],
+          timestamp: new Date().toISOString(),
+          errorDetails: error.response?.data
+        }
+      };
+      
+      console.error('Error al guardar la asistencia', errorMessage);
+      
       toast.error('Error al Guardar', {
         description:
           'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
         duration: 4000,
-        style: {
-          background: '#fef2f2',
-          border: '1px solid #dc2626',
-          color: '#991b1b',
-        },
       });
     }
   };
@@ -190,7 +202,6 @@ export default function AttendanceListPage() {
             onSelect={(date) => {
               if (date && selectedGrupo) {
                 setSelectedDate(date);
-                // Las asistencias se cargarán automáticamente por el useEffect
               }
             }}
           />
@@ -199,45 +210,38 @@ export default function AttendanceListPage() {
 
       {selectedGrupo && (
         <>
-          <div className="overflow-x-auto">
-            <div className="w-full min-w-[1000px] lg:min-w-[1200px]">
-              <Table className="w-full text-xs">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="py-3 px-4">Matrícula</TableHead>
-                    <TableHead className="py-3 px-4">Nombre</TableHead>
-                    <TableHead className="py-3 px-4">Apellido</TableHead>
-                    <TableHead className="py-3 px-4">Asistencia</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {selectedGroupStudents.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell className="py-3 px-4">{student.id}</TableCell>
-                      <TableCell className="py-3 px-4">
-                        {student.firstname}
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        {student.lastname}
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        <Checkbox
-                          checked={attendance[student.id] || false}
-                          onCheckedChange={(checked) =>
-                            handleAttendanceChange(
-                              student.id,
-                              checked as boolean
-                            )
-                          }
-                          className="h-5 w-5"
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <Table className="w-full text-xs border rounded-lg">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="py-3 px-4">Matrícula</TableHead>
+                <TableHead className="py-3 px-4">Nombre</TableHead>
+                <TableHead className="py-3 px-4">Apellido</TableHead>
+                <TableHead className="py-3 px-4">Asistencia</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {selectedGroupStudents.map((student) => (
+                <TableRow key={student.id}>
+                  <TableCell className="py-3 px-4">{student.id}</TableCell>
+                  <TableCell className="py-3 px-4">
+                    {student.firstname}
+                  </TableCell>
+                  <TableCell className="py-3 px-4">
+                    {student.lastname}
+                  </TableCell>
+                  <TableCell className="py-3 px-4">
+                    <Checkbox
+                      checked={attendance[student.id] || false}
+                      onCheckedChange={(checked) =>
+                        handleAttendanceChange(student.id, checked as boolean)
+                      }
+                      className="h-5 w-5"
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
           <div className="mt-6 flex justify-end">
             <Button className="text-xs" onClick={handleSaveAttendance}>
