@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Input } from '@/components/ui/input';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
-import { getTodayDate } from '@/lib/utils';
+import { getTodayDate, getTodayDateTime } from '@/lib/utils';
 
 interface Debt {
   id: number;
@@ -80,6 +80,21 @@ export default function ChargesForm({
 
   const { SAT } = useFeatureFlags();
 
+  // Convertir datetime-local a formato Laravel (Y-m-d H:i:s)
+  const formatDateTimeForLaravel = (dateTimeLocal: string) => {
+    if (!dateTimeLocal) return null;
+    return dateTimeLocal.replace('T', ' ') + ':00'; // Agregar segundos
+  };
+
+  // Convertir formato Laravel (Y-m-d H:i:s) a datetime-local
+  const formatDateTimeFromLaravel = (laravelDateTime: string) => {
+    if (!laravelDateTime) return getTodayDateTime();
+    // Si ya es formato datetime-local, devolverlo tal como está
+    if (laravelDateTime.includes('T')) return laravelDateTime.slice(0, 16);
+    // Si es formato Laravel, convertir
+    return laravelDateTime.replace(' ', 'T').slice(0, 16);
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
@@ -102,11 +117,13 @@ export default function ChargesForm({
   }, [debt, open]);
 
   useEffect(() => {
-    setLocalFormData(formData);
-
-    if (!formData.payment_date) {
-      localFormData.payment_date = getTodayDate();
-    }
+    const updatedFormData = {
+      ...formData,
+      payment_date: formData.payment_date 
+        ? formatDateTimeFromLaravel(formData.payment_date)
+        : getTodayDateTime()
+    };
+    setLocalFormData(updatedFormData);
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,10 +139,12 @@ export default function ChargesForm({
             campus_id: currentCampusId,
             debt_id: debt.id,
             transaction_type: 'income',
+            payment_date: formatDateTimeForLaravel(localFormData.payment_date),
           }
         : {
             ...localFormData,
             campus_id: currentCampusId,
+            payment_date: formatDateTimeForLaravel(localFormData.payment_date),
           };
 
       const updatedTransaction =
@@ -136,7 +155,7 @@ export default function ChargesForm({
               denominations: null,
               paid: 1,
               cash_register_id: activeCampus.latest_cash_register.id,
-              payment_date: localFormData.payment_date,
+              payment_date: formatDateTimeForLaravel(localFormData.payment_date),
               image: localFormData.image,
             });
 
@@ -226,9 +245,9 @@ export default function ChargesForm({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="space-y-2">
-                <Label>Fecha de pago</Label>
+                <Label>Fecha y hora de pago</Label>
                 <Input
-                  type="date"
+                  type="datetime-local"
                   value={localFormData.payment_date}
                   onChange={(e) =>
                     updateFormData({ payment_date: e.target.value })

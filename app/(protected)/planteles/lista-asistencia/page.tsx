@@ -92,7 +92,7 @@ export default function AttendanceListPage() {
   const fetchTeacherGroups = async () => {
     try {
       if (!user?.id) return;
-      const response = await axiosInstance.get(`/teacher/groups/${user.id}`);
+      const response = await axiosInstance.get(`/groups`);
       setGrupos(response.data);
       setIsLoading(false);
     } catch (error) {

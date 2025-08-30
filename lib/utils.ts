@@ -106,3 +106,11 @@ export const getTodayDate = () => {
   const today = new Date();
   return today.toISOString().split('T')[0];
 };
+
+export const getTodayDateTime = () => {
+  const now = new Date();
+  // Ajustar a la zona horaria local
+  const offset = now.getTimezoneOffset();
+  const localTime = new Date(now.getTime() - (offset * 60 * 1000));
+  return localTime.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+};

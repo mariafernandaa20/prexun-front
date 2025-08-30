@@ -356,7 +356,7 @@ export default function CobrosPage() {
   return (
     <div>
       <Card className="w-full overflow-hidden">
-        <CardHeader className="sticky top-0 z-20 bg-card">
+        <CardHeader className="sticky top-0 bg-card">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <Input
               placeholder="Buscar por nombre completo..."
