@@ -86,7 +86,7 @@ export default function AttendanceListPage() {
   const fetchTeacherGroups = async () => {
     try {
       if (!user?.id) return;
-      const response = await axiosInstance.get(`/groups`);
+      const response = await axiosInstance.get(`/teacher/groups/${user.id}`);
       setGrupos(response.data);
       setIsLoading(false);
     } catch {
