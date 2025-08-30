@@ -37,13 +37,12 @@ interface Grupo {
 }
 
 export default function AttendanceListPage() {
-  const user = useAuthStore((state) => state.user);
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const { grupos, periods } = useAuthStore();
+  const [periodId, setPeriodId] = useState<string>('');
   const [selectedGrupo, setSelectedGrupo] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [students, setStudents] = useState<Student[]>([]);
   const fetchAttendanceForDate = async (date: Date, grupoId: string) => {
     try {
       const formattedDate = date.toISOString().split('T')[0];
@@ -62,16 +61,18 @@ export default function AttendanceListPage() {
         });
         setAttendance(attendanceMap);
       } else {
+        // Limpiar asistencias - empezar con celdas vacías (false)
         const defaultAttendance: Record<string, boolean> = {};
-        selectedGroupStudents.forEach((student) => {
-          defaultAttendance[student.id] = true;
+        students.forEach((student) => {
+          defaultAttendance[student.id] = false;
         });
         setAttendance(defaultAttendance);
       }
     } catch {
+      // En caso de error, también empezar con celdas vacías
       const defaultAttendance: Record<string, boolean> = {};
-      selectedGroupStudents.forEach((student) => {
-        defaultAttendance[student.id] = true;
+      students.forEach((student) => {
+        defaultAttendance[student.id] = false;
       });
       setAttendance(defaultAttendance);
     }
@@ -81,27 +82,24 @@ export default function AttendanceListPage() {
     if (selectedGrupo && selectedDate) {
       fetchAttendanceForDate(selectedDate, selectedGrupo);
     }
-  }, [selectedDate, selectedGrupo]);
+  }, [selectedDate, selectedGrupo, students]);
 
-  const fetchTeacherGroups = async () => {
-    try {
-      if (!user?.id) return;
-      const response = await axiosInstance.get(`/teacher/groups/${user.id}`);
-      setGrupos(response.data);
-      setIsLoading(false);
-    } catch {
-      toast('Error loading groups', {
-        description: 'Could not load teacher groups',
-      });
-      setIsLoading(false);
-    }
-  };
-
+  // Limpiar asistencias cuando cambie el grupo
   useEffect(() => {
-    if (user?.id) {
-      fetchTeacherGroups();
+    if (selectedGrupo && students.length > 0) {
+      // Resetear asistencias para el nuevo grupo
+      const defaultAttendance: Record<string, boolean> = {};
+      students.forEach((student) => {
+        defaultAttendance[student.id] = false;
+      });
+      setAttendance(defaultAttendance);
+
+      // Luego cargar asistencias para la fecha actual
+      if (selectedDate) {
+        fetchAttendanceForDate(selectedDate, selectedGrupo);
+      }
     }
-  }, [user]);
+  }, [selectedGrupo, students]);
 
   const handleAttendanceChange = (studentId: string, checked: boolean) => {
     setAttendance((prev) => ({
@@ -134,7 +132,7 @@ export default function AttendanceListPage() {
           response: response.data
         }
       };
-      
+
       console.log('Asistencia guardada', consoleMessage);
 
       toast.success('¡Asistencia Guardada!', {
@@ -153,9 +151,9 @@ export default function AttendanceListPage() {
           errorDetails: error.response?.data
         }
       };
-      
+
       console.error('Error al guardar la asistencia', errorMessage);
-      
+
       toast.error('Error al Guardar', {
         description:
           'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
@@ -164,92 +162,122 @@ export default function AttendanceListPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-xs">Loading groups...</div>
-      </div>
-    );
+  async function fetchStudentsForGrupo(grupoId: string) {
+    try {
+      const response = await axiosInstance.get(`/grupos/${grupoId}/students`);
+      setStudents(response.data);
+    } catch (error) {
+      console.error('Error fetching students for group:', error);
+    }
   }
 
-  const selectedGroupStudents =
-    grupos.find((g) => g.id === selectedGrupo)?.students || [];
-
+  useEffect(() => {
+    if (selectedGrupo) {
+      fetchStudentsForGrupo(selectedGrupo);
+    }
+  }, [selectedGrupo])
   return (
     <div className="p-6 text-xs">
-      <h1 className="text-lg font-bold mb-6">Attendance List</h1>
+      <h1 className="text-4xl font-bold mb-6">Lista de asistencia</h1>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="w-full md:w-1/3">
-          <Select value={selectedGrupo} onValueChange={setSelectedGrupo}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a group" />
-            </SelectTrigger>
-            <SelectContent>
-              {grupos.map((grupo) => (
-                <SelectItem key={grupo.id} value={grupo.id}>
-                  {grupo.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="w-full md:w-1/3">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => {
-              if (date && selectedGrupo) {
-                setSelectedDate(date);
-              }
-            }}
-          />
-        </div>
-      </div>
-
-      {selectedGrupo && (
-        <>
-          <Table className="w-full text-xs border rounded-lg">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="py-3 px-4">Matrícula</TableHead>
-                <TableHead className="py-3 px-4">Nombre</TableHead>
-                <TableHead className="py-3 px-4">Apellido</TableHead>
-                <TableHead className="py-3 px-4">Asistencia</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {selectedGroupStudents.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell className="py-3 px-4">{student.id}</TableCell>
-                  <TableCell className="py-3 px-4">
-                    {student.firstname}
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    {student.lastname}
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <Checkbox
-                      checked={attendance[student.id] || false}
-                      onCheckedChange={(checked) =>
-                        handleAttendanceChange(student.id, checked as boolean)
-                      }
-                      className="h-5 w-5"
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <div className="mt-6 flex justify-end">
-            <Button className="text-xs" onClick={handleSaveAttendance}>
-              Guardar
-            </Button>
+      <div className="flex flex-col gap-4 mb-6">
+        <div className='flex flex-row gap-4'>
+          <div>
+            <Select value={periodId} onValueChange={setPeriodId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona un periodo" />
+              </SelectTrigger>
+              <SelectContent>
+                {periods.map((period) => (
+                  <SelectItem key={period.id} value={period.id}>
+                    {period.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </>
-      )}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div>
+              <Select value={selectedGrupo} onValueChange={setSelectedGrupo}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {grupos.filter(
+                    (grupo) =>
+                      !periodId ||
+                      grupo.period_id.toString() === periodId.toString()
+                  ).map((grupo) => (
+                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                      {grupo.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => {
+                  if (date && selectedGrupo) {
+                    // Limpiar asistencias inmediatamente al cambiar fecha
+                    const defaultAttendance: Record<string, boolean> = {};
+                    students.forEach((student) => {
+                      defaultAttendance[student.id] = false;
+                    });
+                    setAttendance(defaultAttendance);
+                    setSelectedDate(date);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        {selectedGrupo && (
+          <>
+            <Table className="w-full text-xs border rounded-lg">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="py-3 px-4">Matrícula</TableHead>
+                  <TableHead className="py-3 px-4">Nombre</TableHead>
+                  <TableHead className="py-3 px-4">Apellido</TableHead>
+                  <TableHead className="py-3 px-4">Asistencia</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {students.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="py-3 px-4">{student.id}</TableCell>
+                    <TableCell className="py-3 px-4">
+                      {student.firstname}
+                    </TableCell>
+                    <TableCell className="py-3 px-4">
+                      {student.lastname}
+                    </TableCell>
+                    <TableCell className="py-3 px-4">
+                      <Checkbox
+                        checked={attendance[student.id] || false}
+                        onCheckedChange={(checked) =>
+                          handleAttendanceChange(student.id, checked as boolean)
+                        }
+                        className="h-5 w-5"
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            <div className="mt-6 flex justify-end">
+              <Button className="text-xs" onClick={handleSaveAttendance}>
+                Guardar
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
