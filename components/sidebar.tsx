@@ -226,7 +226,7 @@ export const data = {
     },
     {
       name: 'Egresos',
-      url: '/planteles/gastos',
+      url: '/planteles/egresos',
       icon: DollarSign,
     },
     {

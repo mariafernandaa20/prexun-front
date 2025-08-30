@@ -31,7 +31,7 @@ import {
   CardFooter,
   CardHeader,
 } from '@/components/ui/card';
-import { GastoModal } from '../gastos/components/GastoModal';
+import { GastoModal } from './components/GastoModal';
 import PaginationComponent from '@/components/ui/PaginationComponent';
 import { usePagination } from '@/hooks/usePagination';
 
@@ -104,6 +104,30 @@ export default function GastosPage() {
         ) : null,
     },
     {
+      id: 'firma',
+      label: 'Firma',
+      render: (gasto: Gasto) =>
+        gasto.signature ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={gasto.signature as string}
+              alt="Firma"
+              className="w-16 h-8 object-contain rounded border"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenImage(gasto.signature as string)}
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              Ver
+            </Button>
+          </div>
+        ) : (
+          <span className="text-gray-400 text-sm">Sin firma</span>
+        ),
+    },
+    {
       id: 'acciones',
       label: 'Acciones',
       render: (gasto: Gasto) => (
@@ -136,6 +160,7 @@ export default function GastosPage() {
     'categoria',
     'monto',
     'comprobante',
+    'firma',
     'acciones',
   ]);
 

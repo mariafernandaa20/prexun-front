@@ -197,6 +197,7 @@ export interface Gasto {
   denominations?: null;
   cash_register_id?: number;
   image?: string | File;
+  signature?: string; // Base64 or URL
   user?: User;
   admin?: User;
 }

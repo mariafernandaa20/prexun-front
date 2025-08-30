@@ -21,6 +21,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Gasto } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
+import { SignaturePad, SignaturePreview } from '@/components/ui/SignaturePad';
 
 interface GastoModalProps {
   isOpen: boolean;
@@ -39,6 +40,10 @@ export function GastoModal({
   const users = useAuthStore((state) => state.users);
   const user = useAuthStore((state) => state.user);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const [signatureUrl, setSignatureUrl] = useState<string | null>(
+    gasto?.signature || null
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { register, handleSubmit, reset, setValue, watch } = useForm<
@@ -58,6 +63,7 @@ export function GastoModal({
           campus_id: gasto.campus_id,
           cash_register_id: activeCampus.latest_cash_register.id,
           image: null,
+          signature: gasto.signature,
           user: gasto.user,
           admin: gasto.admin,
         }
@@ -73,6 +79,7 @@ export function GastoModal({
           campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
           cash_register_id: activeCampus.latest_cash_register.id,
           image: null,
+          signature: null,
         },
   });
 
@@ -111,15 +118,22 @@ export function GastoModal({
     e.preventDefault();
   };
 
+  const handleSignatureSave = (signatureDataURL: string) => {
+    setSignatureUrl(signatureDataURL);
+    setValue('signature', signatureDataURL);
+  };
+
   const onSubmitForm = async (data: Gasto & { image?: File }) => {
     try {
       await onSubmit({
         ...data,
+        signature: signatureUrl,
         denominations: null,
         campus_id: Number(activeCampus.id),
       });
       reset();
       setPreviewUrl(null);
+      setSignatureUrl(null);
       setErrors({});
       onClose();
     } catch (error) {
@@ -259,6 +273,28 @@ export function GastoModal({
             </div>
           </div>
           <div className="space-y-2">
+            <Label>Firma Digital</Label>
+            {signatureUrl ? (
+              <SignaturePreview
+                signature={signatureUrl}
+                onRemove={() => {
+                  setSignatureUrl(null);
+                  setValue('signature', null);
+                }}
+                onEdit={() => setSignatureModalOpen(true)}
+              />
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSignatureModalOpen(true)}
+                className="w-full"
+              >
+                Agregar Firma Digital
+              </Button>
+            )}
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="user_id">Usuario</Label>
             <Select
               value={formData.user_id?.toString()}
@@ -289,6 +325,14 @@ export function GastoModal({
           </div>
         </form>
       </DialogContent>
+
+      {/* Modal de Firma */}
+      <SignaturePad
+        isOpen={signatureModalOpen}
+        onClose={() => setSignatureModalOpen(false)}
+        onSave={handleSignatureSave}
+        title="Agregar Firma Digital"
+      />
     </Dialog>
   );
 }
