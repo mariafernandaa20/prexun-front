@@ -30,6 +30,12 @@ interface Student {
   matricula: string;
 }
 
+interface AttendanceRecord {
+  student_id: string;
+  present: boolean;
+  attendance_time?: string;
+}
+
 interface Grupo {
   id: string;
   name: string;
@@ -42,7 +48,9 @@ export default function AttendanceListPage() {
   const [selectedGrupo, setSelectedGrupo] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
+  const [attendanceTimes, setAttendanceTimes] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<Student[]>([]);
+
   const fetchAttendanceForDate = async (date: Date, grupoId: string) => {
     try {
       const formattedDate = date.toISOString().split('T')[0];
@@ -50,31 +58,34 @@ export default function AttendanceListPage() {
         `/teacher/attendance/${grupoId}/${formattedDate}`
       );
 
-      if (
-        response.data.success &&
-        response.data.data &&
-        response.data.data.length > 0
-      ) {
+      if (response.data.success && response.data.data && response.data.data.length > 0) {
         const attendanceMap: Record<string, boolean> = {};
-        response.data.data.forEach((record: any) => {
+        const timeMap: Record<string, string> = {};
+
+        response.data.data.forEach((record: AttendanceRecord) => {
           attendanceMap[record.student_id] = record.present;
+          if (record.attendance_time) {
+            timeMap[record.student_id] = record.attendance_time;
+          }
         });
+
         setAttendance(attendanceMap);
+        setAttendanceTimes(timeMap);
       } else {
-        // Limpiar asistencias - empezar con celdas vacías (false)
         const defaultAttendance: Record<string, boolean> = {};
         students.forEach((student) => {
           defaultAttendance[student.id] = false;
         });
         setAttendance(defaultAttendance);
+        setAttendanceTimes({});
       }
     } catch {
-      // En caso de error, también empezar con celdas vacías
       const defaultAttendance: Record<string, boolean> = {};
       students.forEach((student) => {
         defaultAttendance[student.id] = false;
       });
       setAttendance(defaultAttendance);
+      setAttendanceTimes({});
     }
   };
 
@@ -84,28 +95,42 @@ export default function AttendanceListPage() {
     }
   }, [selectedDate, selectedGrupo, students]);
 
-  // Limpiar asistencias cuando cambie el grupo
   useEffect(() => {
     if (selectedGrupo && students.length > 0) {
-      // Resetear asistencias para el nuevo grupo
       const defaultAttendance: Record<string, boolean> = {};
       students.forEach((student) => {
         defaultAttendance[student.id] = false;
       });
       setAttendance(defaultAttendance);
+      setAttendanceTimes({});
 
-      // Luego cargar asistencias para la fecha actual
       if (selectedDate) {
         fetchAttendanceForDate(selectedDate, selectedGrupo);
       }
     }
   }, [selectedGrupo, students]);
 
+
   const handleAttendanceChange = (studentId: string, checked: boolean) => {
     setAttendance((prev) => ({
       ...prev,
       [studentId]: checked,
     }));
+
+    if (checked) {
+      const now = new Date();
+      const fullTimestamp = now.toISOString(); 
+      setAttendanceTimes((prev) => ({
+        ...prev,
+        [studentId]: fullTimestamp,
+      }));
+    } else {
+      setAttendanceTimes((prev) => {
+        const updated = { ...prev };
+        delete updated[studentId];
+        return updated;
+      });
+    }
   };
 
   const handleSaveAttendance = async () => {
@@ -114,49 +139,33 @@ export default function AttendanceListPage() {
       const payload = {
         grupo_id: selectedGrupo,
         date: formattedDate,
-        attendance: attendance,
+        attendance: Object.keys(attendance).map((studentId) => ({
+          student_id: studentId,
+          present: attendance[studentId],
+          attendance_time: attendanceTimes[studentId] || null,
+        })),
       };
 
       const response = await axiosInstance.post('/teacher/attendance', payload);
 
-      const consoleMessage = {
-        status: 'success',
-        action: 'attendance_saved',
-        data: {
-          grupo_id: selectedGrupo,
-          fecha: formattedDate,
-          total_estudiantes: Object.keys(attendance).length,
-          presentes: Object.values(attendance).filter(present => present).length,
-          ausentes: Object.values(attendance).filter(present => !present).length,
-          timestamp: new Date().toISOString(),
-          response: response.data
-        }
-      };
-
-      console.log('Asistencia guardada', consoleMessage);
+      console.log('Asistencia guardada', {
+        grupo_id: selectedGrupo,
+        fecha: formattedDate,
+        total_estudiantes: Object.keys(attendance).length,
+        presentes: Object.values(attendance).filter(p => p).length,
+        ausentes: Object.values(attendance).filter(p => !p).length,
+        timestamp: new Date().toISOString(),
+        response: response.data
+      });
 
       toast.success('¡Asistencia Guardada!', {
         description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,
         duration: 5000,
       });
     } catch (error: any) {
-      const errorMessage = {
-        status: 'error',
-        action: 'attendance_save_failed',
-        data: {
-          error: error.message,
-          grupo_id: selectedGrupo,
-          fecha: selectedDate.toISOString().split('T')[0],
-          timestamp: new Date().toISOString(),
-          errorDetails: error.response?.data
-        }
-      };
-
-      console.error('Error al guardar la asistencia', errorMessage);
-
+      console.error('Error al guardar la asistencia', error);
       toast.error('Error al Guardar', {
-        description:
-          'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
+        description: 'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
         duration: 4000,
       });
     }
@@ -175,7 +184,8 @@ export default function AttendanceListPage() {
     if (selectedGrupo) {
       fetchStudentsForGrupo(selectedGrupo);
     }
-  }, [selectedGrupo])
+  }, [selectedGrupo]);
+
   return (
     <div className="p-6 text-xs">
       <h1 className="text-4xl font-bold mb-6">Lista de asistencia</h1>
@@ -205,8 +215,7 @@ export default function AttendanceListPage() {
                 <SelectContent>
                   {grupos.filter(
                     (grupo) =>
-                      !periodId ||
-                      grupo.period_id.toString() === periodId.toString()
+                      !periodId || grupo.period_id.toString() === periodId.toString()
                   ).map((grupo) => (
                     <SelectItem key={grupo.id} value={grupo.id.toString()}>
                       {grupo.name}
@@ -222,7 +231,6 @@ export default function AttendanceListPage() {
                 selected={selectedDate}
                 onSelect={(date) => {
                   if (date && selectedGrupo) {
-                    // Limpiar asistencias inmediatamente al cambiar fecha
                     const defaultAttendance: Record<string, boolean> = {};
                     students.forEach((student) => {
                       defaultAttendance[student.id] = false;
@@ -244,18 +252,15 @@ export default function AttendanceListPage() {
                   <TableHead className="py-3 px-4">Nombre</TableHead>
                   <TableHead className="py-3 px-4">Apellido</TableHead>
                   <TableHead className="py-3 px-4">Asistencia</TableHead>
+                  <TableHead className="py-3 px-4">Hora de Registro</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {students.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell className="py-3 px-4">{student.id}</TableCell>
-                    <TableCell className="py-3 px-4">
-                      {student.firstname}
-                    </TableCell>
-                    <TableCell className="py-3 px-4">
-                      {student.lastname}
-                    </TableCell>
+                    <TableCell className="py-3 px-4">{student.firstname}</TableCell>
+                    <TableCell className="py-3 px-4">{student.lastname}</TableCell>
                     <TableCell className="py-3 px-4">
                       <Checkbox
                         checked={attendance[student.id] || false}
@@ -264,6 +269,11 @@ export default function AttendanceListPage() {
                         }
                         className="h-5 w-5"
                       />
+                    </TableCell>
+                    <TableCell className="py-3 px-4 text-gray-600">
+                      {attendance[student.id] && attendanceTimes[student.id] 
+                        ? new Date(attendanceTimes[student.id]).toLocaleTimeString('es-ES') 
+                        : '-'}
                     </TableCell>
                   </TableRow>
                 ))}
