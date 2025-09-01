@@ -230,11 +230,6 @@ export const data = {
       icon: DollarSign,
     },
     {
-      name: 'Caja',
-      url: '/planteles/caja',
-      icon: CreditCard,
-    },
-    {
       name: 'Grupos',
       url: '/planteles/grupos',
       icon: Users,
@@ -242,6 +237,10 @@ export const data = {
     {
       name: 'Asistencias',
       url: '/planteles/lista-asistencia',
+      icon: BookOpen,
+    },    {
+      name: 'Tomar asistencia',
+      url: '/planteles/tomar-asistencia',
       icon: BookOpen,
     },
     {
@@ -255,6 +254,7 @@ export const data = {
       icon: FaWhatsapp as any,
     },
   ],
+  
   chatbot_navigation: [
     {
       name: 'Chat',

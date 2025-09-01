@@ -19,9 +19,12 @@ import {
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Edit, FileText, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useAuthStore } from '@/lib/store/auth-store';
+import EditAttendanceModal from '@/components/EditAttendanceModal';
 
 interface Student {
   id: string;
@@ -31,9 +34,20 @@ interface Student {
 }
 
 interface AttendanceRecord {
+  id?: string;
   student_id: string;
   present: boolean;
   attendance_time?: string;
+  notes?: string;
+}
+
+interface AttendanceData {
+  id?: string;
+  student: Student;
+  present: boolean;
+  attendance_time: string | null;
+  notes: string | null;
+  date: string;
 }
 
 interface Grupo {
@@ -49,7 +63,11 @@ export default function AttendanceListPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
   const [attendanceTimes, setAttendanceTimes] = useState<Record<string, string>>({});
+  const [attendanceNotes, setAttendanceNotes] = useState<Record<string, string>>({});
+  const [attendanceIds, setAttendanceIds] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<Student[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedAttendance, setSelectedAttendance] = useState<AttendanceData | null>(null);
 
   const fetchAttendanceForDate = async (date: Date, grupoId: string) => {
     try {
@@ -61,16 +79,26 @@ export default function AttendanceListPage() {
       if (response.data.success && response.data.data && response.data.data.length > 0) {
         const attendanceMap: Record<string, boolean> = {};
         const timeMap: Record<string, string> = {};
+        const notesMap: Record<string, string> = {};
+        const idsMap: Record<string, string> = {};
 
         response.data.data.forEach((record: AttendanceRecord) => {
           attendanceMap[record.student_id] = record.present;
+          idsMap[record.student_id] = record.id || '';
+          
           if (record.attendance_time) {
             timeMap[record.student_id] = record.attendance_time;
+          }
+          
+          if (record.notes) {
+            notesMap[record.student_id] = record.notes;
           }
         });
 
         setAttendance(attendanceMap);
         setAttendanceTimes(timeMap);
+        setAttendanceNotes(notesMap);
+        setAttendanceIds(idsMap);
       } else {
         const defaultAttendance: Record<string, boolean> = {};
         students.forEach((student) => {
@@ -78,6 +106,8 @@ export default function AttendanceListPage() {
         });
         setAttendance(defaultAttendance);
         setAttendanceTimes({});
+        setAttendanceNotes({});
+        setAttendanceIds({});
       }
     } catch {
       const defaultAttendance: Record<string, boolean> = {};
@@ -86,6 +116,8 @@ export default function AttendanceListPage() {
       });
       setAttendance(defaultAttendance);
       setAttendanceTimes({});
+      setAttendanceNotes({});
+      setAttendanceIds({});
     }
   };
 
@@ -103,6 +135,8 @@ export default function AttendanceListPage() {
       });
       setAttendance(defaultAttendance);
       setAttendanceTimes({});
+      setAttendanceNotes({});
+      setAttendanceIds({});
 
       if (selectedDate) {
         fetchAttendanceForDate(selectedDate, selectedGrupo);
@@ -143,6 +177,7 @@ export default function AttendanceListPage() {
           student_id: studentId,
           present: attendance[studentId],
           attendance_time: attendanceTimes[studentId] || null,
+          notes: attendanceNotes[studentId] || null,
         })),
       };
 
@@ -167,6 +202,48 @@ export default function AttendanceListPage() {
       toast.error('Error al Guardar', {
         description: 'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
         duration: 4000,
+      });
+    }
+  };
+
+  const handleEditAttendance = (student: Student) => {
+    const attendanceData: AttendanceData = {
+      id: attendanceIds[student.id],
+      student: student,
+      present: attendance[student.id] || false,
+      attendance_time: attendanceTimes[student.id] || null,
+      notes: attendanceNotes[student.id] || null,
+      date: selectedDate.toISOString().split('T')[0],
+    };
+    
+    setSelectedAttendance(attendanceData);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveAttendanceEdit = (updatedAttendance: AttendanceData) => {
+    // Actualizar los estados locales
+    setAttendance(prev => ({
+      ...prev,
+      [updatedAttendance.student.id]: updatedAttendance.present
+    }));
+
+    if (updatedAttendance.attendance_time) {
+      setAttendanceTimes(prev => ({
+        ...prev,
+        [updatedAttendance.student.id]: updatedAttendance.attendance_time!
+      }));
+    }
+
+    if (updatedAttendance.notes) {
+      setAttendanceNotes(prev => ({
+        ...prev,
+        [updatedAttendance.student.id]: updatedAttendance.notes!
+      }));
+    } else {
+      setAttendanceNotes(prev => {
+        const updated = { ...prev };
+        delete updated[updatedAttendance.student.id];
+        return updated;
       });
     }
   };
@@ -253,6 +330,8 @@ export default function AttendanceListPage() {
                   <TableHead className="py-3 px-4">Apellido</TableHead>
                   <TableHead className="py-3 px-4">Asistencia</TableHead>
                   <TableHead className="py-3 px-4">Hora de Registro</TableHead>
+                  <TableHead className="py-3 px-4">Notas</TableHead>
+                  <TableHead className="py-3 px-4">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -271,9 +350,42 @@ export default function AttendanceListPage() {
                       />
                     </TableCell>
                     <TableCell className="py-3 px-4 text-gray-600">
-                      {attendance[student.id] && attendanceTimes[student.id] 
-                        ? new Date(attendanceTimes[student.id]).toLocaleTimeString('es-ES') 
-                        : '-'}
+                      <div className="flex items-center gap-1">
+                        {attendance[student.id] && attendanceTimes[student.id] ? (
+                          <>
+                            <Clock className="h-3 w-3" />
+                            {new Date(attendanceTimes[student.id]).toLocaleTimeString('es-ES')}
+                          </>
+                        ) : (
+                          '-'
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 max-w-32">
+                      {attendanceNotes[student.id] ? (
+                        <div className="flex items-center gap-1">
+                          <FileText className="h-3 w-3 text-blue-600" />
+                          <span 
+                            className="text-xs text-gray-600 truncate" 
+                            title={attendanceNotes[student.id]}
+                          >
+                            {attendanceNotes[student.id]}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditAttendance(student)}
+                        className="h-8 w-8 p-0"
+                        title="Editar asistencia"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -288,6 +400,14 @@ export default function AttendanceListPage() {
           </>
         )}
       </div>
+
+      {/* Modal de edición */}
+      <EditAttendanceModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        attendanceData={selectedAttendance}
+        onSave={handleSaveAttendanceEdit}
+      />
     </div>
   );
 }
