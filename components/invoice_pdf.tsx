@@ -121,13 +121,6 @@ const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
         timeZone: 'UTC',
       }),
     ],
-
-    [
-      'Hora de pago:',
-      invoice.paid === 1
-        ? dayjs(invoice.updated_at).format('HH:mm A')
-        : 'No pagada',
-    ],
     [
       'Metodo de pago:',
       invoice.payment_method
