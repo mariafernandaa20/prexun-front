@@ -65,7 +65,7 @@ const generateCompanyInfo = (
 
   // Restaurar fuente normal
   doc.setFont(undefined, 'normal');
-  doc.setFontSize(11);
+  doc.setFontSize(8);
 
   // Nombre del campus
   currentY += 7;
@@ -95,7 +95,7 @@ const generateCompanyInfo = (
 };
 
 const generateInvoiceDetails = (doc, invoice, rightCol, currentY) => {
-  doc.setFontSize(11);
+  doc.setFontSize(8);
   const folioFormatted =
     invoice.folio_new +
     ' ' +
@@ -397,10 +397,10 @@ const generateTotals = (doc, finalY, invoice) => {
 
 const generateComments = (doc, finalY, leftCol) => {
   doc.setFont(undefined, 'bold');
-  doc.setFontSize(12);
+  doc.setFontSize(8);
   doc.text('Comentarios', leftCol, finalY + 50);
   doc.setFont(undefined, 'normal');
-  doc.setFontSize(10);
+  doc.setFontSize(8);
 
   const maxWidth = 140;
 
