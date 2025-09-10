@@ -11,7 +11,6 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
 // Expose logger globally in development
 if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_DEVELOPMENT === 'true') {
   (window as any).__requestLogger = requestLogger;

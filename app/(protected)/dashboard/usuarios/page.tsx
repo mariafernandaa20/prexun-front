@@ -306,6 +306,7 @@ export default function page() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>ID</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Rol</TableHead>
@@ -313,6 +314,7 @@ export default function page() {
               <TableHead>Planteles</TableHead>
               <TableHead>Grupos</TableHead>
               <TableHead>Acciones</TableHead>
+         
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -324,6 +326,7 @@ export default function page() {
                     user.suspendido ? 'bg-red-50 dark:bg-red-950/20' : ''
                   }
                 >
+                  <TableCell className="font-mono text-sm">{user.id}</TableCell>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.role}</TableCell>
@@ -373,7 +376,7 @@ export default function page() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   No se encontraron usuarios.
                 </TableCell>
               </TableRow>
