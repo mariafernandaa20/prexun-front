@@ -1,6 +1,6 @@
 "use client"
 import { Clock, Coffee } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,24 @@ import { toast } from 'sonner';
 export default function Reloj() {
   const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Actualizar la hora cada segundo
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const handleClock = async (type: 'check-in' | 'check-out') => {
     if (!userId) {
@@ -20,21 +38,26 @@ export default function Reloj() {
     setLoading(true);
     
     try {
+      const currentDateTime = new Date();
       const { data } = await axios.post(`http://localhost:8000/api/checador/${type}`, {
-        user_id: Number(userId)
+        user_id: Number(userId),
+        timestamp: currentDateTime.toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
       });
 
-     //verificacion
+      //verificacion
       if (data.break_info) {
         toast.success(`Descanso registrado: ${data.break_info.duration_minutes} minutos`);
       } else {
-        toast.success(`${type === 'check-in' ? 'Entrada' : 'Salida'} registrada`);
+        toast.success(`${type === 'check-in' ? 'Entrada' : 'Salida'} registrada exitosamente`);
       }
       
       setUserId('');
       
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Error al registrar");
+      console.error('Error en checador:', err);
+      const errorMessage = err.response?.data?.message || "Error al registrar";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -49,16 +72,20 @@ export default function Reloj() {
     setLoading(true);
     
     try {
+      const currentDateTime = new Date();
       const { data } = await axios.post('http://localhost:8000/api/checador/mark-rest-day', {
-        user_id: Number(userId)
-        
+        user_id: Number(userId),
+        timestamp: currentDateTime.toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
       });
 
       toast.success('Día de descanso registrado exitosamente');
       setUserId('');
       
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Error al registrar día de descanso");
+      console.error('Error en día de descanso:', err);
+      const errorMessage = err.response?.data?.message || "Error al registrar día de descanso";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -114,6 +141,8 @@ export default function Reloj() {
 
          
           <div className="text-xs text-muted-foreground text-center pt-2 space-y-1">
+            <p>Zona horaria: {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
+            <p>Hora local: {currentTime.toLocaleTimeString()}</p>
           </div>
         </CardContent>
       </Card>

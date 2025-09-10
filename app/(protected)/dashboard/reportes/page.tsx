@@ -147,6 +147,7 @@ export default function ReportesPage() {
                 <Table className="w-full min-w-[800px] text-sm border rounded-lg border-separate" style={{borderSpacing: '2px'}}>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="py-3 px-3 min-w-[120px]">ID</TableHead>
                       <TableHead className="py-3 px-3 min-w-[120px]">Usuario</TableHead>
                       <TableHead className="py-3 px-8 min-w-[100px]">Estado</TableHead>
                       <TableHead className="py-3 px-4 min-w-[110px]">Hora Entrada</TableHead>
@@ -159,6 +160,9 @@ export default function ReportesPage() {
                   <TableBody>
                     {reportData.map((record) => (
                       <TableRow key={record.id}>
+                        <TableCell className="py-3 px-4 font-medium min-w-[120px]">
+                          {record.user.id}
+                        </TableCell>
                         <TableCell className="py-3 px-4 font-medium min-w-[120px]">
                           {record.user.name}
                         </TableCell>

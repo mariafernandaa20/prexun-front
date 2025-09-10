@@ -99,6 +99,7 @@ export default function TomarAsistenciasPage() {
 
       const date = new Date();
       const isoString = date.toISOString();
+      
       const payload = {
         student_id: student.id,
         date: isoString,
