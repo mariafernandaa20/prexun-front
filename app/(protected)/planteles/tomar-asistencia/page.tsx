@@ -34,7 +34,7 @@ interface AttendanceRecord {
 }
 
 export default function TomarAsistenciasPage() {
-  const [matricula, setMat ricula] = useState<string>('');
+  const [matricula, setMatricula] = useState<string>('');
   const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [todayDate] = useState<Date>(new Date());
