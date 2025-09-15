@@ -34,7 +34,7 @@ interface AttendanceRecord {
 }
 
 export default function TomarAsistenciasPage() {
-  const [matricula, setMatricula] = useState<string>('');
+  const [matricula, setMat ricula] = useState<string>('');
   const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [todayDate] = useState<Date>(new Date());
@@ -68,15 +68,13 @@ export default function TomarAsistenciasPage() {
     if (result) {
       const scannedText = result.getText ? result.getText() : result.text || result;
       if (scannedText) {
-        setMatricula(scannedText.toUpperCase());
-        setShowQrScanner(false);
+        const upperMatricula = scannedText.toUpperCase();
+        setMatricula(upperMatricula);
         toast.success('QR escaneado correctamente', {
           description: `Matrícula detectada: ${scannedText}`,
         });
-        // Procesar automáticamente después de escanear
-        setTimeout(() => {
-          processStudentAttendanceWithMatricula(scannedText.toUpperCase());
-        }, 500);
+        // Procesar inmediatamente para permitir escaneos secuenciales
+        processStudentAttendanceWithMatricula(upperMatricula);
       }
     }
     if (err) {
@@ -86,7 +84,7 @@ export default function TomarAsistenciasPage() {
 
   // Abrir el QR scanner
   const openQrScanner = () => {
-    setShowQrScanner(true);
+    setShowQrScanner(!showQrScanner);
     setIsQrScannerReady(false);
   };
 
@@ -137,6 +135,9 @@ export default function TomarAsistenciasPage() {
           }
         );
         setMatricula('');
+        if (!showQrScanner) {
+          document.getElementById('matricula-input')?.focus();
+        }
         setIsLoading(false);
         return;
       }
@@ -172,9 +173,11 @@ export default function TomarAsistenciasPage() {
           }
         );
 
-        // Limpiar campo y auto-enfocar
+        // Limpiar campo y auto-enfocar solo si no está el scanner abierto
         setMatricula('');
-        document.getElementById('matricula-input')?.focus();
+        if (!showQrScanner) {
+          document.getElementById('matricula-input')?.focus();
+        }
       }
     } catch (error: any) {
       console.error('Error processing attendance:', error);
@@ -248,7 +251,30 @@ export default function TomarAsistenciasPage() {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-3 max-w-md mx-auto mb-4">
+          <div className="flex flex-col gap-3 max-w-md mx-auto mb-4">
+            {showQrScanner && (
+              <div className=''>
+                <div className="">
+                  <Button
+                    onClick={closeQrScanner}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="relative">
+                  <QrScanner
+                    onUpdate={handleQrScanResult}
+                    onError={(error) => console.error('QR Scanner Error:', error)}
+                    width="100%"
+                    height={300}
+                  />
+                </div>
+            
+              </div>
+            )}
             <Input
               id="matricula-input"
               placeholder="Ingresa matrícula y presiona Enter"
@@ -281,42 +307,11 @@ export default function TomarAsistenciasPage() {
               className="bg-blue-50 hover:bg-blue-100 border-blue-200 dark:bg-blue-950 dark:hover:bg-blue-900 dark:border-blue-800 dark:text-blue-100"
             >
               <Camera className="h-5 w-5 mr-2" />
-              Escanear Código QR
+              Activar la camara para escanear QR
             </Button>
           </div>
         </CardContent>
       </Card>
-
-      {/* Modal del QR Scanner */}
-      {showQrScanner && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-background dark:bg-background border border-border dark:border-border rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-foreground dark:text-foreground">Escanear Código QR</h3>
-              <Button
-                onClick={closeQrScanner}
-                variant="ghost"
-                size="sm"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="relative">
-              <QrScanner
-                onUpdate={handleQrScanResult}
-                onError={(error) => console.error('QR Scanner Error:', error)}
-                width="100%"
-                height={300}
-              />
-            </div>
-            <div className="mt-4 text-center text-sm text-muted-foreground dark:text-muted-foreground">
-              <p>Apunta la cámara hacia el código QR del estudiante</p>
-              <p className="mt-1">El escaneo se realizará automáticamente</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Estadísticas del día */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
