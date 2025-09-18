@@ -149,6 +149,7 @@ export default function TomarAsistenciasPage() {
         student_id: student.id,
         date: isoString,
         present: true,
+        attendance_time: isoString,
       };
 
       const attendanceResponse = await axiosInstance.post('/teacher/attendance/quick', payload);
