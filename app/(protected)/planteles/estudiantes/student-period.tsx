@@ -345,7 +345,7 @@ export default function StudentPeriod({
                   <div className="space-y-2">
                     <Label htmlFor="period_id">Periodo *</Label>
                     <Select
-                      value={formData.period_id}
+                      value={formData?.period_id?.toString()}
                       onValueChange={(value) =>
                         handleInputChange('period_id', value.toString())
                       }
