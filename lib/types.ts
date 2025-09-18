@@ -272,6 +272,10 @@ export interface Producto {
 }
 
 export interface StudentAssignment {
+  book_delivered?: boolean;
+  book_delivery_type?: string;
+  book_delivery_date?: string;
+  book_notes?: string;
   id?: number;
   student_id: string;
   grupo_id?: number | null;

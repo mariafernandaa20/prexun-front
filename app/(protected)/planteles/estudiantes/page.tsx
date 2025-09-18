@@ -57,9 +57,7 @@ export default function Page() {
   const [whatsAppStudent, setWhatsAppStudent] = useState<Student | null>(null);
 
   // Filter states
-  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<
-    string | null
-  >(null);
+  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
   const [periodFilter, setPeriodFilter] = useState<string>('');
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>('');
@@ -67,6 +65,8 @@ export default function Page() {
   const [carreraFilter, setCarreraFilter] = useState<string | null>(null);
   const [facultadFilter, setFacultadFilter] = useState<string | null>(null);
   const [moduloFilter, setModuloFilter] = useState<string | null>(null);
+  const [bookDeliveryTypeFilter, setBookDeliveryTypeFilter] = useState<string | null>(null);
+  const [bookDeliveredFilter, setBookDeliveredFilter] = useState<string | null>(null);
   const [filtersInitialized, setFiltersInitialized] = useState(false);
 
   // Search states
@@ -95,6 +95,8 @@ export default function Page() {
       searchPhone ||
       searchMatricula;
 
+
+    // All params send 
     const params = {
       campus_id: activeCampus.id,
       page: !isSearching ? pagination.currentPage : 1,
@@ -106,14 +108,15 @@ export default function Page() {
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
       grupo: (!isSearching && grupoFilter) || undefined,
-      semanaIntensivaFilter:
-        (!isSearching && semanaIntensivaFilter) || undefined,
+      semanaIntensivaFilter: (!isSearching && semanaIntensivaFilter) || undefined,
       period: (!isSearching && periodFilter) || undefined,
       assignedPeriod: (!isSearching && assignedPeriodFilter) || undefined,
       assignedGrupo: (!isSearching && assignedGrupoFilter) || undefined,
       carrera: (!isSearching && carreraFilter) || undefined,
       facultad: (!isSearching && facultadFilter) || undefined,
       modulo: (!isSearching && moduloFilter) || undefined,
+      book_delivery_type: ( bookDeliveryTypeFilter) || undefined,
+      book_delivered: ( bookDeliveredFilter !== null ? bookDeliveredFilter : undefined),
     };
 
     try {
@@ -328,6 +331,11 @@ export default function Page() {
       fetchStudents();
     }
   }, [
+    bookDeliveryTypeFilter,
+    bookDeliveredFilter,
+    grupoFilter,
+    assignedGrupoFilter,
+    semanaIntensivaFilter,
     filtersInitialized,
     searchFirstname,
     searchLastname,
@@ -369,7 +377,7 @@ export default function Page() {
   if (!activeCampus) {
     return <div className="text-center py-4">Seleccione un campus</div>;
   }
-
+  
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
@@ -422,6 +430,10 @@ export default function Page() {
                 setSearchMatricula={setSearchMatricula}
                 setAssignedGrupoFilter={setAssignedGrupoFilter}
                 assignedGrupoFilter={assignedGrupoFilter}
+                setBookDeliveryTypeFilter={setBookDeliveryTypeFilter}
+                bookDeliveryTypeFilter={bookDeliveryTypeFilter}
+                setBookDeliveredFilter={setBookDeliveredFilter}
+                bookDeliveredFilter={bookDeliveredFilter}
               >
                 <MultiSelect
                   className="w-full"

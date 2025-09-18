@@ -68,6 +68,10 @@ interface AssignmentFormData {
   valid_from?: string;
   valid_until?: string;
   is_active: boolean;
+  book_delivered?: boolean;
+  book_delivery_type?: string;
+  book_delivery_date?: string;
+  book_notes?: string;
 }
 
 export default function StudentPeriod({
@@ -85,13 +89,17 @@ export default function StudentPeriod({
   const [editingAssignment, setEditingAssignment] =
     useState<StudentAssignment | null>(null);
   const [formData, setFormData] = useState<AssignmentFormData>({
-    student_id: student.id || '',
-    grupo_id: null,
-    semana_intensiva_id: null,
-    period_id: student.period_id,
-    valid_from: undefined,
-    valid_until: undefined,
-    is_active: true,
+  student_id: student.id || '',
+  grupo_id: null,
+  semana_intensiva_id: null,
+  period_id: student.period_id,
+  valid_from: undefined,
+  valid_until: undefined,
+  is_active: true,
+  book_delivered: false,
+  book_delivery_type: '',
+  book_delivery_date: '',
+  book_notes: '',
   });
 
   useEffect(() => {
@@ -145,6 +153,10 @@ export default function StudentPeriod({
       valid_from: assignment.valid_from || undefined,
       valid_until: assignment.valid_until || undefined,
       is_active: assignment.is_active,
+      book_delivered: assignment.book_delivered ?? false,
+      book_delivery_type: assignment.book_delivery_type ?? '',
+      book_delivery_date: assignment.book_delivery_date ?? '',
+      book_notes: assignment.book_notes ?? '',
     });
     setIsEditing(true);
     setEditingAssignment(assignment);
@@ -342,6 +354,64 @@ export default function StudentPeriod({
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="book_delivered">¿Libro entregado?</Label>
+                    <Select
+                      value={formData.book_delivered ? 'true' : 'false'}
+                      onValueChange={(value) =>
+                        handleInputChange('book_delivered', value === 'true')
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Sí</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="book_delivery_type">Tipo de entrega libro</Label>
+                    <Select
+                      value={formData.book_delivery_type ?? 'none'}
+                      onValueChange={(value) =>
+                        handleInputChange('book_delivery_type', value === 'none' ? null : value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tipo de entrega" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sin especificar</SelectItem>
+                        <SelectItem value="digital">Digital</SelectItem>
+                        <SelectItem value="fisico">Físico</SelectItem>
+                        <SelectItem value="paqueteria">Paquetería</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="book_delivery_date">Fecha entrega libro</Label>
+                    <Input
+                      id="book_delivery_date"
+                      type="date"
+                      value={formData.book_delivery_date || ''}
+                      onChange={(e) =>
+                        handleInputChange('book_delivery_date', e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="book_notes">Notas libro</Label>
+                    <Input
+                      id="book_notes"
+                      type="text"
+                      value={formData.book_notes || ''}
+                      onChange={(e) =>
+                        handleInputChange('book_notes', e.target.value)
+                      }
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="period_id">Periodo *</Label>
                     <Select
@@ -546,6 +616,16 @@ export default function StudentPeriod({
                           {assignment.semana_intensiva_id && (
                             <Badge variant="outline" className="text-xs">
                               Semana Intensiva
+                            </Badge>
+                          )}
+                          {assignment.book_delivered && (
+                            <Badge variant="default" className="text-xs">
+                              Libro Entregado
+                            </Badge>
+                          )}
+                          {assignment.book_delivery_type && (
+                            <Badge variant="secondary" className="text-xs">
+                              {assignment.book_delivery_type.charAt(0).toUpperCase() + assignment.book_delivery_type.slice(1)}
                             </Badge>
                           )}
                         </div>
