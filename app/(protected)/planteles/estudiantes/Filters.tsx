@@ -183,25 +183,7 @@ const Filters: React.FC<FiltersProps> = ({
             showAllOption={true}
             allOptionLabel="Todos"
           />
-          <select
-            className="w-full border rounded px-2 py-1"
-            value={bookDeliveryType}
-            onChange={(e) => setBookDeliveryType(e.target.value)}
-          >
-            <option value="">Tipo de entrega libro</option>
-            <option value="digital">Digital</option>
-            <option value="fisico">Físico</option>
-            <option value="paqueteria">Paquetería</option>
-          </select>
-          <select
-            className="w-full border rounded px-2 py-1"
-            value={bookDelivered}
-            onChange={(e) => setBookDelivered(e.target.value)}
-          >
-            <option value="">¿Libro entregado?</option>
-            <option value="true">Sí</option>
-            <option value="false">No</option>
-          </select>
+
           <>{children && children}</>
         </div>
         <div
@@ -214,6 +196,25 @@ const Filters: React.FC<FiltersProps> = ({
               onChange={(e) => setFirstnameInput(e.target.value)}
               className="w-full"
             />
+            <select
+              className="w-full border rounded px-2 py-1"
+              value={bookDeliveryType}
+              onChange={(e) => setBookDeliveryType(e.target.value)}
+            >
+              <option value="">Tipo de entrega libro</option>
+              <option value="digital">Digital</option>
+              <option value="fisico">Físico</option>
+              <option value="paqueteria">Paquetería</option>
+            </select>
+            <select
+              className="w-full border rounded px-2 py-1"
+              value={bookDelivered}
+              onChange={(e) => setBookDelivered(e.target.value)}
+            >
+              <option value="">¿Libro entregado?</option>
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
             <Input
               type="date"
               value={dateInput}
