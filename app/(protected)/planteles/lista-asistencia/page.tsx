@@ -327,7 +327,6 @@ export default function AttendanceListPage() {
                 <TableRow>
                   <TableHead className="py-3 px-4">Matrícula</TableHead>
                   <TableHead className="py-3 px-4">Nombre</TableHead>
-                  <TableHead className="py-3 px-4">Apellido</TableHead>
                   <TableHead className="py-3 px-4">Asistencia</TableHead>
                   <TableHead className="py-3 px-4">Hora de Registro</TableHead>
                   <TableHead className="py-3 px-4">Notas</TableHead>
@@ -338,8 +337,7 @@ export default function AttendanceListPage() {
                 {students.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell className="py-3 px-4">{student.id}</TableCell>
-                    <TableCell className="py-3 px-4">{student.firstname}</TableCell>
-                    <TableCell className="py-3 px-4">{student.lastname}</TableCell>
+                    <TableCell className="py-3 px-4"><a className='hover:underline' href={`/planteles/estudiantes/${student.id}`} target='_blank'>{student.firstname + ' ' + student.lastname}</a></TableCell>
                     <TableCell className="py-3 px-4">
                       <Checkbox
                         checked={attendance[student.id] || false}

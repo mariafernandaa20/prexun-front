@@ -27,6 +27,7 @@ import StudentDebtsManager from '@/components/dashboard/estudiantes/StudentDebts
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import StudentAttendance from './StudentAttendance';
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -68,11 +69,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               <ChargesForm
                 campusId={transaction.campus_id}
                 cards={cards}
-                fetchStudents={() => {}}
+                fetchStudents={() => { }}
                 student_id={transaction.student_id}
                 transaction={transaction}
                 formData={transaction}
-                setFormData={() => {}}
+                setFormData={() => { }}
                 onTransactionUpdate={onUpdateTransaction}
                 mode="update"
                 student={null}
@@ -180,10 +181,10 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
         ...prevStudent,
         transactions: transactionExists
           ? prevStudent.transactions.map((transaction) =>
-              transaction.id === updatedTransaction.id
-                ? updatedTransaction
-                : transaction
-            )
+            transaction.id === updatedTransaction.id
+              ? updatedTransaction
+              : transaction
+          )
           : [...prevStudent.transactions, updatedTransaction],
       };
     });
@@ -266,7 +267,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 </p>
                 <p>
                   <span className="text-muted-foreground">Grupo:</span>{' '}
-                  {student.grupo_id || 'No asignado'}
+                  {student?.grupo ? student.grupo.name : (student?.grupo_id || 'No asignado')}
                 </p>
                 <p>
                   <span className="text-muted-foreground">
@@ -300,10 +301,10 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                   <span className="text-muted-foreground">Último pago:</span>{' '}
                   {student.transactions?.length
                     ? formatTime({
-                        time: student.transactions[
-                          student.transactions.length - 1
-                        ].payment_date,
-                      })
+                      time: student.transactions[
+                        student.transactions.length - 1
+                      ].payment_date,
+                    })
                     : 'Sin pagos'}
                 </p>
               </div>
@@ -351,6 +352,9 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         </div>
         <div>
           <StudentPeriod student={student} onRefresh={refetch} />
+        </div>
+        <div>
+          <StudentAttendance studentId={student.id} />
         </div>
         <div>
           <StudentNotes studentId={student.id.toString()} />
