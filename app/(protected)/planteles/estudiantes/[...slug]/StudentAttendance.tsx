@@ -34,13 +34,6 @@ export default function StudentAttendance({ studentId }: { studentId: string }) 
   }, [studentId])
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>Asistencia</CardHeader>
-        <CardContent>StudentAttendance for student ID: {studentId}</CardContent>
-      </Card>
-
-      <AttendanceCalendar attendance={attendances} />
-    </div>
+    <AttendanceCalendar attendance={attendances} />
   )
 }
