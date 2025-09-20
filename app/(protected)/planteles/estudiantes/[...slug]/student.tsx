@@ -240,7 +240,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         <CardContent>
           <SectionContainer>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-              <div className="space-y-2">
+              <div className="space-y-2 ">
                 <h3 className="font-semibold">Información Personal</h3>
                 <p>
                   <span className="text-muted-foreground">Matricula:</span>{' '}
@@ -313,14 +313,14 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+        <div className="lg:col-span-3">
           <StudentDebtsManager
             studentId={Number(student.id)}
             onTransactionUpdate={updateTransaction}
           />
         </div>
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-4">
@@ -350,16 +350,16 @@ export function StudentComponent({ slug }: { slug: string[] }) {
             </CardContent>
           </Card>
         </div>
-        <div>
+        <div className='lg:col-span-3'>
           <StudentPeriod student={student} onRefresh={refetch} />
         </div>
-        <div>
+        <div className='lg:col-span-2'>
           <StudentAttendance studentId={student.id} />
         </div>
         <div>
           <StudentNotes studentId={student.id.toString()} />
         </div>
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <StudentLogs studentId={student.id} />
         </div>
       </div>

@@ -153,21 +153,6 @@ export default function AttendanceCalendar({
           ))}
         </div>
 
-        {/* Leyenda */}
-        <div className="flex justify-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-100 border border-green-300 rounded dark:bg-green-900/20 dark:border-green-700"></div>
-            <span>Presente</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-100 border border-red-300 rounded dark:bg-red-900/20 dark:border-red-700"></div>
-            <span>Ausente</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-muted/50 border border-border rounded"></div>
-            <span>Sin registro</span>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )

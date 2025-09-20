@@ -174,7 +174,7 @@ export default function StudentNotes({ studentId }: Props) {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <FileText className="w-5 h-5" />
-              Notas del Estudiante
+              Notas
             </h3>
             <Dialog
               open={isCreateDialogOpen}
@@ -228,8 +228,7 @@ export default function StudentNotes({ studentId }: Props) {
               <p className="text-muted-foreground">Cargando notas...</p>
             </div>
           ) : notes.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-8">
+            <CardContent className="text-center py-8">
                 <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-muted-foreground mb-4">
                   No hay notas registradas para este estudiante
@@ -239,7 +238,6 @@ export default function StudentNotes({ studentId }: Props) {
                   Crear Primera Nota
                 </Button>
               </CardContent>
-            </Card>
           ) : (
             <div className="space-y-3">
               {notes.map((note) => (
