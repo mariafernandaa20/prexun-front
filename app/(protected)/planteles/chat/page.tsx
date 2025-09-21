@@ -305,7 +305,7 @@ export default function ChatPage() {
                             : 'bg-card text-card-foreground border border-border'
                         }`}
                       >
-                        <div className="text-sm prose prose-sm max-w-none">
+                        <div className="text-sm prose prose-sm max-w-none dark:prose-invert ">
                           <ReactMarkdown>{message.mensaje}</ReactMarkdown>
                         </div>
                         <div
