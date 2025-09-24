@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Student, Transaction, Card as CardType } from '@/lib/types';
 import {
   Table,
@@ -313,56 +314,80 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
-        <div className="lg:col-span-3">
-          <StudentDebtsManager
-            studentId={Number(student.id)}
-            onTransactionUpdate={updateTransaction}
-          />
-        </div>
-        <div className="lg:col-span-3">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <h2 className="text-xl font-semibold">
-                  Historial de Transacciones
-                </h2>
-                <Label className="flex items-center gap-2">
-                  Mostrar notas{' '}
-                  <Checkbox
-                    checked={showNotes}
-                    onCheckedChange={() => setShowNotes(!showNotes)}
-                  />
-                </Label>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <SectionContainer>
-                {student.transactions && (
-                  <TransactionsTable
-                    transactions={student.transactions}
-                    onUpdateTransaction={updateTransaction}
-                    cards={cards}
-                    showNotes={showNotes}
-                  />
-                )}
-              </SectionContainer>
-            </CardContent>
-          </Card>
-        </div>
-        <div className='lg:col-span-3'>
-          <StudentPeriod student={student} onRefresh={refetch} />
-        </div>
-        <div className='lg:col-span-2'>
+      <Tabs defaultValue="pagos" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="pagos">Pagos y Deudas</TabsTrigger>
+          <TabsTrigger value="asignacion">Asignación</TabsTrigger>
+          <TabsTrigger value="asistencia">Asistencia</TabsTrigger>
+          <TabsTrigger value="historial">Historial y Notas</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pagos" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-2">
+              <StudentDebtsManager
+                studentId={Number(student.id)}
+                onTransactionUpdate={updateTransaction}
+              />
+            </div>
+            <div className="lg:col-span-3">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-xl font-semibold">
+                      Historial de Transacciones
+                    </h2>
+                    <Label className="flex items-center gap-2">
+                      Mostrar notas{' '}
+                      <Checkbox
+                        checked={showNotes}
+                        onCheckedChange={() => setShowNotes(!showNotes)}
+                      />
+                    </Label>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <SectionContainer>
+                    {student.transactions && (
+                      <TransactionsTable
+                        transactions={student.transactions}
+                        onUpdateTransaction={updateTransaction}
+                        cards={cards}
+                        showNotes={showNotes}
+                      />
+                    )}
+                  </SectionContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="asignacion" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <StudentPeriod student={student} onRefresh={refetch} />
+            <StudentNotes studentId={student.id.toString()} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="asistencia" className="space-y-4">
           <StudentAttendance studentId={student.id} />
-        </div>
-        <div>
-          <StudentNotes studentId={student.id.toString()} />
-        </div>
-        <div className="lg:col-span-3">
-          <StudentLogs studentId={student.id} />
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="historial" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <StudentLogs studentId={student.id} />
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Notas Adicionales</h2>
+              </CardHeader>
+              <CardContent>
+                <StudentNotes studentId={student.id.toString()} />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
