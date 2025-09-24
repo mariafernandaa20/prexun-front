@@ -174,6 +174,7 @@ export default function GastosPage() {
 
   const handleOpenModal = (gasto?: Gasto) => {
     setSelectedGasto(gasto || null);
+    console.log(gasto)
     setIsModalOpen(true);
   };
 
@@ -337,7 +338,7 @@ export default function GastosPage() {
         <GastoModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          gasto={selectedGasto}
+          selectedGasto={selectedGasto}
           onSubmit={onSubmit}
         />
       ) : null}

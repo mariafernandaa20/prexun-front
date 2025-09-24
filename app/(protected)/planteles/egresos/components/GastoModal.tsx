@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -26,14 +26,14 @@ import { SignaturePad, SignaturePreview } from '@/components/ui/SignaturePad';
 interface GastoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  gasto?: Gasto | null;
+  selectedGasto?: Gasto | null;
   onSubmit: (data: Gasto) => Promise<void>;
 }
 
 export function GastoModal({
   isOpen,
   onClose,
-  gasto,
+  selectedGasto,
   onSubmit,
 }: GastoModalProps) {
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
@@ -41,31 +41,29 @@ export function GastoModal({
   const user = useAuthStore((state) => state.user);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
-  const [signatureUrl, setSignatureUrl] = useState<string | null>(
-    gasto?.signature || null
-  );
+  const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { register, handleSubmit, reset, setValue, watch } = useForm<
     Gasto & { image?: File }
   >({
-    defaultValues: gasto
+    defaultValues: selectedGasto
       ? {
-          id: gasto.id,
-          concept: gasto.concept,
-          amount: gasto.amount,
-          date: gasto.date,
-          method: gasto.method,
+          id: selectedGasto.id,
+          concept: selectedGasto.concept,
+          amount: selectedGasto.amount,
+          date: selectedGasto.date,
+          method: selectedGasto.method,
           denominations: null,
-          user_id: gasto.user_id,
-          admin_id: gasto.admin_id,
-          category: gasto.category,
-          campus_id: gasto.campus_id,
+          user_id: selectedGasto.user_id,
+          admin_id: selectedGasto.admin_id,
+          category: selectedGasto.category,
+          campus_id: selectedGasto.campus_id,
           cash_register_id: activeCampus.latest_cash_register.id,
           image: null,
-          signature: gasto.signature,
-          user: gasto.user,
-          admin: gasto.admin,
+          signature: selectedGasto.signature,
+          user: selectedGasto.user,
+          admin: selectedGasto.admin,
         }
       : {
           concept: '',
@@ -123,6 +121,32 @@ export function GastoModal({
     setValue('signature', signatureDataURL);
   };
 
+  const handleCloseModal = () => {
+    // Limpiar todos los estados locales
+    setPreviewUrl(null);
+    setSignatureUrl(null);
+    setErrors({});
+    setSignatureModalOpen(false);
+    
+    // Resetear el formulario al estado inicial
+    reset({
+      concept: '',
+      amount: 0,
+      date: new Date().toISOString().split('T')[0],
+      method: 'Efectivo',
+      denominations: null,
+      user_id: undefined,
+      admin_id: undefined,
+      category: '',
+      campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
+      cash_register_id: activeCampus?.latest_cash_register?.id,
+      image: null,
+      signature: null,
+    });
+    
+    onClose();
+  };
+
   const onSubmitForm = async (data: Gasto & { image?: File }) => {
     try {
       await onSubmit({
@@ -135,7 +159,7 @@ export function GastoModal({
       setPreviewUrl(null);
       setSignatureUrl(null);
       setErrors({});
-      onClose();
+      handleCloseModal();
     } catch (error) {
       toast({
         title: 'Error al enviar el formulario',
@@ -146,11 +170,72 @@ export function GastoModal({
     }
   };
 
+  console.log(selectedGasto)
+
+  // Efecto para cargar datos cuando se selecciona un gasto para editar
+  useEffect(() => {
+    if (selectedGasto) {
+      // Resetear el formulario con los datos del gasto seleccionado
+      reset({
+        id: selectedGasto.id,
+        concept: selectedGasto.concept,
+        amount: selectedGasto.amount,
+        date: selectedGasto.date,
+        method: selectedGasto.method,
+        denominations: null,
+        user_id: selectedGasto.user_id,
+        admin_id: selectedGasto.admin_id,
+        category: selectedGasto.category,
+        campus_id: selectedGasto.campus_id,
+        cash_register_id: selectedGasto.cash_register_id || activeCampus?.latest_cash_register?.id,
+        image: null,
+        signature: selectedGasto.signature,
+        user: selectedGasto.user,
+        admin: selectedGasto.admin,
+      });
+    } else {
+      // Resetear formulario para nuevo gasto
+      reset({
+        concept: '',
+        amount: 0,
+        date: new Date().toISOString().split('T')[0],
+        method: 'Efectivo',
+        denominations: null,
+        user_id: undefined,
+        admin_id: undefined,
+        category: '',
+        campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
+        cash_register_id: activeCampus?.latest_cash_register?.id,
+        image: null,
+        signature: null,
+      });
+    }
+  }, [selectedGasto, reset, activeCampus]);
+
+  // Efecto para sincronizar estados locales con el gasto seleccionado
+  useEffect(() => {
+    if (selectedGasto) {
+      // Cargar firma si existe
+      setSignatureUrl(selectedGasto.signature || null);
+      
+      // Cargar imagen si existe y es un string (URL)
+      if (selectedGasto.image && typeof selectedGasto.image === 'string') {
+        setPreviewUrl(selectedGasto.image);
+      } else {
+        setPreviewUrl(null);
+      }
+    } else {
+      // Limpiar estados para nuevo gasto
+      setSignatureUrl(null);
+      setPreviewUrl(null);
+    }
+  }, [selectedGasto]);
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleCloseModal}>
       <DialogContent className="min-w-[800px]">
         <DialogHeader>
-          <DialogTitle>{gasto ? 'Editar Gasto' : 'Nuevo Gasto'}</DialogTitle>
+          <DialogTitle>{selectedGasto ? 'Editar Gasto' : 'Nuevo Gasto'}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(onSubmitForm)}
@@ -182,7 +267,7 @@ export function GastoModal({
           <div>
             <label>Categoria</label>
             <Select
-              value={formData.category}
+              value={formData.category.toString()}
               onValueChange={(value) =>
                 handleChange({
                   name: 'category',
@@ -318,10 +403,10 @@ export function GastoModal({
             </Select>
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleCloseModal}>
               Cancelar
             </Button>
-            <Button type="submit">{gasto ? 'Actualizar' : 'Crear'}</Button>
+            <Button type="submit">{selectedGasto ? 'Actualizar' : 'Crear'}</Button>
           </div>
         </form>
       </DialogContent>
