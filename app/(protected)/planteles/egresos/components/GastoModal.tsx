@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Gasto } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { SignaturePad, SignaturePreview } from '@/components/ui/SignaturePad';
+import { QRSignature } from '@/components/QRSignature';
 
 interface GastoModalProps {
   isOpen: boolean;
@@ -43,6 +44,7 @@ export function GastoModal({
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showQRSignature, setShowQRSignature] = useState(false);
 
   const { register, handleSubmit, reset, setValue, watch } = useForm<
     Gasto & { image?: File }
@@ -121,12 +123,23 @@ export function GastoModal({
     setValue('signature', signatureDataURL);
   };
 
+  const handleExternalSignatureUpdate = (signature: string) => {
+    setSignatureUrl(signature);
+    setValue('signature', signature);
+    setShowQRSignature(false);
+    toast({
+      title: 'Firma recibida',
+      description: 'La firma externa ha sido recibida exitosamente',
+    });
+  };
+
   const handleCloseModal = () => {
     // Limpiar todos los estados locales
     setPreviewUrl(null);
     setSignatureUrl(null);
     setErrors({});
     setSignatureModalOpen(false);
+    setShowQRSignature(false);
     
     // Resetear el formulario al estado inicial
     reset({
@@ -228,6 +241,7 @@ export function GastoModal({
       // Limpiar estados para nuevo gasto
       setSignatureUrl(null);
       setPreviewUrl(null);
+      setShowQRSignature(false);
     }
   }, [selectedGasto]);
 
@@ -360,15 +374,64 @@ export function GastoModal({
           <div className="space-y-2">
             <Label>Firma Digital</Label>
             {signatureUrl ? (
-              <SignaturePreview
-                signature={signatureUrl}
-                onRemove={() => {
-                  setSignatureUrl(null);
-                  setValue('signature', null);
-                }}
-                onEdit={() => setSignatureModalOpen(true)}
-              />
+              // Ya tiene firma - mostrar preview y deshabilitar edición si tiene ID
+              <div>
+                <SignaturePreview
+                  signature={signatureUrl}
+                  onRemove={selectedGasto?.id ? undefined : () => {
+                    setSignatureUrl(null);
+                    setValue('signature', null);
+                  }}
+                  onEdit={selectedGasto?.id ? undefined : () => setSignatureModalOpen(true)}
+                />
+                {selectedGasto?.id && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    La firma no puede ser modificada una vez que el gasto tiene ID
+                  </p>
+                )}
+              </div>
+            ) : selectedGasto?.id ? (
+              // Tiene ID pero no tiene firma - mostrar opciones de firma
+              <div className="space-y-3">
+                {showQRSignature ? (
+                  <div>
+                    <QRSignature
+                      gastoId={selectedGasto.id}
+                      onSignatureUpdate={handleExternalSignatureUpdate}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowQRSignature(false)}
+                      className="w-full mt-2"
+                    >
+                      Cancelar firma externa
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setSignatureModalOpen(true)}
+                      className="w-full"
+                    >
+                      Firmar Aquí
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowQRSignature(true)}
+                      className="w-full"
+                    >
+                      Firmar Externamente (QR)
+                    </Button>
+                  </div>
+                )}
+              </div>
             ) : (
+              // Nuevo gasto sin ID - solo firma local
               <Button
                 type="button"
                 variant="outline"
