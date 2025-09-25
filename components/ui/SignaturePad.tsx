@@ -44,7 +44,8 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
         if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
           try {
             const canvas = sigCanvas.current.getCanvas();
-            const trimmedCanvas = trimCanvas(canvas);
+            const watermarkedCanvas = addWatermark(canvas);
+            const trimmedCanvas = trimCanvas(watermarkedCanvas);
             return trimmedCanvas.toDataURL('image/png');
           } catch (error) {
             console.error('Error al obtener la firma:', error);
@@ -58,6 +59,36 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
     const handleClear = () => {
       sigCanvas.current?.clear();
       setIsEmpty(true);
+    };
+
+    const addWatermark = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
+      const watermarkCanvas = document.createElement('canvas');
+      watermarkCanvas.width = canvas.width;
+      watermarkCanvas.height = canvas.height;
+      const ctx = watermarkCanvas.getContext('2d');
+
+      if (!ctx) return canvas;
+
+      // Dibujar el canvas original
+      ctx.drawImage(canvas, 0, 0);
+
+      // Configurar la marca de agua
+      ctx.save();
+      ctx.globalAlpha = 0.1; // Transparencia sutil
+      ctx.fillStyle = '#666666';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Rotar texto para diagonal
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(-Math.PI / 6); // -30 grados
+
+      // Dibujar "PREXUN" en el centro
+      ctx.fillText('PREXUN', 0, 0);
+      ctx.restore();
+
+      return watermarkCanvas;
     };
 
     const trimCanvas = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
@@ -122,21 +153,21 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
       return trimmedCanvas;
     };
 
-    const handleSave = () => {
-      if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
-        try {
-          const canvas = sigCanvas.current.getCanvas();
-          const trimmedCanvas = trimCanvas(canvas);
-          const signatureData = trimmedCanvas.toDataURL('image/png');
-          onSave(signatureData);
-          onClose();
-        } catch (error) {
-          console.error('Error al guardar la firma:', error);
-        }
+  const handleSave = () => {
+    if (sigCanvas.current) {
+      const canvas = sigCanvas.current.getCanvas();
+      const watermarkedCanvas = addWatermark(canvas);
+      const trimmedCanvas = trimCanvas(watermarkedCanvas);
+      const signatureData = trimmedCanvas.toDataURL('image/png');
+      
+      if (onSave) {
+        onSave(signatureData);
       }
-    };
-
-    const handleBegin = () => {
+      
+      onClose();
+      sigCanvas.current.clear();
+    }
+  };    const handleBegin = () => {
       setIsEmpty(false);
     };
 
