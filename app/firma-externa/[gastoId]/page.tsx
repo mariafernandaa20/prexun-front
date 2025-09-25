@@ -126,14 +126,14 @@ export default function FirmaExternaPage() {
               <FileText className="w-6 h-6" />
               Firma de Documento
             </CardTitle>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Por favor firma el siguiente gasto para completar el proceso
             </p>
           </CardHeader>
           
           <CardContent className="space-y-6">
             {/* Información del Gasto */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 text-black p-4 rounded-lg">
               <h3 className="font-semibold mb-3">Información del Gasto</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                 <div>

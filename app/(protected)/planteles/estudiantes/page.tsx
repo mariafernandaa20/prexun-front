@@ -79,7 +79,7 @@ export default function Page() {
 
   const { toast } = useToast();
   const { activeCampus } = useActiveCampusStore();
-  const { user, periods, grupos } = useAuthStore();
+  const { user } = useAuthStore();
   const { config: uiConfig, loading: configLoading } = useUIConfig();
   const { pagination, setPagination } = usePagination({ initialPerPage: 50 });
   const router = useRouter();

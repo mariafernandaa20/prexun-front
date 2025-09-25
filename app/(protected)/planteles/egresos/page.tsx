@@ -23,7 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
 import { MultiSelect } from '@/components/multi-select';
 import {
   Card,
@@ -35,6 +40,8 @@ import { GastoModal } from './components/GastoModal';
 import PaginationComponent from '@/components/ui/PaginationComponent';
 import { usePagination } from '@/hooks/usePagination';
 import { useAuthStore } from '@/lib/store/auth-store';
+import { QRSignature } from '@/components/QRSignature';
+import { toast } from '@/hooks/use-toast';
 
 export default function GastosPage() {
   const [gastos, setGastos] = useState<Gasto[]>([]);
@@ -46,6 +53,8 @@ export default function GastosPage() {
   const [filteredGastos, setFilteredGastos] = useState<Gasto[]>([]);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const [selectedGastoForSignature, setSelectedGastoForSignature] = useState<Gasto | null>(null);
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
   const { pagination, setPagination } = usePagination();
@@ -111,26 +120,35 @@ export default function GastosPage() {
       render: (gasto: Gasto) =>
         gasto.signature ? (
           <div className="flex items-center gap-2">
-            {
-              user?.role === 'super_admin' && (
-                <>
-                  <img
-                    src={gasto.signature as string}
-                    alt="Firma"
-                    className="w-16 h-8 object-contain rounded border"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOpenImage(gasto.signature as string)}
-                  >
-                    <Eye className="w-4 h-4 mr-1" />
-                    Ver
-                  </Button></>)
-            }
+            {user?.role === 'super_admin' && (
+              <>
+                <img
+                  src={gasto.signature as string}
+                  alt="Firma"
+                  className="w-16 h-8 object-contain rounded border"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleOpenImage(gasto.signature as string)}
+                >
+                  <Eye className="w-4 h-4 mr-1" />
+                  Ver
+                </Button>
+              </>
+            )}
           </div>
+        ) : gasto.id ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleOpenSignatureModal(gasto)}
+            className="w-full"
+          >
+            Firmar
+          </Button>
         ) : (
-          <span className="text-gray-400 text-sm">Sin firma</span>
+          <span className="text-gray-400 text-sm">Sin ID</span>
         ),
     },
     {
@@ -198,6 +216,43 @@ export default function GastosPage() {
   const handleDeleteGasto = async (id: number) => {
     await deleteGasto(id.toString());
     fetchGastos();
+  };
+
+  const handleOpenSignatureModal = (gasto: Gasto) => {
+    setSelectedGastoForSignature(gasto);
+    setSignatureModalOpen(true);
+  };
+
+  const handleCloseSignatureModal = () => {
+    setSelectedGastoForSignature(null);
+    setSignatureModalOpen(false);
+  };
+
+  const handleExternalSignatureUpdate = (signature: string) => {
+    if (!selectedGastoForSignature) return;
+
+    // Actualizar el gasto en el estado local
+    setGastos(prevGastos => 
+      prevGastos.map(gasto => 
+        gasto.id === selectedGastoForSignature.id 
+          ? { ...gasto, signature } 
+          : gasto
+      )
+    );
+    
+    setFilteredGastos(prevFiltered => 
+      prevFiltered.map(gasto => 
+        gasto.id === selectedGastoForSignature.id 
+          ? { ...gasto, signature } 
+          : gasto
+      )
+    );
+    
+    handleCloseSignatureModal();
+    toast({
+      title: 'Firma recibida',
+      description: 'La firma externa ha sido recibida exitosamente',
+    });
   };
 
   useEffect(() => {
@@ -352,6 +407,36 @@ export default function GastosPage() {
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
         <DialogContent className="max-w-3xl">
           <img src={selectedImage} alt="Comprobante" className="w-full" />
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Firma Externa */}
+      <Dialog open={signatureModalOpen} onOpenChange={handleCloseSignatureModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Firma Digital - {selectedGastoForSignature?.concept}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              <p><strong>Concepto:</strong> {selectedGastoForSignature?.concept}</p>
+              <p><strong>Monto:</strong> ${selectedGastoForSignature?.amount}</p>
+              <p><strong>Fecha:</strong> {selectedGastoForSignature?.date ? format(new Date(selectedGastoForSignature.date), 'dd/MM/yyyy', { locale: es }) : ''}</p>
+            </div>
+            {selectedGastoForSignature && (
+              <QRSignature
+                gastoId={selectedGastoForSignature.id}
+                onSignatureUpdate={handleExternalSignatureUpdate}
+              />
+            )}
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCloseSignatureModal}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </Card>

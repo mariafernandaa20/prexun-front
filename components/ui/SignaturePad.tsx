@@ -157,7 +157,7 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
                 }}
                 onBegin={handleBegin}
               />
-              <p className="text-sm text-gray-500 mt-2 text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300 mt-2 text-center">
                 Dibuja tu firma en el área de arriba
               </p>
             </div>
