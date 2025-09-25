@@ -34,6 +34,7 @@ import {
 import { GastoModal } from './components/GastoModal';
 import PaginationComponent from '@/components/ui/PaginationComponent';
 import { usePagination } from '@/hooks/usePagination';
+import { useAuthStore } from '@/lib/store/auth-store';
 
 export default function GastosPage() {
   const [gastos, setGastos] = useState<Gasto[]>([]);
@@ -48,6 +49,7 @@ export default function GastosPage() {
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
   const { pagination, setPagination } = usePagination();
+  const { user } = useAuthStore();
 
   const tableColumns = [
     {
@@ -109,19 +111,23 @@ export default function GastosPage() {
       render: (gasto: Gasto) =>
         gasto.signature ? (
           <div className="flex items-center gap-2">
-            <img
-              src={gasto.signature as string}
-              alt="Firma"
-              className="w-16 h-8 object-contain rounded border"
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleOpenImage(gasto.signature as string)}
-            >
-              <Eye className="w-4 h-4 mr-1" />
-              Ver
-            </Button>
+            {
+              user?.role === 'super_admin' && (
+                <>
+                  <img
+                    src={gasto.signature as string}
+                    alt="Firma"
+                    className="w-16 h-8 object-contain rounded border"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleOpenImage(gasto.signature as string)}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    Ver
+                  </Button></>)
+            }
           </div>
         ) : (
           <span className="text-gray-400 text-sm">Sin firma</span>
