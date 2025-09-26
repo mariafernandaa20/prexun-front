@@ -144,10 +144,10 @@ export default function TomarAsistenciasPage() {
 
       const date = new Date();
       const isoString = date.toISOString();
-      const localDateString = date.toLocaleDateString('es-ES');
+      const dateFormatted = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
       const payload = {
         student_id: student.id,
-        date: localDateString,
+        date: dateFormatted,
         present: true,
         attendance_time: isoString,
       };
