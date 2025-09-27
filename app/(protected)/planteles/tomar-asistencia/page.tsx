@@ -16,14 +16,6 @@ interface Student {
   lastname: string;
   matricula: string;
   assignments: { grupo: { name: string } }[];
-  grupo?: {
-    id: string;
-    name: string;
-    period: {
-      id: string;
-      name: string;
-    };
-  };
 }
 
 interface AttendanceRecord {
@@ -119,26 +111,6 @@ export default function TomarAsistenciasPage() {
 
       const student = studentResponse.data.data;
 
-
-      // Verificar si ya tiene asistencia hoy
-      const existingAttendance = todayAttendance.find(record => record.studentId === student.id);
-
-      if (existingAttendance) {
-        toast.info(
-          `${student.firstname} ${student.lastname} ya está marcado como ${existingAttendance.present ? 'PRESENTE' : 'AUSENTE'}`,
-          {
-            description: `Asistencia registrada a las ${existingAttendance.timestamp.toLocaleTimeString('es-ES')}`,
-            duration: 4000,
-          }
-        );
-        setMatricula('');
-        if (!showQrScanner) {
-          document.getElementById('matricula-input')?.focus();
-        }
-        setIsLoading(false);
-        return;
-      }
-
       const date = new Date();
       const isoString = date.toISOString();
       const dateFormatted = date.toISOString().split('T')[0];
@@ -152,23 +124,50 @@ export default function TomarAsistenciasPage() {
       const attendanceResponse = await axiosInstance.post('/teacher/attendance/quick', payload);
 
       if (attendanceResponse.data.success) {
-        const newRecord: AttendanceRecord = {
-          studentId: student.id,
-          student: student,
-          present: true,
-          timestamp: new Date(),
-          grupo_name: student.grupo?.name || 'Sin grupo',
-        };
+        // Verificar si ya existía la asistencia
+        if (attendanceResponse.data.already_exists) {
+          const existingData = attendanceResponse.data.data;
+          
+          toast.info(
+            `${student.firstname} ${student.lastname} ya estaba marcado como ${existingData.present ? 'PRESENTE' : 'AUSENTE'}`,
+            {
+              description: `Asistencia registrada previamente`,
+              duration: 4000,
+            }
+          );
 
-        setTodayAttendance(prev => [newRecord, ...prev]);
-
-        toast.success(
-          `¡${student.firstname} ${student.lastname} PRESENTE!`,
-          {
-            description: `Grupo: ${student.grupo?.name || 'Sin grupo'} - ${isoString}`,
-            duration: 3000,
+          // Agregar al estado local si no está ya
+          const existsInLocal = todayAttendance.find(record => record.studentId === student.id);
+          if (!existsInLocal) {
+            const existingRecord: AttendanceRecord = {
+              studentId: student.id,
+              student: student,
+              present: existingData.present,
+              timestamp: new Date(existingData.attendance_time),
+              grupo_name: student.grupo?.name || 'Sin grupo',
+            };
+            setTodayAttendance(prev => [existingRecord, ...prev]);
           }
-        );
+        } else {
+          // Es un registro nuevo
+          const newRecord: AttendanceRecord = {
+            studentId: student.id,
+            student: student,
+            present: true,
+            timestamp: new Date(),
+            grupo_name: student.grupo?.name || 'Sin grupo',
+          };
+
+          setTodayAttendance(prev => [newRecord, ...prev]);
+
+          toast.success(
+            `¡${student.firstname} ${student.lastname} PRESENTE!`,
+            {
+              description: `Grupo: ${student.grupo?.name || 'Sin grupo'} - Registrado exitosamente`,
+              duration: 3000,
+            }
+          );
+        }
 
         setMatricula('');
         if (!showQrScanner) {
