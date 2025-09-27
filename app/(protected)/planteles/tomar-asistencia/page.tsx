@@ -15,6 +15,7 @@ interface Student {
   firstname: string;
   lastname: string;
   matricula: string;
+  assignments: { grupo: { name: string } }[];
   grupo?: {
     id: string;
     name: string;
@@ -41,29 +42,28 @@ export default function TomarAsistenciasPage() {
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [isQrScannerReady, setIsQrScannerReady] = useState(false);
 
-  // Cargar asistencias del día actual
-  const loadTodayAttendance = async () => {
-    try {
-      const formattedDate = todayDate.toISOString().split('T')[0];
-      // Este endpoint debería devolver todas las asistencias del día actual
-      const response = await axiosInstance.get(`/teacher/attendance/today/${formattedDate}`);
+  /*const loadTodayAttendance = async () => {
 
-      if (response.data.success && response.data.data) {
-        const records: AttendanceRecord[] = response.data.data.map((record: any) => ({
-          studentId: record.student_id,
-          student: record.student,
-          present: record.present,
-          timestamp: new Date(record.updated_at),
-          grupo_name: record.grupo?.name || 'Sin grupo',
-        }));
-        setTodayAttendance(records);
-      }
-    } catch (error) {
-      console.error('Error loading today attendance:', error);
+    console.log('Loading today attendance...');
+    const date = new Date();
+    const dateFormatted = date.toISOString().split('T')[0];
+    const response = await axiosInstance.get(`/teacher/attendance/today/${dateFormatted}`);
+
+    console.log('Response' + response.data)
+    if (response.data.success && response.data.data) {
+      const records: AttendanceRecord[] = response.data.data.map((record: any) => ({
+        studentId: record.student_id,
+        student: record.student,
+        present: record.present,
+        timestamp: new Date(record.updated_at),
+        grupo_name: record.grupo?.name || 'Sin grupo',
+      }));
+      setTodayAttendance(records);
     }
   };
+*/
 
-  // Manejar el resultado del QR scanner
+
   const handleQrScanResult = (err: unknown, result?: any) => {
     if (result) {
       const scannedText = result.getText ? result.getText() : result.text || result;
@@ -73,7 +73,6 @@ export default function TomarAsistenciasPage() {
         toast.success('QR escaneado correctamente', {
           description: `Matrícula detectada: ${scannedText}`,
         });
-        // Procesar inmediatamente para permitir escaneos secuenciales
         processStudentAttendanceWithMatricula(upperMatricula);
       }
     }
@@ -82,7 +81,6 @@ export default function TomarAsistenciasPage() {
     }
   };
 
-  // Abrir el QR scanner
   const openQrScanner = () => {
     setShowQrScanner(!showQrScanner);
     setIsQrScannerReady(false);
@@ -121,7 +119,6 @@ export default function TomarAsistenciasPage() {
 
       const student = studentResponse.data.data;
 
-      console.log(student)
 
       // Verificar si ya tiene asistencia hoy
       const existingAttendance = todayAttendance.find(record => record.studentId === student.id);
@@ -144,7 +141,7 @@ export default function TomarAsistenciasPage() {
 
       const date = new Date();
       const isoString = date.toISOString();
-      const dateFormatted = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      const dateFormatted = date.toISOString().split('T')[0];
       const payload = {
         student_id: student.id,
         date: dateFormatted,
@@ -155,7 +152,6 @@ export default function TomarAsistenciasPage() {
       const attendanceResponse = await axiosInstance.post('/teacher/attendance/quick', payload);
 
       if (attendanceResponse.data.success) {
-        // Actualizar la lista local
         const newRecord: AttendanceRecord = {
           studentId: student.id,
           student: student,
@@ -174,7 +170,6 @@ export default function TomarAsistenciasPage() {
           }
         );
 
-        // Limpiar campo y auto-enfocar solo si no está el scanner abierto
         setMatricula('');
         if (!showQrScanner) {
           document.getElementById('matricula-input')?.focus();
@@ -188,13 +183,6 @@ export default function TomarAsistenciasPage() {
     }
   };
 
-  // Cargar asistencias al montar el componente
-  useEffect(() => {
-    loadTodayAttendance();
-    // Auto-enfocar el campo de matrícula
-    document.getElementById('matricula-input')?.focus();
-  }, []);
-
   // Buscar con Enter
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -202,11 +190,6 @@ export default function TomarAsistenciasPage() {
     }
   };
 
-  // Refrescar cada 30 segundos
-  useEffect(() => {
-    const interval = setInterval(loadTodayAttendance, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Manejar el escape para cerrar el QR scanner
   useEffect(() => {
@@ -222,7 +205,7 @@ export default function TomarAsistenciasPage() {
 
   const presentCount = todayAttendance.filter(record => record.present).length;
   const totalCount = todayAttendance.length;
-
+  console.log(todayAttendance);
   return (
     <div className="p-6 max-w-4xl mx-auto bg-background dark:bg-background">
       <div className="text-center mb-8">
@@ -273,7 +256,7 @@ export default function TomarAsistenciasPage() {
                     height={300}
                   />
                 </div>
-            
+
               </div>
             )}
             <Input
@@ -358,7 +341,7 @@ export default function TomarAsistenciasPage() {
                       Matrícula: {record.student.matricula || record.student.id}
                     </div>
                     <div className="text-sm text-muted-foreground dark:text-muted-foreground">
-                      Grupo: {record.grupo_name}
+                      Grupo: {record.student.assignments[0]?.grupo.name || 'Sin grupo'}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
