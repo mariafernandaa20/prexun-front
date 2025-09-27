@@ -144,7 +144,7 @@ export default function TomarAsistenciasPage() {
               student: student,
               present: existingData.present,
               timestamp: new Date(existingData.attendance_time),
-              grupo_name: student.grupo?.name || 'Sin grupo',
+              grupo_name: student.assignments[0]?.grupo.name || 'Sin grupo',
             };
             setTodayAttendance(prev => [existingRecord, ...prev]);
           }
@@ -155,7 +155,7 @@ export default function TomarAsistenciasPage() {
             student: student,
             present: true,
             timestamp: new Date(),
-            grupo_name: student.grupo?.name || 'Sin grupo',
+            grupo_name: student.assignments[0]?.grupo.name || 'Sin grupo',
           };
 
           setTodayAttendance(prev => [newRecord, ...prev]);
@@ -163,7 +163,7 @@ export default function TomarAsistenciasPage() {
           toast.success(
             `¡${student.firstname} ${student.lastname} PRESENTE!`,
             {
-              description: `Grupo: ${student.grupo?.name || 'Sin grupo'} - Registrado exitosamente`,
+              description: `Grupo: ${student.assignments[0]?.grupo.name || 'Sin grupo'} - Registrado exitosamente`,
               duration: 3000,
             }
           );
