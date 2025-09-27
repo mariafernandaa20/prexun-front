@@ -208,7 +208,7 @@ export default function TomarAsistenciasPage() {
   return (
 
     <div className='flex flex-col w-full lg:flex-row lg:gap-6'>
-      <div className="p-6 max-w-4xl mx-auto bg-background dark:bg-background w-1/2">
+      <div className="p-6 max-w-4xl mx-auto bg-background dark:bg-background xl:w-1/2">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2 text-foreground dark:text-foreground">Tomar Asistencia</h1>
           <div className="flex items-center justify-center gap-2 text-muted-foreground dark:text-muted-foreground">
@@ -321,7 +321,7 @@ export default function TomarAsistenciasPage() {
 
       </div>
 
-      <div className='w-1/2'>
+      <div className='xl:w-1/2'>
         {/* Lista de asistencias del día */}
         {todayAttendance.length > 0 && (
           <Card className="bg-card dark:bg-card border-border dark:border-border">
