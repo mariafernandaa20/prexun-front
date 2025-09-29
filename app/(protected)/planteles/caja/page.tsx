@@ -35,14 +35,22 @@ export default function CajaPage() {
     if (!caja) return { ingresos: 0, egresos: 0, gastosTotal: 0, balance: 0 };
 
     const ingresos =
-      caja.transactions?.reduce((sum, t) => sum + t.amount, 0) ?? 0;
-    const egresos = caja.gastos?.reduce((sum, g) => sum + g.amount, 0) ?? 0;
-    const balance = ingresos - egresos;
+      caja.transactions?.filter((t) => t.transaction_type === 'ingreso').reduce(
+        (sum, t) => sum + Number(t.amount || 0),
+        0
+      ) ?? 0;
+    const egresos = caja.transactions?.filter(t => t.transaction_type === 'egreso').reduce((sum, t) => sum + Number(t.amount || 0),
+        0
+      ) ?? 0;
+    const gastosTotal = caja.gastos?.reduce((sum, g) => sum + Number(g.amount || 0), 0) ?? 0;
+    const balance = ingresos - egresos - gastosTotal;
 
     return {
       ingresos,
       egresos,
+      gastosTotal,
       balance,
+      
     };
   };
 
@@ -97,66 +105,119 @@ export default function CajaPage() {
 
   function processCashRegister(data) {
     const denominationBreakdown = {};
-    let totalTransactions = 0;
-    let totalExpenses = 0;
+    let totalCashIngresos = 0;
+    let totalCashEgresos = 0;
+    let totalCashExpenses = 0;
+    let totalExpenses = 0; 
 
     if (!data) {
       return {
         denominationBreakdown: [],
-        totalTransactions: 0,
+        totalCashIngresos: 0,
+        totalCashEgresos: 0,
+        totalCashExpenses: 0,
         totalExpenses: 0,
-        netAmount: 0,
+        netCashAmount: 0,
+        actualCashAmount: 0,
+        denominationSummary: {},
       };
     }
 
+    // Inicializar denominaciones con el monto inicial si existe
+    if (data.initial_amount_cash) {
+      const initialCash = typeof data.initial_amount_cash === 'string' 
+        ? JSON.parse(data.initial_amount_cash) 
+        : data.initial_amount_cash;
+      
+      Object.entries(initialCash).forEach(([value, quantity]) => {
+        denominationBreakdown[value] = Number(quantity || 0);
+      });
+    }
+
+
     data.transactions?.forEach((transaction) => {
       const amount = Number(transaction.amount || 0);
+      const isIngreso = transaction.transaction_type === 'ingreso';
+      
+     
       if (transaction.payment_method === 'cash') {
-        totalTransactions += amount;
-      } else if (
-        transaction.denominations &&
-        transaction.denominations.length > 0
-      ) {
+        if (isIngreso) {
+          totalCashIngresos += amount;
+        } else {
+          totalCashEgresos += amount;
+        }
+      }
+      
+      // Procesar denominaciones si existen
+      if (transaction.denominations && transaction.denominations.length > 0) {
         transaction.denominations.forEach((denom) => {
           const value = Number(denom.value || 0);
           const quantity = Number(denom.quantity || 0);
-          denominationBreakdown[value] =
-            (denominationBreakdown[value] || 0) + quantity;
+          
+          if (isIngreso) {
+            denominationBreakdown[value] = (denominationBreakdown[value] || 0) + quantity;
+          } else {
+            denominationBreakdown[value] = (denominationBreakdown[value] || 0) - quantity;
+          }
         });
       }
     });
 
+    // Procesar gastos
     data.gastos?.forEach((gasto) => {
       const amount = Number(gasto.amount || 0);
       totalExpenses += amount;
+   
+      if (gasto.method === 'cash') {
+        totalCashExpenses += amount;
+      }
+      
+   
       gasto.denominations?.forEach((denom) => {
         const value = Number(denom.value || 0);
         const quantity = Number(denom.quantity || 0);
-        denominationBreakdown[value] =
-          (denominationBreakdown[value] || 0) - quantity;
+        denominationBreakdown[value] = (denominationBreakdown[value] || 0) - quantity;
       });
     });
 
+
+    const actualCashAmount = Object.entries(denominationBreakdown).reduce((total, [value, quantity]) => {
+      return total + (Number(value) * Number(quantity));
+    }, 0);
+
+
+    const denominationSummary = Object.entries(denominationBreakdown)
+      .sort((a, b) => Number(b[0]) - Number(a[0])) 
+      .filter(([, count]) => Number(count) !== 0)
+      .reduce((acc, [value, count]) => {
+        acc[value] = Number(count);
+        return acc;
+      }, {});
+
     const breakdownArray = Object.entries(denominationBreakdown)
-      .sort((a, b) => +a[0] - +b[0])
-      .filter(([, count]) => count !== 0)
-      .map(([value, count]) => `${value}x${count}`);
+      .sort((a, b) => Number(b[0]) - Number(a[0]))
+      .filter(([, count]) => Number(count) !== 0)
+      .map(([value, count]) => `$${value} x ${count}`);
+
+    const netCashAmount = totalCashIngresos - totalCashEgresos - totalCashExpenses;
 
     return {
       denominationBreakdown: breakdownArray,
-      totalTransactions: Number(totalTransactions.toFixed(2)),
+      totalCashIngresos: Number(totalCashIngresos.toFixed(2)),
+      totalCashEgresos: Number(totalCashEgresos.toFixed(2)),
+      totalCashExpenses: Number(totalCashExpenses.toFixed(2)),
       totalExpenses: Number(totalExpenses.toFixed(2)),
-      netAmount: Number((totalTransactions - totalExpenses).toFixed(2)),
+      netCashAmount: Number(netCashAmount.toFixed(2)),
+      actualCashAmount: Number(actualCashAmount.toFixed(2)),
+      denominationSummary,
     };
   }
 
   const result = processCashRegister(caja);
 
-  const actualAmount =
-    (result.totalTransactions ? Number(result.totalTransactions) : 0) +
-    (caja?.initial_amount ? Number(caja.initial_amount) : 0);
 
-  //const result = {denominationCount : {}, totalTransactions: 0, totalExpenses: 0, netAmount: 0};
+  const actualAmount = result.actualCashAmount;
+
 
   return (
     <CajaLayout
@@ -186,7 +247,7 @@ export default function CajaPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
                     Monto Inicial:{' '}
@@ -224,6 +285,12 @@ export default function CajaPage() {
                     Saldo:{' '}
                     <span className="font-medium text-foreground">
                       {formatCurrency(balance)}
+                    </span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Efectivo disponible:{' '}
+                    <span className="font-medium text-primary">
+                      {formatCurrency(result.actualCashAmount)}
                     </span>
                   </p>
                 </div>
