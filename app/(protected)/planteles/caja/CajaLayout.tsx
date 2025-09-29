@@ -113,24 +113,18 @@ export default function CajaLayout({
     const denominationsTotal = calculateDenominationsTotal(
       formData.denominations
     );
-    const nextDay = calculateDenominationsTotal(formData.denominations);
+    const nextDayTotal = calculateDenominationsTotal(formData.next_day_cash);
 
-    // Validación para cierre de caja
-    if (denominationsTotal !== Number(actualAmount)) {
-      alert('El monto total no coincide con la suma de las denominaciones');
-      return;
-    }
-
-    // Validación adicional con actualAmount
+    // Validación para cierre de caja - debe coincidir con el efectivo actual
     if (denominationsTotal !== actualAmount) {
-      alert('El monto ingresado no coincide con el monto actual en caja');
+      alert(`El monto total de denominaciones (${formatCurrency(denominationsTotal)}) no coincide con el efectivo disponible en caja (${formatCurrency(actualAmount)}). Por favor, verifique las denominaciones.`);
       return;
     }
 
     await onClose(
       Number(denominationsTotal),
       formData.denominations,
-      nextDay,
+      nextDayTotal,
       formData.next_day_cash,
       notes
     );
