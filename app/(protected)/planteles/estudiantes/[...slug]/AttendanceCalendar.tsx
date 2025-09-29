@@ -1,6 +1,12 @@
 "use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface AttendanceRecord {
   id: number
@@ -26,6 +32,20 @@ export default function AttendanceCalendar({
   month = new Date().getMonth(),
   year = new Date().getFullYear(),
 }: AttendanceCalendarProps) {
+  // Función para formatear la hora
+  const formatTime = (dateTimeString: string) => {
+    try {
+      const date = new Date(dateTimeString)
+      return date.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      })
+    } catch (error) {
+      return "Hora no válida"
+    }
+  }
+
   // Obtener el primer día del mes y cuántos días tiene
   const firstDayOfMonth = new Date(year, month, 1)
   const lastDayOfMonth = new Date(year, month + 1, 0)
@@ -50,11 +70,11 @@ export default function AttendanceCalendar({
   ]
 
   // Crear un mapa de asistencias por fecha
-  const attendanceMap = new Map<string, boolean>()
+  const attendanceMap = new Map<string, AttendanceRecord>()
   attendance.forEach((record) => {
     const date = new Date(record.date)
     const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
-    attendanceMap.set(dateKey, record.present)
+    attendanceMap.set(dateKey, record)
   })
 
   // Generar los días del calendario
@@ -68,13 +88,15 @@ export default function AttendanceCalendar({
   // Días del mes
   for (let day = 1; day <= daysInMonth; day++) {
     const dateKey = `${year}-${month}-${day}`
+    const attendanceRecord = attendanceMap.get(dateKey)
     const hasAttendance = attendanceMap.has(dateKey)
-    const isPresent = attendanceMap.get(dateKey)
+    const isPresent = attendanceRecord?.present
 
     calendarDays.push({
       day,
       hasAttendance,
       isPresent,
+      attendanceRecord,
     })
   }
 
@@ -91,67 +113,85 @@ export default function AttendanceCalendar({
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>
-            Calendario de Asistencias - {monthNames[month]} {year}
-          </span>
-          <Badge variant="outline" className="text-sm">
-            {stats.attendanceRate}% Asistencia
-          </Badge>
-        </CardTitle>
-      </CardHeader>
+
       <CardContent className="space-y-4">
-        {/* Estadísticas */}
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="space-y-1">
-            <div className="text-2xl font-bold text-green-600">{stats.presentDays}</div>
-            <div className="text-sm text-muted-foreground">Presentes</div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-bold text-red-600">{stats.absentDays}</div>
-            <div className="text-sm text-muted-foreground">Ausentes</div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-bold">{stats.totalDays}</div>
-            <div className="text-sm text-muted-foreground">Total</div>
-          </div>
-        </div>
+
 
         {/* Calendario */}
-        <div className="grid grid-cols-7 gap-1">
-          {/* Encabezados de días de la semana */}
-          {daysOfWeek.map((day) => (
-            <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
-              {day}
-            </div>
-          ))}
+        <TooltipProvider>
+          <div className="grid grid-cols-7 gap-1">
+            {/* Encabezados de días de la semana */}
+            {daysOfWeek.map((day) => (
+              <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
+                {day}
+              </div>
+            ))}
 
-          {/* Días del calendario */}
-          {calendarDays.map((dayData, index) => (
-            <div
-              key={index}
-              className={`
-                aspect-square p-1 text-center text-sm border rounded-md
-                ${!dayData ? "invisible" : ""}
-                ${
-                  dayData?.hasAttendance
-                    ? dayData.isPresent
-                      ? "bg-green-100 border-green-300 text-green-800 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300"
-                      : "bg-red-100 border-red-300 text-red-800 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300"
-                    : "bg-muted/50 border-border text-muted-foreground"
-                }
-              `}
-            >
-              {dayData && (
-                <div className="flex flex-col items-center justify-center h-full">
-                  <span className="font-medium">{dayData.day}</span>
-                  {dayData.hasAttendance && <div className="text-xs mt-1">{dayData.isPresent ? "✓" : "✗"}</div>}
+            {/* Días del calendario */}
+            {calendarDays.map((dayData, index) => {
+              if (!dayData) {
+                return <div key={index} className="invisible" />
+              }
+
+              const dayContent = (
+                <div
+                  className={`
+                    aspect-square p-1 text-center text-sm border rounded-md cursor-pointer
+                    ${
+                      dayData.hasAttendance
+                        ? dayData.isPresent
+                          ? "bg-green-100 border-green-300 text-green-800 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300"
+                          : "bg-red-100 border-red-300 text-red-800 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300"
+                        : "bg-muted/50 border-border text-muted-foreground"
+                    }
+                  `}
+                >
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <span className="font-medium">{dayData.day}</span>
+                    {dayData.hasAttendance && (
+                      <div className="text-xs mt-1">{dayData.isPresent ? "✓" : "✗"}</div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+              )
+
+              if (dayData.hasAttendance && dayData.attendanceRecord) {
+                const record = dayData.attendanceRecord
+                const time = record.attendance_time ? formatTime(record.attendance_time) : "Hora no registrada"
+                const notes = record.notes || "Sin notas"
+
+                return (
+                  <Tooltip key={index}>
+                    <TooltipTrigger asChild>
+                      {dayContent}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="space-y-1">
+                        <p className="font-semibold">
+                          {record.present ? "Presente" : "Ausente"}
+                        </p>
+                        <p className="text-sm">
+                          <span className="font-medium">Hora:</span> {time}
+                        </p>
+                        {record.notes && (
+                          <p className="text-sm">
+                            <span className="font-medium">Notas:</span> {notes}
+                          </p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              }
+
+              return (
+                <div key={index}>
+                  {dayContent}
+                </div>
+              )
+            })}
+          </div>
+        </TooltipProvider>
 
       </CardContent>
     </Card>

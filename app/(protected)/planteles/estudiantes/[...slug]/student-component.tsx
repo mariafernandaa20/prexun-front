@@ -226,23 +226,24 @@ export function StudentComponent({ slug }: { slug: string[] }) {
     <div className="space-y-4 ">
       <Card className="w-full">
         <CardHeader className="sticky top-0 z-8 bg-card">
-          <div className="flex flex-col lg:flex-row justify-between items-center">
-            <h1 className="text-2xl font-bold">
-              {student.firstname} {student.lastname}
-            </h1>
-            <div className="flex gap-2">
-              <Purchace
-                campusId={campusId}
-                studentId={student.id}
-                onPurchaseComplete={handlePurchaseComplete}
-              />
-              <UpdatePersonalInfo student={studentForUpdatePersonalInfo} />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <SectionContainer>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+
+          <div className='grid grid-cols-1 xl:grid-cols-4 gap-4'>
+            <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className='md:col-span-2 lg:col-span-3'>
+                <div className="flex flex-col lg:flex-row items-center gap-4">
+                  <h1 className="text-2xl font-bold">
+                    {student.firstname} {student.lastname}
+                  </h1>
+                  <div className="flex gap-2">
+                    <Purchace
+                      campusId={campusId}
+                      studentId={student.id}
+                      onPurchaseComplete={handlePurchaseComplete}
+                    />
+                    <UpdatePersonalInfo student={studentForUpdatePersonalInfo} />
+                  </div>
+                </div>
+              </div>
               <div className="space-y-2 ">
                 <h3 className="font-semibold">Información Personal</h3>
                 <p>
@@ -311,8 +312,13 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                     : 'Sin pagos'}
                 </p>
               </div>
+
             </div>
-          </SectionContainer>
+            <StudentAttendance studentId={student.id} />
+          </div>
+        </CardHeader>
+        <CardContent>
+
         </CardContent>
       </Card>
 
@@ -320,7 +326,6 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pagos">Pagos y Deudas</TabsTrigger>
           <TabsTrigger value="asignacion">Asignación</TabsTrigger>
-          <TabsTrigger value="asistencia">Asistencia</TabsTrigger>
           <TabsTrigger value="historial">Historial y Notas</TabsTrigger>
         </TabsList>
 
@@ -373,10 +378,6 @@ export function StudentComponent({ slug }: { slug: string[] }) {
             <StudentPeriod student={student} onRefresh={refetch} />
             <StudentNotes studentId={student.id.toString()} />
           </div>
-        </TabsContent>
-
-        <TabsContent value="asistencia" className="space-y-4">
-          <StudentAttendance studentId={student.id} />
         </TabsContent>
 
         <TabsContent value="historial" className="space-y-4">
