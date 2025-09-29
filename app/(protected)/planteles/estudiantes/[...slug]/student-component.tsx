@@ -29,6 +29,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import StudentAttendance from './StudentAttendance';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+const { SAT } = useFeatureFlags();
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -323,13 +325,16 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         </TabsList>
 
         <TabsContent value="pagos" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            <div className="lg:col-span-2">
-              <StudentDebtsManager
-                studentId={Number(student.id)}
-                onTransactionUpdate={updateTransaction}
-              />
-            </div>
+          <div className='flex flex-col gap-4'>
+            {!SAT && (
+              <div className="lg:col-span-2">
+                <StudentDebtsManager
+                  studentId={Number(student.id)}
+                  onTransactionUpdate={updateTransaction}
+                />
+              </div>
+            )}
+
             <div className="lg:col-span-3">
               <Card>
                 <CardHeader>
