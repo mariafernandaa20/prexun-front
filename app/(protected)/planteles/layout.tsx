@@ -10,6 +10,7 @@ import {
 import { useAppInit } from '@/hooks/use-app-init';
 import { useUIConfig } from '@/hooks/useUIConfig';
 import GoogleAuth from './google/GoogleAuth';
+import CajaActiva from './caja/CajaActiva';
 
 export default function Page({ children }: { children: React.ReactNode }) {
   useUIConfig();
@@ -25,7 +26,10 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="-ml-1" />
                 <Separator orientation="vertical" className="mr-2 h-4" />
               </div>
-              <GoogleAuth />
+              <div className='flex items-center justify-center gap-4'>
+                <GoogleAuth />
+                <CajaActiva />
+              </div>
             </div>
           </header>
           <div className="flex flex-1 flex-col p-4">{children}</div>

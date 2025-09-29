@@ -23,44 +23,13 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatCurrency } from '@/lib/utils';
+import { useCaja } from './useCaja';
 
-const useCaja = ({ activeCampus }: { activeCampus: Campus | null }) => {
-  const [caja, setCaja] = React.useState<Caja | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<Error | null>(null);
-
-  const fetchCaja = React.useCallback(async () => {
-    if (!activeCampus) return;
-
-    try {
-      setLoading(true);
-      const response = await getCurrentCaja(activeCampus?.id);
-      setCaja(response);
-      setError(null);
-    } catch (err) {
-      if (err.response?.status === 404) {
-        setCaja(null);
-        setError(null);
-      } else {
-        setError(
-          err instanceof Error ? err : new Error('Error al cargar caja')
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [activeCampus]);
-
-  React.useEffect(() => {
-    fetchCaja();
-  }, [fetchCaja]);
-
-  return { caja, loading, error, fetchCaja };
-};
 
 export default function CajaPage() {
+  
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
-  const { caja, loading, error, fetchCaja } = useCaja({ activeCampus });
+  const { caja, loading, error, fetchCaja } = useCaja();
 
   const calculateTotals = () => {
     if (!caja) return { ingresos: 0, egresos: 0, gastosTotal: 0, balance: 0 };

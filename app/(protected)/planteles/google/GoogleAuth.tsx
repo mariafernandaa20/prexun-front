@@ -95,7 +95,6 @@ export default function GoogleAuth() {
             borderRadius: '5px',
             padding: '5px 10px',
             cursor: 'pointer',
-            marginTop: '10px',
           }}
         >
           <img
