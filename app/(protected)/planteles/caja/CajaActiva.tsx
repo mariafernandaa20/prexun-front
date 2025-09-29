@@ -13,7 +13,7 @@ export default function CajaStatus() {
   }
 
   if (!caja) {
-    return <Badge variant="destructive">Sin caja activa</Badge>;
+    return <Link href={`/planteles/caja`}><Badge variant="destructive">Sin caja activa</Badge></Link>;
   }
 
   const formatAmount = (amount: string | null) => {

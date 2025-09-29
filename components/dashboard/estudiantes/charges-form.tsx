@@ -23,6 +23,7 @@ import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Input } from '@/components/ui/input';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { getTodayDate, getTodayDateTime } from '@/lib/utils';
+import { useCaja } from '@/app/(protected)/planteles/caja/useCaja';
 
 interface Debt {
   id: number;
@@ -79,7 +80,7 @@ export default function ChargesForm({
   const currentCampusId = campusId || activeCampus?.id || 0;
 
   const { SAT } = useFeatureFlags();
-
+  const { caja } = useCaja();
   // Convertir datetime-local a formato Laravel (Y-m-d H:i:s)
   const formatDateTimeForLaravel = (dateTimeLocal: string) => {
     if (!dateTimeLocal) return null;
@@ -137,17 +138,18 @@ export default function ChargesForm({
         ? {
             ...localFormData,
             campus_id: currentCampusId,
-                          cash_register_id: activeCampus.latest_cash_register.id,
-
+            cash_register_id: caja?.id,
             debt_id: debt.id,
             transaction_type: 'income',
+            paid: 1,
             payment_date: formatDateTimeForLaravel(localFormData.payment_date),
           }
         : {
             ...localFormData,
             campus_id: currentCampusId,
-                          cash_register_id: activeCampus.latest_cash_register.id,
-
+            cash_register_id: caja?.id,
+            transaction_type: 'income',
+            paid: 1,
             payment_date: formatDateTimeForLaravel(localFormData.payment_date),
           };
 
@@ -158,7 +160,7 @@ export default function ChargesForm({
               ...submitData,
               denominations: null,
               paid: 1,
-              cash_register_id: activeCampus.latest_cash_register.id,
+              cash_register_id: caja?.id,
               payment_date: formatDateTimeForLaravel(
                 localFormData.payment_date
               ),
@@ -189,7 +191,7 @@ export default function ChargesForm({
 
   return (
     <>
-      {activeCampus?.latest_cash_register ? (
+      {caja?.status === 'abierta' ? (
         icon ? (
           <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
             <Receipt className="w-4 h-4 " />

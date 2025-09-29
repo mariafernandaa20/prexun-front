@@ -31,11 +31,11 @@ export default function CajaPage() {
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
   const { caja, loading, error, fetchCaja } = useCaja();
 
-  const calculateTotals = () => {
+    const calculateTotals = () => {
     if (!caja) return { ingresos: 0, egresos: 0, gastosTotal: 0, balance: 0 };
 
     const ingresos =
-      caja.transactions?.filter((t) => t.transaction_type === 'ingreso').reduce(
+      caja.transactions?.filter((t) => t.transaction_type === 'income' && t.paid === 1).reduce(
         (sum, t) => sum + Number(t.amount || 0),
         0
       ) ?? 0;
@@ -52,9 +52,7 @@ export default function CajaPage() {
       balance,
       
     };
-  };
-
-  if (loading)
+  };  if (loading)
     return (
       <div className="flex justify-center items-center h-screen">
         Cargando...
@@ -137,7 +135,7 @@ export default function CajaPage() {
 
     data.transactions?.forEach((transaction) => {
       const amount = Number(transaction.amount || 0);
-      const isIngreso = transaction.transaction_type === 'ingreso';
+      const isIngreso = transaction.transaction_type === 'income' && transaction.paid === 1;
       
      
       if (transaction.payment_method === 'cash') {
@@ -352,12 +350,12 @@ export default function CajaPage() {
                             <TableCell>
                               <Badge
                                 variant={
-                                  transaction.transaction_type === 'ingreso'
+                                  transaction.transaction_type === 'income'
                                     ? 'default'
                                     : 'destructive'
                                 }
                               >
-                                {transaction.transaction_type}
+                                {transaction.transaction_type === 'income' ? 'Ingreso' : transaction.transaction_type}
                               </Badge>
                             </TableCell>
                             <TableCell>
