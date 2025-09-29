@@ -23,11 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
 } from '@/components/ui/dialog';
 import { MultiSelect } from '@/components/multi-select';
 import {
@@ -120,7 +120,7 @@ export default function GastosPage() {
       render: (gasto: Gasto) =>
         gasto.signature ? (
           <div className="flex items-center gap-2">
-            {user?.role === 'super_admin' && (
+            {user?.role === 'super_admin' ? (
               <>
                 <img
                   src={gasto.signature as string}
@@ -136,7 +136,7 @@ export default function GastosPage() {
                   Ver
                 </Button>
               </>
-            )}
+            ) : <div className='text-center w-full'>Firmado</div>}
           </div>
         ) : gasto.id ? (
           <Button
@@ -154,25 +154,26 @@ export default function GastosPage() {
     {
       id: 'acciones',
       label: 'Acciones',
-      render: (gasto: Gasto) => (
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenModal(gasto)}
-          >
-            <Pencil />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDeleteGasto(gasto.id)}
-          >
-            <Trash />
-          </Button>
-        </>
-      ),
-    },
+      render: (gasto: Gasto) =>
+        user?.role === 'super_admin' && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenModal(gasto)}
+            >
+              <Pencil />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteGasto(gasto.id)}
+            >
+              <Trash />
+            </Button>
+          </>
+        )
+    }
   ];
 
   // Estado para las columnas visibles (IDs)
@@ -232,22 +233,22 @@ export default function GastosPage() {
     if (!selectedGastoForSignature) return;
 
     // Actualizar el gasto en el estado local
-    setGastos(prevGastos => 
-      prevGastos.map(gasto => 
-        gasto.id === selectedGastoForSignature.id 
-          ? { ...gasto, signature } 
+    setGastos(prevGastos =>
+      prevGastos.map(gasto =>
+        gasto.id === selectedGastoForSignature.id
+          ? { ...gasto, signature }
           : gasto
       )
     );
-    
-    setFilteredGastos(prevFiltered => 
-      prevFiltered.map(gasto => 
-        gasto.id === selectedGastoForSignature.id 
-          ? { ...gasto, signature } 
+
+    setFilteredGastos(prevFiltered =>
+      prevFiltered.map(gasto =>
+        gasto.id === selectedGastoForSignature.id
+          ? { ...gasto, signature }
           : gasto
       )
     );
-    
+
     handleCloseSignatureModal();
     toast({
       title: 'Firma recibida',
