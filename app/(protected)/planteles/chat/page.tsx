@@ -174,9 +174,12 @@ export default function ChatPage() {
                   <div className="relative">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {conversation?.contact_info?.display_name
+                        {conversation?.contact_info?.name
                           ?.charAt(0)
-                          ?.toUpperCase() || 'W'}
+                          ?.toUpperCase() || conversation?.contact_info?.display_name
+                          ?.charAt(0)
+                          ?.toUpperCase() ||
+                          'W'}
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -184,7 +187,7 @@ export default function ChatPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium text-foreground truncate">
-                        {conversation?.contact_info?.display_name ||
+                        {conversation?.name ||
                           conversation.phone_number}
                       </h3>
                       <div className="flex items-center space-x-2">
@@ -256,7 +259,7 @@ export default function ChatPage() {
                   </Avatar>
                   <div>
                     <h2 className="font-semibold text-foreground">
-                      {selectedConversation.contact_info?.display_name ||
+                      {selectedConversation?.name ||
                         selectedConversation?.phone_number}
                     </h2>
                     <p className="text-sm text-muted-foreground">
