@@ -667,6 +667,16 @@ export const getCurrentCaja = async (campus_id: number) => {
   return response.data;
 }
 
+export const getCajaById = async (cajaId: number): Promise<Caja> => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.CAJA}/${cajaId}`);
+  return response.data;
+}
+
+export const getCajasHistorial = async (campus_id: number): Promise<Caja[]> => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.CAJA}?campus_id=${campus_id}`);
+  return response.data;
+}
+
 export const openCaja = async (
   campusId: number,
   initialAmount: number, 

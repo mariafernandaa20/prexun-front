@@ -322,7 +322,11 @@ export interface Caja {
   id?: number;
   campus_id: number;
   initial_amount: number;
+  initial_amount_cash?: string | Denomination;
   final_amount?: number;
+  final_amount_cash?: string | Denomination;
+  next_day?: number;
+  next_day_cash?: string | Denomination;
   notes?: string;
   opened_at?: string;
   closed_at?: string;

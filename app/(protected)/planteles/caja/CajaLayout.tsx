@@ -36,6 +36,7 @@ export default function CajaLayout({
   onOpen,
   onClose,
   actualAmount,
+  isReadOnly = false,
 }: {
   children: React.ReactNode;
   caja: Caja | null;
@@ -52,6 +53,7 @@ export default function CajaLayout({
     notes: string
   ) => Promise<void>;
   actualAmount: number;
+  isReadOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [initialAmount, setInitialAmount] = useState('');
@@ -288,9 +290,11 @@ export default function CajaLayout({
       <div>
         <div>
           <div className="flex items-center justify-end px-6">
-            <Button onClick={() => setOpen(true)}>
-              {caja ? 'Cerrar Caja' : 'Abrir Caja'}
-            </Button>
+            {!isReadOnly && (
+              <Button onClick={() => setOpen(true)}>
+                {caja ? 'Cerrar Caja' : 'Abrir Caja'}
+              </Button>
+            )}
           </div>
         </div>
         <div>{children}</div>
