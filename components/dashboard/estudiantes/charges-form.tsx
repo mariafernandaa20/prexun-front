@@ -137,6 +137,8 @@ export default function ChargesForm({
         ? {
             ...localFormData,
             campus_id: currentCampusId,
+                          cash_register_id: activeCampus.latest_cash_register.id,
+
             debt_id: debt.id,
             transaction_type: 'income',
             payment_date: formatDateTimeForLaravel(localFormData.payment_date),
@@ -144,6 +146,8 @@ export default function ChargesForm({
         : {
             ...localFormData,
             campus_id: currentCampusId,
+                          cash_register_id: activeCampus.latest_cash_register.id,
+
             payment_date: formatDateTimeForLaravel(localFormData.payment_date),
           };
 

@@ -70,7 +70,7 @@ export const getColumnDefinitions = (
     id: 'firstname',
     label: 'Nombre',
     defaultVisible: true,
-    render: (student: Student) => student.firstname,
+    render: (student: Student) => <a href={`/planteles/estudiantes/${student.id}`}>{student.firstname}</a>,
   },
   {
     id: 'lastname',
