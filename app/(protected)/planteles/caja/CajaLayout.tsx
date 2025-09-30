@@ -26,9 +26,10 @@ interface FormData {
 
 function calculateDenominationsTotal(denominations: Denomination): number {
   return Object.entries(denominations).reduce((total, [denom, count]) => {
-    return total + Number(denom) * count;
+    return total + Number(denom) * (Number(count) || 0);
   }, 0);
 }
+
 
 export default function CajaLayout({
   children,
@@ -201,13 +202,14 @@ export default function CajaLayout({
                   ].map((denom) => (
                     <div key={denom} className="space-y-1">
                       <Label>${denom}</Label>
-                      <Input
-                        type="number"
-                        value={formData.denominations[denom] || ''}
-                        onChange={(e) =>
-                          handleDenominationChange(denom, e.target.value)
-                        }
-                      />
+<Input
+type="number"
+{...register(`denominations.${denom}`, {
+  valueAsNumber: true,
+  setValueAs: (v) => Number(v) || 0,
+})}
+/>
+
                     </div>
                   ))}
                 </div>
@@ -248,15 +250,13 @@ export default function CajaLayout({
                         <div key={denom} className="space-y-1">
                           <Label>${denom}</Label>
                           <Input
-                            type="number"
-                            value={formData.next_day_cash[denom] || ''}
-                            onChange={(e) =>
-                              handleNextDayDenominationChange(
-                                denom,
-                                e.target.value
-                              )
-                            }
-                          />
+  type="number"
+  {...register(`next_day_cash.${denom}`, {
+    valueAsNumber: true,
+    setValueAs: (v) => Number(v) || 0,
+  })}
+/>
+
                         </div>
                       ))}
                     </div>
