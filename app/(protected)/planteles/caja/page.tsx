@@ -17,6 +17,79 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { formatCurrency } from '@/lib/utils';
 import { useCaja } from './useCaja';
 
+function round2(num: number): number {
+  return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
+function processCashRegister(data: any) {
+  const denominationBreakdown: Record<string, number> = {};
+  let totalCashIngresos = 0;
+  let totalCashExpenses = 0;
+
+  if (!data) {
+    return {
+      denominationBreakdown: [],
+      totalCashIngresos: 0,
+      totalCashExpenses: 0,
+      netCashAmount: 0,
+      actualCashAmount: 0,
+      balanceCashAmount: 0,
+    };
+  }
+
+  // Dinero inicial en efectivo
+  if (data.initial_amount_cash) {
+    const initialCash =
+      typeof data.initial_amount_cash === 'string'
+        ? JSON.parse(data.initial_amount_cash)
+        : data.initial_amount_cash;
+
+    Object.entries(initialCash).forEach(([value, quantity]) => {
+      denominationBreakdown[value] =
+        (denominationBreakdown[value] || 0) + Number(quantity || 0);
+    });
+  }
+
+  // Ingresos en efectivo
+  data.transactions?.forEach((transaction: any) => {
+    const amount = Number(transaction.amount || 0);
+    if (transaction.payment_method === 'cash') {
+      totalCashIngresos += amount;
+    }
+  });
+
+  // Gastos en efectivo
+  data.gastos?.forEach((gasto: any) => {
+    const amount = Number(gasto.amount || 0);
+    if (gasto.method === 'cash' || gasto.method === 'Efectivo') {
+      totalCashExpenses += amount;
+    }
+  });
+
+  // Total contado en caja según desglose
+  const actualCashAmount = Object.entries(denominationBreakdown).reduce(
+    (total, [value, quantity]) =>
+      total + Number(value) * Number(quantity),
+    0
+  );
+
+  // Neto = ingresos - gastos
+  const netCashAmount = round2(totalCashIngresos - totalCashExpenses);
+
+  // Balance efectivo real con monto inicial
+  const balanceCashAmount = round2(
+    totalCashIngresos - totalCashExpenses + Number(data.initial_amount || 0)
+  );
+
+  return {
+    totalCashIngresos: round2(totalCashIngresos),
+    totalCashExpenses: round2(totalCashExpenses),
+    netCashAmount,
+    actualCashAmount: round2(actualCashAmount),
+    balanceCashAmount,
+  };
+}
+
 export default function CajaPage() {
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
   const { caja, loading, error, fetchCaja } = useCaja();
@@ -70,65 +143,6 @@ export default function CajaPage() {
     }
   };
 
-  function processCashRegister(data) {
-    const denominationBreakdown = {};
-    let totalCashIngresos = 0;
-    let totalCashExpenses = 0;
-
-    if (!data) {
-      return {
-        denominationBreakdown: [],
-        totalCashIngresos: 0,
-        totalCashExpenses: 0,
-        netCashAmount: 0,
-        actualCashAmount: 0,
-        denominationSummary: {},
-      };
-    }
-
-    if (data.initial_amount_cash) {
-      const initialCash = typeof data.initial_amount_cash === 'string'
-        ? JSON.parse(data.initial_amount_cash)
-        : data.initial_amount_cash;
-
-      Object.entries(initialCash).forEach(([value, quantity]) => {
-        denominationBreakdown[value] =
-          (denominationBreakdown[value] || 0) + Number(quantity || 0);
-      });
-    }
-
-    data.transactions?.forEach((transaction) => {
-      const amount = Number(transaction.amount || 0);
-
-      if (transaction.payment_method === 'cash') {
-        totalCashIngresos += amount;
-      }
-    });
-
-    data.gastos?.forEach((gasto) => {
-      const amount = Number(gasto.amount || 0);
-      if (gasto.method === 'cash' || gasto.method === 'Efectivo') {
-        totalCashExpenses += amount;
-      }
-    });
-
-    const actualCashAmount = Object.entries(denominationBreakdown).reduce(
-      (total, [value, quantity]) =>
-        total + Number(value) * Number(quantity),
-      0
-    );
-
-    const netCashAmount =
-      totalCashIngresos - totalCashExpenses - totalCashExpenses;
-
-    return {
-      totalCashIngresos: Number(totalCashIngresos.toFixed(2)),
-      totalCashExpenses: Number(totalCashExpenses.toFixed(2)),
-      netCashAmount: Number(netCashAmount.toFixed(2)),
-      actualCashAmount: Number(actualCashAmount.toFixed(2)),
-    };
-  }
-
   const result = processCashRegister(caja);
 
   return (
@@ -136,7 +150,7 @@ export default function CajaPage() {
       caja={caja}
       onOpen={handleOpenCaja}
       onClose={handleCloseCaja}
-      actualAmount={Number((Number(result.totalCashIngresos) - Number(result.totalCashExpenses) + Number((caja ? caja.initial_amount : 0))) || 0)}
+      actualAmount={result.balanceCashAmount}
     >
       {caja ? (
         <div className="space-y-6 p-6">
@@ -165,7 +179,7 @@ export default function CajaPage() {
                   <p>Ingresos efectivo: <strong>{formatCurrency(result.totalCashIngresos)}</strong></p>
                   <p>Egresos efectivo: <strong>{formatCurrency(result.totalCashExpenses)}</strong></p>
                   <p>Monto Inicial: <strong>{formatCurrency(caja.initial_amount)}</strong></p>
-                  <p>Balance efectivo: <strong>{formatCurrency(Number(result.totalCashIngresos) - Number(result.totalCashExpenses) + Number(caja.initial_amount))}</strong></p>
+                  <p>Balance efectivo: <strong>{formatCurrency(result.balanceCashAmount)}</strong></p>
                 </div>
               </div>
             </CardContent>
@@ -193,8 +207,8 @@ export default function CajaPage() {
                   </TableHeader>
                   <TableBody>
                     {caja.transactions
-                      ?.filter((t) => t.payment_method === 'cash')
-                      .map((transaction) => (
+                      ?.filter((t: any) => t.payment_method === 'cash')
+                      .map((transaction: any) => (
                         <TableRow key={transaction.id}>
                           <TableCell>{transaction.folio}</TableCell>
                           <TableCell>{new Date(transaction.payment_date).toLocaleString()}</TableCell>
@@ -236,8 +250,8 @@ export default function CajaPage() {
                   </TableHeader>
                   <TableBody>
                     {caja.gastos
-                      ?.filter((g) => g.method === 'cash')
-                      .map((gasto) => (
+                      ?.filter((g: any) => g.method === 'cash' || g.method === 'Efectivo')
+                      .map((gasto: any) => (
                         <TableRow key={gasto.id}>
                           <TableCell>{new Date(gasto.date).toLocaleString()}</TableCell>
                           <TableCell>{gasto.concept}</TableCell>
