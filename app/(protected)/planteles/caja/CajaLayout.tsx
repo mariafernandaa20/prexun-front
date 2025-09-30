@@ -122,12 +122,12 @@ export default function CajaLayout({
     const tolerance = 0.01; // Tolerancia de 1 centavo para diferencias de redondeo
     if (Math.abs(denominationsTotal - actualAmount) > tolerance) {
       const difference = denominationsTotal - actualAmount;
-      const message = difference > 0 
+      const message = difference > 0
         ? `Hay un sobrante de ${formatCurrency(Math.abs(difference))}`
         : `Falta ${formatCurrency(Math.abs(difference))}`;
-      
+
       const confirmed = confirm(`${message}. El monto total de denominaciones (${formatCurrency(denominationsTotal)}) no coincide exactamente con el efectivo disponible en caja (${formatCurrency(actualAmount)}). ¿Desea continuar con el cierre?`);
-      
+
       if (!confirmed) {
         return;
       }
@@ -202,13 +202,13 @@ export default function CajaLayout({
                   ].map((denom) => (
                     <div key={denom} className="space-y-1">
                       <Label>${denom}</Label>
-<Input
-type="number"
-{...register(`denominations.${denom}`, {
-  valueAsNumber: true,
-  setValueAs: (v) => Number(v) || 0,
-})}
-/>
+                      <Input
+                        type="number"
+                        {...register(`denominations.${denom}` as any, {
+                          valueAsNumber: true,
+                          setValueAs: (v) => Number(v) || 0,
+                        })}
+                      />
 
                     </div>
                   ))}
@@ -250,12 +250,12 @@ type="number"
                         <div key={denom} className="space-y-1">
                           <Label>${denom}</Label>
                           <Input
-  type="number"
-  {...register(`next_day_cash.${denom}`, {
-    valueAsNumber: true,
-    setValueAs: (v) => Number(v) || 0,
-  })}
-/>
+                            type="number"
+                            {...register(`next_day_cash.${denom}` as any, {
+                              valueAsNumber: true,
+                              setValueAs: (v) => Number(v) || 0,
+                            })}
+                          />
 
                         </div>
                       ))}
