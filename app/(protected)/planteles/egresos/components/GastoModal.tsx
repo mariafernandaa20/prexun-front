@@ -71,7 +71,7 @@ export function GastoModal({
           concept: '',
           amount: 0,
           date: new Date().toISOString().split('T')[0],
-          method: 'Efectivo',
+          method: 'cash',
           denominations: null,
           user_id: undefined,
           admin_id: undefined,
@@ -146,7 +146,7 @@ export function GastoModal({
       concept: '',
       amount: 0,
       date: new Date().toISOString().split('T')[0],
-      method: 'Efectivo',
+      method: 'cash',
       denominations: null,
       user_id: undefined,
       admin_id: undefined,
@@ -183,12 +183,9 @@ export function GastoModal({
     }
   };
 
-  console.log(selectedGasto)
 
-  // Efecto para cargar datos cuando se selecciona un gasto para editar
   useEffect(() => {
     if (selectedGasto) {
-      // Resetear el formulario con los datos del gasto seleccionado
       reset({
         id: selectedGasto.id,
         concept: selectedGasto.concept,
@@ -212,7 +209,7 @@ export function GastoModal({
         concept: '',
         amount: 0,
         date: new Date().toISOString().split('T')[0],
-        method: 'Efectivo',
+        method: 'cash',
         denominations: null,
         user_id: undefined,
         admin_id: undefined,
@@ -331,9 +328,9 @@ export function GastoModal({
                 <SelectValue placeholder="Seleccionar metodo de pago" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Efectivo">Efectivo</SelectItem>
-                <SelectItem value="Transferencia">Transferencia</SelectItem>
-                <SelectItem value="Tarjeta">Tarjeta</SelectItem>
+                <SelectItem value="cash">Efectivo</SelectItem>
+                <SelectItem value="transfer">Transferencia</SelectItem>
+                <SelectItem value="card">Tarjeta</SelectItem>
               </SelectContent>
             </Select>
           </div>
