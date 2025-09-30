@@ -73,14 +73,12 @@ export default function CajaPage() {
   function processCashRegister(data) {
     const denominationBreakdown = {};
     let totalCashIngresos = 0;
-    let totalCashEgresos = 0;
     let totalCashExpenses = 0;
 
     if (!data) {
       return {
         denominationBreakdown: [],
         totalCashIngresos: 0,
-        totalCashEgresos: 0,
         totalCashExpenses: 0,
         netCashAmount: 0,
         actualCashAmount: 0,
@@ -101,39 +99,16 @@ export default function CajaPage() {
 
     data.transactions?.forEach((transaction) => {
       const amount = Number(transaction.amount || 0);
-      const isIngreso = transaction.transaction_type === 'income' && transaction.paid === true;
-      const isEgreso = transaction.transaction_type === 'egreso';
 
       if (transaction.payment_method === 'cash') {
-        if (isIngreso) totalCashIngresos += amount;
-        if (isEgreso) totalCashEgresos += amount;
-
-        if (transaction.denominations?.length > 0) {
-          transaction.denominations.forEach((denom) => {
-            const value = Number(denom.value || 0);
-            const quantity = Number(denom.quantity || 0);
-
-            denominationBreakdown[value] =
-              (denominationBreakdown[value] || 0) +
-              (isIngreso ? quantity : -quantity);
-          });
-        }
+        totalCashIngresos += amount;
       }
     });
 
     data.gastos?.forEach((gasto) => {
       const amount = Number(gasto.amount || 0);
-      if (gasto.method === 'cash') {
+      if (gasto.method === 'cash' || gasto.method === 'Efectivo') {
         totalCashExpenses += amount;
-
-        if (gasto.denominations?.length > 0) {
-          gasto.denominations.forEach((denom) => {
-            const value = Number(denom.value || 0);
-            const quantity = Number(denom.quantity || 0);
-            denominationBreakdown[value] =
-              (denominationBreakdown[value] || 0) - quantity;
-          });
-        }
       }
     });
 
@@ -144,11 +119,10 @@ export default function CajaPage() {
     );
 
     const netCashAmount =
-      totalCashIngresos - totalCashEgresos - totalCashExpenses;
+      totalCashIngresos - totalCashExpenses - totalCashExpenses;
 
     return {
       totalCashIngresos: Number(totalCashIngresos.toFixed(2)),
-      totalCashEgresos: Number(totalCashEgresos.toFixed(2)),
       totalCashExpenses: Number(totalCashExpenses.toFixed(2)),
       netCashAmount: Number(netCashAmount.toFixed(2)),
       actualCashAmount: Number(actualCashAmount.toFixed(2)),
@@ -162,7 +136,7 @@ export default function CajaPage() {
       caja={caja}
       onOpen={handleOpenCaja}
       onClose={handleCloseCaja}
-      actualAmount={(result.totalCashIngresos - result.totalCashEgresos)}
+      actualAmount={(result.totalCashIngresos - result.totalCashExpenses)}
     >
       {caja ? (
         <div className="space-y-6 p-6">
@@ -189,8 +163,8 @@ export default function CajaPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
                 <div className="space-y-1">
                   <p>Ingresos efectivo: <strong>{formatCurrency(result.totalCashIngresos)}</strong></p>
-                  <p>Egresos efectivo: <strong>{formatCurrency(result.totalCashEgresos)}</strong></p>
-                  <p>Balance efectivo: <strong>{formatCurrency(result.totalCashIngresos - result.totalCashEgresos)}</strong></p>
+                  <p>Egresos efectivo: <strong>{formatCurrency(result.totalCashExpenses)}</strong></p>
+                  <p>Balance efectivo: <strong>{formatCurrency(result.totalCashIngresos - result.totalCashExpenses)}</strong></p>
                 </div>
               </div>
             </CardContent>
