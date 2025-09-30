@@ -227,7 +227,7 @@ export default function CajaLayout({
                 )}
               </div>
             </div>
-            {caja && (
+            {/* {caja && (
               <>
                 <div>
                   <Label htmlFor="amount" className="text-right text-lg">
@@ -278,7 +278,7 @@ export default function CajaLayout({
                   />
                 </div>
               </>
-            )}
+            )} */}
           </div>
           <DialogFooter>
             <Button onClick={caja ? handleCloseCaja : handleOpenCaja}>
