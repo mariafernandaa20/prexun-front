@@ -27,30 +27,40 @@ import { useCaja } from './useCaja';
 
 
 export default function CajaPage() {
-  
+
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
   const { caja, loading, error, fetchCaja } = useCaja();
 
   const calculateTotals = () => {
-    if (!caja) return { ingresos: 0, egresos: 0, gastosTotal: 0, balance: 0 };
+    if (!caja) return { ingresos: 0, egresos: 0, gastosTotal: 0, balance: 0, initialAmount: 0 };
 
+    // 1. Monto Inicial
+    const initialAmount = Number(caja.initial_amount || 0);
+
+    // 2. Ingresos (Suma de TODAS las transacciones de 'income', sin importar el método de pago)
     const ingresos =
       caja.transactions?.filter((t) => t.transaction_type === 'income' && t.paid === 1).reduce(
         (sum, t) => sum + Number(t.amount || 0),
         0
       ) ?? 0;
+
+    // 3. Egresos por Transacción (Si tienes un tipo 'egreso' en transactions)
     const egresos = caja.transactions?.filter(t => t.transaction_type === 'egreso').reduce((sum, t) => sum + Number(t.amount || 0),
-        0
-      ) ?? 0;
+      0
+    ) ?? 0;
+
+    // 4. Gastos Totales (Gastos del módulo 'gastos')
     const gastosTotal = caja.gastos?.reduce((sum, g) => sum + Number(g.amount || 0), 0) ?? 0;
-    const balance = ingresos - egresos - gastosTotal;
+
+    // 5. Balance General
+    const balance = initialAmount + ingresos - egresos - gastosTotal;
 
     return {
-      ingresos,
-      egresos,
-      gastosTotal,
-      balance,
-      
+      ingresos: Number(ingresos.toFixed(2)),
+      egresos: Number(egresos.toFixed(2)),
+      gastosTotal: Number(gastosTotal.toFixed(2)),
+      balance: Number(balance.toFixed(2)),
+      initialAmount: Number(initialAmount.toFixed(2)),
     };
   };
 
@@ -64,6 +74,8 @@ export default function CajaPage() {
     return <div className="text-red-500 p-4">Error: {error.message}</div>;
 
   const { ingresos, egresos, gastosTotal, balance } = calculateTotals();
+
+  // Handlers para abrir/cerrar caja (se mantienen iguales)
   const handleOpenCaja = async (
     initialAmount: number,
     initialAmountCash: Denomination,
@@ -102,19 +114,23 @@ export default function CajaPage() {
       console.error('Error al cerrar caja:', error);
     }
   };
-
+  // INICIO DE processCashRegister CORREGIDO
   function processCashRegister(data) {
     const denominationBreakdown = {};
     let totalCashIngresos = 0;
     let totalCashEgresos = 0;
+    let totalNonCashIngresos = 0;
+    let totalNonCashEgresos = 0;
     let totalCashExpenses = 0;
-    let totalExpenses = 0; 
+    let totalExpenses = 0;
 
     if (!data) {
       return {
         denominationBreakdown: [],
         totalCashIngresos: 0,
         totalCashEgresos: 0,
+        totalNonCashIngresos: 0,
+        totalNonCashEgresos: 0,
         totalCashExpenses: 0,
         totalExpenses: 0,
         netCashAmount: 0,
@@ -125,35 +141,44 @@ export default function CajaPage() {
 
     // Inicializar denominaciones con el monto inicial si existe
     if (data.initial_amount_cash) {
-      const initialCash = typeof data.initial_amount_cash === 'string' 
-        ? JSON.parse(data.initial_amount_cash) 
+      const initialCash = typeof data.initial_amount_cash === 'string'
+        ? JSON.parse(data.initial_amount_cash)
         : data.initial_amount_cash;
-      
+
       Object.entries(initialCash).forEach(([value, quantity]) => {
-        denominationBreakdown[value] = Number(quantity || 0);
+        denominationBreakdown[value] = (denominationBreakdown[value] || 0) + Number(quantity || 0);
       });
+      // NO SUMAMOS el initialAmount aquí a totalCashIngresos
     }
 
 
     data.transactions?.forEach((transaction) => {
       const amount = Number(transaction.amount || 0);
-      const isIngreso = transaction.transaction_type === 'income' && transaction.paid === 1;
-      
-     
+      const isIngreso = transaction.transaction_type === 'income' && transaction.paid === true;
+      const isEgreso = transaction.transaction_type === 'egreso';
+
+      console.log(transaction)
+
       if (transaction.payment_method === 'cash') {
         if (isIngreso) {
           totalCashIngresos += amount;
-        } else {
+        } else if (isEgreso) {
           totalCashEgresos += amount;
         }
+      } else  {
+        if (isIngreso) {
+          totalNonCashIngresos += amount;
+        } else if (isEgreso) {
+          totalNonCashEgresos += amount;
+        }
       }
-      
-      // Procesar denominaciones si existen
-      if (transaction.denominations && transaction.denominations.length > 0) {
+
+      // Procesar denominaciones si existen (solo aplica a efectivo)
+      if (transaction.payment_method === 'cash' && transaction.denominations && transaction.denominations.length > 0) {
         transaction.denominations.forEach((denom) => {
           const value = Number(denom.value || 0);
           const quantity = Number(denom.quantity || 0);
-          
+
           if (isIngreso) {
             denominationBreakdown[value] = (denominationBreakdown[value] || 0) + quantity;
           } else {
@@ -167,17 +192,19 @@ export default function CajaPage() {
     data.gastos?.forEach((gasto) => {
       const amount = Number(gasto.amount || 0);
       totalExpenses += amount;
-   
+
       if (gasto.method === 'cash') {
         totalCashExpenses += amount;
       }
-      
-   
-      gasto.denominations?.forEach((denom) => {
-        const value = Number(denom.value || 0);
-        const quantity = Number(denom.quantity || 0);
-        denominationBreakdown[value] = (denominationBreakdown[value] || 0) - quantity;
-      });
+
+
+      if (gasto.method === 'cash' && gasto.denominations && gasto.denominations.length > 0) {
+        gasto.denominations.forEach((denom) => {
+          const value = Number(denom.value || 0);
+          const quantity = Number(denom.quantity || 0);
+          denominationBreakdown[value] = (denominationBreakdown[value] || 0) - quantity;
+        });
+      }
     });
 
 
@@ -187,7 +214,7 @@ export default function CajaPage() {
 
 
     const denominationSummary = Object.entries(denominationBreakdown)
-      .sort((a, b) => Number(b[0]) - Number(a[0])) 
+      .sort((a, b) => Number(b[0]) - Number(a[0]))
       .filter(([, count]) => Number(count) !== 0)
       .reduce((acc, [value, count]) => {
         acc[value] = Number(count);
@@ -205,6 +232,8 @@ export default function CajaPage() {
       denominationBreakdown: breakdownArray,
       totalCashIngresos: Number(totalCashIngresos.toFixed(2)),
       totalCashEgresos: Number(totalCashEgresos.toFixed(2)),
+      totalNonCashIngresos: Number(totalNonCashIngresos.toFixed(2)),
+      totalNonCashEgresos: Number(totalNonCashEgresos.toFixed(2)),
       totalCashExpenses: Number(totalCashExpenses.toFixed(2)),
       totalExpenses: Number(totalExpenses.toFixed(2)),
       netCashAmount: Number(netCashAmount.toFixed(2)),
@@ -213,11 +242,14 @@ export default function CajaPage() {
     };
   }
 
+
   const result = processCashRegister(caja);
 
 
   const actualAmount = result.actualCashAmount;
-
+  // Usamos los nuevos campos de 'result'
+  const totalCashIngresos = result.totalCashIngresos;
+  const totalNonCashIngresos = result.totalNonCashIngresos;
 
   return (
     <CajaLayout
@@ -247,7 +279,13 @@ export default function CajaPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  {formatCurrency(result.totalNonCashIngresos)}
+
+                  
+                </div>
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
                     Monto Inicial:{' '}
@@ -255,64 +293,63 @@ export default function CajaPage() {
                       {formatCurrency(caja.initial_amount)}
                     </span>
                   </p>
-                  {caja.final_amount && (
-                    <p className="text-sm text-muted-foreground">
-                      Monto Final:{' '}
-                      <span className="font-medium text-foreground">
-                        {formatCurrency(caja.final_amount)}
-                      </span>
-                    </p>
-                  )}
+
+                  {/* 1. TOTAL DE INGRESOS GENERAL: $150.00 */}
                   <p className="text-sm text-muted-foreground">
                     Ingresos totales:{' '}
-                    <span className="font-medium text-foreground">
+                    <span className="font-bold text-lg text-primary">
                       {formatCurrency(ingresos)}
                     </span>
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Egresos totales:{' '}
+
+                  {/* 2. INGRESOS POR EFECTIVO: $50.00 */}
+                  <p className="text-sm text-muted-foreground ml-4">
+                    - Efectivo:{' '}
                     <span className="font-medium text-foreground">
+                      {formatCurrency(totalCashIngresos)}
+                    </span>
+                  </p>
+
+                  <p className="text-sm text-muted-foreground ml-4">
+                    - Transferencia/Tarjeta:{' '}
+                    <span className="font-medium text-foreground">
+                      {formatCurrency(totalNonCashIngresos)}
+                    </span>
+                  </p>
+
+                  {/* EGRESOS Y GASTOS */}
+                  <p className="text-sm text-muted-foreground">
+                    Egresos totales (Transacciones):{' '}
+                    <span className="font-medium text-destructive">
                       {formatCurrency(egresos)}
                     </span>
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Gastos totales:{' '}
-                    <span className="font-medium text-foreground">
+                    Gastos totales (Todos los métodos):{' '}
+                    <span className="font-medium text-destructive">
                       {formatCurrency(gastosTotal)}
                     </span>
                   </p>
+
+                  {/* SALDO Y EFECTIVO DISPONIBLE */}
                   <p className="text-sm text-muted-foreground">
-                    Saldo:{' '}
-                    <span className="font-medium text-foreground">
+                    Saldo General de la Caja:{' '}
+                    <span className="font-bold text-lg text-foreground">
                       {formatCurrency(balance)}
                     </span>
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Efectivo disponible:{' '}
-                    <span className="font-medium text-primary">
+                    Efectivo Disponible para Cierre:{' '}
+                    <span className="font-bold text-lg text-green-600">
                       {formatCurrency(result.actualCashAmount)}
                     </span>
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    Apertura:{' '}
-                    <span className="font-medium text-foreground">
-                      {new Date(caja.opened_at).toLocaleString()}
-                    </span>
-                  </p>
-                  {caja.closed_at && (
-                    <p className="text-sm text-muted-foreground">
-                      Cierre:{' '}
-                      <span className="font-medium text-foreground">
-                        {new Date(caja.closed_at).toLocaleString()}
-                      </span>
-                    </p>
-                  )}
                 </div>
-              </div>
             </CardContent>
           </Card>
+
+          {/* Tabs y tablas de transacciones y gastos... (se mantienen iguales) */}
           <Tabs defaultValue="transactions">
             <TabsList>
               <TabsTrigger value="transactions">Transacciones</TabsTrigger>

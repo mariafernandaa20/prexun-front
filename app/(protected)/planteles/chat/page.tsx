@@ -128,21 +128,6 @@ export default function ChatPage() {
             <h1 className="text-xl font-semibold text-foreground">
               Todos los Chats
             </h1>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={refreshConversations}
-              >
-                <RefreshCw className="h-5 w-5" />
-              </Button>
-              {isLoadingConversations && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <RefreshCw className="h-4 w-4 animate-spin mr-1" />
-                  <span>Actualizando...</span>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Barra de búsqueda */}
