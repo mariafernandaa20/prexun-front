@@ -31,39 +31,6 @@ export default function CajaPage() {
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
   const { caja, loading, error, fetchCaja } = useCaja();
 
-  const calculateTotals = () => {
-    if (!caja) return { ingresos: 0, egresos: 0, gastosTotal: 0, balance: 0, initialAmount: 0 };
-
-    // 1. Monto Inicial
-    const initialAmount = Number(caja.initial_amount || 0);
-
-    // 2. Ingresos (Suma de TODAS las transacciones de 'income', sin importar el método de pago)
-    const ingresos =
-      caja.transactions?.filter((t) => t.transaction_type === 'income' && t.paid === 1).reduce(
-        (sum, t) => sum + Number(t.amount || 0),
-        0
-      ) ?? 0;
-
-    // 3. Egresos por Transacción (Si tienes un tipo 'egreso' en transactions)
-    const egresos = caja.transactions?.filter(t => t.transaction_type === 'egreso').reduce((sum, t) => sum + Number(t.amount || 0),
-      0
-    ) ?? 0;
-
-    // 4. Gastos Totales (Gastos del módulo 'gastos')
-    const gastosTotal = caja.gastos?.reduce((sum, g) => sum + Number(g.amount || 0), 0) ?? 0;
-
-    // 5. Balance General
-    const balance = initialAmount + ingresos - egresos - gastosTotal;
-
-    return {
-      ingresos: Number(ingresos.toFixed(2)),
-      egresos: Number(egresos.toFixed(2)),
-      gastosTotal: Number(gastosTotal.toFixed(2)),
-      balance: Number(balance.toFixed(2)),
-      initialAmount: Number(initialAmount.toFixed(2)),
-    };
-  };
-
   if (loading)
     return (
       <div className="flex justify-center items-center h-screen">
@@ -72,8 +39,6 @@ export default function CajaPage() {
     );
   if (error)
     return <div className="text-red-500 p-4">Error: {error.message}</div>;
-
-  const { ingresos, egresos, gastosTotal, balance } = calculateTotals();
 
   // Handlers para abrir/cerrar caja (se mantienen iguales)
   const handleOpenCaja = async (
@@ -156,16 +121,13 @@ export default function CajaPage() {
       const amount = Number(transaction.amount || 0);
       const isIngreso = transaction.transaction_type === 'income' && transaction.paid === true;
       const isEgreso = transaction.transaction_type === 'egreso';
-
-      console.log(transaction)
-
       if (transaction.payment_method === 'cash') {
         if (isIngreso) {
           totalCashIngresos += amount;
         } else if (isEgreso) {
           totalCashEgresos += amount;
         }
-      } else  {
+      } else {
         if (isIngreso) {
           totalNonCashIngresos += amount;
         } else if (isEgreso) {
@@ -282,70 +244,28 @@ export default function CajaPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  {formatCurrency(result.totalNonCashIngresos)}
-
-                  
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    Monto Inicial:{' '}
-                    <span className="font-medium text-foreground">
-                      {formatCurrency(caja.initial_amount)}
-                    </span>
+                  <p>
+                    Ingresos tarjeta o transferencia: {formatCurrency(result.totalNonCashIngresos)}
                   </p>
-
-                  {/* 1. TOTAL DE INGRESOS GENERAL: $150.00 */}
-                  <p className="text-sm text-muted-foreground">
-                    Ingresos totales:{' '}
-                    <span className="font-bold text-lg text-primary">
-                      {formatCurrency(ingresos)}
-                    </span>
+                  <p>
+                    Ingresos efectivo: {formatCurrency(result.totalCashIngresos)}
                   </p>
-
-                  {/* 2. INGRESOS POR EFECTIVO: $50.00 */}
-                  <p className="text-sm text-muted-foreground ml-4">
-                    - Efectivo:{' '}
-                    <span className="font-medium text-foreground">
-                      {formatCurrency(totalCashIngresos)}
-                    </span>
-                  </p>
-
-                  <p className="text-sm text-muted-foreground ml-4">
-                    - Transferencia/Tarjeta:{' '}
-                    <span className="font-medium text-foreground">
-                      {formatCurrency(totalNonCashIngresos)}
-                    </span>
-                  </p>
-
-                  {/* EGRESOS Y GASTOS */}
-                  <p className="text-sm text-muted-foreground">
-                    Egresos totales (Transacciones):{' '}
-                    <span className="font-medium text-destructive">
-                      {formatCurrency(egresos)}
-                    </span>
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Gastos totales (Todos los métodos):{' '}
-                    <span className="font-medium text-destructive">
-                      {formatCurrency(gastosTotal)}
-                    </span>
-                  </p>
-
-                  {/* SALDO Y EFECTIVO DISPONIBLE */}
-                  <p className="text-sm text-muted-foreground">
-                    Saldo General de la Caja:{' '}
-                    <span className="font-bold text-lg text-foreground">
-                      {formatCurrency(balance)}
-                    </span>
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Efectivo Disponible para Cierre:{' '}
-                    <span className="font-bold text-lg text-green-600">
-                      {formatCurrency(result.actualCashAmount)}
-                    </span>
+                  <p>
+                    Ingresos totales: {formatCurrency(result.totalCashIngresos + result.totalNonCashIngresos)}
                   </p>
                 </div>
+                <div>
+                  <p>
+                    Egresos efectivo: {formatCurrency(result.totalCashEgresos)}
+                  </p>
+                  <p>
+                    Egresos tarjeta o transferencia: {formatCurrency(result.totalNonCashEgresos)}
+                  </p>
+                  <p>
+                    Egresos totales: {formatCurrency(result.totalCashEgresos + result.totalNonCashEgresos)}
+                  </p>
                 </div>
+              </div>
             </CardContent>
           </Card>
 
