@@ -22,22 +22,20 @@ function round2(num: number): number {
 }
 
 function processCashRegister(data: any) {
-  const denominationBreakdown: Record<string, number> = {};
-  let totalCashIngresos = 0;
-  let totalCashExpenses = 0;
-
   if (!data) {
     return {
-      denominationBreakdown: [],
       totalCashIngresos: 0,
       totalCashExpenses: 0,
       netCashAmount: 0,
       actualCashAmount: 0,
       balanceCashAmount: 0,
+      denominationBreakdown: {},
     };
   }
 
-  // Dinero inicial en efectivo
+  const denominationBreakdown: Record<string, number> = {};
+
+  // Procesar dinero inicial en efectivo
   if (data.initial_amount_cash) {
     const initialCash =
       typeof data.initial_amount_cash === 'string'
@@ -50,35 +48,34 @@ function processCashRegister(data: any) {
     });
   }
 
-  // Ingresos en efectivo
+  // Ingresos en efectivo (transactions con payment_method 'cash')
+  let totalCashIngresos = 0;
   data.transactions?.forEach((transaction: any) => {
-    const amount = Number(transaction.amount || 0);
     if (transaction.payment_method === 'cash') {
-      totalCashIngresos += amount;
+      totalCashIngresos += Number(transaction.amount || 0);
     }
   });
 
   // Gastos en efectivo
+  let totalCashExpenses = 0;
   data.gastos?.forEach((gasto: any) => {
-    const amount = Number(gasto.amount || 0);
     if (gasto.method === 'cash' || gasto.method === 'Efectivo') {
-      totalCashExpenses += amount;
+      totalCashExpenses += Number(gasto.amount || 0);
     }
   });
 
-  // Total contado en caja según desglose
+  // Total contado en caja según denominaciones
   const actualCashAmount = Object.entries(denominationBreakdown).reduce(
-    (total, [value, quantity]) =>
-      total + Number(value) * Number(quantity),
+    (total, [value, quantity]) => total + Number(value) * Number(quantity),
     0
   );
 
-  // Neto = ingresos - gastos
+  // Neto solo ingresos - gastos
   const netCashAmount = round2(totalCashIngresos - totalCashExpenses);
 
-  // Balance efectivo real con monto inicial
+  // Balance final con monto inicial
   const balanceCashAmount = round2(
-    totalCashIngresos - totalCashExpenses + Number(data.initial_amount || 0)
+    Number(data.initial_amount || 0) + totalCashIngresos - totalCashExpenses
   );
 
   return {
@@ -87,6 +84,7 @@ function processCashRegister(data: any) {
     netCashAmount,
     actualCashAmount: round2(actualCashAmount),
     balanceCashAmount,
+    denominationBreakdown,
   };
 }
 
