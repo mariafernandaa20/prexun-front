@@ -129,7 +129,7 @@ export default function CajaPage() {
     try {
       await closeCaja(
         caja.id,
-        finalAmount,
+        result.balanceCashAmount,
         finalAmountCash,
         next_day,
         next_day_cash,
