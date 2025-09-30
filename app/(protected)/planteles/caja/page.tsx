@@ -136,7 +136,7 @@ export default function CajaPage() {
       caja={caja}
       onOpen={handleOpenCaja}
       onClose={handleCloseCaja}
-      actualAmount={(result.totalCashIngresos - result.totalCashExpenses + (caja ? caja.initial_amount : 0)) || 0}
+      actualAmount={Number((Number(result.totalCashIngresos) - Number(result.totalCashExpenses) + Number((caja ? caja.initial_amount : 0))) || 0)}
     >
       {caja ? (
         <div className="space-y-6 p-6">
@@ -165,7 +165,7 @@ export default function CajaPage() {
                   <p>Ingresos efectivo: <strong>{formatCurrency(result.totalCashIngresos)}</strong></p>
                   <p>Egresos efectivo: <strong>{formatCurrency(result.totalCashExpenses)}</strong></p>
                   <p>Monto Inicial: <strong>{formatCurrency(caja.initial_amount)}</strong></p>
-                  <p>Balance efectivo: <strong>{formatCurrency(result.totalCashIngresos - result.totalCashExpenses + caja.initial_amount)}</strong></p>
+                  <p>Balance efectivo: <strong>{formatCurrency(Number(result.totalCashIngresos) - Number(result.totalCashExpenses) + Number(caja.initial_amount))}</strong></p>
                 </div>
               </div>
             </CardContent>
