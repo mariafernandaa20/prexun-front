@@ -16,16 +16,11 @@ import { Label } from '@/components/ui/label';
 import { Caja, Denomination } from '@/lib/types';
 import { useForm } from 'react-hook-form';
 import { formatCurrency } from '@/lib/utils';
+import { calculateDenominationsTotal, validateCajaBalance } from '@/lib/helpers/cajaHelpers';
 
 interface FormData {
   denominations: Denomination;
   next_day_cash: Denomination;
-}
-
-function calculateDenominationsTotal(denominations: Denomination): number {
-  return Object.entries(denominations).reduce((total, [denom, count]) => {
-    return total + Number(denom) * (Number(count) || 0);
-  }, 0);
 }
 
 
@@ -117,14 +112,12 @@ export default function CajaLayout({
     const nextDayTotal = calculateDenominationsTotal(formData.next_day_cash);
 
     // Validación para cierre de caja - debe coincidir con el efectivo actual
-    const tolerance = 0.01; // Tolerancia de 1 centavo para diferencias de redondeo
-    if (Math.abs(denominationsTotal - actualAmount) > tolerance) {
-      const difference = denominationsTotal - actualAmount;
-      const message = difference > 0
-        ? `Hay un sobrante de ${formatCurrency(Math.abs(difference))}`
-        : `Falta ${formatCurrency(Math.abs(difference))}`;
-
-      const confirmed = confirm(`${message}. El monto total de denominaciones (${formatCurrency(denominationsTotal)}) no coincide exactamente con el efectivo disponible en caja (${formatCurrency(actualAmount)}). ¿Desea continuar con el cierre?`);
+    const validation = validateCajaBalance(denominationsTotal, actualAmount);
+    
+    if (!validation.isValid) {
+      const confirmed = confirm(
+        `${validation.message}. El monto total de denominaciones (${formatCurrency(denominationsTotal)}) no coincide exactamente con el efectivo disponible en caja (${formatCurrency(actualAmount)}). ¿Desea continuar con el cierre?`
+      );
 
       if (!confirmed) {
         return;

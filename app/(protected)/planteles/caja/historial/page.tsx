@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Eye, Calendar, Plus } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { calculateCajaTotals, processCajaData } from '@/lib/helpers/cajaHelpers';
 
 export default function CajaHistorialPage() {
   const router = useRouter();
@@ -56,21 +57,6 @@ export default function CajaHistorialPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateCajaTotals = (caja: Caja) => {
-    const ingresos = caja.transactions?.filter((t) => 
-      t.transaction_type === 'income' && t.paid === 1
-    ).reduce((sum, t) => sum + Number(t.amount || 0), 0) ?? 0;
-    
-    const gastos = caja.gastos?.reduce((sum, g) => 
-      sum + Number(g.amount || 0), 0) ?? 0;
-    
-    return {
-      ingresos,
-      gastos,
-      balance: ingresos - gastos,
-    };
   };
 
   const handleViewCaja = (cajaId: number) => {
@@ -195,14 +181,14 @@ export default function CajaHistorialPage() {
                   <TableHead>Monto Inicial</TableHead>
                   <TableHead>Monto Final</TableHead>
                   <TableHead>Ingresos</TableHead>
-                  <TableHead>Gastos</TableHead>
+                  <TableHead>Egresos</TableHead>
                   <TableHead>Balance</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {cajas.map((caja) => {
-                  const totals = calculateCajaTotals(caja);
+                  const processed = processCajaData(caja);
                   return (
                     <TableRow 
                       key={caja.id} 
@@ -229,13 +215,13 @@ export default function CajaHistorialPage() {
                         {caja.final_amount ? formatCurrency(caja.final_amount) : '-'}
                       </TableCell>
                       <TableCell className="text-green-600">
-                        {formatCurrency(totals.ingresos)}
+                        {formatCurrency(processed.totals.cashIngresos)}
                       </TableCell>
                       <TableCell className="text-red-600">
-                        {formatCurrency(totals.gastos)}
+                        {formatCurrency(processed.totals.cashGastos)}
                       </TableCell>
                       <TableCell className="font-semibold">
-                        {formatCurrency(totals.balance)}
+                        {formatCurrency(processed.totals.finalBalance)}
                       </TableCell>
                       <TableCell>
                         <Button 

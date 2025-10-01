@@ -14,83 +14,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatCurrency } from '@/lib/utils';
 import { Calendar } from 'lucide-react';
+import { 
+  processCajaData,
+  calculateCajaTotals,
+  isCashPayment 
+} from '@/lib/helpers/cajaHelpers';
 
 function round2(num: number): number {
   return Math.round((num + Number.EPSILON) * 100) / 100;
-}
-
-// Helper para normalizar método de pago
-function isCashPayment(method: string): boolean {
-  if (!method) return false;
-  const normalized = method.toLowerCase().trim();
-  return normalized === 'cash' || normalized === 'efectivo';
-}
-
-function processCashRegister(data: any) {
-  if (!data) {
-    return {
-      totalCashIngresos: 0,
-      totalCashExpenses: 0,
-      netCashAmount: 0,
-      actualCashAmount: 0,
-      balanceCashAmount: 0,
-      denominationBreakdown: {},
-    };
-  }
-
-  const denominationBreakdown: Record<string, number> = {};
-
-  // Procesar dinero inicial en efectivo
-  if (data.initial_amount_cash) {
-    const initialCash =
-      typeof data.initial_amount_cash === 'string'
-        ? JSON.parse(data.initial_amount_cash)
-        : data.initial_amount_cash;
-
-    Object.entries(initialCash).forEach(([value, quantity]) => {
-      denominationBreakdown[value] =
-        (denominationBreakdown[value] || 0) + Number(quantity || 0);
-    });
-  }
-
-  // Ingresos en efectivo (transactions con payment_method 'cash')
-  let totalCashIngresos = 0;
-  data.transactions?.forEach((transaction: any) => {
-    if (isCashPayment(transaction.payment_method)) {
-      totalCashIngresos += Number(transaction.amount || 0);
-    }
-  });
-
-  // Gastos en efectivo
-  let totalCashExpenses = 0;
-  data.gastos?.forEach((gasto: any) => {
-    if (isCashPayment(gasto.method)) {
-      totalCashExpenses += Number(gasto.amount || 0);
-    }
-  });
-
-  // Total contado en caja según denominaciones
-  const actualCashAmount = Object.entries(denominationBreakdown).reduce(
-    (total, [value, quantity]) => total + Number(value) * Number(quantity),
-    0
-  );
-
-  // Neto solo ingresos - gastos
-  const netCashAmount = round2(totalCashIngresos - totalCashExpenses);
-
-  // Balance final con monto inicial
-  const balanceCashAmount = round2(
-    Number(data.initial_amount || 0) + totalCashIngresos - totalCashExpenses
-  );
-
-  return {
-    totalCashIngresos: round2(totalCashIngresos),
-    totalCashExpenses: round2(totalCashExpenses),
-    netCashAmount,
-    actualCashAmount: round2(actualCashAmount),
-    balanceCashAmount,
-    denominationBreakdown,
-  };
 }
 
 interface CajaDetailProps {
@@ -99,7 +30,9 @@ interface CajaDetailProps {
 }
 
 export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps) {
-  const result = processCashRegister(caja);
+  // Usar el helper para calcular todos los totales
+  const totals = calculateCajaTotals(caja);
+  const processedData = processCajaData(caja);
 
   return (
     <div className="space-y-6">
@@ -144,18 +77,18 @@ export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps)
             <div className="space-y-1">
               <p className="text-muted-foreground">Ingresos efectivo</p>
               <p className="text-2xl font-bold text-green-600">
-                {formatCurrency(result.totalCashIngresos)}
+                {formatCurrency(totals.cashIngresos)}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-muted-foreground">Egresos efectivo</p>
               <p className="text-2xl font-bold text-red-600">
-                {formatCurrency(result.totalCashExpenses)}
+                {formatCurrency(totals.cashGastos)}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-muted-foreground">Balance efectivo</p>
-              <p className="text-2xl font-bold">{formatCurrency(result.balanceCashAmount)}</p>
+              <p className="text-2xl font-bold">{formatCurrency(totals.finalBalance)}</p>
             </div>
           </div>
 
@@ -206,7 +139,7 @@ export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps)
         <CardHeader>
           <CardTitle>Transacciones en Efectivo</CardTitle>
           <CardDescription>
-            Ingresos y egresos registrados en efectivo ({caja.transactions?.filter((t: any) => isCashPayment(t.payment_method)).length || 0} transacciones)
+            Ingresos y egresos registrados en efectivo ({processedData.cashTransactions.length} transacciones)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -222,9 +155,7 @@ export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps)
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {caja.transactions
-                  ?.filter((t: any) => isCashPayment(t.payment_method))
-                  .map((transaction: any) => (
+                {processedData.cashTransactions.map((transaction: any) => (
                     <TableRow key={transaction.id}>
                       <TableCell>{transaction.folio}</TableCell>
                       <TableCell>
@@ -247,7 +178,7 @@ export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps)
                       <TableCell>{transaction.notes}</TableCell>
                     </TableRow>
                   ))}
-                {(!caja.transactions || caja.transactions.filter((t: any) => isCashPayment(t.payment_method)).length === 0) && (
+                {processedData.cashTransactions.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground">
                       No hay transacciones en efectivo registradas
@@ -265,7 +196,7 @@ export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps)
         <CardHeader>
           <CardTitle>Gastos en Efectivo</CardTitle>
           <CardDescription>
-            Gastos registrados con método de pago en efectivo ({caja.gastos?.filter((g: any) => isCashPayment(g.method)).length || 0} gastos)
+            Gastos registrados con método de pago en efectivo ({processedData.cashGastos.length} gastos)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -280,9 +211,7 @@ export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps)
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {caja.gastos
-                  ?.filter((g: any) => isCashPayment(g.method))
-                  .map((gasto: any) => (
+                {processedData.cashGastos.map((gasto: any) => (
                     <TableRow key={gasto.id}>
                       <TableCell>{new Date(gasto.date).toLocaleString()}</TableCell>
                       <TableCell>{gasto.concept}</TableCell>
@@ -290,7 +219,7 @@ export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps)
                       <TableCell>{formatCurrency(gasto.amount)}</TableCell>
                     </TableRow>
                   ))}
-                {(!caja.gastos || caja.gastos.filter((g: any) => isCashPayment(g.method)).length === 0) && (
+                {processedData.cashGastos.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground">
                       No hay gastos en efectivo registrados
@@ -305,6 +234,3 @@ export default function CajaDetail({ caja, showHeader = true }: CajaDetailProps)
     </div>
   );
 }
-
-// Exportar también la función de procesamiento para uso externo
-export { processCashRegister, isCashPayment };
