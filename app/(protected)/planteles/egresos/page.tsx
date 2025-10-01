@@ -176,7 +176,6 @@ export default function GastosPage() {
     }
   ];
 
-  // Estado para las columnas visibles (IDs)
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     'fecha',
     'empleado',
@@ -189,7 +188,6 @@ export default function GastosPage() {
     'acciones',
   ]);
 
-  // Convertir tableColumns en opciones para el MultiSelect
   const columnOptions = tableColumns.map((col) => ({
     label: col.label,
     value: col.id,
@@ -360,7 +358,7 @@ export default function GastosPage() {
             </div>
             {activeCampus?.latest_cash_register ? (
               <Button className="mt-6" onClick={() => handleOpenModal()}>
-                Nuevo Gasto
+                Nuevo Egreso
               </Button>
             ) : null}
           </div>

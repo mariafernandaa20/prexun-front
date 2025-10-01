@@ -11,30 +11,33 @@ import { useAppInit } from '@/hooks/use-app-init';
 import { useUIConfig } from '@/hooks/useUIConfig';
 import GoogleAuth from './google/GoogleAuth';
 import CajaActiva from './caja/CajaActiva';
+import { CajaProvider } from './caja/CajaContext';
 
 export default function Page({ children }: { children: React.ReactNode }) {
   useUIConfig();
   useAppInit();
   return (
     <SidebarProvider>
-      <PlantelSidebar />
-      <SidebarInset>
-        <div>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="flex items-center justify-between gap-2 px-4 w-full">
-              <div className="flex items-center">
-                <SidebarTrigger className="-ml-1" />
-                <Separator orientation="vertical" className="mr-2 h-4" />
+      <CajaProvider>
+        <PlantelSidebar />
+        <SidebarInset>
+          <div>
+            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+              <div className="flex items-center justify-between gap-2 px-4 w-full">
+                <div className="flex items-center">
+                  <SidebarTrigger className="-ml-1" />
+                  <Separator orientation="vertical" className="mr-2 h-4" />
+                </div>
+                <div className='flex items-center justify-center gap-4'>
+                  <GoogleAuth />
+                  <CajaActiva />
+                </div>
               </div>
-              <div className='flex items-center justify-center gap-4'>
-                <GoogleAuth />
-                <CajaActiva />
-              </div>
-            </div>
-          </header>
-          <div className="flex flex-1 flex-col p-4">{children}</div>
-        </div>
-      </SidebarInset>
+            </header>
+            <div className="flex flex-1 flex-col p-4">{children}</div>
+          </div>
+        </SidebarInset>
+      </CajaProvider>
     </SidebarProvider>
   );
 }

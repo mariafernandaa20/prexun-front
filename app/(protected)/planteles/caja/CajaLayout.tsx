@@ -173,13 +173,13 @@ export default function CajaLayout({
           <DialogHeader>
             <DialogTitle>{caja ? 'Cerrar Caja' : 'Abrir Caja'}</DialogTitle>
             <DialogDescription>
-              {caja
+              {/* {caja
                 ? 'Ingrese el monto final y notas para cerrar la caja'
-                : 'No es necesario ingresar el monto inicial, el monto inicial se define al cerrar la caja y se agrega automaticamente, si lo desea puede remplazarlo manualmente.'}
+                : 'No es necesario ingresar el monto inicial, el monto inicial se define al cerrar la caja y se agrega automaticamente, si lo desea puede remplazarlo manualmente.'} */}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-2 py-4">
+          {/* <div className="grid gap-2 py-4">
             <div>
               <Label htmlFor="amount" className="text-right text-lg">
                 Monto {caja ? 'Final' : 'Inicial'}
@@ -276,8 +276,8 @@ export default function CajaLayout({
                   />
                 </div>
               </>
-            )} */}
-          </div>
+            )} 
+          </div> */}
           <DialogFooter>
             <Button onClick={caja ? handleCloseCaja : handleOpenCaja}>
               {caja ? 'Cerrar Caja' : 'Abrir Caja'}

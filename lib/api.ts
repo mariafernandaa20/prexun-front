@@ -668,7 +668,7 @@ export const getCurrentCaja = async (campus_id: number) => {
 }
 
 export const getCajaById = async (cajaId: number): Promise<Caja> => {
-  const response = await axiosInstance.get(`${API_ENDPOINTS.CAJA}/${cajaId}`);
+  const response = await axiosInstance.get(`/caja/${cajaId}`);
   return response.data;
 }
 

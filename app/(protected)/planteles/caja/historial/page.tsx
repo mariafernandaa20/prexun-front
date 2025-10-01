@@ -1,8 +1,10 @@
 'use client';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import React, { useEffect, useState } from 'react';
-import { getCajasHistorial, getCurrentCaja } from '@/lib/api';
+import { getCajasHistorial } from '@/lib/api';
 import { Caja } from '@/lib/types';
+import { useCajaActiva } from '../CajaContext';
+import CajaNavigation from '../CajaNavigation';
 import {
   Card,
   CardContent,
@@ -28,16 +30,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export default function CajaHistorialPage() {
   const router = useRouter();
   const [cajas, setCajas] = useState<Caja[]>([]);
-  const [currentCaja, setCurrentCaja] = useState<Caja | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
+  const { caja: currentCaja } = useCajaActiva();
 
   useEffect(() => {
     if (activeCampus?.id) {
       fetchHistorial();
-      fetchCurrentCaja();
     }
   }, [activeCampus?.id]);
 
@@ -54,18 +55,6 @@ export default function CajaHistorialPage() {
       setError(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchCurrentCaja = async () => {
-    if (!activeCampus?.id) return;
-    
-    try {
-      const current = await getCurrentCaja(activeCampus.id);
-      setCurrentCaja(current);
-    } catch (err) {
-      // Si no hay caja actual, está bien
-      setCurrentCaja(null);
     }
   };
 
@@ -89,9 +78,7 @@ export default function CajaHistorialPage() {
   };
 
   const handleGoToCurrent = () => {
-    if (currentCaja) {
-      router.push(`/planteles/caja/actual`);
-    }
+    router.push(`/planteles/caja`);
   };
 
   if (loading) {
@@ -116,6 +103,8 @@ export default function CajaHistorialPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <CajaNavigation />
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

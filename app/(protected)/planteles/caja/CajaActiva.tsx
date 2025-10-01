@@ -1,12 +1,12 @@
 'use client'
 import React from 'react'
-import { useCaja } from './useCaja';
+import { useCajaActiva } from './CajaContext';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CajaStatus() {
-  const { caja, loading } = useCaja();
+  const { caja, loading } = useCajaActiva();
 
   if (loading) {
     return <Badge variant="outline">Cargando...</Badge>;
