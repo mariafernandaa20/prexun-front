@@ -64,6 +64,8 @@ export default function CajaPage() {
   };
 
   const processed = caja ? processCajaData(caja) : null;
+  
+  console.log(processed)
 
   return (
     <CajaLayout

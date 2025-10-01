@@ -17,7 +17,6 @@ import { Calendar } from 'lucide-react';
 import { 
   processCajaData,
   calculateCajaTotals,
-  isCashPayment 
 } from '@/lib/helpers/cajaHelpers';
 
 function round2(num: number): number {

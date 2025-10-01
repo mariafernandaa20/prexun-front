@@ -3,25 +3,11 @@ function round2(num: number): number {
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }
 /**
- * Determina si un método de pago es en efectivo
- * Normaliza 'cash', 'Efectivo', 'EFECTIVO', etc.
- */
-export function isCashPayment(method: string | undefined): boolean {
-  if (!method) return false;
-  const normalized = method.toLowerCase().trim();
-  return normalized === 'cash' || normalized === 'efectivo';
-}
-
-/**
  * Calcula el total de ingresos en efectivo de una caja
  */
 export function calculateCashIngresos(transactions: Transaction[] = []): number {
   return transactions
-    .filter((t) => 
-      t.transaction_type === 'income' && 
-      t.paid === 1 && 
-      isCashPayment(t.payment_method)
-    )
+    .filter((t) => t.payment_method === 'cash') 
     .reduce((sum, t) => sum + Number(t.amount || 0), 0);
 }
 
@@ -30,7 +16,7 @@ export function calculateCashIngresos(transactions: Transaction[] = []): number 
  */
 export function calculateCashGastos(gastos: Gasto[] = []): number {
   return gastos
-    .filter((g) => isCashPayment(g.method))
+    .filter((g) => g.method === 'cash' || g.method === 'Efectivo')
     .reduce((sum, g) => sum + Number(g.amount || 0), 0);
 }
 
@@ -91,13 +77,11 @@ export function calculateCajaTotals(caja: Caja): CajaTotals {
   const gastoCount = gastos.length;
   
   const cashTransactionCount = transactions.filter(
-    (t) => t.transaction_type === 'income' && 
-    t.paid === 1 && 
-    isCashPayment(t.payment_method)
+    (t) => t.payment_method === 'cash'
   ).length;
   
   const cashGastoCount = gastos.filter(
-    (g) => isCashPayment(g.method)
+    (g) => g.method === 'cash' || g.method === 'Efectivo'
   ).length;
   
   return {
@@ -151,14 +135,13 @@ export function processCajaData(caja: Caja): ProcessedCajaData {
   const totals = calculateCajaTotals(caja);
   
   // Filtrar transacciones y gastos en efectivo
-  const cashTransactions = (caja.transactions || []).filter(
-    (t) => t.transaction_type === 'income' && 
-    t.paid === 1 && 
-    isCashPayment(t.payment_method)
+  const cashTransactions = (caja.transactions).filter(
+    (t) => t.payment_method === 'cash' 
   );
   
+  console.log(cashTransactions);
   const cashGastos = (caja.gastos || []).filter(
-    (g) => isCashPayment(g.method)
+    (g) => g.method === 'cash' || g.method === 'Efectivo'
   );
   
   // Procesar denominaciones del monto inicial
