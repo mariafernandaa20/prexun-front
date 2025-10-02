@@ -54,6 +54,7 @@ import {
   deleteStudentAssignment,
   toggleStudentAssignmentActive,
 } from '@/lib/api';
+import SearchableSelect from '@/components/SearchableSelect';
 
 interface StudentPeriodProps {
   student: Student;
@@ -64,6 +65,7 @@ interface AssignmentFormData {
   student_id: string;
   grupo_id?: number | null;
   semana_intensiva_id?: number | null;
+  carrer_id?: number | null;
   period_id: string;
   valid_from?: string;
   valid_until?: string;
@@ -89,19 +91,20 @@ export default function StudentPeriod({
   const [editingAssignment, setEditingAssignment] =
     useState<StudentAssignment | null>(null);
   const [formData, setFormData] = useState<AssignmentFormData>({
-  student_id: student.id || '',
-  grupo_id: null,
-  semana_intensiva_id: null,
-  period_id: student.period_id,
-  valid_from: undefined,
-  valid_until: undefined,
-  is_active: true,
-  book_delivered: false,
-  book_delivery_type: '',
-  book_delivery_date: '',
-  book_notes: '',
+    student_id: student.id || '',
+    grupo_id: null,
+    semana_intensiva_id: null,
+    carrer_id: null,
+    period_id: student.period_id,
+    valid_from: undefined,
+    valid_until: undefined,
+    is_active: true,
+    book_delivered: false,
+    book_delivery_type: '',
+    book_delivery_date: '',
+    book_notes: '',
   });
-
+  console.log(carreras);
   useEffect(() => {
     if (student.id) {
       fetchAssignments();
@@ -131,6 +134,7 @@ export default function StudentPeriod({
       student_id: student.id || '',
       grupo_id: null,
       semana_intensiva_id: null,
+      carrer_id: null,
       period_id: student.period_id,
       valid_from: undefined,
       valid_until: undefined,
@@ -149,6 +153,7 @@ export default function StudentPeriod({
       student_id: assignment.student_id,
       grupo_id: assignment.grupo_id,
       semana_intensiva_id: assignment.semana_intensiva_id,
+      carrer_id: assignment.carrer_id,
       period_id: assignment.period_id,
       valid_from: assignment.valid_from || undefined,
       valid_until: assignment.valid_until || undefined,
@@ -176,15 +181,14 @@ export default function StudentPeriod({
   };
   const validateForm = (): boolean => {
     if (
-      !formData.grupo_id ||
-      formData.grupo_id === 0 ||
-      !formData.semana_intensiva_id ||
-      formData.semana_intensiva_id === 0
+      (!formData.grupo_id || formData.grupo_id === 0) &&
+      (!formData.semana_intensiva_id || formData.semana_intensiva_id === 0) &&
+      (!formData.carrer_id || formData.carrer_id === 0)
     ) {
       toast({
         title: 'Error de validación',
         description:
-          'Debe seleccionar al menos un grupo o una semana intensiva',
+          'Debe seleccionar al menos un grupo, una semana intensiva o una carrera.',
         variant: 'destructive',
       });
       return false;
@@ -296,6 +300,12 @@ export default function StudentPeriod({
     return semana?.name || `Semana ${semanaId}`;
   };
 
+  // const getCarrerName = (carrerId: number | null) => {
+  //   if (!carrerId) return 'N/A';
+  //   const carrer = carreras.find((c) => c.id === carrerId);
+  //   return carrer?.name || `Carrera ${carrerId}`;
+  // };
+
   const getPeriodName = (periodId: string) => {
     const period = periods.find((p) => p.id === periodId);
     return period?.name || `Periodo ${periodId}`;
@@ -354,64 +364,6 @@ export default function StudentPeriod({
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="book_delivered">¿Libro entregado?</Label>
-                    <Select
-                      value={formData.book_delivered ? 'true' : 'false'}
-                      onValueChange={(value) =>
-                        handleInputChange('book_delivered', value === 'true')
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Sí</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="book_delivery_type">Tipo de entrega libro</Label>
-                    <Select
-                      value={formData.book_delivery_type ?? 'none'}
-                      onValueChange={(value) =>
-                        handleInputChange('book_delivery_type', value === 'none' ? null : value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar tipo de entrega" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Sin especificar</SelectItem>
-                        <SelectItem value="digital">Digital</SelectItem>
-                        <SelectItem value="fisico">Físico</SelectItem>
-                        <SelectItem value="paqueteria">Paquetería</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="book_delivery_date">Fecha entrega libro</Label>
-                    <Input
-                      id="book_delivery_date"
-                      type="date"
-                      value={formData.book_delivery_date || ''}
-                      onChange={(e) =>
-                        handleInputChange('book_delivery_date', e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="book_notes">Notas libro</Label>
-                    <Input
-                      id="book_notes"
-                      type="text"
-                      value={formData.book_notes || ''}
-                      onChange={(e) =>
-                        handleInputChange('book_notes', e.target.value)
-                      }
-                    />
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="period_id">Periodo *</Label>
                     <Select
@@ -472,6 +424,27 @@ export default function StudentPeriod({
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className='space-y-2'>
+                    <Label htmlFor="carrer_id">Carrera</Label>
+
+                    <SearchableSelect
+                      options={carreras.map((carrera) => ({
+                        value: carrera.id,
+                        label: carrera.name + (carrera.facultad_id ? ` (${facultades.find(f => f.id === carrera.facultad_id)?.name || ''})` : ''),
+                      }))}
+                      value={formData.carrer_id?.toString() || ''}
+                      placeholder="Carrera"
+                      onChange={(value) =>
+                        handleInputChange(
+                          'carrer_id',
+                          value === '' ? null : parseInt(value)
+                        )
+                      }
+                      showAllOption={true}
+                      allOptionLabel="Ninguna"
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="semana_intensiva_id">
                       Semana Intensiva
@@ -511,31 +484,6 @@ export default function StudentPeriod({
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="valid_from">Válido desde</Label>
-                    <Input
-                      id="valid_from"
-                      type="date"
-                      value={formData.valid_from || ''}
-                      onChange={(e) =>
-                        handleInputChange('valid_from', e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="valid_until">Válido hasta</Label>
-                    <Input
-                      id="valid_until"
-                      type="date"
-                      value={formData.valid_until || ''}
-                      onChange={(e) =>
-                        handleInputChange('valid_until', e.target.value)
-                      }
-                    />
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="is_active">Estado</Label>
                     <Select
@@ -553,8 +501,70 @@ export default function StudentPeriod({
                       </SelectContent>
                     </Select>
                   </div>
+
+
+                <div className="space-y-2">
+                  <Label htmlFor="book_delivered">¿Libro entregado?</Label>
+                  <Select
+                    value={formData.book_delivered ? 'true' : 'false'}
+                    onValueChange={(value) =>
+                      handleInputChange('book_delivered', value === 'true')
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Sí</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="book_delivery_type">Tipo de entrega libro</Label>
+                  <Select
+                    value={formData.book_delivery_type ?? 'none'}
+                    onValueChange={(value) =>
+                      handleInputChange('book_delivery_type', value === 'none' ? null : value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar tipo de entrega" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sin especificar</SelectItem>
+                      <SelectItem value="digital">Digital</SelectItem>
+                      <SelectItem value="fisico">Físico</SelectItem>
+                      <SelectItem value="paqueteria">Paquetería</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="book_delivery_date">Fecha entrega libro</Label>
+                  <Input
+                    id="book_delivery_date"
+                    type="date"
+                    value={formData.book_delivery_date || ''}
+                    onChange={(e) =>
+                      handleInputChange('book_delivery_date', e.target.value)
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="book_notes">Notas libro</Label>
+                  <Input
+                    id="book_notes"
+                    type="text"
+                    value={formData.book_notes || ''}
+                    onChange={(e) =>
+                      handleInputChange('book_notes', e.target.value)
+                    }
+                  />
+                </div>
+                </div>
                 <DialogFooter>
                   <Button
                     type="button"

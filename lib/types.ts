@@ -272,6 +272,7 @@ export interface Producto {
 }
 
 export interface StudentAssignment {
+  carrer_id: number;
   book_delivered?: boolean;
   book_delivery_type?: string;
   book_delivery_date?: string;

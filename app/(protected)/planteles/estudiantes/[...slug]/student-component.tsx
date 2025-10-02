@@ -374,8 +374,10 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         </TabsContent>
 
         <TabsContent value="asignacion" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className='col-span-2'>
             <StudentPeriod student={student} onRefresh={refetch} />
+            </div>
             <StudentNotes studentId={student.id.toString()} />
           </div>
         </TabsContent>
