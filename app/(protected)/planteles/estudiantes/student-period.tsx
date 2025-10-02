@@ -430,7 +430,7 @@ export default function StudentPeriod({
 
                     <SearchableSelect
                       options={carreras.map((carrera) => ({
-                        value: carrera.id,
+                        value: carrera.id.toString(),
                         label: carrera.name + (carrera.facultad_id ? ` (${facultades.find(f => f.id === carrera.facultad_id)?.name || ''})` : ''),
                       }))}
                       value={formData.carrer_id?.toString() || ''}
