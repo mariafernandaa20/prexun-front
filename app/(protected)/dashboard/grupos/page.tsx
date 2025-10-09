@@ -126,7 +126,9 @@ export default function GruposPage() {
             <TableCell>{grupo.name}</TableCell>
             <TableCell>{grupo.moodle_id}</TableCell>
             <TableCell>{grupo.type}</TableCell>
-            <TableCell>{grupo.capacity}</TableCell>
+            <TableCell>
+              {grupo.active_assignments_count || 0}/{grupo.capacity}
+            </TableCell>
             <TableCell>
               {grupo.campuses && grupo.campuses.length > 0 ? (
                 <div className="flex flex-wrap gap-1">

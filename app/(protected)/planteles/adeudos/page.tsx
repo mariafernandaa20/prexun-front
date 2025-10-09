@@ -12,8 +12,21 @@ import {
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { formatCurrency, formatTime } from '@/lib/utils';
-import { AlertTriangle, CheckCircle, CreditCard, Info } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  CreditCard,
+  Info,
+  Eye,
+} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import TransactionsModal from '@/components/TransactionsModal';
 
 const cards = [];
 const studentId = null;
@@ -55,6 +68,8 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
 export default function debtsPage() {
   const [debts, setdebts] = useState([]);
+  const [showPaymentsModal, setShowPaymentsModal] = useState(false);
+  const [selectedDebtForPayments, setSelectedDebtForPayments] = useState(null);
 
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
@@ -70,11 +85,24 @@ export default function debtsPage() {
     }
   }
 
-  console.log(debts);
-
   useEffect(() => {
     getdebts();
   }, [activeCampus]);
+
+  const getPaymentMethodText = (method: string) => {
+    const methods = {
+      card: 'Tarjeta',
+      cash: 'Efectivo',
+      transfer: 'Transferencia',
+      check: 'Cheque',
+    };
+    return methods[method as keyof typeof methods] || method;
+  };
+
+  const handleShowPayments = (debt: any) => {
+    setSelectedDebtForPayments(debt);
+    setShowPaymentsModal(true);
+  };
 
   return (
     <div>
@@ -93,6 +121,7 @@ export default function debtsPage() {
             <TableHead>Pendiente</TableHead>
             <TableHead>Vencimiento</TableHead>
             <TableHead>Estado</TableHead>
+            <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -143,10 +172,109 @@ export default function debtsPage() {
               <TableCell>
                 <StatusBadge status={debt.status} />
               </TableCell>
+              <TableCell>
+                {debt.transactions && debt.transactions.length > 0 && (
+                  <TransactionsModal debt={debt} />
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* Payments Modal */}
+      <Dialog open={showPaymentsModal} onOpenChange={setShowPaymentsModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              Pagos del Adeudo: {selectedDebtForPayments?.concept}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedDebtForPayments?.transactions &&
+          selectedDebtForPayments.transactions.length > 0 ? (
+            <div className="space-y-4">
+              <div className="text-sm text-gray-600 mb-4">
+                <p>
+                  <strong>Estudiante:</strong>{' '}
+                  {selectedDebtForPayments.student?.firstname}{' '}
+                  {selectedDebtForPayments.student?.lastname}
+                </p>
+                <p>
+                  <strong>Monto Total:</strong>{' '}
+                  {formatCurrency(selectedDebtForPayments.total_amount)}
+                </p>
+                <p>
+                  <strong>Total Pagado:</strong>{' '}
+                  {formatCurrency(selectedDebtForPayments.paid_amount)}
+                </p>
+                <p>
+                  <strong>Pendiente:</strong>{' '}
+                  {formatCurrency(selectedDebtForPayments.remaining_amount)}
+                </p>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Monto</TableHead>
+                    <TableHead>Método</TableHead>
+                    <TableHead>Folio</TableHead>
+                    <TableHead>Notas</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {selectedDebtForPayments.transactions.map(
+                    (transaction: any) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>
+                          {formatTime({ time: transaction.payment_date })}
+                        </TableCell>
+                        <TableCell className="text-green-600 font-semibold">
+                          {formatCurrency(parseFloat(transaction.amount))}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {getPaymentMethodText(transaction.payment_method)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {transaction.folio_new ||
+                              transaction.folio ||
+                              'N/A'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div
+                            className="text-sm text-gray-600 max-w-32 truncate"
+                            title={transaction.notes}
+                          >
+                            {transaction.notes || 'Sin notas'}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <CreditCard className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>No hay pagos registrados para este adeudo</p>
+            </div>
+          )}
+          <div className="flex justify-end pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowPaymentsModal(false)}
+            >
+              Cerrar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

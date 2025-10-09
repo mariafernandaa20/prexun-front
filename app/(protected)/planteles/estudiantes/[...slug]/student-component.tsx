@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Student, Transaction, Card as CardType } from '@/lib/types';
 import {
   Table,
@@ -27,6 +28,9 @@ import StudentDebtsManager from '@/components/dashboard/estudiantes/StudentDebts
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import StudentAttendance from './StudentAttendance';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+const { SAT } = useFeatureFlags();
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -47,9 +51,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
         <TableHead>ID</TableHead>
         <TableHead>Acciones</TableHead>
         <TableHead>Folio</TableHead>
-        <TableHead>Nuevo</TableHead>
-        <TableHead>Efectivo</TableHead>
-        <TableHead>Transferencia</TableHead>
         <TableHead>Método</TableHead>
         <TableHead>Monto</TableHead>
         <TableHead>Fecha</TableHead>
@@ -71,11 +72,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               <ChargesForm
                 campusId={transaction.campus_id}
                 cards={cards}
-                fetchStudents={() => {}}
+                fetchStudents={() => { }}
                 student_id={transaction.student_id}
                 transaction={transaction}
                 formData={transaction}
-                setFormData={() => {}}
+                setFormData={() => { }}
                 onTransactionUpdate={onUpdateTransaction}
                 mode="update"
                 student={null}
@@ -83,10 +84,25 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               />
             </div>
           </TableCell>
-          <TableCell>{transaction?.folio}</TableCell>
-          <TableCell>{transaction?.folio_new}</TableCell>
-          <TableCell>{transaction?.folio_cash}</TableCell>
-          <TableCell>{transaction?.folio_transfer}</TableCell>
+          <TableCell>
+            <TableCell>
+              {transaction?.paid ? (
+                <>
+                  {transaction?.folio_new + ' '}
+                  {(
+                    transaction?.folio ??
+                    transaction?.folio_cash ??
+                    transaction?.folio_transfer ??
+                    0
+                  )
+                    .toString()
+                    .padStart(4, '0')}
+                </>
+              ) : (
+                'No Pagado'
+              )}
+            </TableCell>
+          </TableCell>
           <TableCell>
             {getPaymentMethodLabel(transaction.payment_method)}
           </TableCell>
@@ -168,10 +184,10 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
         ...prevStudent,
         transactions: transactionExists
           ? prevStudent.transactions.map((transaction) =>
-              transaction.id === updatedTransaction.id
-                ? updatedTransaction
-                : transaction
-            )
+            transaction.id === updatedTransaction.id
+              ? updatedTransaction
+              : transaction
+          )
           : [...prevStudent.transactions, updatedTransaction],
       };
     });
@@ -210,24 +226,25 @@ export function StudentComponent({ slug }: { slug: string[] }) {
     <div className="space-y-4 ">
       <Card className="w-full">
         <CardHeader className="sticky top-0 z-8 bg-card">
-          <div className="flex flex-col lg:flex-row justify-between items-center">
-            <h1 className="text-2xl font-bold">
-              {student.firstname} {student.lastname}
-            </h1>
-            <div className="flex gap-2">
-              <Purchace
-                campusId={campusId}
-                studentId={student.id}
-                onPurchaseComplete={handlePurchaseComplete}
-              />
-              <UpdatePersonalInfo student={studentForUpdatePersonalInfo} />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <SectionContainer>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-              <div className="space-y-2">
+
+          <div className='grid grid-cols-1 xl:grid-cols-4 gap-4'>
+            <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className='md:col-span-2 lg:col-span-3'>
+                <div className="flex flex-col lg:flex-row items-center gap-4">
+                  <h1 className="text-2xl font-bold">
+                    {student.firstname} {student.lastname}
+                  </h1>
+                  <div className="flex gap-2">
+                    <Purchace
+                      campusId={campusId}
+                      studentId={student.id}
+                      onPurchaseComplete={handlePurchaseComplete}
+                    />
+                    <UpdatePersonalInfo student={studentForUpdatePersonalInfo} />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2 ">
                 <h3 className="font-semibold">Información Personal</h3>
                 <p>
                   <span className="text-muted-foreground">Matricula:</span>{' '}
@@ -254,7 +271,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 </p>
                 <p>
                   <span className="text-muted-foreground">Grupo:</span>{' '}
-                  {student.grupo_id || 'No asignado'}
+                  {student?.grupo ? student.grupo.name : (student?.grupo_id || 'No asignado')}
                 </p>
                 <p>
                   <span className="text-muted-foreground">
@@ -288,65 +305,97 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                   <span className="text-muted-foreground">Último pago:</span>{' '}
                   {student.transactions?.length
                     ? formatTime({
-                        time: student.transactions[
-                          student.transactions.length - 1
-                        ].payment_date,
-                      })
+                      time: student.transactions[
+                        student.transactions.length - 1
+                      ].payment_date,
+                    })
                     : 'Sin pagos'}
                 </p>
               </div>
+
             </div>
-          </SectionContainer>
+            <StudentAttendance studentId={student.id} />
+          </div>
+        </CardHeader>
+        <CardContent>
+
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="lg:col-span-2">
-          <StudentDebtsManager
-            studentId={Number(student.id)}
-            onTransactionUpdate={updateTransaction}
-          />
-        </div>
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <h2 className="text-xl font-semibold">
-                  Historial de Transacciones
-                </h2>
-                <Label className="flex items-center gap-2">
-                  Mostrar notas{' '}
-                  <Checkbox
-                    checked={showNotes}
-                    onCheckedChange={() => setShowNotes(!showNotes)}
-                  />
-                </Label>
+      <Tabs defaultValue="pagos" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="pagos">Pagos y Deudas</TabsTrigger>
+          <TabsTrigger value="asignacion">Asignación</TabsTrigger>
+          <TabsTrigger value="historial">Historial y Notas</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pagos" className="space-y-4">
+          <div className='flex flex-col gap-4'>
+            {!SAT && (
+              <div className="lg:col-span-2">
+                <StudentDebtsManager
+                  studentId={Number(student.id)}
+                  onTransactionUpdate={updateTransaction}
+                />
               </div>
-            </CardHeader>
-            <CardContent>
-              <SectionContainer>
-                {student.transactions && (
-                  <TransactionsTable
-                    transactions={student.transactions}
-                    onUpdateTransaction={updateTransaction}
-                    cards={cards}
-                    showNotes={showNotes}
-                  />
-                )}
-              </SectionContainer>
-            </CardContent>
-          </Card>
-        </div>
-        <div>
-          <StudentPeriod student={student} onRefresh={refetch} />
-        </div>
-        <div>
-          <StudentNotes studentId={student.id.toString()} />
-        </div>
-        <div className="lg:col-span-2">
-          <StudentLogs studentId={student.id} />
-        </div>
-      </div>
+            )}
+
+            <div className="lg:col-span-3">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-xl font-semibold">
+                      Historial de Transacciones
+                    </h2>
+                    <Label className="flex items-center gap-2">
+                      Mostrar notas{' '}
+                      <Checkbox
+                        checked={showNotes}
+                        onCheckedChange={() => setShowNotes(!showNotes)}
+                      />
+                    </Label>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <SectionContainer>
+                    {student.transactions && (
+                      <TransactionsTable
+                        transactions={student.transactions}
+                        onUpdateTransaction={updateTransaction}
+                        cards={cards}
+                        showNotes={showNotes}
+                      />
+                    )}
+                  </SectionContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="asignacion" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className='col-span-2'>
+            <StudentPeriod student={student} onRefresh={refetch} />
+            </div>
+            <StudentNotes studentId={student.id.toString()} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="historial" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <StudentLogs studentId={student.id} />
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold">Notas Adicionales</h2>
+              </CardHeader>
+              <CardContent>
+                <StudentNotes studentId={student.id.toString()} />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

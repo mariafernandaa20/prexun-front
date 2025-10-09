@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import axiosInstance from '@/lib/api/axiosConfig';
 import ReactMarkdown from 'react-markdown';
+import { useWhatsAppChat } from '@/hooks/useWhatsAppChat';
 import {
   Send,
   Search,
@@ -24,142 +24,59 @@ import {
   Trash2,
 } from 'lucide-react';
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
-
-interface ChatMessage {
-  id: number;
-  user_id: number;
-  role: 'user' | 'assistant';
-  content: string;
-  images?: string[];
-  metadata?: any;
-  created_at: string;
-  user?: User;
-}
-
-interface ChatConversation {
-  user_id: number;
-  user: User;
-  last_message: ChatMessage;
-  unread_count: number;
-  messages: ChatMessage[];
-}
-
 export default function ChatPage() {
-  const [conversations, setConversations] = useState<ChatConversation[]>([]);
-  const [selectedConversation, setSelectedConversation] =
-    useState<ChatConversation | null>(null);
-  const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingChat, setIsLoadingChat] = useState(false);
 
-  const filteredConversations = conversations.filter(
-    (conv) =>
-      conv.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conv.user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const {
+    conversations,
+    selectedConversation,
+    messages,
+    newMessage,
+    setNewMessage,
+    selectedPhoneNumber,
+    isLoadingConversations,
+    isLoadingMessages,
+    isSending,
+    selectConversation,
+    sendMessage,
+    deleteConversation,
+    refreshConversations,
+    refreshMessages,
+  } = useWhatsAppChat();
 
-  useEffect(() => {
-    loadAllChats();
-  }, []);
-
-  const loadAllChats = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axiosInstance.get('/chat/all-conversations');
-      setConversations(response.data.conversations || []);
-    } catch (error) {
-      toast.error('Error al cargar las conversaciones');
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+  // Funciones auxiliares
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
-  const loadConversationHistory = async (userId: number) => {
+  const handleSendMessage = async () => {
     try {
-      const response = await axiosInstance.get(`/chat/history/${userId}`);
-      const messages = response.data.messages || [];
-
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.user_id === userId ? { ...conv, messages } : conv
-        )
-      );
-    } catch (error) {
-      toast.error('Error al cargar el historial');
+      await sendMessage();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Error al enviar mensaje');
       console.error(error);
     }
   };
 
-  const clearConversation = async (userId: number) => {
+  const handleDeleteConversation = async (phoneNumber: string) => {
     if (!confirm('¿Estás seguro de que quieres eliminar esta conversación?')) {
       return;
     }
 
     try {
-      await axiosInstance.delete(`/chat/history/${userId}`);
-      await loadAllChats();
-      if (selectedConversation?.user_id === userId) {
-        setSelectedConversation(null);
-      }
+      await deleteConversation(phoneNumber);
       toast.success('Conversación eliminada');
     } catch (error) {
       toast.error('Error al eliminar la conversación');
     }
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || isLoadingChat || !selectedConversation) return;
-
-    setIsLoadingChat(true);
-    const messageToSend = newMessage;
-    setNewMessage('');
-
-    try {
-      const formData = new FormData();
-      formData.append('content', messageToSend);
-      formData.append(
-        'target_user_id',
-        selectedConversation.user_id.toString()
-      );
-
-      const response = await axiosInstance.post('/chat/send', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      await loadConversationHistory(selectedConversation.user_id);
-      await loadAllChats();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al enviar mensaje');
-      console.error(error);
-    } finally {
-      setIsLoadingChat(false);
-    }
+  const handleSelectConversation = (conversation: any) => {
+    selectConversation(conversation.phone_number);
   };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const selectConversation = async (conversation: ChatConversation) => {
-    setSelectedConversation(conversation);
-    if (!conversation.messages || conversation.messages.length === 0) {
-      await loadConversationHistory(conversation.user_id);
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -180,7 +97,16 @@ export default function ChatPage() {
     }
   };
 
-  if (isLoading) {
+  // Filtrar conversaciones por búsqueda
+  const filteredConversations = conversations.filter(
+    (conversation) =>
+      conversation.contact_info?.display_name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      conversation.phone_number.includes(searchQuery)
+  );
+
+  if (isLoadingConversations) {
     return (
       <div className="flex items-center justify-center h-screen">
         <RefreshCw className="h-8 w-8 animate-spin" />
@@ -192,7 +118,7 @@ export default function ChatPage() {
   return (
     <div
       className="flex bg-background"
-      style={{ height: 'calc(100vh - 50px)' }}
+      style={{ height: 'calc(100vh - 100px)' }}
     >
       {/* Sidebar de contactos */}
       <div className="w-1/3 bg-card border-r border-border flex flex-col">
@@ -202,9 +128,6 @@ export default function ChatPage() {
             <h1 className="text-xl font-semibold text-foreground">
               Todos los Chats
             </h1>
-            <Button variant="ghost" size="icon" onClick={loadAllChats}>
-              <RefreshCw className="h-5 w-5" />
-            </Button>
           </div>
 
           {/* Barra de búsqueda */}
@@ -224,22 +147,24 @@ export default function ChatPage() {
           <div className="p-2">
             {filteredConversations.map((conversation) => (
               <Card
-                key={conversation.user_id}
+                key={conversation.phone_number}
                 className={`p-3 mb-2 cursor-pointer hover:bg-accent transition-colors ${
-                  selectedConversation?.user_id === conversation.user_id
+                  selectedPhoneNumber === conversation.phone_number
                     ? 'bg-accent border-primary'
                     : ''
                 }`}
-                onClick={() => selectConversation(conversation)}
+                onClick={() => handleSelectConversation(conversation)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {conversation.user.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
+                        {conversation?.contact_info?.name
+                          ?.charAt(0)
+                          ?.toUpperCase() || conversation?.contact_info?.display_name
+                          ?.charAt(0)
+                          ?.toUpperCase() ||
+                          'W'}
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -247,18 +172,20 @@ export default function ChatPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium text-foreground truncate">
-                        {conversation.user.name}
+                        {conversation?.name ||
+                          conversation.phone_number}
                       </h3>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs text-muted-foreground">
-                          {formatDate(conversation.last_message.created_at)}
+                          {conversation.last_message &&
+                            formatDate(conversation.last_message.created_at)}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            clearConversation(conversation.user_id);
+                            handleDeleteConversation(conversation.phone_number);
                           }}
                           className="h-6 w-6 p-0 hover:bg-red-100"
                         >
@@ -269,19 +196,22 @@ export default function ChatPage() {
 
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-muted-foreground truncate">
-                        {conversation.last_message.content.length > 50
+                        {conversation.last_message &&
+                        conversation.last_message.content &&
+                        conversation.last_message.content.length > 50
                           ? `${conversation.last_message.content.substring(0, 50)}...`
-                          : conversation.last_message.content}
+                          : conversation.last_message?.content ||
+                            'Sin mensajes'}
                       </p>
-                      {conversation.unread_count > 0 && (
+                      {conversation.received_count > 0 && (
                         <Badge className="bg-green-500 text-white text-xs rounded-full px-2 py-1">
-                          {conversation.unread_count}
+                          {conversation.received_count}
                         </Badge>
                       )}
                     </div>
 
                     <p className="text-xs text-muted-foreground mt-1">
-                      {conversation.user.email} • {conversation.user.role}
+                      {conversation.phone_number}
                     </p>
                   </div>
                 </div>
@@ -307,19 +237,18 @@ export default function ChatPage() {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {selectedConversation.user.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
+                      {selectedConversation?.contact_info?.display_name
+                        ?.charAt(0)
+                        ?.toUpperCase() || 'W'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <h2 className="font-semibold text-foreground">
-                      {selectedConversation.user.name}
+                      {selectedConversation?.name ||
+                        selectedConversation?.phone_number}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {selectedConversation.user.email} •{' '}
-                      {selectedConversation.user.role}
+                      {selectedConversation?.phone_number}
                     </p>
                   </div>
                 </div>
@@ -329,7 +258,9 @@ export default function ChatPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      clearConversation(selectedConversation.user_id)
+                      handleDeleteConversation(
+                        selectedConversation?.phone_number
+                      )
                     }
                   >
                     <Trash2 className="h-5 w-5" />
@@ -344,55 +275,50 @@ export default function ChatPage() {
             {/* Mensajes */}
             <ScrollArea className="flex-1 p-4 bg-muted/50">
               <div className="space-y-4">
-                {selectedConversation.messages?.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === 'assistant' ? 'justify-end' : 'justify-start'}`}
-                  >
+                {isLoadingMessages && messages.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                    <span>Cargando mensajes...</span>
+                  </div>
+                ) : (
+                  messages?.map((message) => (
                     <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        message.role === 'assistant'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-card text-card-foreground border border-border'
-                      }`}
+                      key={message.id}
+                      className={`flex ${message.direction === 'sent' ? 'justify-end' : 'justify-start'}`}
                     >
-                      {message.images && message.images.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {message.images.map((imageUrl, imgIndex) => (
-                            <img
-                              key={imgIndex}
-                              src={imageUrl}
-                              alt={`Imagen ${imgIndex + 1}`}
-                              className="max-w-48 max-h-48 object-cover rounded-lg border"
-                            />
-                          ))}
-                        </div>
-                      )}
-                      <div className="text-sm prose prose-sm max-w-none">
-                        <ReactMarkdown>{message.content}</ReactMarkdown>
-                      </div>
                       <div
-                        className={`flex items-center justify-end mt-1 space-x-1 ${
-                          message.role === 'assistant'
-                            ? 'text-primary-foreground/70'
-                            : 'text-muted-foreground'
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          message.direction === 'sent'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-card text-card-foreground border border-border'
                         }`}
                       >
-                        <span className="text-xs">
-                          {new Date(message.created_at).toLocaleTimeString(
-                            'es-ES',
-                            {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            }
-                          )}
-                        </span>
+                        <div className="text-sm prose prose-sm max-w-none dark:prose-invert ">
+                          <ReactMarkdown>{message.mensaje}</ReactMarkdown>
+                        </div>
+                        <div
+                          className={`flex items-center justify-end mt-1 space-x-1 ${
+                            message.direction === 'sent'
+                              ? 'text-primary-foreground/70'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          <span className="text-xs">
+                            {new Date(message.created_at).toLocaleTimeString(
+                              'es-ES',
+                              {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )) || []}
+                  )) || []
+                )}
 
-                {isLoadingChat && (
+                {isSending && (
                   <div className="flex justify-end">
                     <div className="bg-primary text-primary-foreground px-4 py-2 rounded-lg">
                       <RefreshCw className="h-4 w-4 animate-spin" />
@@ -427,11 +353,11 @@ export default function ChatPage() {
                 </div>
 
                 <Button
-                  onClick={sendMessage}
+                  onClick={handleSendMessage}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  disabled={!newMessage.trim() || isLoadingChat}
+                  disabled={!newMessage.trim() || isSending}
                 >
-                  {isLoadingChat ? (
+                  {isSending ? (
                     <RefreshCw className="h-4 w-4 animate-spin" />
                   ) : (
                     <Send className="h-4 w-4" />

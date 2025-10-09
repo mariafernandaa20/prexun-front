@@ -14,21 +14,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Caja, Denomination } from '@/lib/types';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
-import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/lib/utils';
+import { calculateDenominationsTotal, validateCajaBalance } from '@/lib/helpers/cajaHelpers';
 
 interface FormData {
   denominations: Denomination;
   next_day_cash: Denomination;
 }
 
-function calculateDenominationsTotal(denominations: Denomination): number {
-  return Object.entries(denominations).reduce((total, [denom, count]) => {
-    return total + Number(denom) * count;
-  }, 0);
-}
 
 export default function CajaLayout({
   children,
@@ -36,6 +30,7 @@ export default function CajaLayout({
   onOpen,
   onClose,
   actualAmount,
+  isReadOnly = false,
 }: {
   children: React.ReactNode;
   caja: Caja | null;
@@ -52,6 +47,7 @@ export default function CajaLayout({
     notes: string
   ) => Promise<void>;
   actualAmount: number;
+  isReadOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [initialAmount, setInitialAmount] = useState('');
@@ -113,24 +109,25 @@ export default function CajaLayout({
     const denominationsTotal = calculateDenominationsTotal(
       formData.denominations
     );
-    const nextDay = calculateDenominationsTotal(formData.denominations);
+    const nextDayTotal = calculateDenominationsTotal(formData.next_day_cash);
 
-    // Validación para cierre de caja
-    if (denominationsTotal !== Number(actualAmount)) {
-      alert('El monto total no coincide con la suma de las denominaciones');
-      return;
-    }
+    // Validación para cierre de caja - debe coincidir con el efectivo actual
+    const validation = validateCajaBalance(denominationsTotal, actualAmount);
+    
+    if (!validation.isValid) {
+      const confirmed = confirm(
+        `${validation.message}. El monto total de denominaciones (${formatCurrency(denominationsTotal)}) no coincide exactamente con el efectivo disponible en caja (${formatCurrency(actualAmount)}). ¿Desea continuar con el cierre?`
+      );
 
-    // Validación adicional con actualAmount
-    if (denominationsTotal !== actualAmount) {
-      alert('El monto ingresado no coincide con el monto actual en caja');
-      return;
+      if (!confirmed) {
+        return;
+      }
     }
 
     await onClose(
       Number(denominationsTotal),
       formData.denominations,
-      nextDay,
+      nextDayTotal,
       formData.next_day_cash,
       notes
     );
@@ -169,13 +166,13 @@ export default function CajaLayout({
           <DialogHeader>
             <DialogTitle>{caja ? 'Cerrar Caja' : 'Abrir Caja'}</DialogTitle>
             <DialogDescription>
-              {caja
+              {/* {caja
                 ? 'Ingrese el monto final y notas para cerrar la caja'
-                : 'No es necesario ingresar el monto inicial, el monto inicial se define al cerrar la caja y se agrega automaticamente, si lo desea puede remplazarlo manualmente.'}
+                : 'No es necesario ingresar el monto inicial, el monto inicial se define al cerrar la caja y se agrega automaticamente, si lo desea puede remplazarlo manualmente.'} */}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-2 py-4">
+          {/* <div className="grid gap-2 py-4">
             <div>
               <Label htmlFor="amount" className="text-right text-lg">
                 Monto {caja ? 'Final' : 'Inicial'}
@@ -198,11 +195,12 @@ export default function CajaLayout({
                       <Label>${denom}</Label>
                       <Input
                         type="number"
-                        value={formData.denominations[denom] || ''}
-                        onChange={(e) =>
-                          handleDenominationChange(denom, e.target.value)
-                        }
+                        {...register(`denominations.${denom}` as any, {
+                          valueAsNumber: true,
+                          setValueAs: (v) => Number(v) || 0,
+                        })}
                       />
+
                     </div>
                   ))}
                 </div>
@@ -220,7 +218,7 @@ export default function CajaLayout({
                 )}
               </div>
             </div>
-            {caja && (
+            {/* {caja && (
               <>
                 <div>
                   <Label htmlFor="amount" className="text-right text-lg">
@@ -244,14 +242,12 @@ export default function CajaLayout({
                           <Label>${denom}</Label>
                           <Input
                             type="number"
-                            value={formData.next_day_cash[denom] || ''}
-                            onChange={(e) =>
-                              handleNextDayDenominationChange(
-                                denom,
-                                e.target.value
-                              )
-                            }
+                            {...register(`next_day_cash.${denom}` as any, {
+                              valueAsNumber: true,
+                              setValueAs: (v) => Number(v) || 0,
+                            })}
                           />
+
                         </div>
                       ))}
                     </div>
@@ -273,8 +269,8 @@ export default function CajaLayout({
                   />
                 </div>
               </>
-            )}
-          </div>
+            )} 
+          </div> */}
           <DialogFooter>
             <Button onClick={caja ? handleCloseCaja : handleOpenCaja}>
               {caja ? 'Cerrar Caja' : 'Abrir Caja'}
@@ -285,9 +281,11 @@ export default function CajaLayout({
       <div>
         <div>
           <div className="flex items-center justify-end px-6">
-            <Button onClick={() => setOpen(true)}>
-              {caja ? 'Cerrar Caja' : 'Abrir Caja'}
-            </Button>
+            {!isReadOnly && (
+              <Button onClick={() => setOpen(true)}>
+                {caja ? 'Cerrar Caja' : 'Abrir Caja'}
+              </Button>
+            )}
           </div>
         </div>
         <div>{children}</div>

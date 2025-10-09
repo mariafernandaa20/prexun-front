@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -21,51 +21,57 @@ import {
 import { Label } from '@/components/ui/label';
 import { Gasto } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
+import { SignaturePad, SignaturePreview } from '@/components/ui/SignaturePad';
+import { QRSignature } from '@/components/QRSignature';
 
 interface GastoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  gasto?: Gasto | null;
+  selectedGasto?: Gasto | null;
   onSubmit: (data: Gasto) => Promise<void>;
 }
 
 export function GastoModal({
   isOpen,
   onClose,
-  gasto,
+  selectedGasto,
   onSubmit,
 }: GastoModalProps) {
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
   const users = useAuthStore((state) => state.users);
   const user = useAuthStore((state) => state.user);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showQRSignature, setShowQRSignature] = useState(false);
 
   const { register, handleSubmit, reset, setValue, watch } = useForm<
     Gasto & { image?: File }
   >({
-    defaultValues: gasto
+    defaultValues: selectedGasto
       ? {
-          id: gasto.id,
-          concept: gasto.concept,
-          amount: gasto.amount,
-          date: gasto.date,
-          method: gasto.method,
+          id: selectedGasto.id,
+          concept: selectedGasto.concept,
+          amount: selectedGasto.amount,
+          date: selectedGasto.date,
+          method: selectedGasto.method,
           denominations: null,
-          user_id: gasto.user_id,
-          admin_id: gasto.admin_id,
-          category: gasto.category,
-          campus_id: gasto.campus_id,
+          user_id: selectedGasto.user_id,
+          admin_id: selectedGasto.admin_id,
+          category: selectedGasto.category,
+          campus_id: selectedGasto.campus_id,
           cash_register_id: activeCampus.latest_cash_register.id,
           image: null,
-          user: gasto.user,
-          admin: gasto.admin,
+          signature: selectedGasto.signature,
+          user: selectedGasto.user,
+          admin: selectedGasto.admin,
         }
       : {
           concept: '',
           amount: 0,
           date: new Date().toISOString().split('T')[0],
-          method: 'Efectivo',
+          method: 'cash',
           denominations: null,
           user_id: undefined,
           admin_id: undefined,
@@ -73,6 +79,7 @@ export function GastoModal({
           campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
           cash_register_id: activeCampus.latest_cash_register.id,
           image: null,
+          signature: null,
         },
   });
 
@@ -111,17 +118,61 @@ export function GastoModal({
     e.preventDefault();
   };
 
+  const handleSignatureSave = (signatureDataURL: string) => {
+    setSignatureUrl(signatureDataURL);
+    setValue('signature', signatureDataURL);
+  };
+
+  const handleExternalSignatureUpdate = (signature: string) => {
+    setSignatureUrl(signature);
+    setValue('signature', signature);
+    setShowQRSignature(false);
+    toast({
+      title: 'Firma recibida',
+      description: 'La firma externa ha sido recibida exitosamente',
+    });
+  };
+
+  const handleCloseModal = () => {
+    // Limpiar todos los estados locales
+    setPreviewUrl(null);
+    setSignatureUrl(null);
+    setErrors({});
+    setSignatureModalOpen(false);
+    setShowQRSignature(false);
+    
+    // Resetear el formulario al estado inicial
+    reset({
+      concept: '',
+      amount: 0,
+      date: new Date().toISOString().split('T')[0],
+      method: 'cash',
+      denominations: null,
+      user_id: undefined,
+      admin_id: undefined,
+      category: '',
+      campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
+      cash_register_id: activeCampus?.latest_cash_register?.id,
+      image: null,
+      signature: null,
+    });
+    
+    onClose();
+  };
+
   const onSubmitForm = async (data: Gasto & { image?: File }) => {
     try {
       await onSubmit({
         ...data,
+        signature: signatureUrl,
         denominations: null,
         campus_id: Number(activeCampus.id),
       });
       reset();
       setPreviewUrl(null);
+      setSignatureUrl(null);
       setErrors({});
-      onClose();
+      handleCloseModal();
     } catch (error) {
       toast({
         title: 'Error al enviar el formulario',
@@ -132,11 +183,70 @@ export function GastoModal({
     }
   };
 
+
+  useEffect(() => {
+    if (selectedGasto) {
+      reset({
+        id: selectedGasto.id,
+        concept: selectedGasto.concept,
+        amount: selectedGasto.amount,
+        date: selectedGasto.date,
+        method: selectedGasto.method,
+        denominations: null,
+        user_id: selectedGasto.user_id,
+        admin_id: selectedGasto.admin_id,
+        category: selectedGasto.category,
+        campus_id: selectedGasto.campus_id,
+        cash_register_id: selectedGasto.cash_register_id || activeCampus?.latest_cash_register?.id,
+        image: null,
+        signature: selectedGasto.signature,
+        user: selectedGasto.user,
+        admin: selectedGasto.admin,
+      });
+    } else {
+      // Resetear formulario para nuevo gasto
+      reset({
+        concept: '',
+        amount: 0,
+        date: new Date().toISOString().split('T')[0],
+        method: 'cash',
+        denominations: null,
+        user_id: undefined,
+        admin_id: undefined,
+        category: '',
+        campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
+        cash_register_id: activeCampus?.latest_cash_register?.id,
+        image: null,
+        signature: null,
+      });
+    }
+  }, [selectedGasto, reset, activeCampus]);
+
+  // Efecto para sincronizar estados locales con el gasto seleccionado
+  useEffect(() => {
+    if (selectedGasto) {
+      // Cargar firma si existe
+      setSignatureUrl(selectedGasto.signature || null);
+      
+      // Cargar imagen si existe y es un string (URL)
+      if (selectedGasto.image && typeof selectedGasto.image === 'string') {
+        setPreviewUrl(selectedGasto.image);
+      } else {
+        setPreviewUrl(null);
+      }
+    } else {
+      // Limpiar estados para nuevo gasto
+      setSignatureUrl(null);
+      setPreviewUrl(null);
+      setShowQRSignature(false);
+    }
+  }, [selectedGasto]);
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleCloseModal}>
       <DialogContent className="min-w-[800px]">
         <DialogHeader>
-          <DialogTitle>{gasto ? 'Editar Gasto' : 'Nuevo Gasto'}</DialogTitle>
+          <DialogTitle>{selectedGasto ? 'Editar Gasto' : 'Nuevo Gasto'}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(onSubmitForm)}
@@ -168,7 +278,7 @@ export function GastoModal({
           <div>
             <label>Categoria</label>
             <Select
-              value={formData.category}
+              value={formData.category.toString()}
               onValueChange={(value) =>
                 handleChange({
                   name: 'category',
@@ -218,9 +328,9 @@ export function GastoModal({
                 <SelectValue placeholder="Seleccionar metodo de pago" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Efectivo">Efectivo</SelectItem>
-                <SelectItem value="Transferencia">Transferencia</SelectItem>
-                <SelectItem value="Tarjeta">Tarjeta</SelectItem>
+                <SelectItem value="cash">Efectivo</SelectItem>
+                <SelectItem value="transfer">Transferencia</SelectItem>
+                <SelectItem value="card">Tarjeta</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -259,6 +369,77 @@ export function GastoModal({
             </div>
           </div>
           <div className="space-y-2">
+            <Label>Firma Digital</Label>
+            {signatureUrl ? (
+              // Ya tiene firma - mostrar preview y deshabilitar edición si tiene ID
+              <div>
+                <SignaturePreview
+                  signature={signatureUrl}
+                  onRemove={selectedGasto?.id ? undefined : () => {
+                    setSignatureUrl(null);
+                    setValue('signature', null);
+                  }}
+                  onEdit={selectedGasto?.id ? undefined : () => setSignatureModalOpen(true)}
+                />
+                {selectedGasto?.id && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    La firma no puede ser modificada una vez que el gasto tiene ID
+                  </p>
+                )}
+              </div>
+            ) : selectedGasto?.id ? (
+              // Tiene ID pero no tiene firma - mostrar opciones de firma
+              <div className="space-y-3">
+                {showQRSignature ? (
+                  <div>
+                    <QRSignature
+                      gastoId={selectedGasto.id}
+                      onSignatureUpdate={handleExternalSignatureUpdate}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowQRSignature(false)}
+                      className="w-full mt-2"
+                    >
+                      Cancelar firma externa
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setSignatureModalOpen(true)}
+                      className="w-full"
+                    >
+                      Firmar Aquí
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowQRSignature(true)}
+                      className="w-full"
+                    >
+                      Firmar Externamente (QR)
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Nuevo gasto sin ID - solo firma local
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSignatureModalOpen(true)}
+                className="w-full"
+              >
+                Agregar Firma Digital
+              </Button>
+            )}
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="user_id">Usuario</Label>
             <Select
               value={formData.user_id?.toString()}
@@ -282,13 +463,21 @@ export function GastoModal({
             </Select>
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleCloseModal}>
               Cancelar
             </Button>
-            <Button type="submit">{gasto ? 'Actualizar' : 'Crear'}</Button>
+            <Button type="submit">{selectedGasto ? 'Actualizar' : 'Crear'}</Button>
           </div>
         </form>
       </DialogContent>
+
+      {/* Modal de Firma */}
+      <SignaturePad
+        isOpen={signatureModalOpen}
+        onClose={() => setSignatureModalOpen(false)}
+        onSave={handleSignatureSave}
+        title="Agregar Firma Digital"
+      />
     </Dialog>
   );
 }

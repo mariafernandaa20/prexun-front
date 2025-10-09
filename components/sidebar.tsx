@@ -191,6 +191,17 @@ export const data = {
       url: '/dashboard/whatsapp',
       icon: MessageCircle,
     },
+     {
+      name:'Reloj Checador',
+      url: '/dashboard/reloj-checador',
+      icon: CalendarClock as any,
+    },
+    {
+      name:'Reportes',
+      url: '/dashboard/reportes',
+      icon: PieChart,
+    }
+
   ],
 
   plantel_navigation: [
@@ -198,6 +209,11 @@ export const data = {
       name: 'Dashboard',
       url: '/planteles',
       icon: LayoutDashboard,
+    },
+    {
+      name: 'Caja',
+      url: '/planteles/caja',
+      icon: CreditCard,
     },
     {
       name: 'Estudiantes',
@@ -221,13 +237,8 @@ export const data = {
     },
     {
       name: 'Egresos',
-      url: '/planteles/gastos',
+      url: '/planteles/egresos',
       icon: DollarSign,
-    },
-    {
-      name: 'Caja',
-      url: '/planteles/caja',
-      icon: CreditCard,
     },
     {
       name: 'Grupos',
@@ -237,6 +248,10 @@ export const data = {
     {
       name: 'Asistencias',
       url: '/planteles/lista-asistencia',
+      icon: BookOpen,
+    },    {
+      name: 'Tomar asistencia',
+      url: '/planteles/tomar-asistencia',
       icon: BookOpen,
     },
     {
@@ -249,7 +264,9 @@ export const data = {
       url: '/planteles/chat',
       icon: FaWhatsapp as any,
     },
+   
   ],
+  
   chatbot_navigation: [
     {
       name: 'Chat',

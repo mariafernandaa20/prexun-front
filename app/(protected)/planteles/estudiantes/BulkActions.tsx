@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   bulkDeleteStudents,
   deleteStudent,
@@ -9,6 +9,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { Trash } from 'lucide-react';
+import SendTemplateDialog from './SendTemplateDialog';
 
 interface BulkActionsProps {
   selectedStudents: string[];
@@ -229,20 +231,26 @@ const BulkActions: React.FC<BulkActionsProps> = ({
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 w-full">
-      <Button
-        variant="destructive"
-        onClick={handleBulkDelete}
-        disabled={selectedStudents.length === 0}
-      >
-        Eliminar seleccionados
-      </Button>
-      <Button
-        variant="destructive"
-        onClick={handleBulkDeleteForever}
-        disabled={selectedStudents.length === 0}
-      >
-        Eliminar permanentemente
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          className="w-full"
+          variant="destructive"
+          onClick={handleBulkDelete}
+          title="Eliminar seleccionados"
+          disabled={selectedStudents.length === 0}
+        >
+          <Trash />
+        </Button>
+        <Button
+          className="w-full"
+          variant="destructive"
+          onClick={handleBulkDeleteForever}
+          disabled={selectedStudents.length === 0}
+          title="Eliminar permanentemente"
+        >
+          <Trash />
+        </Button>
+      </div>
       <div className="col-span-2 gap-4 flex items-center">
         <select
           className={buttonVariants({ variant: 'secondary' })}
@@ -263,7 +271,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
         >
           Asignar a semana intensiva
         </Button>
-      </div>{' '}
+      </div>
       <Button
         disabled={selectedStudents.length === 0}
         onClick={handleBulkMarkAsActive}
@@ -276,6 +284,11 @@ const BulkActions: React.FC<BulkActionsProps> = ({
       >
         Marcar como Inactivo
       </Button>
+
+      <SendTemplateDialog
+        selectedStudents={selectedStudents}
+        setIsBulkActionLoading={setIsBulkActionLoading}
+      />
     </div>
   );
 };

@@ -19,13 +19,20 @@ export interface Campus {
 export enum PaymentMethod {
   cash = 'Efectivo',
   transfer = 'Transferencia',
-  card = 'Tarjeta'
+  card = 'Tarjeta',
 }
-interface campus{
-  grupo_ids: {id: string[];
-  name: string;}[];
+interface campus {
+  grupo_ids: { id: string[]; name: string }[];
 }
-export type UserRole = 'admin' | 'user' | 'super_admin' | 'contador' | 'maestro' | 'proveedor' | 'otro' | 'chatbot';
+export type UserRole =
+  | 'admin'
+  | 'user'
+  | 'super_admin'
+  | 'contador'
+  | 'maestro'
+  | 'proveedor'
+  | 'otro'
+  | 'chatbot';
 
 export interface UserFormData {
   id?: string;
@@ -83,10 +90,20 @@ export interface Student {
   facultad?: Facultad;
   period_assignments?: any[];
   carrera?: Carrera;
-  general_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';
-  module_book?: null | 'No entregado' | 'En fisico' | 'En línea' | 'En línea y en fisico';
+  general_book?:
+    | null
+    | 'No entregado'
+    | 'En fisico'
+    | 'En línea'
+    | 'En línea y en fisico';
+  module_book?:
+    | null
+    | 'No entregado'
+    | 'En fisico'
+    | 'En línea'
+    | 'En línea y en fisico';
   transactions?: Transaction[];
-  grupo? : Grupo;
+  grupo?: Grupo;
   semana_intensiva_id: number | null;
 }
 
@@ -165,6 +182,7 @@ export interface Grupo {
   end_date: string;
   students_count?: number;
   moodle_id: number | null;
+  active_assignments_count?: number;
 }
 export interface Gasto {
   id?: number;
@@ -179,6 +197,7 @@ export interface Gasto {
   denominations?: null;
   cash_register_id?: number;
   image?: string | File;
+  signature?: string; // Base64 or URL
   user?: User;
   admin?: User;
 }
@@ -253,6 +272,11 @@ export interface Producto {
 }
 
 export interface StudentAssignment {
+  carrer_id: number;
+  book_delivered?: boolean;
+  book_delivery_type?: string;
+  book_delivery_date?: string;
+  book_notes?: string;
   id?: number;
   student_id: string;
   grupo_id?: number | null;
@@ -262,9 +286,10 @@ export interface StudentAssignment {
   valid_from?: string | null;
   valid_until?: string | null;
   is_active: boolean;
+  book_modulos?: 'no entregado' | 'paqueteria' | 'en fisico' | 'digital' | null;
   created_at?: string;
   updated_at?: string;
-  
+  carrera?: Carrera;
   // Relations
   student?: Student;
   grupo?: Grupo;
@@ -289,17 +314,21 @@ export interface SemanaIntensiva {
   available_slots?: number;
   is_almost_full?: boolean;
   is_full?: boolean;
-  
+
   // Relations
   period?: Period;
   students?: Student[];
 }
 
-export interface Caja { 
+export interface Caja {
   id?: number;
   campus_id: number;
   initial_amount: number;
+  initial_amount_cash?: string | Denomination;
   final_amount?: number;
+  final_amount_cash?: string | Denomination;
+  next_day?: number;
+  next_day_cash?: string | Denomination;
   notes?: string;
   opened_at?: string;
   closed_at?: string;
@@ -315,7 +344,16 @@ export interface SiteSetting {
   key: string;
   label: string;
   value: string | null;
-  type: 'text' | 'number' | 'boolean' | 'select' | 'json' | 'textarea' | 'email' | 'url' | 'password';
+  type:
+    | 'text'
+    | 'number'
+    | 'boolean'
+    | 'select'
+    | 'json'
+    | 'textarea'
+    | 'email'
+    | 'url'
+    | 'password';
   description?: string;
   options?: Record<string, string> | null;
   group: string;

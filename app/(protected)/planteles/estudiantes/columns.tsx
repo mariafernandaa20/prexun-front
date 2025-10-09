@@ -70,7 +70,7 @@ export const getColumnDefinitions = (
     id: 'firstname',
     label: 'Nombre',
     defaultVisible: true,
-    render: (student: Student) => student.firstname,
+    render: (student: Student) => <a href={`/planteles/estudiantes/${student.id}`}>{student.firstname}</a>,
   },
   {
     id: 'lastname',
@@ -107,13 +107,21 @@ export const getColumnDefinitions = (
     label: 'Grupo',
     defaultVisible: true,
     render: (student: Student) =>
-      student?.period_assignments?.[0]?.grupo?.name ? student.period_assignments[0].grupo.name : '-',
+      student?.period_assignments?.[0]?.grupo?.name
+        ? student.period_assignments[0].grupo.name
+        : '-',
+  },
+  {
+    id: 'grupo_viejo',
+    label: 'Grupo viejo',
+    defaultVisible: false,
+    render: (student: Student) => (student?.grupo ? student.grupo.name : '-'),
   },
   {
     id: 'carrera',
     label: 'Carrera',
     defaultVisible: false,
-    render: (student: Student) => student?.carrera?.name || '-',
+    render: (student: Student) => student?.period_assignments?.[0]?.carrera?.name || '-',
   },
   {
     id: 'facultad',
@@ -150,12 +158,6 @@ export const getColumnDefinitions = (
     label: 'Relación con el Tutor',
     defaultVisible: false,
     render: (student: Student) => student.tutor_relationship || '-',
-  },
-  {
-    id: 'status',
-    label: 'Estado',
-    defaultVisible: false,
-    render: (student: Student) => student.status || '-',
   },
   {
     id: 'health_conditions',

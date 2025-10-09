@@ -22,7 +22,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Input } from '@/components/ui/input';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
-import { getTodayDate } from '@/lib/utils';
+import { getTodayDate, getTodayDateTime } from '@/lib/utils';
+import { useCaja } from '@/app/(protected)/planteles/caja/useCaja';
 
 interface Debt {
   id: number;
@@ -79,6 +80,21 @@ export default function ChargesForm({
   const currentCampusId = campusId || activeCampus?.id || 0;
 
   const { SAT } = useFeatureFlags();
+  const { caja } = useCaja();
+  // Convertir datetime-local a formato Laravel (Y-m-d H:i:s)
+  const formatDateTimeForLaravel = (dateTimeLocal: string) => {
+    if (!dateTimeLocal) return null;
+    return dateTimeLocal.replace('T', ' ') + ':00'; // Agregar segundos
+  };
+
+  // Convertir formato Laravel (Y-m-d H:i:s) a datetime-local
+  const formatDateTimeFromLaravel = (laravelDateTime: string) => {
+    if (!laravelDateTime) return getTodayDateTime();
+    // Si ya es formato datetime-local, devolverlo tal como está
+    if (laravelDateTime.includes('T')) return laravelDateTime.slice(0, 16);
+    // Si es formato Laravel, convertir
+    return laravelDateTime.replace(' ', 'T').slice(0, 16);
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -102,11 +118,13 @@ export default function ChargesForm({
   }, [debt, open]);
 
   useEffect(() => {
-    setLocalFormData(formData);
-
-    if (!formData.payment_date) {
-      localFormData.payment_date = getTodayDate();
-    }
+    const updatedFormData = {
+      ...formData,
+      payment_date: formData.payment_date
+        ? formatDateTimeFromLaravel(formData.payment_date)
+        : getTodayDateTime(),
+    };
+    setLocalFormData(updatedFormData);
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,12 +138,19 @@ export default function ChargesForm({
         ? {
             ...localFormData,
             campus_id: currentCampusId,
+            cash_register_id: caja?.id,
             debt_id: debt.id,
             transaction_type: 'income',
+            paid: 1,
+            payment_date: formatDateTimeForLaravel(localFormData.payment_date),
           }
         : {
             ...localFormData,
             campus_id: currentCampusId,
+            cash_register_id: caja?.id,
+            transaction_type: 'income',
+            paid: 1,
+            payment_date: formatDateTimeForLaravel(localFormData.payment_date),
           };
 
       const updatedTransaction =
@@ -135,8 +160,10 @@ export default function ChargesForm({
               ...submitData,
               denominations: null,
               paid: 1,
-              cash_register_id: activeCampus.latest_cash_register.id,
-              payment_date: localFormData.payment_date,
+              cash_register_id: caja?.id,
+              payment_date: formatDateTimeForLaravel(
+                localFormData.payment_date
+              ),
               image: localFormData.image,
             });
 
@@ -164,7 +191,7 @@ export default function ChargesForm({
 
   return (
     <>
-      {activeCampus?.latest_cash_register ? (
+      {caja?.status === 'abierta' ? (
         icon ? (
           <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
             <Receipt className="w-4 h-4 " />
@@ -226,9 +253,9 @@ export default function ChargesForm({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="space-y-2">
-                <Label>Fecha de pago</Label>
+                <Label>Fecha y hora de pago</Label>
                 <Input
-                  type="date"
+                  type="datetime-local"
                   value={localFormData.payment_date}
                   onChange={(e) =>
                     updateFormData({ payment_date: e.target.value })
@@ -279,7 +306,6 @@ export default function ChargesForm({
                 <Select
                   value={localFormData.payment_method}
                   onValueChange={(value) => {
-                    console.log(value);
                     updateFormData({
                       payment_method: value as 'cash' | 'transfer' | 'card',
                     });
@@ -309,7 +335,6 @@ export default function ChargesForm({
                     accept="image/*"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      console.log('File selected:', file);
                       updateFormData({ image: file });
                     }}
                   />

@@ -41,8 +41,6 @@ export default function LoginPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('Submitting login with values:', values);
-
     try {
       setIsLoading(true);
 
@@ -52,9 +50,6 @@ export default function LoginPage() {
       )) as unknown as User;
 
       document.cookie = `user-role=${user.role}; path=/`;
-
-      console.log('Login successful, user role:', user.role, document.cookie);
-
       toast({
         title: 'Éxito',
         description: `Bienvenido ${user.name}`,

@@ -57,15 +57,16 @@ export default function Page() {
   const [whatsAppStudent, setWhatsAppStudent] = useState<Student | null>(null);
 
   // Filter states
-  const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
-  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<
-    string | null
-  >(null);
+  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
   const [periodFilter, setPeriodFilter] = useState<string>('');
+  const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>('');
+  const [assignedGrupoFilter, setAssignedGrupoFilter] = useState<string>('');
   const [carreraFilter, setCarreraFilter] = useState<string | null>(null);
   const [facultadFilter, setFacultadFilter] = useState<string | null>(null);
   const [moduloFilter, setModuloFilter] = useState<string | null>(null);
+  const [bookDeliveryTypeFilter, setBookDeliveryTypeFilter] = useState<string | null>(null);
+  const [bookDeliveredFilter, setBookDeliveredFilter] = useState<string | null>(null);
   const [filtersInitialized, setFiltersInitialized] = useState(false);
 
   // Search states
@@ -78,7 +79,7 @@ export default function Page() {
 
   const { toast } = useToast();
   const { activeCampus } = useActiveCampusStore();
-  const { user, periods, grupos } = useAuthStore();
+  const { user } = useAuthStore();
   const { config: uiConfig, loading: configLoading } = useUIConfig();
   const { pagination, setPagination } = usePagination({ initialPerPage: 50 });
   const router = useRouter();
@@ -94,6 +95,8 @@ export default function Page() {
       searchPhone ||
       searchMatricula;
 
+
+    // All params send 
     const params = {
       campus_id: activeCampus.id,
       page: !isSearching ? pagination.currentPage : 1,
@@ -105,13 +108,15 @@ export default function Page() {
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
       grupo: (!isSearching && grupoFilter) || undefined,
-      semanaIntensivaFilter:
-        (!isSearching && semanaIntensivaFilter) || undefined,
+      semanaIntensivaFilter: (!isSearching && semanaIntensivaFilter) || undefined,
       period: (!isSearching && periodFilter) || undefined,
       assignedPeriod: (!isSearching && assignedPeriodFilter) || undefined,
+      assignedGrupo: (!isSearching && assignedGrupoFilter) || undefined,
       carrera: (!isSearching && carreraFilter) || undefined,
       facultad: (!isSearching && facultadFilter) || undefined,
       modulo: (!isSearching && moduloFilter) || undefined,
+      book_delivery_type: ( bookDeliveryTypeFilter) || undefined,
+      book_delivered: ( bookDeliveredFilter !== null ? bookDeliveredFilter : undefined),
     };
 
     try {
@@ -148,6 +153,7 @@ export default function Page() {
     semanaIntensivaFilter,
     periodFilter,
     assignedPeriodFilter,
+    assignedGrupoFilter,
     carreraFilter,
     facultadFilter,
     moduloFilter,
@@ -325,6 +331,11 @@ export default function Page() {
       fetchStudents();
     }
   }, [
+    bookDeliveryTypeFilter,
+    bookDeliveredFilter,
+    grupoFilter,
+    assignedGrupoFilter,
+    semanaIntensivaFilter,
     filtersInitialized,
     searchFirstname,
     searchLastname,
@@ -366,9 +377,7 @@ export default function Page() {
   if (!activeCampus) {
     return <div className="text-center py-4">Seleccione un campus</div>;
   }
-
-  console.log(students)
-
+  
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">
@@ -399,7 +408,7 @@ export default function Page() {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col lg:flex-row gap-2">
+            <div className="flex flex-col gap-2">
               <Filters
                 setPeriodFilter={handlePeriodFilterChange}
                 periodFilter={periodFilter}
@@ -419,6 +428,12 @@ export default function Page() {
                 setSearchDate={setSearchDate}
                 setSearchPhone={setSearchPhone}
                 setSearchMatricula={setSearchMatricula}
+                setAssignedGrupoFilter={setAssignedGrupoFilter}
+                assignedGrupoFilter={assignedGrupoFilter}
+                setBookDeliveryTypeFilter={setBookDeliveryTypeFilter}
+                bookDeliveryTypeFilter={bookDeliveryTypeFilter}
+                setBookDeliveredFilter={setBookDeliveredFilter}
+                bookDeliveredFilter={bookDeliveredFilter}
               >
                 <MultiSelect
                   className="w-full"
@@ -432,17 +447,18 @@ export default function Page() {
                   emptyMessage="No se encontraron columnas"
                 />
               </Filters>
+              <div className="block">
+                {selectedStudents.length > 0 && (
+                  <BulkActions
+                    selectedStudents={selectedStudents}
+                    fetchStudents={fetchStudents}
+                    setSelectedStudents={setSelectedStudents}
+                    setIsBulkActionLoading={setIsBulkActionLoading}
+                  />
+                )}
+              </div>
             </div>
           </SectionContainer>
-
-          {selectedStudents.length > 0 && (
-            <BulkActions
-              selectedStudents={selectedStudents}
-              fetchStudents={fetchStudents}
-              setSelectedStudents={setSelectedStudents}
-              setIsBulkActionLoading={setIsBulkActionLoading}
-            />
-          )}
         </CardHeader>
         <CardContent>
           <SectionContainer>

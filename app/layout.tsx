@@ -21,8 +21,6 @@ export default function RootLayout({
 }>) {
   const develop = process.env.NEXT_PUBLIC_DEVELOPMENT === 'true' || false;
 
-  console.log(process.env.NEXT_PUBLIC_DEVELOPMENT);
-
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
@@ -31,6 +29,7 @@ export default function RootLayout({
           data-key="tb4VnCQ9veS+etZWvizOmA"
           async
         ></script>
+        <link rel="icon" href="/favicon.ico" />
         {develop && (
           <script
             dangerouslySetInnerHTML={{

@@ -10,6 +10,10 @@ import { toast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 
 interface FiltersProps {
+  setBookDeliveryTypeFilter?: (value: string | null) => void;
+  bookDeliveryTypeFilter?: string | null;
+  setBookDeliveredFilter?: (value: string | null) => void;
+  bookDeliveredFilter?: string | null;
   setPeriodFilter: (value: string) => void;
   periodFilter: any;
   setAssignedPeriodFilter: (value: string) => void;
@@ -28,6 +32,8 @@ interface FiltersProps {
   setSearchDate: (value: string) => void;
   setSearchPhone: (value: string) => void;
   setSearchMatricula: (value: number | null) => void;
+  assignedGrupoFilter: string | null;
+  setAssignedGrupoFilter: (value: string | null) => void;
   children?: React.ReactNode;
 }
 
@@ -50,10 +56,30 @@ const Filters: React.FC<FiltersProps> = ({
   setSearchDate,
   setSearchPhone,
   setSearchMatricula,
+  assignedGrupoFilter,
+  setAssignedGrupoFilter,
+  setBookDeliveryTypeFilter,
+  bookDeliveryTypeFilter,
+  setBookDeliveredFilter,
+  bookDeliveredFilter,
   children,
 }) => {
   const [showAllFilters, setShowAllFilters] = useState(false);
   const [firstnameInput, setFirstnameInput] = useState('');
+  const [bookDeliveryType, setBookDeliveryType] = useState<string>('');
+  const [bookDelivered, setBookDelivered] = useState<string>('');
+  // Sincroniza el filtro con el estado externo
+  useEffect(() => {
+    if (setBookDeliveryTypeFilter) {
+      setBookDeliveryTypeFilter(bookDeliveryType || null);
+    }
+  }, [bookDeliveryType, setBookDeliveryTypeFilter]);
+
+  useEffect(() => {
+    if (setBookDeliveredFilter) {
+      setBookDeliveredFilter(bookDelivered || null);
+    }
+  }, [bookDelivered, setBookDeliveredFilter]);
   const [lastnameInput, setLastnameInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [dateInput, setDateInput] = useState('');
@@ -98,7 +124,7 @@ const Filters: React.FC<FiltersProps> = ({
   return (
     <div className="flex flex-col gap-2 w-full max-w-[1/2]">
       <div className="space-y-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-2">
           <Input
             placeholder="Buscar por apellido..."
             value={lastnameInput}
@@ -127,16 +153,16 @@ const Filters: React.FC<FiltersProps> = ({
             options={grupos
               .filter(
                 (grupo) =>
-                  !periodFilter ||
-                  grupo.period_id.toString() === periodFilter.toString()
+                  !assignedPeriodFilter ||
+                  grupo.period_id.toString() === assignedPeriodFilter.toString()
               )
               .map((grupo) => ({
                 value: grupo.id.toString(),
                 label: grupo.name,
               }))}
-            value={undefined}
-            placeholder="Grupo"
-            onChange={(val) => setGrupoFilter(val)}
+            value={assignedGrupoFilter}
+            placeholder="Grupo (Nuevo)"
+            onChange={(val) => setAssignedGrupoFilter(val)}
             showAllOption={true}
             allOptionLabel="Todos"
           />
@@ -157,6 +183,7 @@ const Filters: React.FC<FiltersProps> = ({
             showAllOption={true}
             allOptionLabel="Todos"
           />
+
           <>{children && children}</>
         </div>
         <div
@@ -169,6 +196,25 @@ const Filters: React.FC<FiltersProps> = ({
               onChange={(e) => setFirstnameInput(e.target.value)}
               className="w-full"
             />
+            <select
+              className="w-full border rounded px-2 py-1"
+              value={bookDeliveryType}
+              onChange={(e) => setBookDeliveryType(e.target.value)}
+            >
+              <option value="">Tipo de entrega libro</option>
+              <option value="digital">Digital</option>
+              <option value="fisico">Físico</option>
+              <option value="paqueteria">Paquetería</option>
+            </select>
+            <select
+              className="w-full border rounded px-2 py-1"
+              value={bookDelivered}
+              onChange={(e) => setBookDelivered(e.target.value)}
+            >
+              <option value="">¿Libro entregado?</option>
+              <option value="true">Sí</option>
+              <option value="false">No</option>
+            </select>
             <Input
               type="date"
               value={dateInput}
@@ -196,6 +242,23 @@ const Filters: React.FC<FiltersProps> = ({
               value={periodFilter}
               placeholder="Periodo (Viejo)"
               onChange={setPeriodFilter}
+              showAllOption={true}
+              allOptionLabel="Todos"
+            />
+            <SearchableSelect
+              options={grupos
+                .filter(
+                  (grupo) =>
+                    !periodFilter ||
+                    grupo.period_id.toString() === periodFilter.toString()
+                )
+                .map((grupo) => ({
+                  value: grupo.id.toString(),
+                  label: grupo.name,
+                }))}
+              value={assignedGrupoFilter}
+              placeholder="Grupo (Viejo)"
+              onChange={(val) => setGrupoFilter(val)}
               showAllOption={true}
               allOptionLabel="Todos"
             />

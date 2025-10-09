@@ -88,28 +88,31 @@ export default function CobrosPage() {
     {
       id: 'folio',
       label: 'Folio',
-      render: (transaction: Transaction) => transaction.folio,
-    },
-    {
-      id: 'folio_new',
-      label: 'Nuevo Folio',
-      render: (transaction: Transaction) => transaction.folio_new,
-    },
-    {
-      id: 'otros_folios',
-      label: 'Nuevo Cash',
-      render: (transaction: Transaction) => transaction.folio_cash,
-    },
-    {
-      id: 'otros_folios',
-      label: 'Nuevo Transfer',
-      render: (transaction: Transaction) => transaction.folio_transfer,
+      render: (transaction: Transaction) => {
+        if (!transaction.paid) {
+          return 'No Pagado';
+        }
+
+        const folioNumber =
+          transaction.folio ||
+          transaction.folio_cash ||
+          transaction.folio_transfer ||
+          0;
+
+        return (
+          transaction.folio_new + ' ' + folioNumber.toString().padStart(4, '0')
+        );
+      },
     },
     {
       id: 'student',
       label: 'Estudiante',
-      render: (transaction: Transaction) =>
-        `${transaction.student?.firstname} ${transaction.student?.lastname}`,
+      render: (transaction: Transaction) => (
+        <a
+          className="text-blue-500"
+          href={`/planteles/estudiantes/${transaction.student?.id}`}
+        >{`${transaction.student?.firstname} ${transaction.student?.lastname}`}</a>
+      ),
     },
     {
       id: 'amount',
@@ -360,7 +363,7 @@ export default function CobrosPage() {
   return (
     <div>
       <Card className="w-full overflow-hidden">
-        <CardHeader className="sticky top-0 z-20 bg-card">
+        <CardHeader className="sticky top-0 bg-card">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <Input
               placeholder="Buscar por nombre completo..."

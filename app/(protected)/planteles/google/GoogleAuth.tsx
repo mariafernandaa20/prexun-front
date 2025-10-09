@@ -2,6 +2,7 @@
 
 import { useAuthStore } from '@/lib/store/auth-store';
 import { useEffect, useRef, useState } from 'react';
+import { FaGoogle } from 'react-icons/fa6';
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
 const SCOPES =
@@ -86,19 +87,13 @@ export default function GoogleAuth() {
       {!successMessage && (
         <button
           onClick={handleLogin}
+          className="flex items-center gap-2 "
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
             backgroundColor: '#fff',
-            border: '1px solid #dcdcdc',
+            color: 'black',
+            border: 'none',
             borderRadius: '5px',
-            padding: '10px 15px',
-            fontSize: '14px',
-            fontWeight: 500,
-            color: '#3c4043',
-            fontFamily: "'Roboto', sans-serif",
-            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            padding: '5px 10px',
             cursor: 'pointer',
           }}
         >
@@ -113,11 +108,9 @@ export default function GoogleAuth() {
 
       {successMessage && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <p style={{ marginTop: '10px', color: 'green', fontWeight: 'bold' }}>
-            {successMessage}
-          </p>
           <button
             onClick={handleLogout}
+            className="flex items-center gap-2"
             style={{
               backgroundColor: '#dc3545',
               color: 'white',
@@ -128,6 +121,7 @@ export default function GoogleAuth() {
               marginTop: '10px',
             }}
           >
+            <FaGoogle />
             Cerrar sesión
           </button>
         </div>

@@ -566,10 +566,13 @@ export const createGasto = async (gasto: Gasto & { image?: File }) => {
     if (key === 'image' && gasto.image) {
       formData.append('image', gasto.image);
     } 
+    else if (key === 'signature' && gasto.signature) {
+      formData.append('signature', gasto.signature);
+    }
     else if (key === 'denominations' && gasto.denominations) {
       formData.append('denominations', JSON.stringify(gasto.denominations));
     }
-    else {
+    else if (gasto[key as keyof Gasto] !== null && gasto[key as keyof Gasto] !== undefined) {
       formData.append(key, String(gasto[key as keyof Gasto]));
     }
   });
@@ -583,10 +586,32 @@ export const createGasto = async (gasto: Gasto & { image?: File }) => {
 };
 
 
-export const updateGasto = async (gasto: Gasto) => {
-  const response = await axiosInstance.put(
-    `${API_ENDPOINTS.UPDATE_GASTO}/${gasto.id}`,
-    gasto
+export const updateGasto = async (gasto: Gasto & { image?: File }) => {
+  const formData = new FormData();
+  
+  Object.keys(gasto).forEach(key => {
+    if (key === 'image' && gasto.image) {
+      formData.append('image', gasto.image);
+    } 
+    else if (key === 'signature' && gasto.signature) {
+      formData.append('signature', gasto.signature);
+    }
+    else if (key === 'denominations' && gasto.denominations) {
+      formData.append('denominations', JSON.stringify(gasto.denominations));
+    }
+    else if (gasto[key as keyof Gasto] !== null && gasto[key as keyof Gasto] !== undefined) {
+      formData.append(key, String(gasto[key as keyof Gasto]));
+    }
+  });
+
+  const response = await axiosInstance.post(
+    `${API_ENDPOINTS.UPDATE_GASTO}/${gasto.id}?_method=PUT`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
   );
   return response.data;
 };
@@ -639,6 +664,16 @@ export const updateCaja = async (caja: Caja) => {
 
 export const getCurrentCaja = async (campus_id: number) => {
   const response = await axiosInstance.get(`${API_ENDPOINTS.CURRENT_CAJA}/${campus_id}`);
+  return response.data;
+}
+
+export const getCajaById = async (cajaId: number): Promise<Caja> => {
+  const response = await axiosInstance.get(`/caja/${cajaId}`);
+  return response.data;
+}
+
+export const getCajasHistorial = async (campus_id: number): Promise<Caja[]> => {
+  const response = await axiosInstance.get(`${API_ENDPOINTS.CAJA}?campus_id=${campus_id}`);
   return response.data;
 }
 
