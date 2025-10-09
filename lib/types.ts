@@ -286,10 +286,10 @@ export interface StudentAssignment {
   valid_from?: string | null;
   valid_until?: string | null;
   is_active: boolean;
+  book_modulos?: 'no entregado' | 'paqueteria' | 'en fisico' | 'digital' | null;
   created_at?: string;
   updated_at?: string;
   carrera?: Carrera;
-
   // Relations
   student?: Student;
   grupo?: Grupo;

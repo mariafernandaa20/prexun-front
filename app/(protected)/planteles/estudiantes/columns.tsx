@@ -121,7 +121,7 @@ export const getColumnDefinitions = (
     id: 'carrera',
     label: 'Carrera',
     defaultVisible: false,
-    render: (student: Student) => student?.carrera?.name || '-',
+    render: (student: Student) => student?.period_assignments?.[0]?.carrera?.name || '-',
   },
   {
     id: 'facultad',

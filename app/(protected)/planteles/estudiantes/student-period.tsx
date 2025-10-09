@@ -74,6 +74,7 @@ interface AssignmentFormData {
   book_delivery_type?: string;
   book_delivery_date?: string;
   book_notes?: string;
+  book_modulos?: string | null;
 }
 
 export default function StudentPeriod({
@@ -103,6 +104,7 @@ export default function StudentPeriod({
     book_delivery_type: '',
     book_delivery_date: '',
     book_notes: '',
+    book_modulos: 'no entregado',
   });
 
   useEffect(() => {
@@ -144,6 +146,7 @@ export default function StudentPeriod({
       book_delivery_type: '',
       book_delivery_date: '',
       book_notes: '',
+      book_modulos: 'no entregado',
     });
     setIsEditing(false);
     setEditingAssignment(null);
@@ -168,6 +171,7 @@ export default function StudentPeriod({
       book_delivery_type: assignment.book_delivery_type ?? '',
       book_delivery_date: assignment.book_delivery_date ?? '',
       book_notes: assignment.book_notes ?? '',
+      book_modulos: assignment.book_modulos ?? 'no entregado',
     });
     setIsEditing(true);
     setEditingAssignment(assignment);
@@ -627,7 +631,27 @@ export default function StudentPeriod({
                       />
                     </div>
 
-                    <div className="space-y-2 md:col-span-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="book_modulos">Libro Módulos</Label>
+                        <Select
+                          value={formData.book_modulos ?? 'no entregado'}
+                          onValueChange={(value) =>
+                            handleInputChange('book_modulos', value === '' ? null : value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Estado del libro de módulos" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="no entregado">No entregado</SelectItem>
+                            <SelectItem value="paqueteria">Paquetería</SelectItem>
+                            <SelectItem value="en fisico">En físico</SelectItem>
+                            <SelectItem value="digital">Digital</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="book_notes">Notas adicionales</Label>
                       <Input
                         id="book_notes"
@@ -682,6 +706,7 @@ export default function StudentPeriod({
                   <TableRow>
                     <TableHead>Carrera</TableHead>
                     <TableHead>Grupo</TableHead>
+                    <TableHead>Libro Módulos</TableHead>
                     <TableHead>Periodo</TableHead>
                     <TableHead>Fechas</TableHead>
                     <TableHead>Estado</TableHead>
@@ -710,6 +735,11 @@ export default function StudentPeriod({
                               )}
                             </div>
                           )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {assignment.book_modulos || 'no entregado'}
                         </div>
                       </TableCell>
                       <TableCell>
