@@ -793,7 +793,7 @@ export function StudentForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="general_book">Libro general</Label>
           <Select
             name="general_book"
@@ -817,8 +817,8 @@ export function StudentForm({
               </SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        {formData.type === 'facultad' && (
+        </div> */}
+        {/*formData.type === 'facultad' && (
           <div className="space-y-2">
             <Label htmlFor="module_book">Libro de módulo</Label>
             <Select
@@ -844,7 +844,7 @@ export function StudentForm({
               </SelectContent>
             </Select>
           </div>
-        )}
+        )*/}
 
         <div className="space-y-2">
           <Label htmlFor="status">Estatus</Label>
