@@ -872,7 +872,6 @@ export function StudentForm({
         </div>
       </div>
 
-      {student?.id && <StudentPeriod student={student} />}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
