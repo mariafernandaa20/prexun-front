@@ -157,6 +157,8 @@ export default function Page() {
     carreraFilter,
     facultadFilter,
     moduloFilter,
+    bookDeliveryTypeFilter,
+    bookDeliveredFilter,
     toast,
     setPagination,
   ]);
@@ -344,13 +346,10 @@ export default function Page() {
     searchPhone,
     searchMatricula,
     periodFilter,
-    grupoFilter,
-    semanaIntensivaFilter,
     assignedPeriodFilter,
     carreraFilter,
     facultadFilter,
     moduloFilter,
-    pagination.currentPage,
     setPagination,
     fetchStudents,
   ]);
