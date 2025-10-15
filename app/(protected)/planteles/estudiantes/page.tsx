@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Promocion, Student } from '@/lib/types';
 import {
@@ -323,22 +323,22 @@ export default function Page() {
     }
   }, [activeCampus, filtersInitialized, fetchInitialData]);
 
-  // Fetch students when filters change
+  // Fetch students when filters change (reset to page 1)
   useEffect(() => {
     if (!filtersInitialized) return;
-
+    
     if (pagination.currentPage !== 1) {
       setPagination((prev) => ({ ...prev, currentPage: 1 }));
     } else {
       fetchStudents();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     bookDeliveryTypeFilter,
     bookDeliveredFilter,
     grupoFilter,
     assignedGrupoFilter,
     semanaIntensivaFilter,
-    filtersInitialized,
     searchFirstname,
     searchLastname,
     searchEmail,
@@ -350,20 +350,17 @@ export default function Page() {
     carreraFilter,
     facultadFilter,
     moduloFilter,
-    setPagination,
-    fetchStudents,
+    filtersInitialized,
   ]);
 
   // Fetch students when pagination changes
   useEffect(() => {
-    if (filtersInitialized) {
-      fetchStudents();
-    }
+    if (!filtersInitialized) return;
+    fetchStudents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     pagination.currentPage,
     pagination.perPage,
-    filtersInitialized,
-    fetchStudents,
   ]);
 
   // Update selectAll state based on selected students
