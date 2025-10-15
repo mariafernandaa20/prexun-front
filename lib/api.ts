@@ -876,3 +876,19 @@ export const deleteNote = async (id: number) => {
   const response = await axiosInstance.delete(`${API_ENDPOINTS.DELETE_NOTE}/${id}`);
   return response.data;
 };
+
+// Student Grades from Moodle
+export const getStudentGrades = async (studentId: number) => {
+  const response = await axiosInstance.get(`/students/${studentId}/grades`);
+  return response.data;
+};
+
+export const getStudentCourses = async (studentId: number) => {
+  const response = await axiosInstance.get(`/students/${studentId}/courses`);
+  return response.data;
+};
+
+export const getCourseActivities = async (studentId: number, courseId: number) => {
+  const response = await axiosInstance.get(`/students/${studentId}/courses/${courseId}/activities`);
+  return response.data;
+};

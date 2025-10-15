@@ -55,6 +55,7 @@ import {
   toggleStudentAssignmentActive,
 } from '@/lib/api';
 import SearchableSelect from '@/components/SearchableSelect';
+import StudentGrades from '@/components/students/StudentGrades';
 
 interface StudentPeriodProps {
   student: Student;
@@ -258,7 +259,7 @@ export default function StudentPeriod({
         description: error.response?.data?.message || 'Intente nuevamente',
         variant: 'destructive',
       });
-    }
+    }   
   };
 
   const handleDelete = async (assignmentId: number) => {
@@ -324,23 +325,26 @@ export default function StudentPeriod({
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Asignaciones</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center p-8">
-            <div className="text-muted-foreground">
-              Cargando asignaciones...
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Asignaciones</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center p-8">
+              <div className="text-muted-foreground">
+                Cargando asignaciones...
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <Card>
+    <div className="space-y-6">
+      <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -670,6 +674,7 @@ export default function StudentPeriod({
                           </SelectContent>
                         </Select>
                       </div>
+
                       <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="book_notes">Notas adicionales</Label>
                       <Input
@@ -828,5 +833,6 @@ export default function StudentPeriod({
         )}
       </CardContent>
     </Card>
+    </div>
   );
 }
