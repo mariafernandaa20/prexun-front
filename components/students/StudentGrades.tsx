@@ -229,7 +229,7 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
             {courseGrade.course_details && courseGrade.rawgrade !== undefined && courseGrade.rawgrade !== null && (
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>
-                  Calificación: {courseGrade.rawgrade.toFixed(2)} / {courseGrade.course_details.max_grade}
+                  {/* Calificación: {courseGrade?.rawgrade?.toFixed(2)} / {courseGrade.course_details.max_grade} */}
                 </span>
                 {courseGrade.course_details.percentage && (
                   <Badge variant="secondary">{courseGrade.course_details.percentage}</Badge>
