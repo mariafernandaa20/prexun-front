@@ -62,6 +62,11 @@ export default function GastosPage() {
 
   const tableColumns = [
     {
+      id: 'folio',
+      label: 'Folio',
+      render: (gasto: Gasto) => gasto?.folio_prefix?.toString() + gasto?.folio?.toString(),
+    },
+    {
       id: 'fecha',
       label: 'Fecha',
       render: (gasto: Gasto) =>
@@ -186,6 +191,7 @@ export default function GastosPage() {
     'comprobante',
     'firma',
     'acciones',
+    'folio',
   ]);
 
   const columnOptions = tableColumns.map((col) => ({
