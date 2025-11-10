@@ -30,9 +30,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import StudentAttendance from './StudentAttendance';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
-import StudentGrades from '@/components/students/StudentGrades';
 const { SAT } = useFeatureFlags();
-import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import StudentGrades from '@/components/students/StudentGrades';
 
 interface TransactionsTableProps {
