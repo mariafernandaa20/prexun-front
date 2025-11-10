@@ -29,8 +29,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import StudentAttendance from './StudentAttendance';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import StudentGrades from '@/components/students/StudentGrades';
+const { SAT } = useFeatureFlags();
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import StudentGrades from '@/components/students/StudentGrades';
 
@@ -39,7 +40,6 @@ interface TransactionsTableProps {
   onUpdateTransaction: (updatedTransaction: Transaction) => void;
   cards: CardType[];
   showNotes: boolean;
-  onOpenImage: (imageUrl: string) => void;
 }
 
 const TransactionsTable: React.FC<TransactionsTableProps> = ({
@@ -47,7 +47,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   onUpdateTransaction,
   cards,
   showNotes,
-  onOpenImage,
 }) => (
   <Table>
     <TableHeader>
@@ -60,7 +59,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
         <TableHead>Fecha</TableHead>
         <TableHead>Fecha de pago</TableHead>
         <TableHead>Fecha Limite de Pago</TableHead>
-        <TableHead>Comprobante</TableHead>
         {showNotes && <TableHead>Notas</TableHead>}
         <TableHead>Pagado</TableHead>
       </TableRow>
@@ -120,25 +118,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             {transaction.expiration_date
               ? formatTime({ time: transaction.expiration_date })
               : 'Sin vencimiento'}
-          </TableCell>
-          <TableCell>
-            {transaction.image ? (
-              <div className="flex items-center gap-2">
-                <img
-                  src={transaction.image as string}
-                  alt="Miniatura"
-                  className="w-10 h-10 object-cover rounded"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onOpenImage(transaction.image as string)}
-                >
-                  <Eye className="w-4 h-4 mr-1" />
-                  Ver
-                </Button>
-              </div>
-            ) : null}
           </TableCell>
           {showNotes && <TableCell>{transaction.notes}</TableCell>}
           <TableCell>{transaction.paid !== 0 ? 'Sí' : 'No'}</TableCell>
@@ -235,19 +214,12 @@ export function StudentComponent({ slug }: { slug: string[] }) {
   const { student, loading, error, updateTransaction, refetch, cards } =
     useStudentData(studentId, campusId);
   const [showNotes, setShowNotes] = useState(false);
-  const [imageModalOpen, setImageModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!student) return <div>No se encontró el estudiante</div>;
 
   const handlePurchaseComplete = (newTransaction: Transaction) => {
     updateTransaction(newTransaction);
-  };
-
-  const handleOpenImage = (imageUrl: string) => {
-    setSelectedImage(imageUrl);
-    setImageModalOpen(true);
   };
 
   const studentForUpdatePersonalInfo = {
@@ -397,7 +369,6 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                         onUpdateTransaction={updateTransaction}
                         cards={cards}
                         showNotes={showNotes}
-                        onOpenImage={handleOpenImage}
                       />
                     )}
                   </SectionContainer>
@@ -411,7 +382,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className='col-span-2 flex-col flex gap-4'>
             <StudentPeriod student={student} onRefresh={refetch} />
-            <StudentGrades studentId={student.id} />
+            <StudentGrades   studentId={student.id} />
 
             </div>
             <StudentNotes studentId={student.id.toString()} />
@@ -431,14 +402,6 @@ export function StudentComponent({ slug }: { slug: string[] }) {
             </Card>
           </div>        </TabsContent>
       </Tabs>
-      <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] h-full overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Comprobante</DialogTitle>
-          </DialogHeader>
-          <img src={selectedImage} alt="Comprobante" className="w-full" />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

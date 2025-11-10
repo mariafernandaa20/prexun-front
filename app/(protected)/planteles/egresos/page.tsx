@@ -27,7 +27,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { MultiSelect } from '@/components/multi-select';
 import {
@@ -54,7 +54,8 @@ export default function GastosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
-  const [selectedGastoForSignature, setSelectedGastoForSignature] = useState<Gasto | null>(null);
+  const [selectedGastoForSignature, setSelectedGastoForSignature] =
+    useState<Gasto | null>(null);
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
 
   const { pagination, setPagination } = usePagination();
@@ -64,7 +65,8 @@ export default function GastosPage() {
     {
       id: 'folio',
       label: 'Folio',
-      render: (gasto: Gasto) => gasto?.folio_prefix?.toString() + gasto?.folio?.toString(),
+      render: (gasto: Gasto) =>
+        gasto?.folio_prefix?.toString() + gasto?.folio?.toString(),
     },
     {
       id: 'fecha',
@@ -141,7 +143,9 @@ export default function GastosPage() {
                   Ver
                 </Button>
               </>
-            ) : <div className='text-center w-full'>Firmado</div>}
+            ) : (
+              <div className="text-center w-full">Firmado</div>
+            )}
           </div>
         ) : gasto.id ? (
           <Button
@@ -177,8 +181,8 @@ export default function GastosPage() {
               <Trash />
             </Button>
           </>
-        )
-    }
+        ),
+    },
   ];
 
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
@@ -203,7 +207,7 @@ export default function GastosPage() {
 
   const handleOpenModal = (gasto?: Gasto) => {
     setSelectedGasto(gasto || null);
-    console.log(gasto)
+    console.log(gasto);
     setIsModalOpen(true);
   };
 
@@ -237,16 +241,16 @@ export default function GastosPage() {
     if (!selectedGastoForSignature) return;
 
     // Actualizar el gasto en el estado local
-    setGastos(prevGastos =>
-      prevGastos.map(gasto =>
+    setGastos((prevGastos) =>
+      prevGastos.map((gasto) =>
         gasto.id === selectedGastoForSignature.id
           ? { ...gasto, signature }
           : gasto
       )
     );
 
-    setFilteredGastos(prevFiltered =>
-      prevFiltered.map(gasto =>
+    setFilteredGastos((prevFiltered) =>
+      prevFiltered.map((gasto) =>
         gasto.id === selectedGastoForSignature.id
           ? { ...gasto, signature }
           : gasto
@@ -416,16 +420,34 @@ export default function GastosPage() {
       </Dialog>
 
       {/* Modal de Firma Externa */}
-      <Dialog open={signatureModalOpen} onOpenChange={handleCloseSignatureModal}>
+      <Dialog
+        open={signatureModalOpen}
+        onOpenChange={handleCloseSignatureModal}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Firma Digital - {selectedGastoForSignature?.concept}</DialogTitle>
+            <DialogTitle>
+              Firma Digital - {selectedGastoForSignature?.concept}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="text-sm text-gray-600">
-              <p><strong>Concepto:</strong> {selectedGastoForSignature?.concept}</p>
-              <p><strong>Monto:</strong> ${selectedGastoForSignature?.amount}</p>
-              <p><strong>Fecha:</strong> {selectedGastoForSignature?.date ? format(new Date(selectedGastoForSignature.date), 'dd/MM/yyyy', { locale: es }) : ''}</p>
+              <p>
+                <strong>Concepto:</strong> {selectedGastoForSignature?.concept}
+              </p>
+              <p>
+                <strong>Monto:</strong> ${selectedGastoForSignature?.amount}
+              </p>
+              <p>
+                <strong>Fecha:</strong>{' '}
+                {selectedGastoForSignature?.date
+                  ? format(
+                      new Date(selectedGastoForSignature.date),
+                      'dd/MM/yyyy',
+                      { locale: es }
+                    )
+                  : ''}
+              </p>
             </div>
             {selectedGastoForSignature && (
               <QRSignature
@@ -434,10 +456,7 @@ export default function GastosPage() {
               />
             )}
             <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={handleCloseSignatureModal}
-              >
+              <Button variant="outline" onClick={handleCloseSignatureModal}>
                 Cancelar
               </Button>
             </div>

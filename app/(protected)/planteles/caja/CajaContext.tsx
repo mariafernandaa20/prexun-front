@@ -1,8 +1,18 @@
 'use client';
 
-import React, { createContext, useContext, useCallback, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useState,
+  useEffect,
+} from 'react';
 import { Caja, Denomination } from '@/lib/types';
-import { getCurrentCaja, openCaja as openCajaApi, closeCaja as closeCajaApi } from '@/lib/api';
+import {
+  getCurrentCaja,
+  openCaja as openCajaApi,
+  closeCaja as closeCajaApi,
+} from '@/lib/api';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 interface CajaContextValue {
@@ -49,7 +59,9 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
         setCaja(null);
         setError(null);
       } else {
-        setError(err instanceof Error ? err : new Error('Error al cargar caja'));
+        setError(
+          err instanceof Error ? err : new Error('Error al cargar caja')
+        );
       }
     } finally {
       setLoading(false);
@@ -107,7 +119,9 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
         setCaja(closedCaja);
         setError(null);
       } catch (err: any) {
-        setError(err instanceof Error ? err : new Error('Error al cerrar caja'));
+        setError(
+          err instanceof Error ? err : new Error('Error al cerrar caja')
+        );
         throw err;
       } finally {
         setLoading(false);

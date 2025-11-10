@@ -76,7 +76,9 @@ export default function CajaDetailPage() {
           Volver al Historial
         </Button>
         <Alert>
-          <AlertDescription>No se encontró la caja especificada.</AlertDescription>
+          <AlertDescription>
+            No se encontró la caja especificada.
+          </AlertDescription>
         </Alert>
       </div>
     );
@@ -85,7 +87,7 @@ export default function CajaDetailPage() {
   return (
     <div className="space-y-6 p-6">
       <CajaNavigation />
-      
+
       {/* Botón Volver */}
       <Button
         variant="ghost"

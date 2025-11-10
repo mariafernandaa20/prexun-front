@@ -1,11 +1,31 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, RefreshCw, TrendingUp, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  GraduationCap,
+  RefreshCw,
+  TrendingUp,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { getStudentGrades } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
@@ -52,7 +72,9 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
   const [grades, setGrades] = useState<CourseGrades[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [studentInfo, setStudentInfo] = useState<any>(null);
-  const [expandedCourses, setExpandedCourses] = useState<Set<number>>(new Set());
+  const [expandedCourses, setExpandedCourses] = useState<Set<number>>(
+    new Set()
+  );
 
   const toggleCourse = (courseId: number) => {
     const newExpanded = new Set(expandedCourses);
@@ -76,7 +98,9 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
       console.error('Error al cargar calificaciones:', error);
       toast({
         title: 'Error al cargar calificaciones',
-        description: error.response?.data?.message || 'No se pudieron obtener las calificaciones de Moodle',
+        description:
+          error.response?.data?.message ||
+          'No se pudieron obtener las calificaciones de Moodle',
         variant: 'destructive',
       });
     } finally {
@@ -107,7 +131,9 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center p-8">
-            <div className="text-muted-foreground">Cargando calificaciones...</div>
+            <div className="text-muted-foreground">
+              Cargando calificaciones...
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -159,7 +185,8 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               Calificaciones
             </CardTitle>
             <CardDescription className="mt-1.5">
-              {grades.length} {grades.length === 1 ? 'curso' : 'cursos'} con calificaciones
+              {grades.length} {grades.length === 1 ? 'curso' : 'cursos'} con
+              calificaciones
             </CardDescription>
           </div>
           <Button onClick={fetchGrades} size="sm" variant="outline">
@@ -170,11 +197,16 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {grades.map((courseGrade) => (
-          <div key={courseGrade.course_id} className="space-y-3 border rounded-lg p-4">
+          <div
+            key={courseGrade.course_id}
+            className="space-y-3 border rounded-lg p-4"
+          >
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-base">{courseGrade.course_name}</h3>
+                  <h3 className="font-semibold text-base">
+                    {courseGrade.course_name}
+                  </h3>
                   {courseGrade.course_type && (
                     <Badge variant="outline" className="text-xs">
                       {courseGrade.course_type}
@@ -182,17 +214,23 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="text-sm text-muted-foreground">{courseGrade.course_shortname}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {courseGrade.course_shortname}
+                  </p>
                   {courseGrade.carrera_name && (
                     <>
                       <span className="text-muted-foreground">•</span>
-                      <p className="text-sm text-muted-foreground">{courseGrade.carrera_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {courseGrade.carrera_name}
+                      </p>
                     </>
                   )}
                   {courseGrade.rank && (
                     <>
                       <span className="text-muted-foreground">•</span>
-                      <p className="text-sm text-muted-foreground">Posición #{courseGrade.rank}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Posición #{courseGrade.rank}
+                      </p>
                     </>
                   )}
                 </div>
@@ -204,86 +242,102 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
                     {courseGrade.grade}
                   </Badge>
                 )}
-                {courseGrade.activities_count && courseGrade.activities_count > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleCourse(courseGrade.course_id)}
-                  >
-                    {expandedCourses.has(courseGrade.course_id) ? (
-                      <>
-                        <ChevronUp className="h-4 w-4 mr-1" />
-                        Ocultar
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4 mr-1" />
-                        Ver actividades ({courseGrade.activities_count})
-                      </>
-                    )}
-                  </Button>
-                )}
+                {courseGrade.activities_count &&
+                  courseGrade.activities_count > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleCourse(courseGrade.course_id)}
+                    >
+                      {expandedCourses.has(courseGrade.course_id) ? (
+                        <>
+                          <ChevronUp className="h-4 w-4 mr-1" />
+                          Ocultar
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4 mr-1" />
+                          Ver actividades ({courseGrade.activities_count})
+                        </>
+                      )}
+                    </Button>
+                  )}
               </div>
             </div>
 
-            {courseGrade.course_details && courseGrade.rawgrade !== undefined && courseGrade.rawgrade !== null && (
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>
-                  {/* Calificación: {courseGrade?.rawgrade?.toFixed(2)} / {courseGrade.course_details.max_grade} */}
-                </span>
-                {courseGrade.course_details.percentage && (
-                  <Badge variant="secondary">{courseGrade.course_details.percentage}</Badge>
-                )}
-              </div>
-            )}
+            {courseGrade.course_details &&
+              courseGrade.rawgrade !== undefined &&
+              courseGrade.rawgrade !== null && (
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>
+                    {/* Calificación: {courseGrade?.rawgrade?.toFixed(2)} / {courseGrade.course_details.max_grade} */}
+                  </span>
+                  {courseGrade.course_details.percentage && (
+                    <Badge variant="secondary">
+                      {courseGrade.course_details.percentage}
+                    </Badge>
+                  )}
+                </div>
+              )}
 
-            {expandedCourses.has(courseGrade.course_id) && courseGrade.activities && (
-              <div className="mt-4">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Actividad</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead className="text-right">Calificación</TableHead>
-                      <TableHead className="text-right">Porcentaje</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {courseGrade.activities.map((activity, index) => (
-                      <TableRow key={activity.id || index}>
-                        <TableCell className="font-medium">
-                          {activity.name}
-                          {activity.feedback && (
-                            <p className="text-xs text-muted-foreground mt-1">{activity.feedback}</p>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-xs">
-                            {activity.module || activity.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {activity.rawgrade !== null && activity.max_grade !== null ? (
-                            <span>
-                              {activity.rawgrade.toFixed(2)} / {activity.max_grade}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">{activity.grade}</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {activity.percentage ? (
-                            <Badge variant="secondary">{activity.percentage}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
+            {expandedCourses.has(courseGrade.course_id) &&
+              courseGrade.activities && (
+                <div className="mt-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Actividad</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead className="text-right">
+                          Calificación
+                        </TableHead>
+                        <TableHead className="text-right">Porcentaje</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+                    </TableHeader>
+                    <TableBody>
+                      {courseGrade.activities.map((activity, index) => (
+                        <TableRow key={activity.id || index}>
+                          <TableCell className="font-medium">
+                            {activity.name}
+                            {activity.feedback && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {activity.feedback}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {activity.module || activity.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {activity.rawgrade !== null &&
+                            activity.max_grade !== null ? (
+                              <span>
+                                {activity.rawgrade.toFixed(2)} /{' '}
+                                {activity.max_grade}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                {activity.grade}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {activity.percentage ? (
+                              <Badge variant="secondary">
+                                {activity.percentage}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
           </div>
         ))}
       </CardContent>

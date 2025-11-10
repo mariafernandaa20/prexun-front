@@ -13,9 +13,9 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const StudentPeriodDialog = ({ student }: { student: Student }) => {
   const [open, setOpen] = useState(false);
-  
+
   return (
-    <Dialog open={open} onOpenChange={setOpen} modal={false} >
+    <Dialog open={open} onOpenChange={setOpen} modal={false}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" title="Ver periodos">
           <Calendar className="h-4 w-4" />
@@ -89,7 +89,9 @@ export const getColumnDefinitions = (
     id: 'firstname',
     label: 'Nombre',
     defaultVisible: true,
-    render: (student: Student) => <a href={`/planteles/estudiantes/${student.id}`}>{student.firstname}</a>,
+    render: (student: Student) => (
+      <a href={`/planteles/estudiantes/${student.id}`}>{student.firstname}</a>
+    ),
   },
   {
     id: 'lastname',
@@ -140,7 +142,8 @@ export const getColumnDefinitions = (
     id: 'carrera',
     label: 'Carrera',
     defaultVisible: false,
-    render: (student: Student) => student?.period_assignments?.[0]?.carrera?.name || '-',
+    render: (student: Student) =>
+      student?.period_assignments?.[0]?.carrera?.name || '-',
   },
   {
     id: 'facultad',
@@ -196,7 +199,7 @@ export const getColumnDefinitions = (
     defaultVisible: false,
     render: (student: Student) => student.preferred_communication || '-',
   },
-  
+
   {
     id: 'actions',
     label: 'Acciones',

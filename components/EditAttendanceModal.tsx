@@ -14,14 +14,14 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { 
-  User, 
-  Clock, 
+import {
+  User,
+  Clock,
   Calendar,
   CheckCircle,
   XCircle,
   FileText,
-  Save
+  Save,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
@@ -65,7 +65,7 @@ export default function EditAttendanceModal({
     if (isOpen && attendanceData) {
       setIsPresent(attendanceData.present);
       setNotes(attendanceData.notes || '');
-      
+
       // Formatear la hora para el input time
       if (attendanceData.attendance_time) {
         const time = new Date(attendanceData.attendance_time);
@@ -86,11 +86,13 @@ export default function EditAttendanceModal({
     }
 
     setIsLoading(true);
-    
+
     try {
       // Construir datetime completo
       const today = attendanceData.date;
-      const fullDateTime = attendanceTime ? `${today}T${attendanceTime}:00` : null;
+      const fullDateTime = attendanceTime
+        ? `${today}T${attendanceTime}:00`
+        : null;
 
       const payload = {
         present: isPresent,
@@ -112,12 +114,12 @@ export default function EditAttendanceModal({
         };
 
         onSave(updatedAttendance);
-        
+
         toast.success('Asistencia actualizada', {
           description: `${attendanceData.student.firstname} ${attendanceData.student.lastname} - ${isPresent ? 'Presente' : 'Ausente'}`,
           duration: 3000,
         });
-        
+
         onClose();
       }
     } catch (error: any) {
@@ -153,10 +155,12 @@ export default function EditAttendanceModal({
           {/* Información del estudiante */}
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="font-semibold text-lg">
-              {attendanceData.student.firstname} {attendanceData.student.lastname}
+              {attendanceData.student.firstname}{' '}
+              {attendanceData.student.lastname}
             </div>
             <div className="text-sm text-gray-600">
-              Matrícula: {attendanceData.student.matricula || attendanceData.student.id}
+              Matrícula:{' '}
+              {attendanceData.student.matricula || attendanceData.student.id}
             </div>
             <div className="flex items-center gap-2 mt-2">
               <Calendar className="h-4 w-4" />
@@ -165,7 +169,7 @@ export default function EditAttendanceModal({
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
-                  day: 'numeric'
+                  day: 'numeric',
                 })}
               </span>
             </div>
@@ -173,15 +177,17 @@ export default function EditAttendanceModal({
 
           {/* Estado de asistencia */}
           <div className="space-y-3">
-            <Label className="text-base font-medium">Estado de Asistencia</Label>
+            <Label className="text-base font-medium">
+              Estado de Asistencia
+            </Label>
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="attendance-status"
                 checked={isPresent}
                 onCheckedChange={(checked) => setIsPresent(checked as boolean)}
               />
-              <Label 
-                htmlFor="attendance-status" 
+              <Label
+                htmlFor="attendance-status"
                 className="flex items-center gap-2 cursor-pointer"
               >
                 {isPresent ? (
@@ -202,7 +208,10 @@ export default function EditAttendanceModal({
           {/* Hora de llegada */}
           {isPresent && (
             <div className="space-y-2">
-              <Label htmlFor="attendance-time" className="flex items-center gap-2">
+              <Label
+                htmlFor="attendance-time"
+                className="flex items-center gap-2"
+              >
                 <Clock className="h-4 w-4" />
                 Hora de Llegada
               </Label>
@@ -238,11 +247,7 @@ export default function EditAttendanceModal({
         </div>
 
         <DialogFooter className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
             Cancelar
           </Button>
           <Button

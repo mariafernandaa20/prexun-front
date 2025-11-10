@@ -37,7 +37,16 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Pencil, Trash2, Calendar, Users, Clock, BookOpen, Package } from 'lucide-react';
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Calendar,
+  Users,
+  Clock,
+  BookOpen,
+  Package,
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 import {
@@ -259,7 +268,7 @@ export default function StudentPeriod({
         description: error.response?.data?.message || 'Intente nuevamente',
         variant: 'destructive',
       });
-    }   
+    }
   };
 
   const handleDelete = async (assignmentId: number) => {
@@ -345,311 +354,347 @@ export default function StudentPeriod({
   return (
     <div className="space-y-6">
       <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Asignaciones del Estudiante
-            </CardTitle>
-            <CardDescription className="mt-1.5">
-              Gestiona los grupos, semanas intensivas y entregas de libros
-            </CardDescription>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={handleOpenAddDialog} size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Asignación
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {isEditing ? 'Editar Asignación' : 'Nueva Asignación'}
-                </DialogTitle>
-                <DialogDescription>
-                  {isEditing
-                    ? 'Modifica los datos de la asignación seleccionada'
-                    : 'Crea una nueva asignación para el estudiante'}
-                </DialogDescription>
-              </DialogHeader>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Asignaciones del Estudiante
+              </CardTitle>
+              <CardDescription className="mt-1.5">
+                Gestiona los grupos, semanas intensivas y entregas de libros
+              </CardDescription>
+            </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={handleOpenAddDialog} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nueva Asignación
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {isEditing ? 'Editar Asignación' : 'Nueva Asignación'}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {isEditing
+                      ? 'Modifica los datos de la asignación seleccionada'
+                      : 'Crea una nueva asignación para el estudiante'}
+                  </DialogDescription>
+                </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Sección: Información Académica */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-semibold text-sm">Información Académica</h3>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Sección: Información Académica */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="font-semibold text-sm">
+                        Información Académica
+                      </h3>
+                    </div>
+                    <Separator />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="period_id">Periodo *</Label>
+                        <Select
+                          value={formData?.period_id?.toString()}
+                          onValueChange={(value) =>
+                            handleInputChange('period_id', value.toString())
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar periodo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {periods.map((period) => (
+                              <SelectItem
+                                key={period.id}
+                                value={period.id.toString()}
+                              >
+                                {period.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="is_active">Estado</Label>
+                        <Select
+                          value={formData.is_active.toString()}
+                          onValueChange={(value) =>
+                            handleInputChange('is_active', value === 'true')
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Activo</SelectItem>
+                            <SelectItem value="false">Inactivo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="grupo_id">Grupo</Label>
+                        <Select
+                          value={formData.grupo_id?.toString() || 'none'}
+                          onValueChange={(value) =>
+                            handleInputChange(
+                              'grupo_id',
+                              value === 'none' ? null : parseInt(value)
+                            )
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar grupo (opcional)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Ninguno</SelectItem>
+                            {grupos
+                              .filter(
+                                (grupo) =>
+                                  grupo.period_id.toString() ===
+                                  (formData.period_id
+                                    ? formData.period_id.toString()
+                                    : null)
+                              )
+                              .map((grupo) => (
+                                <SelectItem
+                                  key={grupo.id}
+                                  value={grupo.id!.toString()}
+                                >
+                                  {grupo.name} (
+                                  {grupo.active_assignments_count || 0}/
+                                  {grupo.capacity})
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="semana_intensiva_id">
+                          Semana Intensiva
+                        </Label>
+                        <Select
+                          value={
+                            formData.semana_intensiva_id?.toString() || 'none'
+                          }
+                          onValueChange={(value) =>
+                            handleInputChange(
+                              'semana_intensiva_id',
+                              value === 'none' ? null : parseInt(value)
+                            )
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar semana intensiva (opcional)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Ninguna</SelectItem>
+                            {semanasIntensivas
+                              .filter(
+                                (semana) =>
+                                  semana.period_id.toString() ===
+                                  (formData.period_id
+                                    ? formData.period_id.toString()
+                                    : null)
+                              )
+                              .map((semana) => (
+                                <SelectItem
+                                  key={semana.id}
+                                  value={semana.id!.toString()}
+                                >
+                                  {semana.name} (
+                                  {semana.active_assignments_count || 0}/
+                                  {semana.capacity})
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="carrer_id">Carrera</Label>
+                        <SearchableSelect
+                          options={carreras.map((carrera) => ({
+                            value: carrera.id.toString(),
+                            label:
+                              carrera.name +
+                              (carrera.facultad_id
+                                ? ` (${facultades.find((f) => f.id === carrera.facultad_id)?.name || ''})`
+                                : ''),
+                          }))}
+                          value={formData.carrer_id?.toString() || ''}
+                          placeholder="Seleccionar carrera (opcional)"
+                          onChange={(value) =>
+                            handleInputChange(
+                              'carrer_id',
+                              value === '' ? null : parseInt(value)
+                            )
+                          }
+                          showAllOption={true}
+                          allOptionLabel="Ninguna"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="period_id">Periodo *</Label>
-                      <Select
-                        value={formData?.period_id?.toString()}
-                        onValueChange={(value) =>
-                          handleInputChange('period_id', value.toString())
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar periodo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {periods.map((period) => (
-                            <SelectItem
-                              key={period.id}
-                              value={period.id.toString()}
-                            >
-                              {period.name}
+
+                  {/* Sección: Periodo de Validez */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="font-semibold text-sm">
+                        Periodo de Validez
+                      </h3>
+                    </div>
+                    <Separator />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="valid_from">Fecha de inicio</Label>
+                        <Input
+                          id="valid_from"
+                          type="date"
+                          value={formData.valid_from || ''}
+                          onChange={(e) =>
+                            handleInputChange('valid_from', e.target.value)
+                          }
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="valid_until">Fecha de fin</Label>
+                        <Input
+                          id="valid_until"
+                          type="date"
+                          value={formData.valid_until || ''}
+                          onChange={(e) =>
+                            handleInputChange('valid_until', e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sección: Entrega de Libro */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="font-semibold text-sm">
+                        Entrega de Libro
+                      </h3>
+                    </div>
+                    <Separator />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="book_delivered">
+                          ¿Libro entregado?
+                        </Label>
+                        <Select
+                          value={formData.book_delivered ? 'true' : 'false'}
+                          onValueChange={(value) =>
+                            handleInputChange(
+                              'book_delivered',
+                              value === 'true'
+                            )
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Sí</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="book_delivery_type">
+                          Tipo de entrega
+                        </Label>
+                        <Select
+                          value={formData.book_delivery_type ?? 'none'}
+                          onValueChange={(value) =>
+                            handleInputChange(
+                              'book_delivery_type',
+                              value === 'none' ? null : value
+                            )
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">
+                              Sin especificar
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                            <SelectItem value="digital">
+                              <div className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                Digital
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="fisico">
+                              <div className="flex items-center gap-2">
+                                <BookOpen className="h-4 w-4" />
+                                Físico
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="paqueteria">
+                              <div className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                Paquetería
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="is_active">Estado</Label>
-                      <Select
-                        value={formData.is_active.toString()}
-                        onValueChange={(value) =>
-                          handleInputChange('is_active', value === 'true')
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Activo</SelectItem>
-                          <SelectItem value="false">Inactivo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="grupo_id">Grupo</Label>
-                      <Select
-                        value={formData.grupo_id?.toString() || 'none'}
-                        onValueChange={(value) =>
-                          handleInputChange(
-                            'grupo_id',
-                            value === 'none' ? null : parseInt(value)
-                          )
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar grupo (opcional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Ninguno</SelectItem>
-                          {grupos
-                            .filter(
-                              (grupo) =>
-                                grupo.period_id.toString() ===
-                                (formData.period_id
-                                  ? formData.period_id.toString()
-                                  : null)
+                      <div className="space-y-2">
+                        <Label htmlFor="book_delivery_date">
+                          Fecha de entrega
+                        </Label>
+                        <Input
+                          id="book_delivery_date"
+                          type="date"
+                          value={formData.book_delivery_date || ''}
+                          onChange={(e) =>
+                            handleInputChange(
+                              'book_delivery_date',
+                              e.target.value
                             )
-                            .map((grupo) => (
-                              <SelectItem
-                                key={grupo.id}
-                                value={grupo.id!.toString()}
-                              >
-                                {grupo.name} (
-                                {grupo.active_assignments_count || 0}/
-                                {grupo.capacity})
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="semana_intensiva_id">
-                        Semana Intensiva
-                      </Label>
-                      <Select
-                        value={formData.semana_intensiva_id?.toString() || 'none'}
-                        onValueChange={(value) =>
-                          handleInputChange(
-                            'semana_intensiva_id',
-                            value === 'none' ? null : parseInt(value)
-                          )
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar semana intensiva (opcional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Ninguna</SelectItem>
-                          {semanasIntensivas
-                            .filter(
-                              (semana) =>
-                                semana.period_id.toString() ===
-                                (formData.period_id
-                                  ? formData.period_id.toString()
-                                  : null)
-                            )
-                            .map((semana) => (
-                              <SelectItem
-                                key={semana.id}
-                                value={semana.id!.toString()}
-                              >
-                                {semana.name} (
-                                {semana.active_assignments_count || 0}/
-                                {semana.capacity})
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="carrer_id">Carrera</Label>
-                      <SearchableSelect
-                        options={carreras.map((carrera) => ({
-                          value: carrera.id.toString(),
-                          label: carrera.name + (carrera.facultad_id ? ` (${facultades.find(f => f.id === carrera.facultad_id)?.name || ''})` : ''),
-                        }))}
-                        value={formData.carrer_id?.toString() || ''}
-                        placeholder="Seleccionar carrera (opcional)"
-                        onChange={(value) =>
-                          handleInputChange(
-                            'carrer_id',
-                            value === '' ? null : parseInt(value)
-                          )
-                        }
-                        showAllOption={true}
-                        allOptionLabel="Ninguna"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sección: Periodo de Validez */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-semibold text-sm">Periodo de Validez</h3>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="valid_from">Fecha de inicio</Label>
-                      <Input
-                        id="valid_from"
-                        type="date"
-                        value={formData.valid_from || ''}
-                        onChange={(e) =>
-                          handleInputChange('valid_from', e.target.value)
-                        }
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="valid_until">Fecha de fin</Label>
-                      <Input
-                        id="valid_until"
-                        type="date"
-                        value={formData.valid_until || ''}
-                        onChange={(e) =>
-                          handleInputChange('valid_until', e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sección: Entrega de Libro */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-semibold text-sm">Entrega de Libro</h3>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="book_delivered">¿Libro entregado?</Label>
-                      <Select
-                        value={formData.book_delivered ? 'true' : 'false'}
-                        onValueChange={(value) =>
-                          handleInputChange('book_delivered', value === 'true')
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Sí</SelectItem>
-                          <SelectItem value="false">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="book_delivery_type">Tipo de entrega</Label>
-                      <Select
-                        value={formData.book_delivery_type ?? 'none'}
-                        onValueChange={(value) =>
-                          handleInputChange('book_delivery_type', value === 'none' ? null : value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Sin especificar</SelectItem>
-                          <SelectItem value="digital">
-                            <div className="flex items-center gap-2">
-                              <Package className="h-4 w-4" />
-                              Digital
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="fisico">
-                            <div className="flex items-center gap-2">
-                              <BookOpen className="h-4 w-4" />
-                              Físico
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="paqueteria">
-                            <div className="flex items-center gap-2">
-                              <Package className="h-4 w-4" />
-                              Paquetería
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="book_delivery_date">Fecha de entrega</Label>
-                      <Input
-                        id="book_delivery_date"
-                        type="date"
-                        value={formData.book_delivery_date || ''}
-                        onChange={(e) =>
-                          handleInputChange('book_delivery_date', e.target.value)
-                        }
-                      />
-                    </div>
+                          }
+                        />
+                      </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="book_modulos">Libro Módulos</Label>
                         <Select
                           value={formData.book_modulos ?? 'no entregado'}
                           onValueChange={(value) =>
-                            handleInputChange('book_modulos', value === '' ? null : value)
+                            handleInputChange(
+                              'book_modulos',
+                              value === '' ? null : value
+                            )
                           }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Estado del libro de módulos" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="no entregado">No entregado</SelectItem>
-                            <SelectItem value="paqueteria">Paquetería</SelectItem>
+                            <SelectItem value="no entregado">
+                              No entregado
+                            </SelectItem>
+                            <SelectItem value="paqueteria">
+                              Paquetería
+                            </SelectItem>
                             <SelectItem value="en fisico">En físico</SelectItem>
                             <SelectItem value="digital">Digital</SelectItem>
                           </SelectContent>
@@ -660,15 +705,22 @@ export default function StudentPeriod({
                         <Select
                           value={formData.book_general ?? 'no entregado'}
                           onValueChange={(value) =>
-                            handleInputChange('book_general', value === '' ? null : value)
+                            handleInputChange(
+                              'book_general',
+                              value === '' ? null : value
+                            )
                           }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Estado del libro general" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="no entregado">No entregado</SelectItem>
-                            <SelectItem value="paqueteria">Paquetería</SelectItem>
+                            <SelectItem value="no entregado">
+                              No entregado
+                            </SelectItem>
+                            <SelectItem value="paqueteria">
+                              Paquetería
+                            </SelectItem>
                             <SelectItem value="en fisico">En físico</SelectItem>
                             <SelectItem value="digital">Digital</SelectItem>
                           </SelectContent>
@@ -676,163 +728,157 @@ export default function StudentPeriod({
                       </div>
 
                       <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="book_notes">Notas adicionales</Label>
-                      <Input
-                        id="book_notes"
-                        type="text"
-                        placeholder="Información adicional sobre la entrega del libro"
-                        value={formData.book_notes || ''}
-                        onChange={(e) =>
-                          handleInputChange('book_notes', e.target.value)
-                        }
-                      />
+                        <Label htmlFor="book_notes">Notas adicionales</Label>
+                        <Input
+                          id="book_notes"
+                          type="text"
+                          placeholder="Información adicional sobre la entrega del libro"
+                          value={formData.book_notes || ''}
+                          onChange={(e) =>
+                            handleInputChange('book_notes', e.target.value)
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCloseDialog}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button type="submit">
-                    {isEditing ? 'Actualizar' : 'Crear'} Asignación
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        {assignments.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-              <Users className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">
-              Sin asignaciones
-            </h3>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              Este estudiante no tiene asignaciones a grupos o semanas
-              intensivas. Crea una nueva asignación para comenzar.
-            </p>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCloseDialog}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button type="submit">
+                      {isEditing ? 'Actualizar' : 'Crear'} Asignación
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Carrera</TableHead>
-                    <TableHead>Grupo</TableHead>
-                    <TableHead>Libro Módulos</TableHead>
-                    <TableHead>Periodo</TableHead>
-                    <TableHead>Fechas</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assignments.map((assignment) => (
-                    <TableRow key={assignment.id}>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {assignment?.carrera?.name || 'N/A'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {assignment.grupo_id && (
-                            <div className="text-sm font-medium">
-                              {getGrupoName(assignment.grupo_id)}
-                            </div>
-                          )}
-                          {assignment.semana_intensiva_id && (
-                            <div className="text-sm text-muted-foreground">
-                              {getSemanaIntensivaName(
-                                assignment.semana_intensiva_id
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {assignment.book_modulos || 'no entregado'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {getPeriodName(assignment.period_id)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-xs space-y-1 text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3 w-3" />
-                            <span>
-                              {formatDate(assignment.valid_from)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-3 w-3" />
-                            <span>
-                              {formatDate(assignment.valid_until)}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleActive(assignment.id!)}
-                          className="p-0 h-auto"
-                        >
-                          <Badge
-                            variant={
-                              assignment.is_active ? 'default' : 'secondary'
-                            }
-                            className="cursor-pointer"
-                          >
-                            {assignment.is_active ? 'Activo' : 'Inactivo'}
-                          </Badge>
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenEditDialog(assignment)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(assignment.id!)}
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+        </CardHeader>
+
+        <CardContent>
+          {assignments.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                <Users className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Sin asignaciones</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                Este estudiante no tiene asignaciones a grupos o semanas
+                intensivas. Crea una nueva asignación para comenzar.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Carrera</TableHead>
+                      <TableHead>Grupo</TableHead>
+                      <TableHead>Libro Módulos</TableHead>
+                      <TableHead>Periodo</TableHead>
+                      <TableHead>Fechas</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {assignments.map((assignment) => (
+                      <TableRow key={assignment.id}>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {assignment?.carrera?.name || 'N/A'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {assignment.grupo_id && (
+                              <div className="text-sm font-medium">
+                                {getGrupoName(assignment.grupo_id)}
+                              </div>
+                            )}
+                            {assignment.semana_intensiva_id && (
+                              <div className="text-sm text-muted-foreground">
+                                {getSemanaIntensivaName(
+                                  assignment.semana_intensiva_id
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {assignment.book_modulos || 'no entregado'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {getPeriodName(assignment.period_id)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs space-y-1 text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" />
+                              <span>{formatDate(assignment.valid_from)}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-3 w-3" />
+                              <span>{formatDate(assignment.valid_until)}</span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleToggleActive(assignment.id!)}
+                            className="p-0 h-auto"
+                          >
+                            <Badge
+                              variant={
+                                assignment.is_active ? 'default' : 'secondary'
+                              }
+                              className="cursor-pointer"
+                            >
+                              {assignment.is_active ? 'Activo' : 'Inactivo'}
+                            </Badge>
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenEditDialog(assignment)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(assignment.id!)}
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

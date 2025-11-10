@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, FileText } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { getPublicGastoInfo, signGastoExternally, checkPublicSignatureStatus } from '@/lib/api/gastos-signature';
+import {
+  getPublicGastoInfo,
+  signGastoExternally,
+  checkPublicSignatureStatus,
+} from '@/lib/api/gastos-signature';
 
 interface GastoInfo {
   id: number;
@@ -21,7 +25,7 @@ export default function FirmaExternaPage() {
   const params = useParams();
   const router = useRouter();
   const gastoId = params.gastoId as string;
-  
+
   const [gastoInfo, setGastoInfo] = useState<GastoInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
@@ -47,13 +51,16 @@ export default function FirmaExternaPage() {
 
   const handleSignatureSave = async (signatureDataURL: string) => {
     setIsSubmitting(true);
-    
+
     try {
       // Intentar actualizar con la API pública
       try {
         await signGastoExternally(parseInt(gastoId), signatureDataURL);
       } catch (apiError) {
-        console.warn('API no disponible, usando localStorage para demo:', apiError);
+        console.warn(
+          'API no disponible, usando localStorage para demo:',
+          apiError
+        );
         // Fallback a localStorage para demo
         localStorage.setItem(`gasto-${gastoId}-signed`, 'true');
         localStorage.setItem(`gasto-${gastoId}-signature`, signatureDataURL);
@@ -61,7 +68,7 @@ export default function FirmaExternaPage() {
 
       setIsSigned(true);
       setSignatureModalOpen(false);
-      
+
       toast({
         title: 'Firma guardada',
         description: 'La firma ha sido guardada exitosamente',
@@ -71,7 +78,7 @@ export default function FirmaExternaPage() {
       if (gastoInfo) {
         setGastoInfo({
           ...gastoInfo,
-          signature: signatureDataURL
+          signature: signatureDataURL,
         });
       }
 
@@ -79,7 +86,6 @@ export default function FirmaExternaPage() {
       setTimeout(() => {
         // router.push('/'); // Redirigir a donde necesites
       }, 2000);
-
     } catch (error) {
       console.error('Error guardando firma:', error);
       toast({
@@ -110,7 +116,9 @@ export default function FirmaExternaPage() {
           <CardContent className="p-6 text-center">
             <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h2 className="text-lg font-semibold mb-2">Gasto no encontrado</h2>
-            <p className="text-gray-600">No se pudo encontrar el gasto solicitado.</p>
+            <p className="text-gray-600">
+              No se pudo encontrar el gasto solicitado.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -130,7 +138,7 @@ export default function FirmaExternaPage() {
               Por favor firma el siguiente gasto para completar el proceso
             </p>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {/* Información del Gasto */}
             <div className="bg-gray-50 text-black p-4 rounded-lg">

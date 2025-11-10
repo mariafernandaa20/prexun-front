@@ -1,5 +1,5 @@
-'use client'
-import React from 'react'
+'use client';
+import React from 'react';
 import { useCajaActiva } from './CajaContext';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign } from 'lucide-react';
@@ -13,7 +13,11 @@ export default function CajaStatus() {
   }
 
   if (!caja) {
-    return <Link href={`/planteles/caja`}><Badge variant="destructive">Sin caja activa</Badge></Link>;
+    return (
+      <Link href={`/planteles/caja`}>
+        <Badge variant="destructive">Sin caja activa</Badge>
+      </Link>
+    );
   }
 
   const formatAmount = (amount: string | null) => {
@@ -23,7 +27,7 @@ export default function CajaStatus() {
 
   return (
     <Link href={`/planteles/caja`} className="flex items-center gap-2">
-      <Badge 
+      <Badge
         variant={caja.status === 'abierta' ? 'default' : 'secondary'}
         className="flex items-center gap-1"
       >
@@ -31,7 +35,9 @@ export default function CajaStatus() {
         Caja #{caja.id} - {caja.status}
       </Badge>
       <span className="text-sm text-muted-foreground">
-        {formatAmount(caja?.final_amount?.toString() || caja?.initial_amount?.toString())}
+        {formatAmount(
+          caja?.final_amount?.toString() || caja?.initial_amount?.toString()
+        )}
       </span>
     </Link>
   );

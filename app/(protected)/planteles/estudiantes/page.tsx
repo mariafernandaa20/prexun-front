@@ -1,5 +1,11 @@
 'use client';
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { Promocion, Student } from '@/lib/types';
 import {
@@ -57,7 +63,9 @@ export default function Page() {
   const [whatsAppStudent, setWhatsAppStudent] = useState<Student | null>(null);
 
   // Filter states
-  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<string | null>(null);
+  const [semanaIntensivaFilter, setSemanaIntensivaFilter] = useState<
+    string | null
+  >(null);
   const [periodFilter, setPeriodFilter] = useState<string>('');
   const [grupoFilter, setGrupoFilter] = useState<string | null>(null);
   const [assignedPeriodFilter, setAssignedPeriodFilter] = useState<string>('');
@@ -65,8 +73,12 @@ export default function Page() {
   const [carreraFilter, setCarreraFilter] = useState<string | null>(null);
   const [facultadFilter, setFacultadFilter] = useState<string | null>(null);
   const [moduloFilter, setModuloFilter] = useState<string | null>(null);
-  const [bookDeliveryTypeFilter, setBookDeliveryTypeFilter] = useState<string | null>(null);
-  const [bookDeliveredFilter, setBookDeliveredFilter] = useState<string | null>(null);
+  const [bookDeliveryTypeFilter, setBookDeliveryTypeFilter] = useState<
+    string | null
+  >(null);
+  const [bookDeliveredFilter, setBookDeliveredFilter] = useState<string | null>(
+    null
+  );
   const [filtersInitialized, setFiltersInitialized] = useState(false);
 
   // Search states
@@ -95,8 +107,7 @@ export default function Page() {
       searchPhone ||
       searchMatricula;
 
-
-    // All params send 
+    // All params send
     const params = {
       campus_id: activeCampus.id,
       page: !isSearching ? pagination.currentPage : 1,
@@ -108,15 +119,17 @@ export default function Page() {
       searchPhone: searchPhone,
       searchMatricula: searchMatricula,
       grupo: (!isSearching && grupoFilter) || undefined,
-      semanaIntensivaFilter: (!isSearching && semanaIntensivaFilter) || undefined,
+      semanaIntensivaFilter:
+        (!isSearching && semanaIntensivaFilter) || undefined,
       period: (!isSearching && periodFilter) || undefined,
       assignedPeriod: (!isSearching && assignedPeriodFilter) || undefined,
       assignedGrupo: (!isSearching && assignedGrupoFilter) || undefined,
       carrera: (!isSearching && carreraFilter) || undefined,
       facultad: (!isSearching && facultadFilter) || undefined,
       modulo: (!isSearching && moduloFilter) || undefined,
-      book_delivery_type: ( bookDeliveryTypeFilter) || undefined,
-      book_delivered: ( bookDeliveredFilter !== null ? bookDeliveredFilter : undefined),
+      book_delivery_type: bookDeliveryTypeFilter || undefined,
+      book_delivered:
+        bookDeliveredFilter !== null ? bookDeliveredFilter : undefined,
     };
 
     try {
@@ -326,7 +339,7 @@ export default function Page() {
   // Fetch students when filters change (reset to page 1)
   useEffect(() => {
     if (!filtersInitialized) return;
-    
+
     if (pagination.currentPage !== 1) {
       setPagination((prev) => ({ ...prev, currentPage: 1 }));
     } else {
@@ -359,10 +372,7 @@ export default function Page() {
     if (!filtersInitialized) return;
     fetchStudents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    pagination.currentPage,
-    pagination.perPage,
-  ]);
+  }, [pagination.currentPage, pagination.perPage]);
 
   // Update selectAll state based on selected students
   useEffect(() => {
@@ -374,7 +384,7 @@ export default function Page() {
   if (!activeCampus) {
     return <div className="text-center py-4">Seleccione un campus</div>;
   }
-  
+
   return (
     <div className="flex flex-col h-full">
       <Card className="flex flex-col flex-1 w-full overflow-hidden">

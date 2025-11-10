@@ -28,7 +28,13 @@ interface ChecadorRecord {
   work_date: string;
   check_in_at: string | null;
   check_out_at: string | null;
-  status: 'present' | 'on_break' | 'back_from_break' | 'checked_out' | 'rest_day' | 'absent';
+  status:
+    | 'present'
+    | 'on_break'
+    | 'back_from_break'
+    | 'checked_out'
+    | 'rest_day'
+    | 'absent';
   break_start_at: string | null;
   break_end_at: string | null;
   break_duration: number | null;
@@ -51,8 +57,10 @@ export default function ReportesPage() {
     try {
       setLoading(true);
       const formattedDate = format(date, 'yyyy-MM-dd');
-      const response = await axiosInstance.get(`/chat/checador/daily-report?date=${formattedDate}`);
-      
+      const response = await axiosInstance.get(
+        `/chat/checador/daily-report?date=${formattedDate}`
+      );
+
       if (response.data.success) {
         setReportData(response.data.data);
       } else {
@@ -82,7 +90,8 @@ export default function ReportesPage() {
       absent: { label: 'Ausente', color: 'text-white' },
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.absent;
+    const config =
+      statusConfig[status as keyof typeof statusConfig] || statusConfig.absent;
     return <span className={config.color}>{config.label}</span>;
   };
 
@@ -90,7 +99,7 @@ export default function ReportesPage() {
     if (!timeString) return '-';
     return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('es-ES', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -106,11 +115,11 @@ export default function ReportesPage() {
     return (
       <div className="text-xs">
         <div className="mb-1">
-          <span>{startTime} - {endTime}</span>
+          <span>
+            {startTime} - {endTime}
+          </span>
         </div>
-        <div className="text-gray-500">
-          ({duration} min)
-        </div>
+        <div className="text-gray-500">({duration} min)</div>
       </div>
     );
   };
@@ -122,7 +131,9 @@ export default function ReportesPage() {
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex flex-row gap-4 items-center">
           <div>
-            <label className="text-sm font-medium mb-2 block">Seleccionar Fecha:</label>
+            <label className="text-sm font-medium mb-2 block">
+              Seleccionar Fecha:
+            </label>
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -144,17 +155,36 @@ export default function ReportesPage() {
           <>
             {reportData.length > 0 ? (
               <div className="overflow-x-auto overflow-y-visible">
-                <Table className="w-full min-w-[800px] text-sm border rounded-lg border-separate" style={{borderSpacing: '2px'}}>
+                <Table
+                  className="w-full min-w-[800px] text-sm border rounded-lg border-separate"
+                  style={{ borderSpacing: '2px' }}
+                >
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="py-3 px-3 min-w-[120px]">ID</TableHead>
-                      <TableHead className="py-3 px-3 min-w-[120px]">Usuario</TableHead>
-                      <TableHead className="py-3 px-8 min-w-[100px]">Estado</TableHead>
-                      <TableHead className="py-3 px-4 min-w-[110px]">Hora Entrada</TableHead>
-                      <TableHead className="py-3 px-4 min-w-[110px]">Hora Salida</TableHead>
-                      <TableHead className="py-3 px-4 min-w-[100px]">Descanso</TableHead>
-                      <TableHead className="py-3 px-4 min-w-[130px]">Horas Trabajadas</TableHead>
-                      <TableHead className="py-3 px-4 min-w-[110px]">Día Completo</TableHead>
+                      <TableHead className="py-3 px-3 min-w-[120px]">
+                        ID
+                      </TableHead>
+                      <TableHead className="py-3 px-3 min-w-[120px]">
+                        Usuario
+                      </TableHead>
+                      <TableHead className="py-3 px-8 min-w-[100px]">
+                        Estado
+                      </TableHead>
+                      <TableHead className="py-3 px-4 min-w-[110px]">
+                        Hora Entrada
+                      </TableHead>
+                      <TableHead className="py-3 px-4 min-w-[110px]">
+                        Hora Salida
+                      </TableHead>
+                      <TableHead className="py-3 px-4 min-w-[100px]">
+                        Descanso
+                      </TableHead>
+                      <TableHead className="py-3 px-4 min-w-[130px]">
+                        Horas Trabajadas
+                      </TableHead>
+                      <TableHead className="py-3 px-4 min-w-[110px]">
+                        Día Completo
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -170,10 +200,14 @@ export default function ReportesPage() {
                           {getStatusBadge(record.status)}
                         </TableCell>
                         <TableCell className="py-3 px-4 min-w-[110px]">
-                          {record.check_in_at ? formatTime(record.check_in_at) : '-'}
+                          {record.check_in_at
+                            ? formatTime(record.check_in_at)
+                            : '-'}
                         </TableCell>
                         <TableCell className="py-3 px-4 min-w-[110px]">
-                          {record.check_out_at ? formatTime(record.check_out_at) : '-'}
+                          {record.check_out_at
+                            ? formatTime(record.check_out_at)
+                            : '-'}
                         </TableCell>
                         <TableCell className="py-3 px-4 min-w-[100px]">
                           {formatBreakInfo(record)}
@@ -181,7 +215,8 @@ export default function ReportesPage() {
                         <TableCell className="py-3 px-4 min-w-[130px]">
                           {record.hours_worked
                             ? Number(record.hours_worked).toFixed(2)
-                            : '0.00'} hrs
+                            : '0.00'}{' '}
+                          hrs
                         </TableCell>
                         <TableCell className="py-3 px-4">
                           {record.is_complete_day ? (
@@ -197,12 +232,14 @@ export default function ReportesPage() {
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
-                <p>No hay registros de asistencia para la fecha seleccionada.</p>
+                <p>
+                  No hay registros de asistencia para la fecha seleccionada.
+                </p>
               </div>
             )}
 
             <div className="mt-6 flex justify-end">
-              <Button 
+              <Button
                 onClick={() => fetchDailyReport(selectedDate)}
                 disabled={loading}
               >

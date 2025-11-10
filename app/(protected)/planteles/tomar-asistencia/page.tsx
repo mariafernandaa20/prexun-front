@@ -5,7 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, User, Clock, Calendar as CalendarIcon, Scan, Camera, X } from 'lucide-react';
+import {
+  CheckCircle,
+  XCircle,
+  User,
+  Clock,
+  Calendar as CalendarIcon,
+  Scan,
+  Camera,
+  X,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 import QrScanner from 'react-qr-barcode-scanner';
@@ -28,7 +37,9 @@ interface AttendanceRecord {
 
 export default function TomarAsistenciasPage() {
   const [matricula, setMatricula] = useState<string>('');
-  const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord[]>([]);
+  const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [todayDate] = useState<Date>(new Date());
   const [showQrScanner, setShowQrScanner] = useState(false);
@@ -55,10 +66,11 @@ export default function TomarAsistenciasPage() {
   };
 */
 
-
   const handleQrScanResult = (err: unknown, result?: any) => {
     if (result) {
-      const scannedText = result.getText ? result.getText() : result.text || result;
+      const scannedText = result.getText
+        ? result.getText()
+        : result.text || result;
       if (scannedText) {
         const upperMatricula = scannedText.toUpperCase();
         setMatricula(upperMatricula);
@@ -92,7 +104,9 @@ export default function TomarAsistenciasPage() {
     await processStudentAttendanceWithMatricula(matricula);
   };
 
-  const processStudentAttendanceWithMatricula = async (studentMatricula: string) => {
+  const processStudentAttendanceWithMatricula = async (
+    studentMatricula: string
+  ) => {
     if (!studentMatricula.trim()) {
       toast.error('Matrícula vacía');
       return;
@@ -101,7 +115,9 @@ export default function TomarAsistenciasPage() {
     setIsLoading(true);
     try {
       // Buscar estudiante
-      const studentResponse = await axiosInstance.get(`/teacher/student/${studentMatricula}`);
+      const studentResponse = await axiosInstance.get(
+        `/teacher/student/${studentMatricula}`
+      );
 
       if (!studentResponse.data.success) {
         toast.error('Estudiante no encontrado');
@@ -121,7 +137,10 @@ export default function TomarAsistenciasPage() {
         attendance_time: isoString,
       };
 
-      const attendanceResponse = await axiosInstance.post('/teacher/attendance/quick', payload);
+      const attendanceResponse = await axiosInstance.post(
+        '/teacher/attendance/quick',
+        payload
+      );
 
       if (attendanceResponse.data.success) {
         // Verificar si ya existía la asistencia
@@ -137,7 +156,9 @@ export default function TomarAsistenciasPage() {
           );
 
           // Agregar al estado local si no está ya
-          const existsInLocal = todayAttendance.find(record => record.studentId === student.id);
+          const existsInLocal = todayAttendance.find(
+            (record) => record.studentId === student.id
+          );
           if (!existsInLocal) {
             const existingRecord: AttendanceRecord = {
               studentId: student.id,
@@ -146,7 +167,7 @@ export default function TomarAsistenciasPage() {
               timestamp: new Date(existingData.attendance_time),
               grupo_name: student.assignments[0]?.grupo.name || 'Sin grupo',
             };
-            setTodayAttendance(prev => [existingRecord, ...prev]);
+            setTodayAttendance((prev) => [existingRecord, ...prev]);
           }
         } else {
           // Es un registro nuevo
@@ -158,15 +179,12 @@ export default function TomarAsistenciasPage() {
             grupo_name: student.assignments[0]?.grupo.name || 'Sin grupo',
           };
 
-          setTodayAttendance(prev => [newRecord, ...prev]);
+          setTodayAttendance((prev) => [newRecord, ...prev]);
 
-          toast.success(
-            `¡${student.firstname} ${student.lastname} PRESENTE!`,
-            {
-              description: `Grupo: ${student.assignments[0]?.grupo.name || 'Sin grupo'} - Registrado exitosamente`,
-              duration: 3000,
-            }
-          );
+          toast.success(`¡${student.firstname} ${student.lastname} PRESENTE!`, {
+            description: `Grupo: ${student.assignments[0]?.grupo.name || 'Sin grupo'} - Registrado exitosamente`,
+            duration: 3000,
+          });
         }
 
         setMatricula('');
@@ -189,7 +207,6 @@ export default function TomarAsistenciasPage() {
     }
   };
 
-
   // Manejar el escape para cerrar el QR scanner
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -202,14 +219,17 @@ export default function TomarAsistenciasPage() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [showQrScanner]);
 
-  const presentCount = todayAttendance.filter(record => record.present).length;
+  const presentCount = todayAttendance.filter(
+    (record) => record.present
+  ).length;
   const totalCount = todayAttendance.length;
   console.log(todayAttendance);
   return (
     <div>
-
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2 text-foreground dark:text-foreground">Tomar Asistencia</h1>
+        <h1 className="text-4xl font-bold mb-2 text-foreground dark:text-foreground">
+          Tomar Asistencia
+        </h1>
         <div className="flex items-center justify-center gap-2 text-muted-foreground dark:text-muted-foreground">
           <CalendarIcon className="h-5 w-5" />
           <span className="text-lg">
@@ -217,14 +237,13 @@ export default function TomarAsistenciasPage() {
               weekday: 'long',
               year: 'numeric',
               month: 'long',
-              day: 'numeric'
+              day: 'numeric',
             })}
           </span>
         </div>
       </div>
-      <div className='flex flex-col w-full lg:flex-row lg:gap-6'>
+      <div className="flex flex-col w-full lg:flex-row lg:gap-6">
         <div className="max-w-4xl mx-auto bg-background dark:bg-background xl:w-1/2">
-
           {/* Escáner principal */}
           <Card className="mb-8 bg-card dark:bg-card border-border dark:border-border">
             <CardHeader className="text-center">
@@ -233,13 +252,14 @@ export default function TomarAsistenciasPage() {
                 Escáner de Matrícula
               </CardTitle>
               <p className="text-muted-foreground dark:text-muted-foreground">
-                Ingresa la matrícula manualmente o escanea el código QR del estudiante
+                Ingresa la matrícula manualmente o escanea el código QR del
+                estudiante
               </p>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3 max-w-md mx-auto mb-4">
                 {showQrScanner && (
-                  <div className=''>
+                  <div className="">
                     <div className="">
                       <Button
                         onClick={closeQrScanner}
@@ -253,12 +273,13 @@ export default function TomarAsistenciasPage() {
                     <div className="relative">
                       <QrScanner
                         onUpdate={handleQrScanResult}
-                        onError={(error) => console.error('QR Scanner Error:', error)}
+                        onError={(error) =>
+                          console.error('QR Scanner Error:', error)
+                        }
                         width="100%"
                         height={300}
                       />
                     </div>
-
                   </div>
                 )}
                 <Input
@@ -304,25 +325,31 @@ export default function TomarAsistenciasPage() {
             <Card className="bg-card dark:bg-card border-border dark:border-border">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400">{presentCount}</div>
-                  <div className="text-sm text-muted-foreground dark:text-muted-foreground">Presentes Hoy</div>
+                  <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                    {presentCount}
+                  </div>
+                  <div className="text-sm text-muted-foreground dark:text-muted-foreground">
+                    Presentes Hoy
+                  </div>
                 </div>
               </CardContent>
             </Card>
             <Card className="bg-card dark:bg-card border-border dark:border-border">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{totalCount}</div>
-                  <div className="text-sm text-muted-foreground dark:text-muted-foreground">Total Asistencias</div>
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    {totalCount}
+                  </div>
+                  <div className="text-sm text-muted-foreground dark:text-muted-foreground">
+                    Total Asistencias
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-
-
         </div>
 
-        <div className='xl:w-1/2'>
+        <div className="xl:w-1/2">
           {/* Lista de asistencias del día */}
           {todayAttendance.length > 0 && (
             <Card className="bg-card dark:bg-card border-border dark:border-border">
@@ -344,16 +371,19 @@ export default function TomarAsistenciasPage() {
                           {record.student.firstname} {record.student.lastname}
                         </div>
                         <div className="text-sm text-muted-foreground dark:text-muted-foreground">
-                          Matrícula: {record.student.matricula || record.student.id}
+                          Matrícula:{' '}
+                          {record.student.matricula || record.student.id}
                         </div>
                         <div className="text-sm text-muted-foreground dark:text-muted-foreground">
-                          Grupo: {record.student.assignments[0]?.grupo.name || 'Sin grupo'}
+                          Grupo:{' '}
+                          {record.student.assignments[0]?.grupo.name ||
+                            'Sin grupo'}
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <Badge
-                          variant={record.present ? "default" : "destructive"}
-                          className={`${record.present ? "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600" : ""} text-sm`}
+                          variant={record.present ? 'default' : 'destructive'}
+                          className={`${record.present ? 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600' : ''} text-sm`}
                         >
                           {record.present ? (
                             <>
@@ -368,7 +398,9 @@ export default function TomarAsistenciasPage() {
                           )}
                         </Badge>
                         <div className="text-sm text-muted-foreground dark:text-muted-foreground text-right">
-                          <div>{record.timestamp.toLocaleTimeString('es-ES')}</div>
+                          <div>
+                            {record.timestamp.toLocaleTimeString('es-ES')}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -385,7 +417,9 @@ export default function TomarAsistenciasPage() {
                 <div className="text-center text-muted-foreground dark:text-muted-foreground">
                   <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p className="text-lg">No hay asistencias registradas hoy</p>
-                  <p className="text-sm">Comienza escaneando la primera matrícula</p>
+                  <p className="text-sm">
+                    Comienza escaneando la primera matrícula
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -314,7 +314,6 @@ export default function page() {
               <TableHead>Planteles</TableHead>
               <TableHead>Grupos</TableHead>
               <TableHead>Acciones</TableHead>
-         
             </TableRow>
           </TableHeader>
           <TableBody>
