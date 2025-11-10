@@ -53,6 +53,8 @@ interface Template {
   id: number;
   name: string;
   meta_id: string;
+  parameters?: Array<{ name: string; example: string }>;
+  example_message?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -71,12 +73,23 @@ export default function WhatsAppPage() {
   const [templatePhoneNumber, setTemplatePhoneNumber] = useState('');
   const [templateName, setTemplateName] = useState('');
   const [languageCode, setLanguageCode] = useState('es');
+  const [templateParameters, setTemplateParameters] = useState<
+    Record<string, string>
+  >({});
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
+    null
+  );
 
   // Template management
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateMetaId, setNewTemplateMetaId] = useState('');
+  const [newTemplateParameters, setNewTemplateParameters] = useState<
+    Array<{ name: string; example: string }>
+  >([]);
+  const [newTemplateExampleMessage, setNewTemplateExampleMessage] =
+    useState('');
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
 
   const checkStatus = async () => {
@@ -139,18 +152,41 @@ export default function WhatsAppPage() {
       return;
     }
 
+    // Validar parámetros si la plantilla los requiere
+    if (selectedTemplate?.parameters && selectedTemplate.parameters.length > 0) {
+      const missingParams = selectedTemplate.parameters.filter(
+        (param) => !templateParameters[param.name]?.trim()
+      );
+      if (missingParams.length > 0) {
+        toast.error(
+          `Por favor completa todos los parámetros: ${missingParams
+            .map((p) => p.name)
+            .join(', ')}`
+        );
+        return;
+      }
+    }
+
     setLoading(true);
     try {
+      const parametersArray =
+        selectedTemplate?.parameters?.map(
+          (param) => templateParameters[param.name]
+        ) || [];
+
       const response = await axiosInstance.post('/whatsapp/send-template', {
         phone_number: templatePhoneNumber,
         template_name: templateName,
         language_code: languageCode,
+        ...(parametersArray.length > 0 && { parameters: parametersArray }),
       });
 
       if (response.data.success) {
         toast.success('Mensaje de plantilla enviado exitosamente');
         setTemplatePhoneNumber('');
         setTemplateName('');
+        setTemplateParameters({});
+        setSelectedTemplate(null);
       } else {
         toast.error(
           response.data.message || 'Error al enviar el mensaje de plantilla'
@@ -202,6 +238,9 @@ export default function WhatsAppPage() {
       const response = await axiosInstance.post('/whatsapp/templates', {
         name: newTemplateName,
         meta_id: newTemplateMetaId,
+        parameters:
+          newTemplateParameters.length > 0 ? newTemplateParameters : null,
+        example_message: newTemplateExampleMessage || null,
         is_active: true,
       });
 
@@ -209,6 +248,8 @@ export default function WhatsAppPage() {
         toast.success('Plantilla creada exitosamente');
         setNewTemplateName('');
         setNewTemplateMetaId('');
+        setNewTemplateParameters([]);
+        setNewTemplateExampleMessage('');
         fetchTemplates();
       } else {
         toast.error(response.data.message || 'Error al crear la plantilla');
@@ -241,6 +282,8 @@ export default function WhatsAppPage() {
         {
           name: editingTemplate.name,
           meta_id: editingTemplate.meta_id,
+          parameters: editingTemplate.parameters || null,
+          example_message: editingTemplate.example_message || null,
           is_active: editingTemplate.is_active,
         }
       );
@@ -463,7 +506,15 @@ export default function WhatsAppPage() {
               {templates && templates.length > 0 && (
                 <div className="space-y-2">
                   <Label htmlFor="template-name">Plantilla</Label>
-                  <Select value={templateName} onValueChange={setTemplateName}>
+                  <Select
+                    value={templateName}
+                    onValueChange={(value) => {
+                      setTemplateName(value);
+                      const template = templates.find((t) => t.name === value);
+                      setSelectedTemplate(template || null);
+                      setTemplateParameters({});
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecciona una plantilla" />
                     </SelectTrigger>
@@ -489,6 +540,47 @@ export default function WhatsAppPage() {
                   </p>
                 </div>
               )}
+
+              {selectedTemplate?.example_message && (
+                <Alert>
+                  <AlertDescription className="text-sm">
+                    <strong>Ejemplo de mensaje:</strong>
+                    <div className="mt-2 whitespace-pre-wrap">
+                      {selectedTemplate.example_message}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {selectedTemplate?.parameters &&
+                selectedTemplate.parameters.length > 0 && (
+                  <div className="space-y-4 border rounded-lg p-4">
+                    <h4 className="font-medium text-sm">
+                      Parámetros de la plantilla
+                    </h4>
+                    {selectedTemplate.parameters.map((param, index) => (
+                      <div key={index} className="space-y-2">
+                        <Label htmlFor={`param-${index}`}>
+                          {param.name}
+                          <span className="text-xs text-muted-foreground ml-2">
+                            (Ej: {param.example})
+                          </span>
+                        </Label>
+                        <Input
+                          id={`param-${index}`}
+                          placeholder={param.example}
+                          value={templateParameters[param.name] || ''}
+                          onChange={(e) =>
+                            setTemplateParameters({
+                              ...templateParameters,
+                              [param.name]: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
 
               <div className="space-y-2">
                 <Label htmlFor="language">Código de Idioma</Label>
@@ -561,7 +653,7 @@ export default function WhatsAppPage() {
                     </Label>
                     <Input
                       id="new-template-name"
-                      placeholder="Ej: Bienvenida"
+                      placeholder="Ej: calificaciones_listas"
                       value={newTemplateName}
                       onChange={(e) => setNewTemplateName(e.target.value)}
                     />
@@ -570,12 +662,94 @@ export default function WhatsAppPage() {
                     <Label htmlFor="new-template-meta-id">ID de Meta</Label>
                     <Input
                       id="new-template-meta-id"
-                      placeholder="Ej: welcome_template_001"
+                      placeholder="Ej: calificaciones_listas"
                       value={newTemplateMetaId}
                       onChange={(e) => setNewTemplateMetaId(e.target.value)}
                     />
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="new-template-example">
+                    Mensaje de Ejemplo
+                  </Label>
+                  <Textarea
+                    id="new-template-example"
+                    placeholder="Tus calificaciones están listas.&#10;Puedes consultarlas aquí.&#10;Tu matrícula es {{1}}."
+                    value={newTemplateExampleMessage}
+                    onChange={(e) => setNewTemplateExampleMessage(e.target.value)}
+                    rows={3}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Usa {'{{'} y {'}}'}1, {'{{'} y {'}}'}2 para indicar las
+                    variables
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Parámetros</Label>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setNewTemplateParameters([
+                          ...newTemplateParameters,
+                          { name: '', example: '' },
+                        ])
+                      }
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Agregar
+                    </Button>
+                  </div>
+                  {newTemplateParameters.map((param, index) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-2 gap-2 items-end"
+                    >
+                      <Input
+                        placeholder="Nombre (ej: matricula)"
+                        value={param.name}
+                        onChange={(e) => {
+                          const updated = [...newTemplateParameters];
+                          updated[index].name = e.target.value;
+                          setNewTemplateParameters(updated);
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Ejemplo (ej: 12345)"
+                          value={param.example}
+                          onChange={(e) => {
+                            const updated = [...newTemplateParameters];
+                            updated[index].example = e.target.value;
+                            setNewTemplateParameters(updated);
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            const updated = newTemplateParameters.filter(
+                              (_, i) => i !== index
+                            );
+                            setNewTemplateParameters(updated);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-xs text-muted-foreground">
+                    Los parámetros se enviarán en el mismo orden en que aparecen
+                    en tu plantilla de WhatsApp
+                  </p>
+                </div>
+
                 <Button
                   onClick={createTemplate}
                   disabled={!newTemplateName || !newTemplateMetaId}
@@ -637,33 +811,52 @@ export default function WhatsAppPage() {
                           </div>
                         ) : (
                           // View mode
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                              <div className="font-medium">{template.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                ID: {template.meta_id}
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-1">
+                                <div className="font-medium">{template.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  ID: {template.meta_id}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Estado:{' '}
+                                  {template.is_active ? 'Activa' : 'Inactiva'}
+                                </div>
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                Estado:{' '}
-                                {template.is_active ? 'Activa' : 'Inactiva'}
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => setEditingTemplate(template)}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  onClick={() => deleteTemplate(template.id)}
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => setEditingTemplate(template)}
-                                variant="outline"
-                                size="sm"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                onClick={() => deleteTemplate(template.id)}
-                                variant="destructive"
-                                size="sm"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            {template.example_message && (
+                              <div className="text-xs bg-muted p-2 rounded">
+                                <strong>Ejemplo:</strong>{' '}
+                                {template.example_message}
+                              </div>
+                            )}
+                            {template.parameters &&
+                              template.parameters.length > 0 && (
+                                <div className="text-xs">
+                                  <strong>Parámetros:</strong>{' '}
+                                  {template.parameters
+                                    .map(
+                                      (p) => `${p.name} (ej: ${p.example})`
+                                    )
+                                    .join(', ')}
+                                </div>
+                              )}
                           </div>
                         )}
                       </div>
