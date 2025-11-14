@@ -113,7 +113,7 @@ export default function GruposPage() {
   };
 
   const GruposTable = ({ grupos }: { grupos: Grupo[] }) => (
-    <Table>
+    <Table className="w-full 2xl:max-w-[85vw] xl:max-w-[80vw] lg:max-w-[75vw] max-w-[80vw] overflow-x-auto">
       <TableHeader>
         <TableRow>
           <TableHead>Nombre</TableHead>
@@ -191,7 +191,7 @@ export default function GruposPage() {
   );
 
   return (
-    <div className="w-full max-w-[100vw] overflow-x-hidden">
+    <div className="w-full 2xl:max-w-[85vw] xl:max-w-[80vw] lg:max-w-[75vw] max-w-[80vw] overflow-x-auto">
       <div className="p-4">
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
