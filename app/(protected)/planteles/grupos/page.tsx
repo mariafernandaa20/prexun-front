@@ -12,6 +12,9 @@ import {
 } from '@/components/ui/table';
 import { useAuthStore } from '@/lib/store/auth-store';
 import axiosInstance from '@/lib/api/axiosConfig';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { GraduationCap } from 'lucide-react';
 
 interface Group {
   id: number;
@@ -60,7 +63,7 @@ export default function TeachergruposPage() {
           status: 'presente',
         }));
         setAsistencia(lista);
-        setMostrarTabla(true); // mostrar tabla al seleccionar grupo
+        setMostrarTabla(true);
       })
       .catch((err) => {
         console.error(err);
@@ -89,7 +92,14 @@ export default function TeachergruposPage() {
               onClick={() => setSelectedGroup(group.id)}
             >
               <CardHeader>
-                <CardTitle>{group.name}</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span>{group.name}</span>
+                  <Link href={`/planteles/grupos/${group.id}`}>
+                    <Button variant="ghost" size="icon">
+                      <GraduationCap className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">Tipo: {group.type}</p>
