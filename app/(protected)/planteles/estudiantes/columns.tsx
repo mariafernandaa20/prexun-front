@@ -1,13 +1,32 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Student } from '@/lib/types';
-import { Pencil, Trash2, Eye, MessageSquare } from 'lucide-react';
+import { Pencil, Trash2, Eye, MessageSquare, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { User } from '@/lib/types';
 import AdeudosModal from '@/components/dashboard/AdeudosModal';
+import StudentPeriod from './student-period';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+
+const StudentPeriodDialog = ({ student }: { student: Student }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen} modal={false}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" title="Ver periodos">
+          <Calendar className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <StudentPeriod student={student} />
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 interface ColumnDefinition {
   id: string;
@@ -70,7 +89,9 @@ export const getColumnDefinitions = (
     id: 'firstname',
     label: 'Nombre',
     defaultVisible: true,
-    render: (student: Student) => <a href={`/planteles/estudiantes/${student.id}`}>{student.firstname}</a>,
+    render: (student: Student) => (
+      <a href={`/planteles/estudiantes/${student.id}`}>{student.firstname}</a>
+    ),
   },
   {
     id: 'lastname',
@@ -121,7 +142,8 @@ export const getColumnDefinitions = (
     id: 'carrera',
     label: 'Carrera',
     defaultVisible: false,
-    render: (student: Student) => student?.period_assignments?.[0]?.carrera?.name || '-',
+    render: (student: Student) =>
+      student?.period_assignments?.[0]?.carrera?.name || '-',
   },
   {
     id: 'facultad',
@@ -177,6 +199,7 @@ export const getColumnDefinitions = (
     defaultVisible: false,
     render: (student: Student) => student.preferred_communication || '-',
   },
+
   {
     id: 'actions',
     label: 'Acciones',
@@ -189,6 +212,8 @@ export const getColumnDefinitions = (
       handleOpenWhatsAppModal?: (student: Student) => void
     ) => (
       <div className="flex gap-2">
+        {student?.id && <StudentPeriodDialog student={student} />}
+
         <AdeudosModal student={student} />
         <Link
           className={buttonVariants({ variant: 'ghost' })}

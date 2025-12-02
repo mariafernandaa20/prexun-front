@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { getCurrentCaja } from '@/lib/api';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Caja } from '@/lib/types';

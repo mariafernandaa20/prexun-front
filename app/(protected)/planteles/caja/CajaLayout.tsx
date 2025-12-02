@@ -16,13 +16,15 @@ import { Label } from '@/components/ui/label';
 import { Caja, Denomination } from '@/lib/types';
 import { useForm } from 'react-hook-form';
 import { formatCurrency } from '@/lib/utils';
-import { calculateDenominationsTotal, validateCajaBalance } from '@/lib/helpers/cajaHelpers';
+import {
+  calculateDenominationsTotal,
+  validateCajaBalance,
+} from '@/lib/helpers/cajaHelpers';
 
 interface FormData {
   denominations: Denomination;
   next_day_cash: Denomination;
 }
-
 
 export default function CajaLayout({
   children,
@@ -113,7 +115,7 @@ export default function CajaLayout({
 
     // Validación para cierre de caja - debe coincidir con el efectivo actual
     const validation = validateCajaBalance(denominationsTotal, actualAmount);
-    
+
     if (!validation.isValid) {
       const confirmed = confirm(
         `${validation.message}. El monto total de denominaciones (${formatCurrency(denominationsTotal)}) no coincide exactamente con el efectivo disponible en caja (${formatCurrency(actualAmount)}). ¿Desea continuar con el cierre?`

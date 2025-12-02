@@ -13,7 +13,14 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { formatCurrency } from '@/lib/utils';
 import { useCaja } from './useCaja';
 import { processCajaData } from '@/lib/helpers/cajaHelpers';
@@ -64,8 +71,8 @@ export default function CajaPage() {
   };
 
   const processed = caja ? processCajaData(caja) : null;
-  
-  console.log(processed)
+
+  console.log(processed);
 
   return (
     <CajaLayout
@@ -77,124 +84,156 @@ export default function CajaPage() {
       <div className="p-6">
         <CajaNavigation />
         {caja ? (
-        <div className="space-y-6 p-6">
-          {/* Resumen */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Estado de Caja (Efectivo)</CardTitle>
-                  <CardDescription>
-                    Totales y movimientos solo en efectivo
-                  </CardDescription>
+          <div className="space-y-6 p-6">
+            {/* Resumen */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Estado de Caja (Efectivo)</CardTitle>
+                    <CardDescription>
+                      Totales y movimientos solo en efectivo
+                    </CardDescription>
+                  </div>
+                  <Badge
+                    variant={
+                      caja.status === 'abierta' ? 'default' : 'destructive'
+                    }
+                  >
+                    {caja.status}
+                  </Badge>
                 </div>
-                <Badge
-                  variant={
-                    caja.status === 'abierta' ? 'default' : 'destructive'
-                  }
-                >
-                  {caja.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                <div className="space-y-1">
-                  <p>Ingresos efectivo: <strong>{formatCurrency(processed?.totals.cashIngresos || 0)}</strong></p>
-                  <p>Egresos efectivo: <strong>{formatCurrency(processed?.totals.cashGastos || 0)}</strong></p>
-                  <p>Monto Inicial: <strong>{formatCurrency(caja.initial_amount)}</strong></p>
-                  <p>Balance efectivo: <strong>{formatCurrency(processed?.totals.finalBalance || 0)}</strong></p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                  <div className="space-y-1">
+                    <p>
+                      Ingresos efectivo:{' '}
+                      <strong>
+                        {formatCurrency(processed?.totals.cashIngresos || 0)}
+                      </strong>
+                    </p>
+                    <p>
+                      Egresos efectivo:{' '}
+                      <strong>
+                        {formatCurrency(processed?.totals.cashGastos || 0)}
+                      </strong>
+                    </p>
+                    <p>
+                      Monto Inicial:{' '}
+                      <strong>{formatCurrency(caja.initial_amount)}</strong>
+                    </p>
+                    <p>
+                      Balance efectivo:{' '}
+                      <strong>
+                        {formatCurrency(processed?.totals.finalBalance || 0)}
+                      </strong>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Transacciones en efectivo */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Transacciones en Efectivo</CardTitle>
-              <CardDescription>
-                Ingresos y egresos registrados en efectivo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[350px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Folio</TableHead>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Monto</TableHead>
-                      <TableHead>Notas</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {processed?.cashTransactions.map((transaction: any) => (
+            {/* Transacciones en efectivo */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Transacciones en Efectivo</CardTitle>
+                <CardDescription>
+                  Ingresos y egresos registrados en efectivo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[350px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Folio</TableHead>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Monto</TableHead>
+                        <TableHead>Notas</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {processed?.cashTransactions.map((transaction: any) => (
                         <TableRow key={transaction.id}>
                           <TableCell>{transaction.folio}</TableCell>
-                          <TableCell>{new Date(transaction.payment_date).toLocaleString()}</TableCell>
+                          <TableCell>
+                            {new Date(
+                              transaction.payment_date
+                            ).toLocaleString()}
+                          </TableCell>
                           <TableCell>
                             <Badge
-                              variant={transaction.transaction_type === 'income' ? 'default' : 'destructive'}
+                              variant={
+                                transaction.transaction_type === 'income'
+                                  ? 'default'
+                                  : 'destructive'
+                              }
                             >
-                              {transaction.transaction_type === 'income' ? 'Ingreso' : 'Egreso'}
+                              {transaction.transaction_type === 'income'
+                                ? 'Ingreso'
+                                : 'Egreso'}
                             </Badge>
                           </TableCell>
-                          <TableCell>{formatCurrency(transaction.amount)}</TableCell>
+                          <TableCell>
+                            {formatCurrency(transaction.amount)}
+                          </TableCell>
                           <TableCell>{transaction.notes}</TableCell>
                         </TableRow>
                       ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </CardContent>
+            </Card>
 
-          {/* Gastos en efectivo */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Gastos en Efectivo</CardTitle>
-              <CardDescription>
-                Gastos registrados con método de pago en efectivo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[300px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Concepto</TableHead>
-                      <TableHead>Categoría</TableHead>
-                      <TableHead>Monto</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {processed?.cashGastos.map((gasto: any) => (
+            {/* Gastos en efectivo */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Gastos en Efectivo</CardTitle>
+                <CardDescription>
+                  Gastos registrados con método de pago en efectivo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[300px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Concepto</TableHead>
+                        <TableHead>Categoría</TableHead>
+                        <TableHead>Monto</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {processed?.cashGastos.map((gasto: any) => (
                         <TableRow key={gasto.id}>
-                          <TableCell>{new Date(gasto.date).toLocaleString()}</TableCell>
+                          <TableCell>
+                            {new Date(gasto.date).toLocaleString()}
+                          </TableCell>
                           <TableCell>{gasto.concept}</TableCell>
                           <TableCell>{gasto.category}</TableCell>
                           <TableCell>{formatCurrency(gasto.amount)}</TableCell>
                         </TableRow>
                       ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </CardContent>
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <Card className="m-6">
+            <CardHeader>
+              <CardTitle>Caja Cerrada</CardTitle>
+              <CardDescription>
+                No hay ninguna caja abierta en este momento
+              </CardDescription>
+            </CardHeader>
           </Card>
-        </div>
-      ) : (
-        <Card className="m-6">
-          <CardHeader>
-            <CardTitle>Caja Cerrada</CardTitle>
-            <CardDescription>
-              No hay ninguna caja abierta en este momento
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
+        )}
       </div>
     </CajaLayout>
   );

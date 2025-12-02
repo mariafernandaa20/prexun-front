@@ -14,17 +14,17 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  FileText, 
-  TrendingUp, 
-  User, 
-  Users, 
+import {
+  FileText,
+  TrendingUp,
+  User,
+  Users,
   Calendar as CalendarIcon,
   CheckCircle,
   XCircle,
   Download,
   BarChart3,
-  PieChart
+  PieChart,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
@@ -103,10 +103,14 @@ export default function ReportesAsistenciaPage() {
   const [selectedGrupo, setSelectedGrupo] = useState<string>('');
   const [studentId, setStudentId] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
-  const [startDate, setStartDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [startDate, setStartDate] = useState<Date>(
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  );
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [excludeWeekends, setExcludeWeekends] = useState<boolean>(true);
-  const [studentReport, setStudentReport] = useState<StudentReport | null>(null);
+  const [studentReport, setStudentReport] = useState<StudentReport | null>(
+    null
+  );
   const [groupReport, setGroupReport] = useState<GroupReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('student');
@@ -226,7 +230,9 @@ export default function ReportesAsistenciaPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Selector de periodo */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Periodo</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Periodo
+                </label>
                 <Select value={periodId} onValueChange={setPeriodId}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona periodo" />
@@ -250,7 +256,10 @@ export default function ReportesAsistenciaPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {grupos
-                      .filter(grupo => !periodId || grupo.period_id.toString() === periodId)
+                      .filter(
+                        (grupo) =>
+                          !periodId || grupo.period_id.toString() === periodId
+                      )
                       .map((grupo) => (
                         <SelectItem key={grupo.id} value={grupo.id.toString()}>
                           {grupo.name}
@@ -262,7 +271,9 @@ export default function ReportesAsistenciaPage() {
 
               {/* Fecha inicio */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Fecha Inicio</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Fecha Inicio
+                </label>
                 <Input
                   type="date"
                   value={startDate.toISOString().split('T')[0]}
@@ -272,7 +283,9 @@ export default function ReportesAsistenciaPage() {
 
               {/* Fecha fin */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Fecha Fin</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Fecha Fin
+                </label>
                 <Input
                   type="date"
                   value={endDate.toISOString().split('T')[0]}
@@ -304,7 +317,9 @@ export default function ReportesAsistenciaPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Estudiante</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Estudiante
+                  </label>
                   <Select value={studentId} onValueChange={setStudentId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecciona estudiante" />
@@ -312,15 +327,16 @@ export default function ReportesAsistenciaPage() {
                     <SelectContent>
                       {students.map((student) => (
                         <SelectItem key={student.id} value={student.id}>
-                          {student.firstname} {student.lastname} - {student.matricula}
+                          {student.firstname} {student.lastname} -{' '}
+                          {student.matricula}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="flex items-end">
-                  <Button 
-                    onClick={generateStudentReport} 
+                  <Button
+                    onClick={generateStudentReport}
                     disabled={isLoading || !studentId}
                     className="w-full"
                   >
@@ -338,22 +354,35 @@ export default function ReportesAsistenciaPage() {
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                           <h3 className="font-semibold text-lg">
-                            {studentReport.student.firstname} {studentReport.student.lastname}
+                            {studentReport.student.firstname}{' '}
+                            {studentReport.student.lastname}
                           </h3>
-                          <p className="text-gray-600">Matrícula: {studentReport.student.matricula}</p>
+                          <p className="text-gray-600">
+                            Matrícula: {studentReport.student.matricula}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Grupo</p>
-                          <p className="font-medium">{studentReport.student.grupo}</p>
+                          <p className="font-medium">
+                            {studentReport.student.grupo}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Periodo</p>
-                          <p className="font-medium">{studentReport.student.period}</p>
+                          <p className="font-medium">
+                            {studentReport.student.period}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Rango</p>
                           <p className="font-medium">
-                            {new Date(studentReport.period.start_date).toLocaleDateString('es-ES')} - {new Date(studentReport.period.end_date).toLocaleDateString('es-ES')}
+                            {new Date(
+                              studentReport.period.start_date
+                            ).toLocaleDateString('es-ES')}{' '}
+                            -{' '}
+                            {new Date(
+                              studentReport.period.end_date
+                            ).toLocaleDateString('es-ES')}
                           </p>
                         </div>
                       </div>
@@ -365,10 +394,14 @@ export default function ReportesAsistenciaPage() {
                     <Card>
                       <CardContent className="pt-6">
                         <div className="text-center">
-                          <div className={`text-3xl font-bold ${getAttendanceColor(studentReport.statistics.attendance_percentage)}`}>
+                          <div
+                            className={`text-3xl font-bold ${getAttendanceColor(studentReport.statistics.attendance_percentage)}`}
+                          >
                             {studentReport.statistics.attendance_percentage}%
                           </div>
-                          <div className="text-sm text-gray-600">Asistencia</div>
+                          <div className="text-sm text-gray-600">
+                            Asistencia
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -378,7 +411,9 @@ export default function ReportesAsistenciaPage() {
                           <div className="text-3xl font-bold text-green-600">
                             {studentReport.statistics.present_count}
                           </div>
-                          <div className="text-sm text-gray-600">Días Presente</div>
+                          <div className="text-sm text-gray-600">
+                            Días Presente
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -388,7 +423,9 @@ export default function ReportesAsistenciaPage() {
                           <div className="text-3xl font-bold text-red-600">
                             {studentReport.statistics.absent_count}
                           </div>
-                          <div className="text-sm text-gray-600">Días Ausente</div>
+                          <div className="text-sm text-gray-600">
+                            Días Ausente
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -398,7 +435,9 @@ export default function ReportesAsistenciaPage() {
                           <div className="text-3xl font-bold text-blue-600">
                             {studentReport.statistics.total_days}
                           </div>
-                          <div className="text-sm text-gray-600">Total Días</div>
+                          <div className="text-sm text-gray-600">
+                            Total Días
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -412,46 +451,60 @@ export default function ReportesAsistenciaPage() {
                     <CardContent>
                       <div className="max-h-96 overflow-y-auto">
                         <div className="space-y-2">
-                          {studentReport.attendance_details.all_days.map((day, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between p-3 border rounded-lg"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div>
-                                  <div className="font-medium">
-                                    {new Date(day.date).toLocaleDateString('es-ES')}
-                                  </div>
-                                  <div className="text-sm text-gray-600">
-                                    {day.day_name_es}
+                          {studentReport.attendance_details.all_days.map(
+                            (day, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-3 border rounded-lg"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div>
+                                    <div className="font-medium">
+                                      {new Date(day.date).toLocaleDateString(
+                                        'es-ES'
+                                      )}
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                      {day.day_name_es}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  variant={day.status === 'present' ? "default" : "destructive"}
-                                  className={day.status === 'present' ? "bg-green-600" : ""}
-                                >
-                                  {day.status === 'present' ? (
-                                    <>
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      Presente
-                                    </>
-                                  ) : (
-                                    <>
-                                      <XCircle className="h-3 w-3 mr-1" />
-                                      Ausente
-                                    </>
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    variant={
+                                      day.status === 'present'
+                                        ? 'default'
+                                        : 'destructive'
+                                    }
+                                    className={
+                                      day.status === 'present'
+                                        ? 'bg-green-600'
+                                        : ''
+                                    }
+                                  >
+                                    {day.status === 'present' ? (
+                                      <>
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        Presente
+                                      </>
+                                    ) : (
+                                      <>
+                                        <XCircle className="h-3 w-3 mr-1" />
+                                        Ausente
+                                      </>
+                                    )}
+                                  </Badge>
+                                  {day.attendance_time && (
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(
+                                        day.attendance_time
+                                      ).toLocaleTimeString('es-ES')}
+                                    </span>
                                   )}
-                                </Badge>
-                                {day.attendance_time && (
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(day.attendance_time).toLocaleTimeString('es-ES')}
-                                  </span>
-                                )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            )
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -469,8 +522,8 @@ export default function ReportesAsistenciaPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-end mb-4">
-                <Button 
-                  onClick={generateGroupReport} 
+                <Button
+                  onClick={generateGroupReport}
                   disabled={isLoading || !selectedGrupo}
                   className="w-full md:w-auto"
                 >
@@ -486,21 +539,35 @@ export default function ReportesAsistenciaPage() {
                     <CardContent className="pt-6">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                          <h3 className="font-semibold text-lg">{groupReport.group.name}</h3>
+                          <h3 className="font-semibold text-lg">
+                            {groupReport.group.name}
+                          </h3>
                           <p className="text-gray-600">Grupo</p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Periodo</p>
-                          <p className="font-medium">{groupReport.group.period}</p>
+                          <p className="font-medium">
+                            {groupReport.group.period}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Estudiantes</p>
-                          <p className="font-medium">{groupReport.group.total_students}</p>
+                          <p className="font-medium">
+                            {groupReport.group.total_students}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600">Asistencia Grupal</p>
-                          <p className={`font-medium text-lg ${getAttendanceColor(groupReport.group_statistics.group_attendance_percentage)}`}>
-                            {groupReport.group_statistics.group_attendance_percentage}%
+                          <p className="text-sm text-gray-600">
+                            Asistencia Grupal
+                          </p>
+                          <p
+                            className={`font-medium text-lg ${getAttendanceColor(groupReport.group_statistics.group_attendance_percentage)}`}
+                          >
+                            {
+                              groupReport.group_statistics
+                                .group_attendance_percentage
+                            }
+                            %
                           </p>
                         </div>
                       </div>
@@ -514,41 +581,56 @@ export default function ReportesAsistenciaPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {groupReport.students_reports.map((studentReport, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-4 border rounded-lg bg-gray-50"
-                          >
-                            <div className="flex-1">
-                              <div className="font-medium">
-                                {studentReport.student.firstname} {studentReport.student.lastname}
+                        {groupReport.students_reports.map(
+                          (studentReport, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-4 border rounded-lg bg-gray-50"
+                            >
+                              <div className="flex-1">
+                                <div className="font-medium">
+                                  {studentReport.student.firstname}{' '}
+                                  {studentReport.student.lastname}
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                  Matrícula: {studentReport.student.matricula}
+                                </div>
                               </div>
-                              <div className="text-sm text-gray-600">
-                                Matrícula: {studentReport.student.matricula}
+                              <div className="grid grid-cols-3 gap-4 text-center">
+                                <div>
+                                  <div className="text-sm text-gray-600">
+                                    Presentes
+                                  </div>
+                                  <div className="font-semibold text-green-600">
+                                    {studentReport.statistics.present_count}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-sm text-gray-600">
+                                    Ausentes
+                                  </div>
+                                  <div className="font-semibold text-red-600">
+                                    {studentReport.statistics.absent_count}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-sm text-gray-600">
+                                    Asistencia
+                                  </div>
+                                  <div
+                                    className={`font-semibold ${getAttendanceColor(studentReport.statistics.attendance_percentage)}`}
+                                  >
+                                    {
+                                      studentReport.statistics
+                                        .attendance_percentage
+                                    }
+                                    %
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-4 text-center">
-                              <div>
-                                <div className="text-sm text-gray-600">Presentes</div>
-                                <div className="font-semibold text-green-600">
-                                  {studentReport.statistics.present_count}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-gray-600">Ausentes</div>
-                                <div className="font-semibold text-red-600">
-                                  {studentReport.statistics.absent_count}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-gray-600">Asistencia</div>
-                                <div className={`font-semibold ${getAttendanceColor(studentReport.statistics.attendance_percentage)}`}>
-                                  {studentReport.statistics.attendance_percentage}%
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        )}
                       </div>
                     </CardContent>
                   </Card>

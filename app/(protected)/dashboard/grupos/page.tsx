@@ -21,6 +21,13 @@ import {
   updateGrupo,
 } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
 
 export default function GruposPage() {
   const [grupos, setGrupos] = React.useState<Grupo[]>([]);
@@ -30,7 +37,9 @@ export default function GruposPage() {
   const [grupo, setGrupo] = React.useState<Grupo | null>(null);
   const [periods, setPeriods] = React.useState<Period[]>([]);
   const [campuses, setCampuses] = React.useState<Campus[]>([]);
-
+  const [selectedPeriod, setSelectedPeriod] = React.useState<string | null>(
+    null
+  );
   React.useEffect(() => {
     fetchPeriods();
     fetchCampuses();
@@ -104,7 +113,7 @@ export default function GruposPage() {
   };
 
   const GruposTable = ({ grupos }: { grupos: Grupo[] }) => (
-    <Table>
+    <Table className="w-full 2xl:max-w-[85vw] xl:max-w-[80vw] lg:max-w-[75vw] max-w-[80vw] overflow-x-auto">
       <TableHeader>
         <TableRow>
           <TableHead>Nombre</TableHead>
@@ -182,11 +191,38 @@ export default function GruposPage() {
   );
 
   return (
-    <div className="w-full max-w-[100vw] overflow-x-hidden">
+    <div className="w-full 2xl:max-w-[85vw] xl:max-w-[80vw] lg:max-w-[75vw] max-w-[80vw] overflow-x-auto">
       <div className="p-4">
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Grupos</h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">Grupos</h1>
+              {grupos && grupos.length > 0 && (
+                <Select
+                  onValueChange={(value) => setSelectedPeriod(value)}
+                  value={selectedPeriod?.toString()}
+                >
+                  <SelectTrigger>
+                    <span>Filtrar por periodo</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem
+                        value="all"
+                        onClick={() => setSelectedPeriod(null)}
+                      >
+                        Todos
+                      </SelectItem>
+                      {periods.map((period) => (
+                        <SelectItem key={period.id} value={period.id}>
+                          {period.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
             <div className="flex gap-2 items-center">
               <Input
                 placeholder="Buscar grupos..."
@@ -207,21 +243,27 @@ export default function GruposPage() {
             <div className="text-center">No se encontraron grupos</div>
           ) : (
             <div className="flex flex-col gap-6">
-              {periods.map((period) => {
-                const periodGrupos = groupedGrupos.get(period.id) || [];
-                if (periodGrupos.length === 0) return null;
+              {periods
+                .filter((period) =>
+                  !selectedPeriod || selectedPeriod === 'all'
+                    ? true
+                    : period.id === selectedPeriod
+                )
+                .map((period) => {
+                  const periodGrupos = groupedGrupos.get(period.id) || [];
+                  if (periodGrupos.length === 0) return null;
 
-                return (
-                  <Card key={period.id}>
-                    <CardHeader className="sticky top-0 z-8 bg-card">
-                      <CardTitle>{period.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <GruposTable grupos={periodGrupos} />
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                  return (
+                    <Card key={period.id}>
+                      <CardHeader className="sticky top-0 z-8 bg-card">
+                        <CardTitle>{period.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <GruposTable grupos={periodGrupos} />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
             </div>
           )}
 

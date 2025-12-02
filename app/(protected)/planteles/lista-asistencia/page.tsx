@@ -62,12 +62,19 @@ export default function AttendanceListPage() {
   const [selectedGrupo, setSelectedGrupo] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
-  const [attendanceTimes, setAttendanceTimes] = useState<Record<string, string>>({});
-  const [attendanceNotes, setAttendanceNotes] = useState<Record<string, string>>({});
-  const [attendanceIds, setAttendanceIds] = useState<Record<string, string>>({});
+  const [attendanceTimes, setAttendanceTimes] = useState<
+    Record<string, string>
+  >({});
+  const [attendanceNotes, setAttendanceNotes] = useState<
+    Record<string, string>
+  >({});
+  const [attendanceIds, setAttendanceIds] = useState<Record<string, string>>(
+    {}
+  );
   const [students, setStudents] = useState<Student[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedAttendance, setSelectedAttendance] = useState<AttendanceData | null>(null);
+  const [selectedAttendance, setSelectedAttendance] =
+    useState<AttendanceData | null>(null);
 
   const fetchAttendanceForDate = async (date: Date, grupoId: string) => {
     try {
@@ -76,7 +83,11 @@ export default function AttendanceListPage() {
         `/teacher/attendance/${grupoId}/${formattedDate}`
       );
 
-      if (response.data.success && response.data.data && response.data.data.length > 0) {
+      if (
+        response.data.success &&
+        response.data.data &&
+        response.data.data.length > 0
+      ) {
         const attendanceMap: Record<string, boolean> = {};
         const timeMap: Record<string, string> = {};
         const notesMap: Record<string, string> = {};
@@ -85,11 +96,11 @@ export default function AttendanceListPage() {
         response.data.data.forEach((record: AttendanceRecord) => {
           attendanceMap[record.student_id] = record.present;
           idsMap[record.student_id] = record.id || '';
-          
+
           if (record.attendance_time) {
             timeMap[record.student_id] = record.attendance_time;
           }
-          
+
           if (record.notes) {
             notesMap[record.student_id] = record.notes;
           }
@@ -144,7 +155,6 @@ export default function AttendanceListPage() {
     }
   }, [selectedGrupo, students]);
 
-
   const handleAttendanceChange = (studentId: string, checked: boolean) => {
     setAttendance((prev) => ({
       ...prev,
@@ -153,7 +163,7 @@ export default function AttendanceListPage() {
 
     if (checked) {
       const now = new Date();
-      const fullTimestamp = now.toISOString(); 
+      const fullTimestamp = now.toISOString();
       setAttendanceTimes((prev) => ({
         ...prev,
         [studentId]: fullTimestamp,
@@ -187,10 +197,10 @@ export default function AttendanceListPage() {
         grupo_id: selectedGrupo,
         fecha: formattedDate,
         total_estudiantes: Object.keys(attendance).length,
-        presentes: Object.values(attendance).filter(p => p).length,
-        ausentes: Object.values(attendance).filter(p => !p).length,
+        presentes: Object.values(attendance).filter((p) => p).length,
+        ausentes: Object.values(attendance).filter((p) => !p).length,
         timestamp: new Date().toISOString(),
-        response: response.data
+        response: response.data,
       });
 
       toast.success('¡Asistencia Guardada!', {
@@ -200,7 +210,8 @@ export default function AttendanceListPage() {
     } catch (error: any) {
       console.error('Error al guardar la asistencia', error);
       toast.error('Error al Guardar', {
-        description: 'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
+        description:
+          'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
         duration: 4000,
       });
     }
@@ -215,32 +226,32 @@ export default function AttendanceListPage() {
       notes: attendanceNotes[student.id] || null,
       date: selectedDate.toISOString().split('T')[0],
     };
-    
+
     setSelectedAttendance(attendanceData);
     setIsModalOpen(true);
   };
 
   const handleSaveAttendanceEdit = (updatedAttendance: AttendanceData) => {
     // Actualizar los estados locales
-    setAttendance(prev => ({
+    setAttendance((prev) => ({
       ...prev,
-      [updatedAttendance.student.id]: updatedAttendance.present
+      [updatedAttendance.student.id]: updatedAttendance.present,
     }));
 
     if (updatedAttendance.attendance_time) {
-      setAttendanceTimes(prev => ({
+      setAttendanceTimes((prev) => ({
         ...prev,
-        [updatedAttendance.student.id]: updatedAttendance.attendance_time!
+        [updatedAttendance.student.id]: updatedAttendance.attendance_time!,
       }));
     }
 
     if (updatedAttendance.notes) {
-      setAttendanceNotes(prev => ({
+      setAttendanceNotes((prev) => ({
         ...prev,
-        [updatedAttendance.student.id]: updatedAttendance.notes!
+        [updatedAttendance.student.id]: updatedAttendance.notes!,
       }));
     } else {
-      setAttendanceNotes(prev => {
+      setAttendanceNotes((prev) => {
         const updated = { ...prev };
         delete updated[updatedAttendance.student.id];
         return updated;
@@ -268,7 +279,7 @@ export default function AttendanceListPage() {
       <h1 className="text-4xl font-bold mb-6">Lista de asistencia</h1>
 
       <div className="flex flex-col gap-4 mb-6">
-        <div className='flex flex-row gap-4'>
+        <div className="flex flex-row gap-4">
           <div>
             <Select value={periodId} onValueChange={setPeriodId}>
               <SelectTrigger>
@@ -290,14 +301,17 @@ export default function AttendanceListPage() {
                   <SelectValue placeholder="Select a group" />
                 </SelectTrigger>
                 <SelectContent>
-                  {grupos.filter(
-                    (grupo) =>
-                      !periodId || grupo.period_id.toString() === periodId.toString()
-                  ).map((grupo) => (
-                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                      {grupo.name}
-                    </SelectItem>
-                  ))}
+                  {grupos
+                    .filter(
+                      (grupo) =>
+                        !periodId ||
+                        grupo.period_id.toString() === periodId.toString()
+                    )
+                    .map((grupo) => (
+                      <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                        {grupo.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -337,7 +351,15 @@ export default function AttendanceListPage() {
                 {students.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell className="py-3 px-4">{student.id}</TableCell>
-                    <TableCell className="py-3 px-4"><a className='hover:underline' href={`/planteles/estudiantes/${student.id}`} target='_blank'>{student.firstname + ' ' + student.lastname}</a></TableCell>
+                    <TableCell className="py-3 px-4">
+                      <a
+                        className="hover:underline"
+                        href={`/planteles/estudiantes/${student.id}`}
+                        target="_blank"
+                      >
+                        {student.firstname + ' ' + student.lastname}
+                      </a>
+                    </TableCell>
                     <TableCell className="py-3 px-4">
                       <Checkbox
                         checked={attendance[student.id] || false}
@@ -349,10 +371,13 @@ export default function AttendanceListPage() {
                     </TableCell>
                     <TableCell className="py-3 px-4 text-gray-600">
                       <div className="flex items-center gap-1">
-                        {attendance[student.id] && attendanceTimes[student.id] ? (
+                        {attendance[student.id] &&
+                        attendanceTimes[student.id] ? (
                           <>
                             <Clock className="h-3 w-3" />
-                            {new Date(attendanceTimes[student.id]).toLocaleTimeString('es-ES')}
+                            {new Date(
+                              attendanceTimes[student.id]
+                            ).toLocaleTimeString('es-ES')}
                           </>
                         ) : (
                           '-'
@@ -363,8 +388,8 @@ export default function AttendanceListPage() {
                       {attendanceNotes[student.id] ? (
                         <div className="flex items-center gap-1">
                           <FileText className="h-3 w-3 text-blue-600" />
-                          <span 
-                            className="text-xs text-gray-600 truncate" 
+                          <span
+                            className="text-xs text-gray-600 truncate"
                             title={attendanceNotes[student.id]}
                           >
                             {attendanceNotes[student.id]}

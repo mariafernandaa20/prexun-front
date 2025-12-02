@@ -229,15 +229,15 @@ export default function StudentNotes({ studentId }: Props) {
             </div>
           ) : notes.length === 0 ? (
             <CardContent className="text-center py-8">
-                <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  No hay notas registradas para este estudiante
-                </p>
-                <Button onClick={openCreateDialog}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Crear Primera Nota
-                </Button>
-              </CardContent>
+              <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-4">
+                No hay notas registradas para este estudiante
+              </p>
+              <Button onClick={openCreateDialog}>
+                <Plus className="w-4 h-4 mr-2" />
+                Crear Primera Nota
+              </Button>
+            </CardContent>
           ) : (
             <div className="space-y-3">
               {notes.map((note) => (

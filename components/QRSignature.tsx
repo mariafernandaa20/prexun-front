@@ -56,7 +56,9 @@ export function QRSignature({ gastoId, onSignatureUpdate }: QRSignatureProps) {
         // También verificar con la API real
         try {
           // Importar la función aquí para evitar problemas de dependencias circulares
-          const { checkPublicSignatureStatus } = await import('@/lib/api/gastos-signature');
+          const { checkPublicSignatureStatus } = await import(
+            '@/lib/api/gastos-signature'
+          );
           const data = await checkPublicSignatureStatus(gastoId);
           if (data.signature && onSignatureUpdate) {
             onSignatureUpdate(data.signature);
@@ -91,13 +93,18 @@ export function QRSignature({ gastoId, onSignatureUpdate }: QRSignatureProps) {
       <div className="text-center">
         <h3 className="font-semibold mb-2">Firmar Externamente</h3>
         <p className="text-sm text-gray-600 mb-4">
-          Escanea el código QR o usa el enlace para firmar desde otro dispositivo
+          Escanea el código QR o usa el enlace para firmar desde otro
+          dispositivo
         </p>
       </div>
 
       {qrDataURL && (
         <div className="flex justify-center">
-          <img src={qrDataURL} alt="QR Code para firmar" className="border rounded" />
+          <img
+            src={qrDataURL}
+            alt="QR Code para firmar"
+            className="border rounded"
+          />
         </div>
       )}
 

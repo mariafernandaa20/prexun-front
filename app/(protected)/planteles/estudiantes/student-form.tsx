@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, User, ExternalLink } from 'lucide-react';
+import { AlertTriangle, User, ExternalLink, MessageCircle } from 'lucide-react';
 import {
   Campus,
   Cohort,
@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
@@ -97,6 +98,8 @@ export function StudentForm({
     semana_intensiva_id: student?.semana_intensiva_id || null,
   });
 
+  const [sendWhatsAppNotification, setSendWhatsAppNotification] = useState(true);
+
   // Debounce email to avoid excessive API calls
   const debouncedEmail = useDebounce(formData.email, 500);
 
@@ -158,7 +161,7 @@ export function StudentForm({
     setIsLoadingButton(true);
 
     try {
-      await onSubmit(formData);
+      await onSubmit({ ...formData, send_whatsapp: sendWhatsAppNotification } as any);
 
       const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -793,7 +796,7 @@ export function StudentForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="general_book">Libro general</Label>
           <Select
             name="general_book"
@@ -817,8 +820,8 @@ export function StudentForm({
               </SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        {formData.type === 'facultad' && (
+        </div> */}
+        {/*formData.type === 'facultad' && (
           <div className="space-y-2">
             <Label htmlFor="module_book">Libro de módulo</Label>
             <Select
@@ -844,7 +847,7 @@ export function StudentForm({
               </SelectContent>
             </Select>
           </div>
-        )}
+        )*/}
 
         <div className="space-y-2">
           <Label htmlFor="status">Estatus</Label>
@@ -870,9 +873,28 @@ export function StudentForm({
             </SelectContent>
           </Select>
         </div>
+
+        {/* WhatsApp Notification Toggle */}
+        {!student?.id && (
+          <div className="flex items-center space-x-2 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <Checkbox
+              id="send_whatsapp"
+              checked={sendWhatsAppNotification}
+              onCheckedChange={(checked) => setSendWhatsAppNotification(checked as boolean)}
+            />
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <Label
+                htmlFor="send_whatsapp"
+                className="text-sm font-medium text-green-900 dark:text-green-100 cursor-pointer"
+              >
+                Enviar mensaje de bienvenida por WhatsApp con la matrícula
+              </Label>
+            </div>
+          </div>
+        )}
       </div>
 
-      {student?.id && <StudentPeriod student={student} />}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar

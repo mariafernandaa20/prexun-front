@@ -140,7 +140,7 @@ export function GastoModal({
     setErrors({});
     setSignatureModalOpen(false);
     setShowQRSignature(false);
-    
+
     // Resetear el formulario al estado inicial
     reset({
       concept: '',
@@ -156,7 +156,7 @@ export function GastoModal({
       image: null,
       signature: null,
     });
-    
+
     onClose();
   };
 
@@ -183,7 +183,6 @@ export function GastoModal({
     }
   };
 
-
   useEffect(() => {
     if (selectedGasto) {
       reset({
@@ -197,7 +196,9 @@ export function GastoModal({
         admin_id: selectedGasto.admin_id,
         category: selectedGasto.category,
         campus_id: selectedGasto.campus_id,
-        cash_register_id: selectedGasto.cash_register_id || activeCampus?.latest_cash_register?.id,
+        cash_register_id:
+          selectedGasto.cash_register_id ||
+          activeCampus?.latest_cash_register?.id,
         image: null,
         signature: selectedGasto.signature,
         user: selectedGasto.user,
@@ -227,7 +228,7 @@ export function GastoModal({
     if (selectedGasto) {
       // Cargar firma si existe
       setSignatureUrl(selectedGasto.signature || null);
-      
+
       // Cargar imagen si existe y es un string (URL)
       if (selectedGasto.image && typeof selectedGasto.image === 'string') {
         setPreviewUrl(selectedGasto.image);
@@ -246,7 +247,9 @@ export function GastoModal({
     <Dialog open={isOpen} onOpenChange={handleCloseModal}>
       <DialogContent className="min-w-[800px]">
         <DialogHeader>
-          <DialogTitle>{selectedGasto ? 'Editar Gasto' : 'Nuevo Gasto'}</DialogTitle>
+          <DialogTitle>
+            {selectedGasto ? 'Editar Gasto' : 'Nuevo Gasto'}
+          </DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit(onSubmitForm)}
@@ -375,15 +378,24 @@ export function GastoModal({
               <div>
                 <SignaturePreview
                   signature={signatureUrl}
-                  onRemove={selectedGasto?.id ? undefined : () => {
-                    setSignatureUrl(null);
-                    setValue('signature', null);
-                  }}
-                  onEdit={selectedGasto?.id ? undefined : () => setSignatureModalOpen(true)}
+                  onRemove={
+                    selectedGasto?.id
+                      ? undefined
+                      : () => {
+                          setSignatureUrl(null);
+                          setValue('signature', null);
+                        }
+                  }
+                  onEdit={
+                    selectedGasto?.id
+                      ? undefined
+                      : () => setSignatureModalOpen(true)
+                  }
                 />
                 {selectedGasto?.id && (
                   <p className="text-xs text-gray-500 mt-2">
-                    La firma no puede ser modificada una vez que el gasto tiene ID
+                    La firma no puede ser modificada una vez que el gasto tiene
+                    ID
                   </p>
                 )}
               </div>
@@ -466,7 +478,9 @@ export function GastoModal({
             <Button type="button" variant="outline" onClick={handleCloseModal}>
               Cancelar
             </Button>
-            <Button type="submit">{selectedGasto ? 'Actualizar' : 'Crear'}</Button>
+            <Button type="submit">
+              {selectedGasto ? 'Actualizar' : 'Crear'}
+            </Button>
           </div>
         </form>
       </DialogContent>

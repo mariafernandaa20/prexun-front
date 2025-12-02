@@ -247,7 +247,7 @@ export const deletePeriod = async (id: string) => {
   return response.data;
 };
 
-export const getCharges = async (campusId: number, page: number, perPage: number, search?: string, payment_method?: string, card_id?: string) => {
+export const getCharges = async (campusId: number, page: number, perPage: number, search?: string, payment_method?: string, card_id?: string, folio?: string) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -264,6 +264,10 @@ export const getCharges = async (campusId: number, page: number, perPage: number
 
     if (card_id && card_id !== 'all') {
       params.append('card_id', card_id);
+    }
+
+    if (folio) {
+      params.append('folio', folio);
     }
 
     const response = await axiosInstance.get(`/charges/${campusId}?${params.toString()}`);
@@ -874,5 +878,21 @@ export const updateNote = async (note: Note) => {
 
 export const deleteNote = async (id: number) => {
   const response = await axiosInstance.delete(`${API_ENDPOINTS.DELETE_NOTE}/${id}`);
+  return response.data;
+};
+
+// Student Grades from Moodle
+export const getStudentGrades = async (studentId: number) => {
+  const response = await axiosInstance.get(`/students/${studentId}/grades`);
+  return response.data;
+};
+
+export const getStudentCourses = async (studentId: number) => {
+  const response = await axiosInstance.get(`/students/${studentId}/courses`);
+  return response.data;
+};
+
+export const getCourseActivities = async (studentId: number, courseId: number) => {
+  const response = await axiosInstance.get(`/students/${studentId}/courses/${courseId}/activities`);
   return response.data;
 };

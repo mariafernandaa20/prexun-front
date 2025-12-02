@@ -31,6 +31,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import StudentAttendance from './StudentAttendance';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 const { SAT } = useFeatureFlags();
+import StudentGrades from '@/components/students/StudentGrades';
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -204,6 +205,8 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
 }
 
 export function StudentComponent({ slug }: { slug: string[] }) {
+    const { SAT } = useFeatureFlags();
+  
   const studentId = Number(slug.join('/'));
   const campusId = useActiveCampusStore((state) => state.activeCampus?.id);
   const { student, loading, error, updateTransaction, refetch, cards } =
@@ -375,8 +378,10 @@ export function StudentComponent({ slug }: { slug: string[] }) {
 
         <TabsContent value="asignacion" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className='col-span-2'>
+            <div className='col-span-2 flex-col flex gap-4'>
             <StudentPeriod student={student} onRefresh={refetch} />
+            <StudentGrades   studentId={student.id} />
+
             </div>
             <StudentNotes studentId={student.id.toString()} />
           </div>
@@ -393,8 +398,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 <StudentNotes studentId={student.id.toString()} />
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
+          </div>        </TabsContent>
       </Tabs>
     </div>
   );

@@ -25,9 +25,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatCurrency } from '@/lib/utils';
 import { useCaja } from '../useCaja';
 
-
 export default function CajaPage() {
-
   const activeCampus = useActiveCampusStore((state) => state.activeCampus);
   const { caja, loading, error, fetchCaja } = useCaja();
 
@@ -106,20 +104,22 @@ export default function CajaPage() {
 
     // Inicializar denominaciones con el monto inicial si existe
     if (data.initial_amount_cash) {
-      const initialCash = typeof data.initial_amount_cash === 'string'
-        ? JSON.parse(data.initial_amount_cash)
-        : data.initial_amount_cash;
+      const initialCash =
+        typeof data.initial_amount_cash === 'string'
+          ? JSON.parse(data.initial_amount_cash)
+          : data.initial_amount_cash;
 
       Object.entries(initialCash).forEach(([value, quantity]) => {
-        denominationBreakdown[value] = (denominationBreakdown[value] || 0) + Number(quantity || 0);
+        denominationBreakdown[value] =
+          (denominationBreakdown[value] || 0) + Number(quantity || 0);
       });
       // NO SUMAMOS el initialAmount aquí a totalCashIngresos
     }
 
-
     data.transactions?.forEach((transaction) => {
       const amount = Number(transaction.amount || 0);
-      const isIngreso = transaction.transaction_type === 'income' && transaction.paid === true;
+      const isIngreso =
+        transaction.transaction_type === 'income' && transaction.paid === true;
       const isEgreso = transaction.transaction_type === 'egreso';
       if (transaction.payment_method === 'cash') {
         if (isIngreso) {
@@ -136,15 +136,21 @@ export default function CajaPage() {
       }
 
       // Procesar denominaciones si existen (solo aplica a efectivo)
-      if (transaction.payment_method === 'cash' && transaction.denominations && transaction.denominations.length > 0) {
+      if (
+        transaction.payment_method === 'cash' &&
+        transaction.denominations &&
+        transaction.denominations.length > 0
+      ) {
         transaction.denominations.forEach((denom) => {
           const value = Number(denom.value || 0);
           const quantity = Number(denom.quantity || 0);
 
           if (isIngreso) {
-            denominationBreakdown[value] = (denominationBreakdown[value] || 0) + quantity;
+            denominationBreakdown[value] =
+              (denominationBreakdown[value] || 0) + quantity;
           } else {
-            denominationBreakdown[value] = (denominationBreakdown[value] || 0) - quantity;
+            denominationBreakdown[value] =
+              (denominationBreakdown[value] || 0) - quantity;
           }
         });
       }
@@ -159,21 +165,26 @@ export default function CajaPage() {
         totalCashExpenses += amount;
       }
 
-
-      if (gasto.method === 'cash' && gasto.denominations && gasto.denominations.length > 0) {
+      if (
+        gasto.method === 'cash' &&
+        gasto.denominations &&
+        gasto.denominations.length > 0
+      ) {
         gasto.denominations.forEach((denom) => {
           const value = Number(denom.value || 0);
           const quantity = Number(denom.quantity || 0);
-          denominationBreakdown[value] = (denominationBreakdown[value] || 0) - quantity;
+          denominationBreakdown[value] =
+            (denominationBreakdown[value] || 0) - quantity;
         });
       }
     });
 
-
-    const actualCashAmount = Object.entries(denominationBreakdown).reduce((total, [value, quantity]) => {
-      return total + (Number(value) * Number(quantity));
-    }, 0);
-
+    const actualCashAmount = Object.entries(denominationBreakdown).reduce(
+      (total, [value, quantity]) => {
+        return total + Number(value) * Number(quantity);
+      },
+      0
+    );
 
     const denominationSummary = Object.entries(denominationBreakdown)
       .sort((a, b) => Number(b[0]) - Number(a[0]))
@@ -188,7 +199,8 @@ export default function CajaPage() {
       .filter(([, count]) => Number(count) !== 0)
       .map(([value, count]) => `$${value} x ${count}`);
 
-    const netCashAmount = totalCashIngresos - totalCashEgresos - totalCashExpenses;
+    const netCashAmount =
+      totalCashIngresos - totalCashEgresos - totalCashExpenses;
 
     return {
       denominationBreakdown: breakdownArray,
@@ -204,9 +216,7 @@ export default function CajaPage() {
     };
   }
 
-
   const result = processCashRegister(caja);
-
 
   const actualAmount = result.actualCashAmount;
   // Usamos los nuevos campos de 'result'
@@ -241,17 +251,21 @@ export default function CajaPage() {
               </div>
             </CardHeader>
             <CardContent>
-
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <p>
-                    Ingresos tarjeta o transferencia: {formatCurrency(result.totalNonCashIngresos)}
+                    Ingresos tarjeta o transferencia:{' '}
+                    {formatCurrency(result.totalNonCashIngresos)}
                   </p>
                   <p>
-                    Ingresos efectivo: {formatCurrency(result.totalCashIngresos)}
+                    Ingresos efectivo:{' '}
+                    {formatCurrency(result.totalCashIngresos)}
                   </p>
                   <p>
-                    Ingresos totales: {formatCurrency(result.totalCashIngresos + result.totalNonCashIngresos)}
+                    Ingresos totales:{' '}
+                    {formatCurrency(
+                      result.totalCashIngresos + result.totalNonCashIngresos
+                    )}
                   </p>
                 </div>
                 <div>
@@ -259,10 +273,14 @@ export default function CajaPage() {
                     Egresos efectivo: {formatCurrency(result.totalCashEgresos)}
                   </p>
                   <p>
-                    Egresos tarjeta o transferencia: {formatCurrency(result.totalNonCashEgresos)}
+                    Egresos tarjeta o transferencia:{' '}
+                    {formatCurrency(result.totalNonCashEgresos)}
                   </p>
                   <p>
-                    Egresos totales: {formatCurrency(result.totalCashEgresos + result.totalNonCashEgresos)}
+                    Egresos totales:{' '}
+                    {formatCurrency(
+                      result.totalCashEgresos + result.totalNonCashEgresos
+                    )}
                   </p>
                 </div>
               </div>
@@ -314,7 +332,9 @@ export default function CajaPage() {
                                     : 'destructive'
                                 }
                               >
-                                {transaction.transaction_type === 'income' ? 'Ingreso' : transaction.transaction_type}
+                                {transaction.transaction_type === 'income'
+                                  ? 'Ingreso'
+                                  : transaction.transaction_type}
                               </Badge>
                             </TableCell>
                             <TableCell>

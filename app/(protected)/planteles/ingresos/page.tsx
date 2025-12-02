@@ -57,6 +57,7 @@ export default function CobrosPage() {
     string[]
   >(['all']);
   const [selectedCard, setSelectedCard] = useState<string>('all');
+  const [searchFolio, setSearchFolio] = useState('');
   const [cards, setCards] = useState<any[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     'student',
@@ -256,6 +257,7 @@ export default function CobrosPage() {
     searchStudent,
     selectedPaymentMethods,
     selectedCard,
+    searchFolio,
   ]);
 
   useEffect(() => {
@@ -310,7 +312,8 @@ export default function CobrosPage() {
         selectedPaymentMethods.includes('all')
           ? undefined
           : selectedPaymentMethods[0],
-        selectedCard === 'all' ? undefined : selectedCard
+        selectedCard === 'all' ? undefined : selectedCard,
+        searchFolio
       );
 
       setTransactions(response.data);
@@ -364,11 +367,18 @@ export default function CobrosPage() {
     <div>
       <Card className="w-full overflow-hidden">
         <CardHeader className="sticky top-0 bg-card">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
             <Input
               placeholder="Buscar por nombre completo..."
               value={searchStudent}
               onChange={(e) => setSearchStudent(e.target.value)}
+              className="w-full"
+            />
+
+            <Input
+              placeholder="Buscar por folio..."
+              value={searchFolio}
+              onChange={(e) => setSearchFolio(e.target.value)}
               className="w-full"
             />
 

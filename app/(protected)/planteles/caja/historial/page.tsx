@@ -26,7 +26,10 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Eye, Calendar, Plus } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { calculateCajaTotals, processCajaData } from '@/lib/helpers/cajaHelpers';
+import {
+  calculateCajaTotals,
+  processCajaData,
+} from '@/lib/helpers/cajaHelpers';
 
 export default function CajaHistorialPage() {
   const router = useRouter();
@@ -45,10 +48,10 @@ export default function CajaHistorialPage() {
 
   const fetchHistorial = async () => {
     if (!activeCampus?.id) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const historialCajas = await getCajasHistorial(activeCampus.id);
       setCajas(historialCajas);
@@ -90,7 +93,7 @@ export default function CajaHistorialPage() {
   return (
     <div className="p-6 space-y-6">
       <CajaNavigation />
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -99,7 +102,7 @@ export default function CajaHistorialPage() {
             Gestiona y consulta todas las cajas del campus
           </p>
         </div>
-        
+
         <div className="flex gap-2">
           {currentCaja && (
             <Button onClick={handleGoToCurrent}>
@@ -190,29 +193,39 @@ export default function CajaHistorialPage() {
                 {cajas.map((caja) => {
                   const processed = processCajaData(caja);
                   return (
-                    <TableRow 
-                      key={caja.id} 
-                      className={caja.status === 'abierta' ? 'bg-primary/5' : ''}
+                    <TableRow
+                      key={caja.id}
+                      className={
+                        caja.status === 'abierta' ? 'bg-primary/5' : ''
+                      }
                     >
                       <TableCell className="font-medium">#{caja.id}</TableCell>
                       <TableCell>
-                        <Badge 
-                          variant={caja.status === 'abierta' ? 'default' : 'secondary'}
+                        <Badge
+                          variant={
+                            caja.status === 'abierta' ? 'default' : 'secondary'
+                          }
                         >
                           {caja.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {caja.opened_at ? new Date(caja.opened_at).toLocaleString() : 'N/A'}
+                        {caja.opened_at
+                          ? new Date(caja.opened_at).toLocaleString()
+                          : 'N/A'}
                       </TableCell>
                       <TableCell>
-                        {caja.closed_at ? new Date(caja.closed_at).toLocaleString() : '-'}
+                        {caja.closed_at
+                          ? new Date(caja.closed_at).toLocaleString()
+                          : '-'}
                       </TableCell>
                       <TableCell>
                         {formatCurrency(caja.initial_amount)}
                       </TableCell>
                       <TableCell>
-                        {caja.final_amount ? formatCurrency(caja.final_amount) : '-'}
+                        {caja.final_amount
+                          ? formatCurrency(caja.final_amount)
+                          : '-'}
                       </TableCell>
                       <TableCell className="text-green-600">
                         {formatCurrency(processed.totals.cashIngresos)}
@@ -224,8 +237,8 @@ export default function CajaHistorialPage() {
                         {formatCurrency(processed.totals.finalBalance)}
                       </TableCell>
                       <TableCell>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => handleViewCaja(caja.id!)}
                         >

@@ -153,21 +153,22 @@ export const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(
       return trimmedCanvas;
     };
 
-  const handleSave = () => {
-    if (sigCanvas.current) {
-      const canvas = sigCanvas.current.getCanvas();
-      const watermarkedCanvas = addWatermark(canvas);
-      const trimmedCanvas = trimCanvas(watermarkedCanvas);
-      const signatureData = trimmedCanvas.toDataURL('image/png');
-      
-      if (onSave) {
-        onSave(signatureData);
+    const handleSave = () => {
+      if (sigCanvas.current) {
+        const canvas = sigCanvas.current.getCanvas();
+        const watermarkedCanvas = addWatermark(canvas);
+        const trimmedCanvas = trimCanvas(watermarkedCanvas);
+        const signatureData = trimmedCanvas.toDataURL('image/png');
+
+        if (onSave) {
+          onSave(signatureData);
+        }
+
+        onClose();
+        sigCanvas.current.clear();
       }
-      
-      onClose();
-      sigCanvas.current.clear();
-    }
-  };    const handleBegin = () => {
+    };
+    const handleBegin = () => {
       setIsEmpty(false);
     };
 
