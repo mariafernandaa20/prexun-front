@@ -603,7 +603,7 @@ export function StudentForm({
           </Select>
         </div>
 
-        {/* {formData.type && formData.type === 'facultad' ? (
+        {formData.type && formData.type === 'facultad' ? (
           <>
             <div className="space-y-2">
               <Label htmlFor="facultad_id">Facultad</Label>
@@ -681,7 +681,7 @@ export function StudentForm({
               ))}
             </SelectContent>
           </Select>
-        </div> */}
+        </div> 
         <div className="space-y-2">
           <Label htmlFor="average">Promedio</Label>
           <Input

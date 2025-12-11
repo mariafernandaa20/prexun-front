@@ -220,6 +220,11 @@ export const data = {
       icon: Users,
     },
     {
+      name: 'Etiquetas',
+      url: '/planteles/etiquetas',
+      icon: Users,
+    },
+    {
       name: 'Adeudos',
       url: '/planteles/adeudos',
       icon: Receipt,
