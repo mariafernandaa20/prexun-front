@@ -139,7 +139,6 @@ export function processCajaData(caja: Caja): ProcessedCajaData {
     (t) => t.payment_method === 'cash' 
   );
   
-  console.log(cashTransactions);
   const cashGastos = (caja.gastos || []).filter(
     (g) => g.method === 'cash' || g.method === 'Efectivo'
   );

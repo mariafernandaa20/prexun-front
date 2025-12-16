@@ -53,7 +53,13 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       const response = await getCurrentCaja(campusId);
-      setCaja(response);
+      
+      // Si la respuesta es vacía o un objeto vacío, consideramos que no hay caja
+      if (!response || (typeof response === 'object' && Object.keys(response).length === 0)) {
+        setCaja(null);
+      } else {
+        setCaja(response);
+      }
       setError(null);
     } catch (err: any) {
       if (err.response?.status === 404) {
