@@ -135,7 +135,7 @@ export function processCajaData(caja: Caja): ProcessedCajaData {
   const totals = calculateCajaTotals(caja);
   
   // Filtrar transacciones y gastos en efectivo
-  const cashTransactions = (caja.transactions).filter(
+  const cashTransactions = (caja.transactions || []).filter(
     (t) => t.payment_method === 'cash' 
   );
   
