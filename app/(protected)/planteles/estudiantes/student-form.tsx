@@ -37,6 +37,7 @@ import { useAuthStore } from '@/lib/store/auth-store';
 import SearchableSelect from '@/components/SearchableSelect';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import StudentPeriod from './student-period';
+import { StudentTagsSelector } from '@/components/students/StudentTagsSelector';
 
 interface StudentFormProps {
   student?: Student | null;
@@ -891,6 +892,17 @@ export function StudentForm({
                 Enviar mensaje de bienvenida por WhatsApp con la matrícula
               </Label>
             </div>
+          </div>
+        )}
+
+        {/* Tags Selector for existing students */}
+        {student?.id && (
+          <div className="space-y-2 lg:col-span-3">
+            <Label>Etiquetas</Label>
+            <StudentTagsSelector
+              studentId={Number(student.id)}
+              initialTags={student.tags as any || []}
+            />
           </div>
         )}
       </div>

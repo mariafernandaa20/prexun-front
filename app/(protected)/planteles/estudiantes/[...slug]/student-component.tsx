@@ -32,6 +32,7 @@ import StudentAttendance from './StudentAttendance';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 const { SAT } = useFeatureFlags();
 import StudentGrades from '@/components/students/StudentGrades';
+import { StudentTagsSelector } from '@/components/students/StudentTagsSelector';
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -288,6 +289,18 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                   </span>{' '}
                   {formatTime({ time: student.created_at })}
                 </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold">Etiquetas</h3>
+                <StudentTagsSelector 
+                  studentId={student.id} 
+                  initialTags={student.tags || []}
+                  onTagsChange={(tags) => {
+                    if (student) {
+                      student.tags = tags;
+                    }
+                  }}
+                />
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold">Resumen de Pagos</h3>

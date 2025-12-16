@@ -112,6 +112,28 @@ export const getColumnDefinitions = (
     render: (student: Student) => student.phone,
   },
   {
+    id: 'tags',
+    label: 'Etiquetas',
+    defaultVisible: true,
+    render: (student: Student) => {
+      if (!student.tags || student.tags.length === 0) {
+        return <span className="text-muted-foreground text-sm">-</span>;
+      }
+      return (
+        <div className="flex flex-wrap gap-1">
+          {student.tags.map((tag: any) => (
+            <span
+              key={tag.id}
+              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary"
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      );
+    },
+  },
+  {
     id: 'type',
     label: 'Curso',
     defaultVisible: false,

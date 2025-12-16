@@ -58,6 +58,11 @@ export default function CobrosPage() {
   >(['all']);
   const [selectedCard, setSelectedCard] = useState<string>('all');
   const [searchFolio, setSearchFolio] = useState('');
+  const [sortBy, setSortBy] = useState('folio');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [groupByMonth, setGroupByMonth] = useState(false);
   const [cards, setCards] = useState<any[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     'student',
@@ -258,6 +263,11 @@ export default function CobrosPage() {
     selectedPaymentMethods,
     selectedCard,
     searchFolio,
+    sortBy,
+    sortDirection,
+    dateFrom,
+    dateTo,
+    groupByMonth,
   ]);
 
   useEffect(() => {
@@ -313,7 +323,12 @@ export default function CobrosPage() {
           ? undefined
           : selectedPaymentMethods[0],
         selectedCard === 'all' ? undefined : selectedCard,
-        searchFolio
+        searchFolio,
+        sortBy,
+        sortDirection,
+        dateFrom,
+        dateTo,
+        groupByMonth
       );
 
       setTransactions(response.data);
@@ -381,6 +396,56 @@ export default function CobrosPage() {
               onChange={(e) => setSearchFolio(e.target.value)}
               className="w-full"
             />
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="folio">Folio</SelectItem>
+                <SelectItem value="created_at">Fecha de creación</SelectItem>
+                <SelectItem value="payment_date">Fecha de pago</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortDirection} onValueChange={setSortDirection}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Dirección" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="asc">Ascendente</SelectItem>
+                <SelectItem value="desc">Descendente</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Input
+              type="date"
+              placeholder="Desde"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full"
+            />
+
+            <Input
+              type="date"
+              placeholder="Hasta"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full"
+            />
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="groupByMonth"
+                checked={groupByMonth}
+                onChange={(e) => setGroupByMonth(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <Label htmlFor="groupByMonth" className="text-sm cursor-pointer">
+                Agrupar por mes
+              </Label>
+            </div>
 
             <Select
               value={

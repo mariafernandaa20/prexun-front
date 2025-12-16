@@ -52,4 +52,25 @@ export const tagsService = {
     const response = await axiosInstance.delete(`/tags/${id}`);
     return response.data;
   },
+
+  async attachTagsToStudent(studentId: number, tagIds: number[]) {
+    const response = await axiosInstance.post(`/students/${studentId}/tags`, {
+      tag_ids: tagIds,
+    });
+    return response.data;
+  },
+
+  async detachTagFromStudent(studentId: number, tagId: number) {
+    const response = await axiosInstance.delete(
+      `/students/${studentId}/tags/${tagId}`
+    );
+    return response.data;
+  },
+
+  async getStudentTags(studentId: number) {
+    const response = await axiosInstance.get<Tag[]>(
+      `/students/${studentId}/tags`
+    );
+    return response.data;
+  },
 };

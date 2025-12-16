@@ -105,6 +105,11 @@ export interface Student {
   transactions?: Transaction[];
   grupo?: Grupo;
   semana_intensiva_id: number | null;
+  tags?: Array<{
+    id: number;
+    name: string;
+    campus_id: number;
+  }>;
 }
 
 export interface Cohort {
