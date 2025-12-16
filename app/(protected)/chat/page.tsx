@@ -71,17 +71,34 @@ export default function InstruccionesPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const { user } = useAuthStore();
 
-  // Chat states
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [activeStudentId, setActiveStudentId] = useState<number | null>(null);
+  const [students, setStudents] = useState<any[]>([]);
 
   useEffect(() => {
     loadContexts();
-    loadChatHistory();
-  }, []);
+    loadStudents();
+    if (activeStudentId) {
+      loadChatHistory();
+    }
+  }, [activeStudentId]);
+
+  const loadStudents = async () => {
+    try {
+      const response = await axiosInstance.get('/students');
+      setStudents(response.data.data || response.data);
+      if (response.data.data?.length > 0 && !activeStudentId) {
+        setActiveStudentId(response.data.data[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading students:', error);
+      toast.error('Error al cargar estudiantes');
+    }
+  };
 
   const loadContexts = async () => {
     setIsLoading(true);
@@ -191,7 +208,8 @@ export default function InstruccionesPage() {
   const sendMessage = async () => {
     if (
       (!currentMessage.trim() && selectedImages.length === 0) ||
-      isLoadingChat
+      isLoadingChat ||
+      !activeStudentId
     )
       return;
 
@@ -209,7 +227,10 @@ export default function InstruccionesPage() {
 
     try {
       const formData = new FormData();
-      formData.append('message', messageToSend);
+      formData.append('student_id', activeStudentId.toString());
+      formData.append('role', 'user');
+      formData.append('mensaje', messageToSend);
+      formData.append('nombre', user?.name || 'Usuario');
 
       if (selectedImages.length > 0) {
         selectedImages.forEach((image, index) => {
@@ -217,19 +238,33 @@ export default function InstruccionesPage() {
         });
       }
 
-      const response = await axiosInstance.post('/chat/send', formData, {
+      const response = await axiosInstance.post('/mensajes', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: response.data.response,
-        timestamp: new Date(),
-      };
+      setMessages((prev) => 
+        prev.map((msg, index) => 
+          index === prev.length - 1 
+            ? { 
+                ...msg, 
+                id: response.data.mensaje?.id,
+                created_at: response.data.mensaje?.created_at,
+                timestamp: new Date(response.data.mensaje?.created_at || Date.now())
+              }
+            : msg
+        )
+      );
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      if (response.data.response) {
+        const assistantMessage: ChatMessage = {
+          role: 'assistant',
+          content: response.data.response,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error al enviar mensaje');
       console.error(error);
@@ -241,8 +276,13 @@ export default function InstruccionesPage() {
   };
 
   const resetChat = async () => {
+    if (!activeStudentId) {
+      toast.error('No hay estudiante seleccionado');
+      return;
+    }
+
     try {
-      await axiosInstance.delete('/chat/history');
+      await axiosInstance.delete(`/mensajes?student_id=${activeStudentId}`);
       setMessages([]);
       setCurrentMessage('');
       setSelectedImages([]);
@@ -254,17 +294,22 @@ export default function InstruccionesPage() {
   };
 
   const loadChatHistory = async () => {
+    if (!activeStudentId) return;
+    
     try {
-      const response = await axiosInstance.get('/chat/history');
-      const history = response.data.messages.map((msg: any) => ({
+      const response = await axiosInstance.get(`/mensajes?student_id=${activeStudentId}`);
+      const history = response.data.data?.map((msg: any) => ({
+        id: msg.id,
         role: msg.role,
-        content: msg.content,
+        content: msg.mensaje,
         timestamp: new Date(msg.created_at),
+        created_at: msg.created_at,
         images: msg.images,
-      }));
+      })) || [];
       setMessages(history);
     } catch (error) {
       console.error('Error loading chat history:', error);
+      toast.error('Error al cargar historial del chat');
     }
   };
 
@@ -303,7 +348,6 @@ export default function InstruccionesPage() {
 
   return (
     <div className="container mx-auto py-10">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         {user?.role === 'super_admin' && (
           <a
@@ -318,7 +362,22 @@ export default function InstruccionesPage() {
         <div></div>
       </div>
 
-      {/* Tabs */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2">Estudiante Activo:</label>
+        <select
+          value={activeStudentId || ''}
+          onChange={(e) => setActiveStudentId(Number(e.target.value))}
+          className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Seleccionar estudiante...</option>
+          {students.map((student) => (
+            <option key={student.id} value={student.id}>
+              {student.nombre} {student.apellido_paterno} - ID: {student.id}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <Tabs defaultValue="instructions" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="instructions" className="flex items-center gap-2">
@@ -333,17 +392,35 @@ export default function InstruccionesPage() {
 
         <TabsContent value="instructions" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)]">
-            {/* Chat Section */}
             <div className="flex flex-col">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Probar Instrucciones</h2>
-                <Button onClick={resetChat} variant="outline" size="sm">
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reset
-                </Button>
+                <div className="flex gap-2">
+                  {activeStudentId && (
+                    <span className="text-sm text-gray-600 px-2 py-1 bg-gray-100 rounded">
+                      Estudiante ID: {activeStudentId}
+                    </span>
+                  )}
+                  <Button 
+                    onClick={resetChat} 
+                    variant="outline" 
+                    size="sm"
+                    disabled={!activeStudentId}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset
+                  </Button>
+                </div>
               </div>
 
-              {/* Chat Messages */}
+              {!activeStudentId && (
+                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-800 text-sm">
+                    Por favor selecciona un estudiante para comenzar el chat.
+                  </p>
+                </div>
+              )}
+
               <Card className="flex-1 flex flex-col max-h-[calc(100vh-20rem)]">
                 <CardContent className="flex-1 flex flex-col p-4 h-full">
                   <ScrollArea className="flex-1 mb-4 max-h-[calc(100vh-25rem)] overflow-y-auto">
@@ -354,11 +431,10 @@ export default function InstruccionesPage() {
                           className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[80%] p-3 rounded-lg ${
-                              message.role === 'user'
+                            className={`max-w-[80%] p-3 rounded-lg ${message.role === 'user'
                                 ? 'bg-blue-500 text-white'
                                 : 'bg-gray-100 text-gray-900'
-                            }`}
+                              }`}
                           >
                             {message.images && message.images.length > 0 && (
                               <div className="flex flex-wrap gap-2 mb-2">
@@ -393,7 +469,6 @@ export default function InstruccionesPage() {
                     </div>
                   </ScrollArea>
 
-                  {/* Image Previews */}
                   {imagePreviewUrls.length > 0 && (
                     <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-gray-50">
                       {imagePreviewUrls.map((url, index) => (
@@ -414,17 +489,16 @@ export default function InstruccionesPage() {
                     </div>
                   )}
 
-                  {/* Message Input */}
                   <div className="flex gap-2">
                     <div className="flex-1 flex gap-2">
                       <Input
-                        placeholder="Escribe tu mensaje..."
+                        placeholder={activeStudentId ? "Escribe tu mensaje..." : "Selecciona un estudiante primero..."}
                         value={currentMessage}
                         onChange={(e) => setCurrentMessage(e.target.value)}
                         onKeyPress={(e) =>
-                          e.key === 'Enter' && !isLoadingChat && sendMessage()
+                          e.key === 'Enter' && !isLoadingChat && activeStudentId && sendMessage()
                         }
-                        disabled={isLoadingChat}
+                        disabled={isLoadingChat || !activeStudentId}
                       />
                       <input
                         type="file"
@@ -440,7 +514,7 @@ export default function InstruccionesPage() {
                         onClick={() =>
                           document.getElementById('image-upload')?.click()
                         }
-                        disabled={isLoadingChat}
+                        disabled={isLoadingChat || !activeStudentId}
                       >
                         <ImagePlus className="h-4 w-4" />
                       </Button>
@@ -449,6 +523,7 @@ export default function InstruccionesPage() {
                       onClick={sendMessage}
                       disabled={
                         isLoadingChat ||
+                        !activeStudentId ||
                         (!currentMessage.trim() && selectedImages.length === 0)
                       }
                       size="sm"
@@ -460,7 +535,6 @@ export default function InstruccionesPage() {
               </Card>
             </div>
 
-            {/* Instructions Management Section */}
             <div className="flex flex-col max-h-[calc(100vh-8rem)] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Gestión de Instrucciones</h1>
@@ -582,7 +656,7 @@ export default function InstruccionesPage() {
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant="destructive"
+                                    variant="outline"
                                     onClick={() => handleDelete(context.id)}
                                   >
                                     <Trash2 className="h-4 w-4" />
@@ -593,13 +667,6 @@ export default function InstruccionesPage() {
                           ))}
                       </TableBody>
                     </Table>
-
-                    {contexts.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        No hay instrucciones. Crea la primera instrucción para
-                        comenzar.
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -612,7 +679,6 @@ export default function InstruccionesPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
         <DialogContent>
           <DialogHeader>

@@ -41,9 +41,10 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
   const [caja, setCaja] = useState<Caja | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const campusId = activeCampus?.id || null;
 
   const fetchCaja = useCallback(async () => {
-    if (!activeCampus) {
+    if (!campusId) {
       setCaja(null);
       setLoading(false);
       return;
@@ -51,8 +52,14 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setLoading(true);
-      const response = await getCurrentCaja(activeCampus.id);
-      setCaja(response);
+      const response = await getCurrentCaja(campusId);
+      
+      // Si la respuesta es vacía o un objeto vacío, consideramos que no hay caja
+      if (!response || (typeof response === 'object' && Object.keys(response).length === 0)) {
+        setCaja(null);
+      } else {
+        setCaja(response);
+      }
       setError(null);
     } catch (err: any) {
       if (err.response?.status === 404) {
@@ -66,7 +73,7 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [activeCampus]);
+  }, [campusId]);
 
   const openCaja = useCallback(
     async (
@@ -74,12 +81,12 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
       initialAmountCash: Denomination,
       notes: string
     ) => {
-      if (!activeCampus) throw new Error('No hay campus activo');
+      if (!campusId) throw new Error('No se ha seleccionado ningún campus activo.');
 
       try {
         setLoading(true);
         const newCaja = await openCajaApi(
-          activeCampus.id,
+          campusId,
           initialAmount,
           initialAmountCash,
           notes
@@ -93,7 +100,7 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       }
     },
-    [activeCampus]
+    [campusId]
   );
 
   const closeCaja = useCallback(

@@ -24,6 +24,7 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { useCaja } from './useCaja';
 import { processCajaData } from '@/lib/helpers/cajaHelpers';
+import { toast } from 'sonner';
 
 export default function CajaPage() {
   const { caja, loading, error, openCaja, closeCaja } = useCajaActiva();
@@ -46,6 +47,7 @@ export default function CajaPage() {
       await openCaja(initialAmount, initialAmountCash, notes);
     } catch (error) {
       console.error('Error al abrir caja:', error);
+      toast.error(error instanceof Error ? error.message : 'Error al abrir caja');
     }
   };
 
@@ -57,9 +59,8 @@ export default function CajaPage() {
     notes: string
   ) => {
     try {
-      const processed = caja ? processCajaData(caja) : null;
       await closeCaja(
-        processed?.totals.finalBalance || 0,
+        finalAmount,
         finalAmountCash,
         next_day,
         next_day_cash,
@@ -67,12 +68,15 @@ export default function CajaPage() {
       );
     } catch (error) {
       console.error('Error al cerrar caja:', error);
+      toast.error(error instanceof Error ? error.message : 'Error al cerrar caja');
     }
   };
 
   const processed = caja ? processCajaData(caja) : null;
 
-  console.log(processed);
+  if (processed) {
+    console.log(processed);
+  }
 
   return (
     <CajaLayout

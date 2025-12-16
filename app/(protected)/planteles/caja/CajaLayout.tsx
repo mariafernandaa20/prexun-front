@@ -56,6 +56,8 @@ export default function CajaLayout({
   const [finalAmount, setFinalAmount] = useState('');
   const [notes, setNotes] = useState('');
 
+  const isOpen = caja?.status === 'abierta';
+
   const {
     register,
     setValue,
@@ -166,7 +168,7 @@ export default function CajaLayout({
         <DialogTrigger />
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{caja ? 'Cerrar Caja' : 'Abrir Caja'}</DialogTitle>
+            <DialogTitle>{isOpen ? 'Cerrar Caja' : 'Abrir Caja'}</DialogTitle>
             <DialogDescription>
               {/* {caja
                 ? 'Ingrese el monto final y notas para cerrar la caja'
@@ -274,8 +276,8 @@ export default function CajaLayout({
             )} 
           </div> */}
           <DialogFooter>
-            <Button onClick={caja ? handleCloseCaja : handleOpenCaja}>
-              {caja ? 'Cerrar Caja' : 'Abrir Caja'}
+            <Button onClick={isOpen ? handleCloseCaja : handleOpenCaja}>
+              {isOpen ? 'Cerrar Caja' : 'Abrir Caja'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -285,7 +287,7 @@ export default function CajaLayout({
           <div className="flex items-center justify-end px-6">
             {!isReadOnly && (
               <Button onClick={() => setOpen(true)}>
-                {caja ? 'Cerrar Caja' : 'Abrir Caja'}
+                {isOpen ? 'Cerrar Caja' : 'Abrir Caja'}
               </Button>
             )}
           </div>
