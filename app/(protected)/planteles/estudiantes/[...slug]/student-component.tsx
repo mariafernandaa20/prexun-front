@@ -293,8 +293,14 @@ export function StudentComponent({ slug }: { slug: string[] }) {
               <div className="space-y-2">
                 <h3 className="font-semibold">Etiquetas</h3>
                 <StudentTagsSelector 
-                  studentId={student.id} 
-                  initialTags={student.tags || []}
+                  studentId={Number(student.id)} 
+                  initialTags={(student.tags || []).map(tag => ({
+                    id: tag.id,
+                    name: tag.name,
+                    campus_id: tag.campus_id,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                  }))}
                   onTagsChange={(tags) => {
                     if (student) {
                       student.tags = tags;
