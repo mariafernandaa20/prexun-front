@@ -185,7 +185,7 @@ const CardManagement = () => {
       clabe: card.clabe || '',
       sat: Boolean(card.sat),
       campus_id: card.campus_id.toString(),
-      is_hidden: card.is_hidden ?? false,
+      is_hidden: Boolean(card.is_hidden),
     });
     setIsEditDialogOpen(true);
   };
