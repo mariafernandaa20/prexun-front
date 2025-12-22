@@ -252,6 +252,7 @@ export interface Card {
   name: string;
   clabe: string;
   sat: boolean;
+  is_hidden: boolean;
 }
 
 export interface Denomination {

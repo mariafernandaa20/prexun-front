@@ -70,7 +70,7 @@ const CardManagement = () => {
       try {
         setIsLoading(true);
         const [cardsResponse, campusesResponse] = await Promise.all([
-          axiosInstance.get('/cards'),
+          axiosInstance.get('/cards?all=true'),
           axiosInstance.get('/campuses'),
         ]);
         setCards(cardsResponse.data);
@@ -313,13 +313,14 @@ const CardManagement = () => {
                   <TableHead>Clabe Interbancaria</TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Campus</TableHead>
+                  <TableHead>Visible</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {cards.length > 0 ? (
                   cards
-                    .filter((card) => (!SAT || card.sat) && !(card as any).is_hidden)
+                    .filter((card) => !SAT || card.sat)
                     .map((card) => (
                       <TableRow key={card.id}>
                         <TableCell className="font-medium">
@@ -330,6 +331,7 @@ const CardManagement = () => {
                         <TableCell>{card.name}</TableCell>
 
                         <TableCell>{getCampusName(card.campus_id)}</TableCell>
+                        <TableCell>{card.is_hidden ? 'Oculto' : 'Visible'}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -435,20 +437,17 @@ const CardManagement = () => {
               </div>
               <DialogFooter>
                 <div className="flex justify-between w-full items-center">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() =>
+                  <Label>
+                  <Checkbox
+                    onCheckedChange={(checked) =>
                       setFormData((prev) => ({
                         ...prev,
-                        is_hidden: !prev.is_hidden,
+                        is_hidden: Boolean(checked),
                       }))
                     }
-                  >
-                    {formData.is_hidden
-                      ? 'Mostrar la tarjeta'
-                      : 'Ocultar la tarjeta'}
-                  </Button>
+                    checked={formData.is_hidden}
+                  />Ocultar la tarjeta
+                </Label>
                   <div className="flex gap-2">
                     <DialogClose asChild>
                       <Button variant="outline">Cancelar</Button>
