@@ -59,6 +59,7 @@ const CardManagement = () => {
     clabe: '',
     sat: true,
     campus_id: '',
+    is_hidden: false,
   };
 
   const [formData, setFormData] = useState(addForm);
@@ -184,6 +185,7 @@ const CardManagement = () => {
       clabe: card.clabe || '',
       sat: Boolean(card.sat),
       campus_id: card.campus_id.toString(),
+      is_hidden: card.is_hidden ?? false,
     });
     setIsEditDialogOpen(true);
   };
@@ -317,7 +319,7 @@ const CardManagement = () => {
               <TableBody>
                 {cards.length > 0 ? (
                   cards
-                    .filter((card) => !SAT || card.sat)
+                    .filter((card) => (!SAT || card.sat) && !(card as any).is_hidden)
                     .map((card) => (
                       <TableRow key={card.id}>
                         <TableCell className="font-medium">
@@ -432,10 +434,28 @@ const CardManagement = () => {
                 </div>
               </div>
               <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">Cancelar</Button>
-                </DialogClose>
-                <Button onClick={handleEditCard}>Guardar Cambios</Button>
+                <div className="flex justify-between w-full items-center">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        is_hidden: !prev.is_hidden,
+                      }))
+                    }
+                  >
+                    {formData.is_hidden
+                      ? 'Mostrar la tarjeta'
+                      : 'Ocultar la tarjeta'}
+                  </Button>
+                  <div className="flex gap-2">
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleEditCard}>Guardar Cambios</Button>
+                  </div>
+                </div>
               </DialogFooter>
             </DialogContent>
           </Dialog>
