@@ -65,8 +65,6 @@ export function QRSignature({ gastoId, onSignatureUpdate }: QRSignatureProps) {
             clearInterval(interval);
           }
         } catch (apiError) {
-          // No mostrar error si la API no está disponible, solo usar localStorage
-          console.log('API no disponible, continuando con localStorage');
         }
       } catch (error) {
         console.error('Error verificando firma:', error);

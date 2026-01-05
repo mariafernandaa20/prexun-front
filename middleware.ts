@@ -14,7 +14,6 @@ export function middleware(request: NextRequest) {
   const role = request.cookies.get('user-role')?.value
 
   if (!token) {
-    console.log('No hay token, redirigiendo a login')
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

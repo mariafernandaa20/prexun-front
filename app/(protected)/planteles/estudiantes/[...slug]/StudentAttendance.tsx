@@ -19,8 +19,6 @@ export default function StudentAttendance({
     setAttendances(res.data.data || []);
   }
 
-  console.log(attendances);
-
   useEffect(() => {
     if (!studentId) return;
     fetchAttendance();

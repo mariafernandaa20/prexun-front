@@ -11,7 +11,6 @@ export const createRequestLogger = () => {
       if (count > 0) {
         console.warn(`🚨 Solicitud duplicada #${count + 1}: ${key}`);
       } else {
-        console.log(`📤 Nueva solicitud: ${key}`);
       }
     },
     

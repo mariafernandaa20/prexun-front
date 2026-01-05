@@ -8,7 +8,6 @@ export default function TestSignature() {
 
   const handleSave = (signatureData: string) => {
     setSignature(signatureData);
-    console.log('Firma guardada:', signatureData.substring(0, 50) + '...');
   };
 
   const handleRemove = () => {

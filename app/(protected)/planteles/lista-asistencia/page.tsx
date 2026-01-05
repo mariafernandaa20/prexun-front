@@ -192,17 +192,7 @@ export default function AttendanceListPage() {
       };
 
       const response = await axiosInstance.post('/teacher/attendance', payload);
-
-      console.log('Asistencia guardada', {
-        grupo_id: selectedGrupo,
-        fecha: formattedDate,
-        total_estudiantes: Object.keys(attendance).length,
-        presentes: Object.values(attendance).filter((p) => p).length,
-        ausentes: Object.values(attendance).filter((p) => !p).length,
-        timestamp: new Date().toISOString(),
-        response: response.data,
-      });
-
+      
       toast.success('¡Asistencia Guardada!', {
         description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,
         duration: 5000,
