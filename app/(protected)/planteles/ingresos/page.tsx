@@ -235,7 +235,7 @@ export default function CobrosPage() {
               title="Subir comprobante"
               onClick={() => handleUploadClick(transaction)}
             >
-              <Upload className="w-4 h-4 text-orange-500" />
+              <Upload className="w-4 h-4" />
             </Button>
           )}
         </div>
@@ -669,7 +669,6 @@ export default function CobrosPage() {
             <Button
               onClick={handleConfirmUpload}
               disabled={!selectedFile || uploading}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
             >
               {uploading ? 'Guardando...' : 'Subir y Guardar'}
             </Button>
