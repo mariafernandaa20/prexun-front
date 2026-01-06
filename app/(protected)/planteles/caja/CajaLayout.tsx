@@ -20,6 +20,7 @@ import {
   calculateDenominationsTotal,
   validateCajaBalance,
 } from '@/lib/helpers/cajaHelpers';
+import { Textarea } from '@/components/ui/textarea';
 
 interface FormData {
   denominations: Denomination;
@@ -176,7 +177,7 @@ export default function CajaLayout({
             </DialogDescription>
           </DialogHeader>
 
-          {/* <div className="grid gap-2 py-4">
+          <div className="grid gap-2 py-4">
             <div>
               <Label htmlFor="amount" className="text-right text-lg">
                 Monto {caja ? 'Final' : 'Inicial'}
@@ -222,7 +223,7 @@ export default function CajaLayout({
                 )}
               </div>
             </div>
-            {/* {caja && (
+            {caja && (
               <>
                 <div>
                   <Label htmlFor="amount" className="text-right text-lg">
@@ -274,7 +275,7 @@ export default function CajaLayout({
                 </div>
               </>
             )} 
-          </div> */}
+          </div>
           <DialogFooter>
             <Button onClick={isOpen ? handleCloseCaja : handleOpenCaja}>
               {isOpen ? 'Cerrar Caja' : 'Abrir Caja'}
