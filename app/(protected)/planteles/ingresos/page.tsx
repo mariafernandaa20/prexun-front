@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
+
+
 import axios from 'axios';
 import {
   Table,
@@ -14,7 +16,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,11 +30,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { createCharge, getCharges } from '@/lib/api';
+import { createCharge, getCharges, updateCharge } from '@/lib/api';
 import { Student, Transaction } from '@/lib/types';
 import { MultiSelect } from '@/components/multi-select';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
-import { ChevronLeft, ChevronRight, Eye, Share } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Share, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Card,
@@ -84,6 +88,45 @@ export default function CobrosPage() {
   const { config: uiConfig } = useUIConfig();
 
   const [loading, setLoading] = useState(false);
+
+
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [transactionToUpload, setTransactionToUpload] = useState<Transaction | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); 
+  const [uploading, setUploading] = useState(false);
+
+
+  const handleUploadClick = (transaction: Transaction) => {
+    setTransactionToUpload(transaction);
+    setSelectedFile(null);
+    setUploadModalOpen(true);
+  };
+
+
+   const handleConfirmUpload = async () => {
+    if (!selectedFile || !transactionToUpload) return;
+
+    try {
+      setUploading(true);
+      
+      const payload = {
+        id: transactionToUpload.id,
+        image: selectedFile
+      } as unknown as Transaction;
+
+      await updateCharge(payload);
+
+      toast({ title: 'Éxito', description: 'Comprobante subido correctamente.' });
+      setUploadModalOpen(false);
+      fetchIngresos(pagination.currentPage);
+    } catch (error) {
+      console.error(error);
+      toast({ title: 'Error', description: 'No se pudo subir.', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
 
   const commonColumnDefinitions = [
     {
@@ -166,24 +209,37 @@ export default function CobrosPage() {
     {
       id: 'comprobante',
       label: 'Comprobante',
-      render: (transaction: Transaction) =>
-        transaction.image ? (
-          <div className="flex items-center gap-2">
-            <img
-              src={transaction.image as string}
-              alt="Miniatura"
-              className="w-10 h-10 object-cover rounded"
-            />
+      render: (transaction: Transaction) => (
+        <div className="flex items-center gap-2">
+          {transaction.image ? (
+            <>
+              <img
+                src={transaction.image as string}
+                alt="Miniatura"
+                className="w-10 h-10 object-cover rounded"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleOpenImage(transaction.image as string)}
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                Ver
+              </Button>
+            </>
+          ) : (
+            // AQUI ESTA EL ICONO DE SUBIDA (Si no hay imagen)
             <Button
               variant="ghost"
-              size="sm"
-              onClick={() => handleOpenImage(transaction.image as string)}
+              size="icon"
+              title="Subir comprobante"
+              onClick={() => handleUploadClick(transaction)}
             >
-              <Eye className="w-4 h-4 mr-1" />
-              Ver
+              <Upload className="w-4 h-4 text-orange-500" />
             </Button>
-          </div>
-        ) : null,
+          )}
+        </div>
+      ),
       alwaysVisible: true,
     },
     {
@@ -191,6 +247,8 @@ export default function CobrosPage() {
       label: 'Acciones',
       render: (transaction: Transaction) => (
         <div className="flex items-center justify-right gap-2">
+          {/* AQUÍ YA NO HAY ICONO DE SUBIDA */}
+
           <Button
             variant="ghost"
             size="icon"
@@ -356,6 +414,7 @@ export default function CobrosPage() {
     setSelectedImage(imageUrl);
     setImageModalOpen(true);
   };
+
 
   const columnOptions = columnDefinitions
     .filter((col) => !col.alwaysVisible)
@@ -571,9 +630,71 @@ export default function CobrosPage() {
           />
         </CardFooter>
       </Card>
+                 <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Subir Comprobante</DialogTitle>
+            <DialogDescription>
+              Selecciona un archivo de imagen para guardar como comprobante.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid w-full items-center gap-4">
+              <Label htmlFor="picture">Selecciona el archivo</Label>
+              <Input
+                id="picture"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                disabled={uploading}
+              />
+            </div>
+
+            {uploading && (
+              <p className="text-center text-sm text-muted-foreground">
+                Subiendo archivo...
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setUploadModalOpen(false)}
+              disabled={uploading}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmUpload}
+              disabled={!selectedFile || uploading}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {uploading ? 'Guardando...' : 'Subir y Guardar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
+           {/* Modal para ver imagen */}
       <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] h-full overflow-y-auto">
-          <img src={selectedImage} alt="Comprobante" className="w-full" />
+        <DialogContent className="max-w-4xl w-full h-[90vh] p-0 overflow-hidden bg-black/90 border-none [&>button]:text-white [&>button]:top-4 [&>button]:right-4">
+            <DialogTitle className="sr-only">Vista previa del comprobante</DialogTitle>
+            <DialogDescription className="sr-only">
+              Imagen ampliada del comprobante de pago seleccionado
+            </DialogDescription>
+          <div className="relative w-full h-full flex items-center justify-center">
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Comprobante completo"
+                className="max-w-full max-h-full object-contain"
+              />
+            )}
+            {/* Se eliminó el botón manual para evitar duplicados. Usamos el nativo estilizado. */}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
