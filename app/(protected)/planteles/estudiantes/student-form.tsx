@@ -606,55 +606,8 @@ export function StudentForm({
 
         {formData.type && formData.type === 'facultad' ? (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="facultad_id">Facultad</Label>
-              <Select
-                name="facultad_id"
-                value={Number(formData.facultad_id) as any}
-                onValueChange={(value) =>
-                  handleChange({
-                    name: 'facultad_id',
-                    value: value,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar facultad" />
-                </SelectTrigger>
-                <SelectContent>
-                  {facultades.map((facultad) => (
-                    <SelectItem key={facultad.id} value={facultad.id}>
-                      {facultad.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="carrer_id">Carrera</Label>
-              <Select
-                name="carrer_id"
-                value={Number(formData.carrer_id) as any}
-                onValueChange={(value) =>
-                  handleChange({
-                    name: 'carrer_id',
-                    value: value,
-                  })
-                }
-                disabled={!formData.facultad_id}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar carrera" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredCarreras.map((carrera) => (
-                    <SelectItem key={carrera.id} value={carrera.id}>
-                      {carrera.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
+
           </>
         ) : (
           <></>
@@ -682,7 +635,7 @@ export function StudentForm({
               ))}
             </SelectContent>
           </Select>
-        </div> 
+        </div>
         <div className="space-y-2">
           <Label htmlFor="average">Promedio</Label>
           <Input
