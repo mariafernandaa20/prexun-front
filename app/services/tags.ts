@@ -4,6 +4,7 @@ export interface Tag {
   id: number;
   campus_id: number;
   name: string;
+  color?: string; // Nuevo campo
   created_at: string;
   updated_at: string;
   campus?: {
@@ -20,10 +21,12 @@ export interface Tag {
 export interface CreateTagData {
   campus_id: number;
   name: string;
+  color?: string; // Nuevo campo
 }
 
 export interface UpdateTagData {
   name: string;
+  color?: string; // Nuevo campo
 }
 
 export const tagsService = {

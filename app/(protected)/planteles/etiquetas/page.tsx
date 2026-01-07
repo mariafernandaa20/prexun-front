@@ -32,7 +32,7 @@ export default function TagsPage() {
 
   const fetchTags = async () => {
     if (!activeCampus?.id) return;
-    
+
     setIsLoading(true);
     try {
       const data = await tagsService.getTags(activeCampus.id);
@@ -114,7 +114,16 @@ export default function TagsPage() {
               <TableBody>
                 {tags.map((tag) => (
                   <TableRow key={tag.id}>
-                    <TableCell className="font-medium">{tag.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-4 h-4 rounded-full border shadow-sm"
+                          style={{ backgroundColor: tag.color || '#000000' }}
+                          title={tag.color}
+                        />
+                        {tag.name}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
