@@ -109,6 +109,7 @@ export interface Student {
     id: number;
     name: string;
     campus_id: number;
+    color?: string;
   }>;
 }
 
