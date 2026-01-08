@@ -263,10 +263,12 @@ const Filters: React.FC<FiltersProps> = ({
               allOptionLabel="Todos"
             />
             <SearchableSelect
-              options={carreras.map((carrera) => ({
-                value: carrera.id?.toString() || '',
-                label: carrera.name,
-              }))}
+              options={[...carreras]
+                .sort((a, b) => (a.orden ?? 999999) - (b.orden ?? 999999))
+                .map((carrera) => ({
+                  value: carrera.id?.toString() || '',
+                  label: carrera.name,
+                }))}
               value={carreraFilter}
               placeholder="Carrera"
               onChange={(val) => setCarreraFilter?.(val)}

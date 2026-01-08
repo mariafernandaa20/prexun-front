@@ -83,6 +83,7 @@ export default function Page() {
         name: selectedCarrera?.name,
         facultad_id: selectedCarrera?.facultad_id,
         modulo_ids: selectedModulos,
+        orden: selectedCarrera?.orden ?? null,
       };
 
       if (selectedCarrera?.id) {
@@ -170,6 +171,21 @@ export default function Page() {
                 </SelectContent>
               </Select>
               <Input
+                type="number"
+                placeholder="Número de orden"
+                value={selectedCarrera?.orden ?? ''}
+                onChange={(e) =>
+                  setSelectedCarrera((prev) =>
+                    prev
+                      ? {
+                        ...prev,
+                        orden: e.target.value ? Number(e.target.value) : null,
+                      }
+                      : null
+                  )
+                }
+              />
+              <Input
                 placeholder="Nombre de la carrera"
                 value={selectedCarrera?.name || ''}
                 onChange={(e) => handleNameChange(e.target.value)}
@@ -203,9 +219,10 @@ export default function Page() {
         return (
           <div key={facultad.id} className="mb-8 w-full">
             <h2 className="text-xl font-semibold mb-4">{facultad.name}</h2>
-            <Table>
+                       <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Orden</TableHead> 
                   <TableHead>Nombre</TableHead>
                   <TableHead>Módulos</TableHead>
                   <TableHead>Acciones</TableHead>
@@ -214,6 +231,7 @@ export default function Page() {
               <TableBody>
                 {carrerasFacultad.map((carrera) => (
                   <TableRow key={carrera.id}>
+                    <TableCell>{carrera.orden}</TableCell> 
                     <TableCell>{carrera.name}</TableCell>
                     <TableCell>
                       {carrera.modulos
@@ -239,7 +257,7 @@ export default function Page() {
                 {carrerasFacultad.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={3}
+                      colSpan={4} 
                       className="text-center text-muted-foreground"
                     >
                       No hay carreras registradas para esta facultad
