@@ -1,6 +1,8 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import {
   Tooltip,
   TooltipContent,
@@ -32,6 +34,29 @@ export default function AttendanceCalendar({
   month = new Date().getMonth(),
   year = new Date().getFullYear(),
 }: AttendanceCalendarProps) {
+  // Estado para la navegación
+  const [currentMonth, setCurrentMonth] = useState(month);
+  const [currentYear, setCurrentYear] = useState(year);
+
+  // Funciones de navegación
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
   // Función para formatear la hora
   const formatTime = (dateTimeString: string) => {
     try {
@@ -47,8 +72,8 @@ export default function AttendanceCalendar({
   };
 
   // Obtener el primer día del mes y cuántos días tiene
-  const firstDayOfMonth = new Date(year, month, 1);
-  const lastDayOfMonth = new Date(year, month + 1, 0);
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+  const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
   const daysInMonth = lastDayOfMonth.getDate();
   const startingDayOfWeek = firstDayOfMonth.getDay();
 
@@ -87,7 +112,7 @@ export default function AttendanceCalendar({
 
   // Días del mes
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateKey = `${year}-${month}-${day}`;
+    const dateKey = `${currentYear}-${currentMonth}-${day}`;
     const attendanceRecord = attendanceMap.get(dateKey);
     const hasAttendance = attendanceMap.has(dateKey);
     const isPresent = attendanceRecord?.present;
@@ -100,20 +125,33 @@ export default function AttendanceCalendar({
     });
   }
 
-  const getAttendanceStats = () => {
-    const totalDays = attendance.length;
-    const presentDays = attendance.filter((record) => record.present).length;
-    const absentDays = totalDays - presentDays;
-    const attendanceRate =
-      totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
-
-    return { totalDays, presentDays, absentDays, attendanceRate };
-  };
-
-  const stats = getAttendanceStats();
-
   return (
     <Card className="w-full">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-medium">
+            {monthNames[currentMonth]} {currentYear}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handlePrevMonth}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleNextMonth}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
       <CardContent className="space-y-4">
         {/* Calendario */}
         <TooltipProvider>

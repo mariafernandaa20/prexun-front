@@ -149,6 +149,7 @@ export interface Carrera {
   modulos?: Modulo[];
   modulos_ids?: string[];
   facultad_id: string;
+  orden?: number | null;
 }
 
 export interface Modulo {

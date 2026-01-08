@@ -461,8 +461,8 @@ export default function CobrosPage() {
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="folio">Folio</SelectItem>
-                <SelectItem value="created_at">Fecha de creación</SelectItem>
+                <SelectItem value="folio">Fecha de creación</SelectItem>
+                <SelectItem value="created_at">Folio</SelectItem>
                 <SelectItem value="payment_date">Fecha de pago</SelectItem>
               </SelectContent>
             </Select>
