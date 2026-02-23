@@ -29,6 +29,7 @@ import {
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useAuthStore } from '@/lib/store/auth-store';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 interface Student {
   id: string;
@@ -99,6 +100,7 @@ interface GroupReport {
 
 export default function ReportesAsistenciaPage() {
   const { grupos, periods } = useAuthStore();
+  const { activeCampus } = useActiveCampusStore();
   const [periodId, setPeriodId] = useState<string>('');
   const [selectedGrupo, setSelectedGrupo] = useState<string>('');
   const [studentId, setStudentId] = useState<string>('');
@@ -118,7 +120,11 @@ export default function ReportesAsistenciaPage() {
   // Cargar estudiantes cuando se selecciona un grupo
   const fetchStudentsForGroup = async (groupId: string) => {
     try {
-      const response = await axiosInstance.get(`/grupos/${groupId}/students`);
+      const params: any = {};
+      if (activeCampus?.id) {
+        params.plantel_id = activeCampus.id;
+      }
+      const response = await axiosInstance.get(`/grupos/${groupId}/students`, { params });
       setStudents(response.data);
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -147,8 +153,12 @@ export default function ReportesAsistenciaPage() {
         exclude_weekends: excludeWeekends.toString(),
       });
 
+      if (activeCampus?.id) {
+        params.append('plantel_id', activeCampus.id.toString());
+      }
+
       const response = await axiosInstance.get(
-        `/teacher/attendance/student/${studentId}/report?${params}`
+        `/teacher/attendance/student/${studentId}/report?${params.toString()}`
       );
 
       if (response.data.success) {
@@ -178,8 +188,12 @@ export default function ReportesAsistenciaPage() {
         exclude_weekends: excludeWeekends.toString(),
       });
 
+      if (activeCampus?.id) {
+        params.append('plantel_id', activeCampus.id.toString());
+      }
+
       const response = await axiosInstance.get(
-        `/teacher/attendance/group/${selectedGrupo}/report?${params}`
+        `/teacher/attendance/group/${selectedGrupo}/report?${params.toString()}`
       );
 
       if (response.data.success) {

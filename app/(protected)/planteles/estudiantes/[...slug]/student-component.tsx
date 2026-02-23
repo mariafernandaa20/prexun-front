@@ -482,7 +482,6 @@ export function StudentComponent({ slug }: { slug: string[] }) {
               <StudentGrades studentId={student.id} />
 
             </div>
-            <StudentNotes studentId={student.id.toString()} />
           </div>
         </TabsContent>
       </Tabs>
@@ -503,9 +502,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
           <DialogHeader>
             <DialogTitle>Notas de {student.firstname}</DialogTitle>
           </DialogHeader>
-          <div className="mt-4">
-            <StudentNotes studentId={student.id.toString()} />
-          </div>
+
         </DialogContent>
       </Dialog>
     </div>

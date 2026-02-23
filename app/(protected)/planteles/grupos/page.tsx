@@ -15,6 +15,7 @@ import axiosInstance from '@/lib/api/axiosConfig';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { GraduationCap } from 'lucide-react';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
 interface Group {
   id: number;
@@ -44,6 +45,7 @@ interface AsistenciaItem {
 
 export default function TeachergruposPage() {
   const user = useAuthStore((state) => state.user);
+  const { activeCampus } = useActiveCampusStore();
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
   const { grupos } = useAuthStore();
 
@@ -54,8 +56,13 @@ export default function TeachergruposPage() {
   useEffect(() => {
     if (!selectedGroup) return;
 
+    const params: any = {};
+    if (activeCampus?.id) {
+      params.plantel_id = activeCampus.id;
+    }
+
     axiosInstance
-      .get(`/grupos/${selectedGroup}/students`)
+      .get(`/grupos/${selectedGroup}/students`, { params })
       .then((response) => {
         setAlumnos(response.data);
         const lista = response.data.map((alumno: Student) => ({

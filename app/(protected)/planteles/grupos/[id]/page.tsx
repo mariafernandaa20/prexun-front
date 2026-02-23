@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useRouter } from 'next/navigation';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, MessageCircle, Loader2, Send } from 'lucide-react';
 import {
@@ -70,11 +71,12 @@ interface Template {
 
 export default function GroupGradesPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { activeCampus } = useActiveCampusStore();
   const [group, setGroup] = useState<Group | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [grades, setGrades] = useState<Record<string | number, Grade[]>>({});
   const [loading, setLoading] = useState(true);
-  
+
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateParams, setTemplateParams] = useState<Record<string, string>>({});
@@ -85,15 +87,20 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const queryParams: any = {};
+        if (activeCampus?.id) {
+          queryParams.plantel_id = activeCampus.id;
+        }
+
         const [groupRes, studentsRes, templatesRes] = await Promise.all([
           axiosInstance.get(`/grupos/${params.id}`),
-          axiosInstance.get(`/grupos/${params.id}/students`),
+          axiosInstance.get(`/grupos/${params.id}/students`, { params: queryParams }),
           axiosInstance.get('/whatsapp/templates'),
         ]);
 
         setGroup(groupRes.data);
         setStudents(studentsRes.data);
-        
+
         if (templatesRes.data.success) {
           setTemplates(templatesRes.data.data);
         }
@@ -400,11 +407,11 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
                   const average =
                     studentGrades.length > 0
                       ? (
-                          studentGrades.reduce(
-                            (sum, g) => sum + (g.final_grade || g.grade || 0),
-                            0
-                          ) / studentGrades.length
-                        ).toFixed(2)
+                        studentGrades.reduce(
+                          (sum, g) => sum + (g.final_grade || g.grade || 0),
+                          0
+                        ) / studentGrades.length
+                      ).toFixed(2)
                       : 'N/A';
 
                   return (
