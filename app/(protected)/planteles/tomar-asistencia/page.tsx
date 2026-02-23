@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import QrScanner from 'react-qr-barcode-scanner';
 
 interface Student {
@@ -36,6 +37,7 @@ interface AttendanceRecord {
 }
 
 export default function TomarAsistenciasPage() {
+  const { activeCampus } = useActiveCampusStore();
   const [matricula, setMatricula] = useState<string>('');
   const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord[]>(
     []
@@ -115,8 +117,14 @@ export default function TomarAsistenciasPage() {
     setIsLoading(true);
     try {
       // Buscar estudiante
+      const params: any = {};
+      if (activeCampus?.id) {
+        params.plantel_id = activeCampus.id;
+      }
+
       const studentResponse = await axiosInstance.get(
-        `/teacher/student/${studentMatricula}`
+        `/teacher/student/${studentMatricula}`,
+        { params }
       );
 
       if (!studentResponse.data.success) {

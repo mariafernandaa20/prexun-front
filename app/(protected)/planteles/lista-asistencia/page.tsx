@@ -24,6 +24,7 @@ import { Edit, FileText, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useAuthStore } from '@/lib/store/auth-store';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import EditAttendanceModal from '@/components/EditAttendanceModal';
 
 interface Student {
@@ -58,6 +59,7 @@ interface Grupo {
 
 export default function AttendanceListPage() {
   const { grupos, periods } = useAuthStore();
+  const { activeCampus } = useActiveCampusStore();
   const [periodId, setPeriodId] = useState<string>('');
   const [selectedGrupo, setSelectedGrupo] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -79,8 +81,14 @@ export default function AttendanceListPage() {
   const fetchAttendanceForDate = async (date: Date, grupoId: string) => {
     try {
       const formattedDate = date.toISOString().split('T')[0];
+      const params: any = {};
+      if (activeCampus?.id) {
+        params.plantel_id = activeCampus.id;
+      }
+
       const response = await axiosInstance.get(
-        `/teacher/attendance/${grupoId}/${formattedDate}`
+        `/teacher/attendance/${grupoId}/${formattedDate}`,
+        { params }
       );
 
       if (
@@ -192,7 +200,7 @@ export default function AttendanceListPage() {
       };
 
       const response = await axiosInstance.post('/teacher/attendance', payload);
-      
+
       toast.success('¡Asistencia Guardada!', {
         description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,
         duration: 5000,
@@ -251,7 +259,11 @@ export default function AttendanceListPage() {
 
   async function fetchStudentsForGrupo(grupoId: string) {
     try {
-      const response = await axiosInstance.get(`/grupos/${grupoId}/students`);
+      const params: any = {};
+      if (activeCampus?.id) {
+        params.plantel_id = activeCampus.id;
+      }
+      const response = await axiosInstance.get(`/grupos/${grupoId}/students`, { params });
       setStudents(response.data);
     } catch (error) {
       console.error('Error fetching students for group:', error);
@@ -362,7 +374,7 @@ export default function AttendanceListPage() {
                     <TableCell className="py-3 px-4 text-gray-600">
                       <div className="flex items-center gap-1">
                         {attendance[student.id] &&
-                        attendanceTimes[student.id] ? (
+                          attendanceTimes[student.id] ? (
                           <>
                             <Clock className="h-3 w-3" />
                             {new Date(
