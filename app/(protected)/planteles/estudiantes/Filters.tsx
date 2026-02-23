@@ -381,45 +381,7 @@ const Filters: React.FC<FiltersProps> = ({
               />
             </div>
 
-            <div className="flex flex-col gap-1">
-              <span className="text-sm ml-1 dark:text-white">
-                Periodo (Viejo)
-              </span>
-              <SearchableSelect
-                options={periods.map((period) => ({
-                  value: period.id,
-                  label: period.name,
-                }))}
-                value={periodFilter}
-                placeholder="Periodo (Viejo)"
-                onChange={setPeriodFilter}
-                showAllOption={true}
-                allOptionLabel="Todos"
-              />
-            </div>
 
-            <div className="flex flex-col gap-1">
-              <span className="text-sm ml-1 dark:text-white">
-                Grupo (Viejo)
-              </span>
-              <SearchableSelect
-                options={grupos
-                  .filter(
-                    (grupo) =>
-                      !periodFilter ||
-                      grupo.period_id.toString() === periodFilter.toString()
-                  )
-                  .map((grupo) => ({
-                    value: grupo.id.toString(),
-                    label: grupo.name,
-                  }))}
-                value={grupoFilter}
-                placeholder="Grupo (Viejo)"
-                onChange={(val) => setGrupoFilter(val)}
-                showAllOption={true}
-                allOptionLabel="Todos"
-              />
-            </div>
 
             <div className="flex flex-col gap-1">
               <span className="text-sm ml-1 dark:text-white">Carrera</span>
