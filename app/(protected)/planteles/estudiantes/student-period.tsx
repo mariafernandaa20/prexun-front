@@ -472,16 +472,21 @@ export default function StudentPeriod({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">Ninguno</SelectItem>
-                            {grupos.map((grupo) => (
-                              <SelectItem
-                                key={grupo.id}
-                                value={grupo.id!.toString()}
-                              >
-                                {grupo.name} (
-                                {grupo.active_assignments_count || 0}/
-                                {grupo.capacity})
-                              </SelectItem>
-                            ))}
+                            {grupos.map((grupo) => {
+                              const available = (grupo.capacity || 0) - (grupo.active_assignments_count || 0);
+                              const colorClass = available <= 0 ? 'text-red-500' : available <= 5 ? 'text-yellow-500' : 'text-green-500';
+                              return (
+                                <SelectItem
+                                  key={grupo.id}
+                                  value={grupo.id!.toString()}
+                                >
+                                  {grupo.name} (
+                                  <span className={colorClass}>
+                                    {grupo.active_assignments_count || 0}/{grupo.capacity}
+                                  </span>)
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>
@@ -506,16 +511,21 @@ export default function StudentPeriod({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="none">Ninguna</SelectItem>
-                            {semanasIntensivas.map((semana) => (
-                              <SelectItem
-                                key={semana.id}
-                                value={semana.id!.toString()}
-                              >
-                                {semana.name} (
-                                {semana.active_assignments_count || 0}/
-                                {semana.capacity})
-                              </SelectItem>
-                            ))}
+                            {semanasIntensivas.map((semana) => {
+                              const available = (semana.capacity || 0) - (semana.active_assignments_count || 0);
+                              const colorClass = available <= 0 ? 'text-red-500' : available <= 5 ? 'text-yellow-500' : 'text-green-500';
+                              return (
+                                <SelectItem
+                                  key={semana.id}
+                                  value={semana.id!.toString()}
+                                >
+                                  {semana.name} (
+                                  <span className={colorClass}>
+                                    {semana.active_assignments_count || 0}/{semana.capacity}
+                                  </span>)
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>

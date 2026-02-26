@@ -491,7 +491,7 @@ export default function CobrosPage() {
             />
 
             <Input
-              placeholder="Descendente"
+              placeholder="Buscar por Folio"
               value={searchFolio}
               onChange={(e) => setSearchFolio(e.target.value)}
               className="w-full"
@@ -502,8 +502,8 @@ export default function CobrosPage() {
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="folio">Fecha de creación</SelectItem>
                 <SelectItem value="created_at">Folio</SelectItem>
+                <SelectItem value="folio">Fecha de creación</SelectItem>
                 <SelectItem value="payment_date">Fecha de pago</SelectItem>
               </SelectContent>
             </Select>
