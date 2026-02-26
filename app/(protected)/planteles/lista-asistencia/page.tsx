@@ -127,6 +127,11 @@ export default function AttendanceListPage() {
     );
   }, [campusGroups, periodId]);
 
+  const getPeriodNameById = (id: string | number) => {
+    const period = periods.find((item: any) => String(item.id) === String(id));
+    return period?.name || `Periodo ${id}`;
+  };
+
   const formatDateToLocalIso = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -400,7 +405,7 @@ export default function AttendanceListPage() {
                 <SelectContent>
                   {filteredGroups.map((grupo) => (
                     <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                      {grupo.name}
+                        {grupo.name} - {getPeriodNameById(grupo.period_id)}
                     </SelectItem>
                   ))}
                 </SelectContent>
