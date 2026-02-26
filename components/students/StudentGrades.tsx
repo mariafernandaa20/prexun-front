@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import {
   GraduationCap,
   RefreshCw,
@@ -67,11 +68,40 @@ interface CourseGrades {
   course_details?: CourseDetails | null;
 }
 
+interface MessageTemplate {
+  id: string;
+  name: string;
+  content: string;
+}
+
+const whatsappTemplates: MessageTemplate[] = [
+  {
+    id: 'resumen',
+    name: 'Resumen general',
+    content:
+      'Hola {{nombre}}, te compartimos tu avance en {{curso}}. Calificación actual: {{calificacion}} ({{porcentaje}}). Actividades destacadas: {{actividad_1}}, {{actividad_2}} y {{actividad_3}}.',
+  },
+  {
+    id: 'seguimiento',
+    name: 'Seguimiento académico',
+    content:
+      'Hola {{nombre}}, seguimiento de {{curso}}: calificación {{calificacion}} ({{porcentaje}}). Te recomendamos revisar: {{actividad_1}} y {{actividad_2}}.',
+  },
+  {
+    id: 'felicitacion',
+    name: 'Felicitación',
+    content:
+      'Hola {{nombre}}, excelente trabajo en {{curso}}. Tienes {{calificacion}} ({{porcentaje}}). Continúa así en actividades como {{actividad_1}}.',
+  },
+];
+
 export default function StudentGrades({ studentId }: StudentGradesProps) {
   const { toast } = useToast();
   const [grades, setGrades] = useState<CourseGrades[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [studentInfo, setStudentInfo] = useState<any>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('resumen');
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [expandedCourses, setExpandedCourses] = useState<Set<number>>(
     new Set()
   );
@@ -112,12 +142,77 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
     fetchGrades();
   }, [studentId]);
 
-  const getGradeBadgeVariant = (percentage: string | undefined) => {
-    if (!percentage) return 'secondary';
-    const value = parseFloat(percentage.replace('%', ''));
-    if (value >= 90) return 'default';
-    if (value >= 70) return 'secondary';
-    return 'destructive';
+  const validGrades = grades.filter(
+    (courseGrade) => courseGrade.course_name !== 'Curso desconocido'
+  );
+
+  useEffect(() => {
+    if (validGrades.length === 0) {
+      setSelectedCourseId(null);
+      return;
+    }
+
+    const exists = validGrades.some(
+      (courseGrade) => courseGrade.course_id === selectedCourseId
+    );
+
+    if (!exists) {
+      setSelectedCourseId(validGrades[0].course_id);
+    }
+  }, [validGrades, selectedCourseId]);
+
+  const selectedTemplate =
+    whatsappTemplates.find((template) => template.id === selectedTemplateId) ||
+    whatsappTemplates[0];
+
+  const selectedCourse = validGrades.find(
+    (courseGrade) => courseGrade.course_id === selectedCourseId
+  );
+
+  const buildWhatsAppMessage = () => {
+    if (!selectedCourse) return '';
+
+    const studentName =
+      studentInfo?.firstname && studentInfo?.lastname
+        ? `${studentInfo.firstname} ${studentInfo.lastname}`
+        : studentInfo?.name || 'estudiante';
+
+    const activities = selectedCourse.activities || [];
+    const vars: Record<string, string> = {
+      nombre: studentName,
+      curso: selectedCourse.course_name || '-',
+      calificacion: selectedCourse.grade || '-',
+      porcentaje: selectedCourse.course_details?.percentage || '-',
+      actividad_1: activities[0]?.name || 'Sin actividad',
+      actividad_2: activities[1]?.name || 'Sin actividad',
+      actividad_3: activities[2]?.name || 'Sin actividad',
+    };
+
+    return Object.entries(vars).reduce(
+      (message, [key, value]) =>
+        message.replace(new RegExp(`{{${key}}}`, 'g'), value),
+      selectedTemplate.content
+    );
+  };
+
+  const generatedMessage = buildWhatsAppMessage();
+
+  const handleCopyMessage = async () => {
+    if (!generatedMessage) return;
+
+    try {
+      await navigator.clipboard.writeText(generatedMessage);
+      toast({
+        title: 'Mensaje copiado',
+        description: 'El mensaje de WhatsApp se copió al portapapeles.',
+      });
+    } catch {
+      toast({
+        title: 'No se pudo copiar',
+        description: 'Copia manualmente el mensaje desde la vista previa.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) {
@@ -140,7 +235,7 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
     );
   }
 
-  if (grades.length === 0) {
+  if (validGrades.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -185,7 +280,7 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               Calificaciones
             </CardTitle>
             <CardDescription className="mt-1.5">
-              {grades.filter(courseGrade => courseGrade.course_name !== 'Curso desconocido').length} {grades.filter(courseGrade => courseGrade.course_name !== 'Curso desconocido').length === 1 ? 'curso' : 'cursos'} con
+              {validGrades.length} {validGrades.length === 1 ? 'curso' : 'cursos'} con
               calificaciones
             </CardDescription>
           </div>
@@ -196,7 +291,57 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {grades.filter(courseGrade => courseGrade.course_name !== 'Curso desconocido').map((courseGrade) => (
+        <div className="border rounded-lg p-4 space-y-3">
+          <div className="flex flex-col md:flex-row md:items-end gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-medium mb-1">Plantilla WhatsApp</p>
+              <select
+                value={selectedTemplateId}
+                onChange={(event) => setSelectedTemplateId(event.target.value)}
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+              >
+                {whatsappTemplates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex-1">
+              <p className="text-sm font-medium mb-1">Curso para variables</p>
+              <select
+                value={selectedCourseId?.toString() || ''}
+                onChange={(event) => setSelectedCourseId(Number(event.target.value))}
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+              >
+                {validGrades.map((courseGrade) => (
+                  <option
+                    key={courseGrade.course_id}
+                    value={courseGrade.course_id.toString()}
+                  >
+                    {courseGrade.course_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={handleCopyMessage}
+              disabled={!generatedMessage}
+            >
+              Copiar al portapapeles
+            </Button>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium mb-1">Vista previa</p>
+            <Textarea value={generatedMessage} readOnly className="min-h-[120px]" />
+          </div>
+        </div>
+
+        {validGrades.map((courseGrade) => (
           <div
             key={courseGrade.course_id}
             className="space-y-3 border rounded-lg p-4"
