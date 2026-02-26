@@ -79,19 +79,19 @@ const whatsappTemplates: MessageTemplate[] = [
     id: 'resumen',
     name: 'Resumen general',
     content:
-      'Hola {{nombre}}, te compartimos tu avance en {{curso}}. Calificación actual: {{calificacion}} ({{porcentaje}}). Actividades destacadas: {{actividad_1}}, {{actividad_2}} y {{actividad_3}}.',
+      'Hola {{nombre}}, te compartimos tu avance en {{curso}}. Calificación actual: {{calificacion}} ({{porcentaje}}). {{resumen_actividades}}',
   },
   {
     id: 'seguimiento',
     name: 'Seguimiento académico',
     content:
-      'Hola {{nombre}}, seguimiento de {{curso}}: calificación {{calificacion}} ({{porcentaje}}). Te recomendamos revisar: {{actividad_1}} y {{actividad_2}}.',
+      'Hola {{nombre}}, seguimiento de {{curso}}: calificación {{calificacion}} ({{porcentaje}}). {{seguimiento_actividades}}',
   },
   {
     id: 'felicitacion',
     name: 'Felicitación',
     content:
-      'Hola {{nombre}}, excelente trabajo en {{curso}}. Tienes {{calificacion}} ({{porcentaje}}). Continúa así en actividades como {{actividad_1}}.',
+      'Hola {{nombre}}, excelente trabajo en {{curso}}. Tienes {{calificacion}} ({{porcentaje}}). {{felicitacion_actividades}}',
   },
 ];
 
@@ -102,6 +102,7 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
   const [studentInfo, setStudentInfo] = useState<any>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('resumen');
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [messageMode, setMessageMode] = useState<'single' | 'all'>('single');
   const [expandedCourses, setExpandedCourses] = useState<Set<number>>(
     new Set()
   );
@@ -169,33 +170,63 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
     (courseGrade) => courseGrade.course_id === selectedCourseId
   );
 
-  const buildWhatsAppMessage = () => {
-    if (!selectedCourse) return '';
+  const buildWhatsAppMessageForCourse = (course: CourseGrades) => {
+    if (!course) return '';
 
     const studentName =
       studentInfo?.firstname && studentInfo?.lastname
         ? `${studentInfo.firstname} ${studentInfo.lastname}`
         : studentInfo?.name || 'estudiante';
 
-    const activities = selectedCourse.activities || [];
+    const activityNames = (course.activities || [])
+      .map((activity) => (activity.name || '').trim())
+      .filter((name) => !!name)
+      .slice(0, 3);
+
+    const resumenActividades =
+      activityNames.length > 0
+        ? `Actividades destacadas: ${activityNames.join(', ')}.`
+        : '';
+
+    const seguimientoActividades =
+      activityNames.length > 0
+        ? `Te recomendamos revisar: ${activityNames.join(', ')}.`
+        : '';
+
+    const felicitacionActividades =
+      activityNames.length > 0
+        ? `Continúa así en actividades como ${activityNames[0]}.`
+        : '';
+
     const vars: Record<string, string> = {
       nombre: studentName,
-      curso: selectedCourse.course_name || '-',
-      calificacion: selectedCourse.grade || '-',
-      porcentaje: selectedCourse.course_details?.percentage || '-',
-      actividad_1: activities[0]?.name || 'Sin actividad',
-      actividad_2: activities[1]?.name || 'Sin actividad',
-      actividad_3: activities[2]?.name || 'Sin actividad',
+      curso: course.course_name || '-',
+      calificacion: course.grade || '-',
+      porcentaje: course.course_details?.percentage || '-',
+      resumen_actividades: resumenActividades,
+      seguimiento_actividades: seguimientoActividades,
+      felicitacion_actividades: felicitacionActividades,
     };
 
-    return Object.entries(vars).reduce(
+    const message = Object.entries(vars).reduce(
       (message, [key, value]) =>
         message.replace(new RegExp(`{{${key}}}`, 'g'), value),
       selectedTemplate.content
     );
+
+    return message.replace(/\s{2,}/g, ' ').trim();
   };
 
-  const generatedMessage = buildWhatsAppMessage();
+  const generatedSingleMessage = selectedCourse
+    ? buildWhatsAppMessageForCourse(selectedCourse)
+    : '';
+
+  const generatedBulkMessage = validGrades
+    .map((course, index) => `${index + 1}. ${buildWhatsAppMessageForCourse(course)}`)
+    .join('\n\n');
+
+  const generatedMessage =
+    messageMode === 'single' ? generatedSingleMessage : generatedBulkMessage;
 
   const handleCopyMessage = async () => {
     if (!generatedMessage) return;
@@ -309,11 +340,26 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
             </div>
 
             <div className="flex-1">
+              <p className="text-sm font-medium mb-1">Modo de envío</p>
+              <select
+                value={messageMode}
+                onChange={(event) =>
+                  setMessageMode(event.target.value as 'single' | 'all')
+                }
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+              >
+                <option value="single">Curso seleccionado</option>
+                <option value="all">Todos los cursos</option>
+              </select>
+            </div>
+
+            <div className="flex-1">
               <p className="text-sm font-medium mb-1">Curso para variables</p>
               <select
                 value={selectedCourseId?.toString() || ''}
                 onChange={(event) => setSelectedCourseId(Number(event.target.value))}
                 className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                disabled={messageMode === 'all'}
               >
                 {validGrades.map((courseGrade) => (
                   <option
@@ -331,7 +377,9 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               onClick={handleCopyMessage}
               disabled={!generatedMessage}
             >
-              Copiar al portapapeles
+              {messageMode === 'all'
+                ? 'Copiar todos al portapapeles'
+                : 'Copiar al portapapeles'}
             </Button>
           </div>
 
