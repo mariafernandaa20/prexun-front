@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import { Edit, FileText, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
@@ -51,12 +50,6 @@ interface AttendanceData {
   date: string;
 }
 
-interface Grupo {
-  id: string;
-  name: string;
-  students: Student[];
-}
-
 export default function AttendanceListPage() {
   const { grupos, periods } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
@@ -78,9 +71,51 @@ export default function AttendanceListPage() {
   const [selectedAttendance, setSelectedAttendance] =
     useState<AttendanceData | null>(null);
 
-  const fetchAttendanceForDate = async (date: Date, grupoId: string) => {
+  const filteredGroups = useMemo(() => {
+    return grupos.filter(
+      (grupo) => !periodId || grupo.period_id.toString() === periodId.toString()
+    );
+  }, [grupos, periodId]);
+
+  const formatDateToLocalIso = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  useEffect(() => {
+    if (periodId || periods.length === 0) return;
+    setPeriodId(periods[0].id.toString());
+  }, [periods, periodId]);
+
+  useEffect(() => {
+    if (filteredGroups.length === 0) {
+      setSelectedGrupo('');
+      setStudents([]);
+      setAttendance({});
+      setAttendanceTimes({});
+      setAttendanceNotes({});
+      setAttendanceIds({});
+      return;
+    }
+
+    const groupExists = filteredGroups.some(
+      (group) => group.id.toString() === selectedGrupo
+    );
+
+    if (!groupExists) {
+      setSelectedGrupo(filteredGroups[0].id.toString());
+    }
+  }, [filteredGroups, selectedGrupo]);
+
+  const fetchAttendanceForDate = async (
+    date: Date,
+    grupoId: string,
+    currentStudents: Student[]
+  ) => {
     try {
-      const formattedDate = date.toISOString().split('T')[0];
+      const formattedDate = formatDateToLocalIso(date);
       const params: any = {};
       if (activeCampus?.id) {
         params.plantel_id = activeCampus.id;
@@ -120,7 +155,7 @@ export default function AttendanceListPage() {
         setAttendanceIds(idsMap);
       } else {
         const defaultAttendance: Record<string, boolean> = {};
-        students.forEach((student) => {
+        currentStudents.forEach((student) => {
           defaultAttendance[student.id] = false;
         });
         setAttendance(defaultAttendance);
@@ -130,7 +165,7 @@ export default function AttendanceListPage() {
       }
     } catch {
       const defaultAttendance: Record<string, boolean> = {};
-      students.forEach((student) => {
+      currentStudents.forEach((student) => {
         defaultAttendance[student.id] = false;
       });
       setAttendance(defaultAttendance);
@@ -139,29 +174,6 @@ export default function AttendanceListPage() {
       setAttendanceIds({});
     }
   };
-
-  useEffect(() => {
-    if (selectedGrupo && selectedDate) {
-      fetchAttendanceForDate(selectedDate, selectedGrupo);
-    }
-  }, [selectedDate, selectedGrupo, students]);
-
-  useEffect(() => {
-    if (selectedGrupo && students.length > 0) {
-      const defaultAttendance: Record<string, boolean> = {};
-      students.forEach((student) => {
-        defaultAttendance[student.id] = false;
-      });
-      setAttendance(defaultAttendance);
-      setAttendanceTimes({});
-      setAttendanceNotes({});
-      setAttendanceIds({});
-
-      if (selectedDate) {
-        fetchAttendanceForDate(selectedDate, selectedGrupo);
-      }
-    }
-  }, [selectedGrupo, students]);
 
   const handleAttendanceChange = (studentId: string, checked: boolean) => {
     setAttendance((prev) => ({
@@ -187,7 +199,7 @@ export default function AttendanceListPage() {
 
   const handleSaveAttendance = async () => {
     try {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
+      const formattedDate = formatDateToLocalIso(selectedDate);
       const payload = {
         grupo_id: selectedGrupo,
         date: formattedDate,
@@ -222,7 +234,7 @@ export default function AttendanceListPage() {
       present: attendance[student.id] || false,
       attendance_time: attendanceTimes[student.id] || null,
       notes: attendanceNotes[student.id] || null,
-      date: selectedDate.toISOString().split('T')[0],
+      date: formatDateToLocalIso(selectedDate),
     };
 
     setSelectedAttendance(attendanceData);
@@ -264,17 +276,31 @@ export default function AttendanceListPage() {
         params.plantel_id = activeCampus.id;
       }
       const response = await axiosInstance.get(`/grupos/${grupoId}/students`, { params });
-      setStudents(response.data);
+      return response.data as Student[];
     } catch (error) {
       console.error('Error fetching students for group:', error);
+      return [];
     }
   }
 
   useEffect(() => {
-    if (selectedGrupo) {
-      fetchStudentsForGrupo(selectedGrupo);
-    }
-  }, [selectedGrupo]);
+    if (!selectedGrupo) return;
+
+    let cancelled = false;
+
+    const loadAttendancePageData = async () => {
+      const fetchedStudents = await fetchStudentsForGrupo(selectedGrupo);
+      if (cancelled) return;
+      setStudents(fetchedStudents);
+      await fetchAttendanceForDate(selectedDate, selectedGrupo, fetchedStudents);
+    };
+
+    loadAttendancePageData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedGrupo, selectedDate, activeCampus?.id]);
 
   return (
     <div className="p-6 text-xs">
@@ -303,17 +329,11 @@ export default function AttendanceListPage() {
                   <SelectValue placeholder="Select a group" />
                 </SelectTrigger>
                 <SelectContent>
-                  {grupos
-                    .filter(
-                      (grupo) =>
-                        !periodId ||
-                        grupo.period_id.toString() === periodId.toString()
-                    )
-                    .map((grupo) => (
-                      <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                        {grupo.name}
-                      </SelectItem>
-                    ))}
+                  {filteredGroups.map((grupo) => (
+                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                      {grupo.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -323,12 +343,7 @@ export default function AttendanceListPage() {
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => {
-                  if (date && selectedGrupo) {
-                    const defaultAttendance: Record<string, boolean> = {};
-                    students.forEach((student) => {
-                      defaultAttendance[student.id] = false;
-                    });
-                    setAttendance(defaultAttendance);
+                  if (date) {
                     setSelectedDate(date);
                   }
                 }}
@@ -352,7 +367,9 @@ export default function AttendanceListPage() {
               <TableBody>
                 {students.map((student) => (
                   <TableRow key={student.id}>
-                    <TableCell className="py-3 px-4">{student.id}</TableCell>
+                    <TableCell className="py-3 px-4">
+                      {student.matricula || student.id}
+                    </TableCell>
                     <TableCell className="py-3 px-4">
                       <a
                         className="hover:underline"

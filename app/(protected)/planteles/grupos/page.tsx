@@ -46,7 +46,7 @@ interface AsistenciaItem {
 export default function TeachergruposPage() {
   const { activeCampus } = useActiveCampusStore();
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
-  const { grupos } = useAuthStore();
+  const { periods, grupos, getFilteredGrupos } = useAuthStore();
   const [sortBy, setSortBy] = useState<
     'alfabetico' | 'cupo' | 'capacidad' | 'inscritos'
   >('alfabetico');
@@ -56,10 +56,67 @@ export default function TeachergruposPage() {
   const [mostrarTabla, setMostrarTabla] = useState(true);
   const [studentCounts, setStudentCounts] = useState<Record<number, number>>({});
 
+  const getCurrentPeriodId = () => {
+    if (!Array.isArray(periods) || periods.length === 0) return null;
+
+    const today = new Date();
+    const todayDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    const activePeriod = periods.find((period: any) => {
+      const start = new Date(`${period.start_date}T00:00:00`);
+      const end = new Date(`${period.end_date}T23:59:59`);
+      return todayDate >= start && todayDate <= end;
+    });
+
+    if (activePeriod?.id) return String(activePeriod.id);
+
+    const sortedByStartDate = [...periods].sort(
+      (a: any, b: any) =>
+        new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+    );
+
+    return sortedByStartDate[0]?.id ? String(sortedByStartDate[0].id) : null;
+  };
+
+  const currentPeriodId = getCurrentPeriodId();
+
+  const filteredGrupos = useMemo(() => {
+    const baseGroups = getFilteredGrupos(activeCampus?.id, currentPeriodId);
+
+    return baseGroups.filter((group: any) => {
+      const hasPlantelAssociation =
+        !!group.plantel_id ||
+        (Array.isArray(group.campuses) && group.campuses.length > 0);
+
+      if (hasPlantelAssociation) return true;
+
+      const groupType = String(group.type || '').toLowerCase();
+      const isOnlineGroup =
+        groupType.includes('linea') ||
+        groupType.includes('línea') ||
+        groupType.includes('online');
+
+      return isOnlineGroup;
+    });
+  }, [getFilteredGrupos, activeCampus?.id, currentPeriodId, grupos]);
+
   useEffect(() => {
-    if (selectedGroup || grupos.length === 0) return;
-    setSelectedGroup(grupos[0].id);
-  }, [grupos, selectedGroup]);
+    if (filteredGrupos.length === 0) {
+      setSelectedGroup(null);
+      setAlumnos([]);
+      setAsistencia([]);
+      return;
+    }
+
+    const existsInFiltered = filteredGrupos.some((g) => g.id === selectedGroup);
+    if (!existsInFiltered) {
+      setSelectedGroup(filteredGrupos[0].id);
+    }
+  }, [filteredGrupos, selectedGroup]);
 
   useEffect(() => {
     if (!selectedGroup) return;
@@ -87,7 +144,7 @@ export default function TeachergruposPage() {
   }, [selectedGroup, activeCampus?.id]);
 
   useEffect(() => {
-    if (grupos.length === 0) {
+    if (filteredGrupos.length === 0) {
       setStudentCounts({});
       return;
     }
@@ -100,7 +157,7 @@ export default function TeachergruposPage() {
     let cancelled = false;
 
     Promise.all(
-      grupos.map(async (group) => {
+      filteredGrupos.map(async (group) => {
         const response = await axiosInstance.get(`/grupos/${group.id}/students`, {
           params,
         });
@@ -125,9 +182,9 @@ export default function TeachergruposPage() {
     return () => {
       cancelled = true;
     };
-  }, [grupos, activeCampus?.id]);
+  }, [filteredGrupos, activeCampus?.id]);
 
-  const selectedGroupData = grupos.find((g) => g.id === selectedGroup);
+  const selectedGroupData = filteredGrupos.find((g) => g.id === selectedGroup);
 
   const getGroupStudentsCount = (group: any) => {
     if (typeof studentCounts[group.id] === 'number') return studentCounts[group.id];
@@ -141,7 +198,7 @@ export default function TeachergruposPage() {
   };
 
   const sortedGroups = useMemo(() => {
-    const groupsCopy = [...grupos];
+    const groupsCopy = [...filteredGrupos];
 
     if (sortBy === 'alfabetico') {
       return groupsCopy.sort((a, b) => a.name.localeCompare(b.name, 'es'));
@@ -160,16 +217,16 @@ export default function TeachergruposPage() {
     return groupsCopy.sort(
       (a, b) => getGroupStudentsCount(b) - getGroupStudentsCount(a)
     );
-  }, [grupos, sortBy, studentCounts]);
+  }, [filteredGrupos, sortBy, studentCounts]);
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Mis Grupos</h1>
 
-      {grupos.length === 0 ? (
+      {filteredGrupos.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500">
-            No tienes grupos asignados actualmente.
+            No hay grupos del periodo actual para este plantel.
           </p>
         </div>
       ) : (
