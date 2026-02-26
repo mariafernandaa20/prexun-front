@@ -207,6 +207,11 @@ export const data = {
       url: '/dashboard/reportes',
       icon: PieChart,
     },
+    {
+      name: 'Changelog',
+      url: '/dashboard/changelog',
+      icon: BookOpen,
+    },
   ],
 
   plantel_navigation: [

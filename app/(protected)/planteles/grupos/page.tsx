@@ -197,26 +197,42 @@ export default function TeachergruposPage() {
     return Math.max((group.capacity || 0) - inscritos, 0);
   };
 
-  const sortedGroups = useMemo(() => {
-    const groupsCopy = [...filteredGrupos];
-
-    if (sortBy === 'alfabetico') {
-      return groupsCopy.sort((a, b) => a.name.localeCompare(b.name, 'es'));
-    }
-
-    if (sortBy === 'cupo') {
-      return groupsCopy.sort(
-        (a, b) => getAvailableSeats(b) - getAvailableSeats(a)
-      );
-    }
-
-    if (sortBy === 'capacidad') {
-      return groupsCopy.sort((a, b) => (b.capacity || 0) - (a.capacity || 0));
-    }
-
-    return groupsCopy.sort(
-      (a, b) => getGroupStudentsCount(b) - getGroupStudentsCount(a)
+  const isOnlineGroup = (group: any) => {
+    const groupType = String(group.type || '').toLowerCase();
+    return (
+      groupType.includes('linea') ||
+      groupType.includes('línea') ||
+      groupType.includes('online')
     );
+  };
+
+  const sortedGroups = useMemo(() => {
+    const presencialGroups = filteredGrupos.filter((group) => !isOnlineGroup(group));
+    const onlineGroups = filteredGrupos.filter((group) => isOnlineGroup(group));
+
+    const sortGroupList = (groupsList: any[]) => {
+      const groupsCopy = [...groupsList];
+
+      if (sortBy === 'alfabetico') {
+        return groupsCopy.sort((a, b) => a.name.localeCompare(b.name, 'es'));
+      }
+
+      if (sortBy === 'cupo') {
+        return groupsCopy.sort(
+          (a, b) => getAvailableSeats(b) - getAvailableSeats(a)
+        );
+      }
+
+      if (sortBy === 'capacidad') {
+        return groupsCopy.sort((a, b) => (b.capacity || 0) - (a.capacity || 0));
+      }
+
+      return groupsCopy.sort(
+        (a, b) => getGroupStudentsCount(b) - getGroupStudentsCount(a)
+      );
+    };
+
+    return [...sortGroupList(presencialGroups), ...sortGroupList(onlineGroups)];
   }, [filteredGrupos, sortBy, studentCounts]);
 
   return (
