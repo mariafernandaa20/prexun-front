@@ -185,7 +185,7 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               Calificaciones
             </CardTitle>
             <CardDescription className="mt-1.5">
-              {grades.length} {grades.length === 1 ? 'curso' : 'cursos'} con
+              {grades.filter(courseGrade => courseGrade.course_name !== 'Curso desconocido').length} {grades.filter(courseGrade => courseGrade.course_name !== 'Curso desconocido').length === 1 ? 'curso' : 'cursos'} con
               calificaciones
             </CardDescription>
           </div>
@@ -196,7 +196,7 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {grades.map((courseGrade) => (
+        {grades.filter(courseGrade => courseGrade.course_name !== 'Curso desconocido').map((courseGrade) => (
           <div
             key={courseGrade.course_id}
             className="space-y-3 border rounded-lg p-4"
@@ -205,7 +205,7 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-base">
-                    {courseGrade.course_name}
+                    {courseGrade.course_name }
                   </h3>
                   {courseGrade.course_type && (
                     <Badge variant="outline" className="text-xs">
