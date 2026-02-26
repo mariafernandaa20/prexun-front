@@ -386,8 +386,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return g.campuses.some(c => Number(typeof c === 'object' ? (c as any).id : c) === Number(activeCampusId));
       }
       
-      // C) Si no tiene absolutamente ninguna asociación (ni ID ni array), es global y se queda
-      return true;
+      // C) Sin asociación explícita: solo permitir grupos en línea
+      const groupType = String((g as any).type || '').toLowerCase();
+      return groupType.includes('linea') || groupType.includes('línea') || groupType.includes('online');
     });
 
     return filtered;

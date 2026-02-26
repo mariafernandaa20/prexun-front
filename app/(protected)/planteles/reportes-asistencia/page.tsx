@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { useUIConfig } from '@/hooks/useUIConfig';
 
 interface Student {
   id: string;
@@ -99,8 +100,9 @@ interface GroupReport {
 }
 
 export default function ReportesAsistenciaPage() {
-  const { grupos, periods } = useAuthStore();
+  const { grupos, periods, getFilteredGrupos } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
+  const { config } = useUIConfig();
   const [periodId, setPeriodId] = useState<string>('');
   const [selectedGrupo, setSelectedGrupo] = useState<string>('');
   const [studentId, setStudentId] = useState<string>('');
@@ -116,6 +118,102 @@ export default function ReportesAsistenciaPage() {
   const [groupReport, setGroupReport] = useState<GroupReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('student');
+
+  const getCurrentPeriodId = () => {
+    if (!Array.isArray(periods) || periods.length === 0) return null;
+
+    const today = new Date();
+    const todayDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    const activePeriod = periods.find((period: any) => {
+      const start = new Date(`${period.start_date}T00:00:00`);
+      const end = new Date(`${period.end_date}T23:59:59`);
+      return todayDate >= start && todayDate <= end;
+    });
+
+    if (activePeriod?.id) return String(activePeriod.id);
+
+    const sortedByStartDate = [...periods].sort(
+      (a: any, b: any) =>
+        new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+    );
+
+    return sortedByStartDate[0]?.id ? String(sortedByStartDate[0].id) : null;
+  };
+
+  const currentPeriodId = getCurrentPeriodId();
+
+  const campusGroups = useMemo(() => {
+    const baseGroups = getFilteredGrupos(activeCampus?.id, undefined);
+
+    return baseGroups.filter((group: any) => {
+      const hasPlantelAssociation =
+        !!group.plantel_id ||
+        (Array.isArray(group.campuses) && group.campuses.length > 0);
+
+      if (hasPlantelAssociation) return true;
+
+      const groupType = String(group.type || '').toLowerCase();
+      const isOnlineGroup =
+        groupType.includes('linea') ||
+        groupType.includes('línea') ||
+        groupType.includes('online');
+
+      return isOnlineGroup;
+    });
+  }, [getFilteredGrupos, activeCampus?.id, grupos]);
+
+  const filteredGroups = useMemo(() => {
+    return campusGroups.filter(
+      (grupo) => !periodId || grupo.period_id.toString() === periodId
+    );
+  }, [campusGroups, periodId]);
+
+  useEffect(() => {
+    if (periodId || periods.length === 0) return;
+
+    const configuredPeriodId = config?.default_period_id
+      ? String(config.default_period_id)
+      : null;
+
+    const hasConfiguredPeriod = configuredPeriodId
+      ? periods.some((period: any) => String(period.id) === configuredPeriodId)
+      : false;
+
+    if (hasConfiguredPeriod && configuredPeriodId) {
+      setPeriodId(configuredPeriodId);
+      return;
+    }
+
+    if (currentPeriodId) {
+      setPeriodId(currentPeriodId);
+      return;
+    }
+
+    setPeriodId(String(periods[0].id));
+  }, [periodId, periods, config?.default_period_id, currentPeriodId]);
+
+  useEffect(() => {
+    if (filteredGroups.length === 0) {
+      setSelectedGrupo('');
+      setStudentId('');
+      setStudents([]);
+      return;
+    }
+
+    const groupExists = filteredGroups.some(
+      (group) => group.id.toString() === selectedGrupo
+    );
+
+    if (!groupExists) {
+      setSelectedGrupo(filteredGroups[0].id.toString());
+      setStudentId('');
+    }
+  }, [filteredGroups, selectedGrupo]);
 
   // Cargar estudiantes cuando se selecciona un grupo
   const fetchStudentsForGroup = async (groupId: string) => {
@@ -136,7 +234,7 @@ export default function ReportesAsistenciaPage() {
     if (selectedGrupo) {
       fetchStudentsForGroup(selectedGrupo);
     }
-  }, [selectedGrupo]);
+  }, [selectedGrupo, activeCampus?.id]);
 
   // Generar reporte de estudiante
   const generateStudentReport = async () => {
@@ -269,16 +367,11 @@ export default function ReportesAsistenciaPage() {
                     <SelectValue placeholder="Selecciona grupo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {grupos
-                      .filter(
-                        (grupo) =>
-                          !periodId || grupo.period_id.toString() === periodId
-                      )
-                      .map((grupo) => (
-                        <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                          {grupo.name}
-                        </SelectItem>
-                      ))}
+                    {filteredGroups.map((grupo) => (
+                      <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                        {grupo.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
