@@ -257,10 +257,10 @@ export default function TeachergruposPage() {
                   onChange={(e) =>
                     setSortBy(
                       e.target.value as
-                        | 'alfabetico'
-                        | 'cupo'
-                        | 'capacidad'
-                        | 'inscritos'
+                      | 'alfabetico'
+                      | 'cupo'
+                      | 'capacidad'
+                      | 'inscritos'
                     )
                   }
                 >

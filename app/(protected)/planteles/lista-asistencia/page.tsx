@@ -364,9 +364,21 @@ export default function AttendanceListPage() {
 
     const loadAttendancePageData = async () => {
       const fetchedStudents = await fetchStudentsForGrupo(selectedGrupo);
+
+      // Ordenar por Apellido y luego Nombre
+      const sortedStudents = [...fetchedStudents].sort((a, b) => {
+        const lastA = (a.lastname || '').toLowerCase();
+        const lastB = (b.lastname || '').toLowerCase();
+        if (lastA < lastB) return -1;
+        if (lastA > lastB) return 1;
+        const firstA = (a.firstname || '').toLowerCase();
+        const firstB = (b.firstname || '').toLowerCase();
+        return firstA.localeCompare(firstB);
+      });
+
       if (cancelled) return;
-      setStudents(fetchedStudents);
-      await fetchAttendanceForDate(selectedDate, selectedGrupo, fetchedStudents);
+      setStudents(sortedStudents);
+      await fetchAttendanceForDate(selectedDate, selectedGrupo, sortedStudents);
     };
 
     loadAttendancePageData();
@@ -405,7 +417,7 @@ export default function AttendanceListPage() {
                 <SelectContent>
                   {filteredGroups.map((grupo) => (
                     <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                        {grupo.name} - {getPeriodNameById(grupo.period_id)}
+                      {grupo.name} - {getPeriodNameById(grupo.period_id)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -431,7 +443,7 @@ export default function AttendanceListPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="py-3 px-4">Matrícula</TableHead>
-                  <TableHead className="py-3 px-4">Nombre</TableHead>
+                  <TableHead className="py-3 px-4">Estudiante (Apellido Nombre)</TableHead>
                   <TableHead className="py-3 px-4">Asistencia</TableHead>
                   <TableHead className="py-3 px-4">Hora de Registro</TableHead>
                   <TableHead className="py-3 px-4">Notas</TableHead>
@@ -450,7 +462,7 @@ export default function AttendanceListPage() {
                         href={`/planteles/estudiantes/${student.id}`}
                         target="_blank"
                       >
-                        {student.firstname + ' ' + student.lastname}
+                        {student.lastname} {student.firstname}
                       </a>
                     </TableCell>
                     <TableCell className="py-3 px-4">
