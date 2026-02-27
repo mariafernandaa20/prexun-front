@@ -160,8 +160,18 @@ export default function AttendanceListPage() {
     );
   }
 
-  const selectedGroupStudents =
-    grupos.find((g) => g.id === selectedGrupo)?.students || [];
+  const selectedGroupStudents = React.useMemo(() => {
+    const students = grupos.find((g) => g.id === selectedGrupo)?.students || [];
+    return [...students].sort((a, b) => {
+      const lastA = (a.lastname || '').toLowerCase();
+      const lastB = (b.lastname || '').toLowerCase();
+      if (lastA < lastB) return -1;
+      if (lastA > lastB) return 1;
+      const firstA = (a.firstname || '').toLowerCase();
+      const firstB = (b.firstname || '').toLowerCase();
+      return firstA.localeCompare(firstB);
+    });
+  }, [grupos, selectedGrupo]);
 
   return (
     <div className="p-6 text-xs">
@@ -205,8 +215,7 @@ export default function AttendanceListPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="py-3 px-4">Matrícula</TableHead>
-                    <TableHead className="py-3 px-4">Nombre</TableHead>
-                    <TableHead className="py-3 px-4">Apellido</TableHead>
+                    <TableHead className="py-3 px-4">Estudiante (Apellido Nombre)</TableHead>
                     <TableHead className="py-3 px-4">Asistencia</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -215,10 +224,7 @@ export default function AttendanceListPage() {
                     <TableRow key={student.id}>
                       <TableCell className="py-3 px-4">{student.id}</TableCell>
                       <TableCell className="py-3 px-4">
-                        {student.firstname}
-                      </TableCell>
-                      <TableCell className="py-3 px-4">
-                        {student.lastname}
+                        {student.lastname} {student.firstname}
                       </TableCell>
                       <TableCell className="py-3 px-4">
                         <Checkbox

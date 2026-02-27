@@ -84,8 +84,18 @@ export default function AsistenciaPage() {
     }
   };
 
-  const selectedGroupStudents =
-    grupos.find((g) => g.id === selectedGrupo)?.students || [];
+  const selectedGroupStudents = React.useMemo(() => {
+    const students = grupos.find((g) => g.id === selectedGrupo)?.students || [];
+    return [...students].sort((a: any, b: any) => {
+      const lastA = (a.lastname || a.name || '').toLowerCase();
+      const lastB = (b.lastname || b.name || '').toLowerCase();
+      if (lastA < lastB) return -1;
+      if (lastA > lastB) return 1;
+      const firstA = (a.firstname || '').toLowerCase();
+      const firstB = (b.firstname || '').toLowerCase();
+      return firstA.localeCompare(firstB);
+    });
+  }, [grupos, selectedGrupo]);
 
   return (
     <div className="p-6">
@@ -122,14 +132,16 @@ export default function AsistenciaPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre del Estudiante</TableHead>
+                <TableHead>Estudiante (Apellido Nombre)</TableHead>
                 <TableHead>Asistencia</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {selectedGroupStudents.map((student) => (
+              {selectedGroupStudents.map((student: any) => (
                 <TableRow key={student.id}>
-                  <TableCell>{student.name}</TableCell>
+                  <TableCell>
+                    {student.lastname ? `${student.lastname} ${student.firstname}` : student.name}
+                  </TableCell>
                   <TableCell>
                     <Checkbox
                       checked={attendance[student.id] || false}
