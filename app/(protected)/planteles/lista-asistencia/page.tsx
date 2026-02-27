@@ -72,6 +72,8 @@ export default function AttendanceListPage() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedAttendance, setSelectedAttendance] =
     useState<AttendanceData | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const getCurrentPeriodId = () => {
     if (!Array.isArray(periods) || periods.length === 0) return null;
@@ -171,6 +173,7 @@ export default function AttendanceListPage() {
       setAttendanceTimes({});
       setAttendanceNotes({});
       setAttendanceIds({});
+      setHasUnsavedChanges(false);
       return;
     }
 
@@ -227,6 +230,7 @@ export default function AttendanceListPage() {
         setAttendanceTimes(timeMap);
         setAttendanceNotes(notesMap);
         setAttendanceIds(idsMap);
+        setHasUnsavedChanges(false);
       } else {
         const defaultAttendance: Record<string, boolean> = {};
         currentStudents.forEach((student) => {
@@ -236,6 +240,7 @@ export default function AttendanceListPage() {
         setAttendanceTimes({});
         setAttendanceNotes({});
         setAttendanceIds({});
+        setHasUnsavedChanges(false);
       }
     } catch {
       const defaultAttendance: Record<string, boolean> = {};
@@ -246,10 +251,12 @@ export default function AttendanceListPage() {
       setAttendanceTimes({});
       setAttendanceNotes({});
       setAttendanceIds({});
+      setHasUnsavedChanges(false);
     }
   };
 
   const handleAttendanceChange = (studentId: string, checked: boolean) => {
+    setHasUnsavedChanges(true);
     setAttendance((prev) => ({
       ...prev,
       [studentId]: checked,
@@ -271,11 +278,18 @@ export default function AttendanceListPage() {
     }
   };
 
-  const handleSaveAttendance = async () => {
+  const saveAttendanceForGroup = async (
+    grupoIdToSave: string,
+    options?: { silent?: boolean }
+  ) => {
+    if (!grupoIdToSave) return true;
+
+    setIsSaving(true);
+
     try {
       const formattedDate = formatDateToLocalIso(selectedDate);
       const payload = {
-        grupo_id: selectedGrupo,
+        grupo_id: grupoIdToSave,
         date: formattedDate,
         attendance: Object.keys(attendance).map((studentId) => ({
           student_id: studentId,
@@ -285,20 +299,71 @@ export default function AttendanceListPage() {
         })),
       };
 
-      const response = await axiosInstance.post('/teacher/attendance', payload);
+      await axiosInstance.post('/teacher/attendance', payload);
+      setHasUnsavedChanges(false);
 
-      toast.success('¡Asistencia Guardada!', {
-        description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,
-        duration: 5000,
-      });
+      if (!options?.silent) {
+        toast.success('¡Asistencia Guardada!', {
+          description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,
+          duration: 5000,
+        });
+      }
+
+      return true;
     } catch (error: any) {
       console.error('Error al guardar la asistencia', error);
-      toast.error('Error al Guardar', {
+      toast.error(options?.silent ? 'No se pudo guardar automáticamente' : 'Error al Guardar', {
         description:
           'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
         duration: 4000,
       });
+
+      return false;
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleSaveAttendance = async () => {
+    await saveAttendanceForGroup(selectedGrupo);
+  };
+
+  const handleGrupoChange = async (newGrupoId: string) => {
+    if (newGrupoId === selectedGrupo) return;
+
+    if (hasUnsavedChanges && selectedGrupo) {
+      const saved = await saveAttendanceForGroup(selectedGrupo, {
+        silent: true,
+      });
+
+      if (!saved) return;
+
+      toast.success('Asistencia guardada automáticamente', {
+        description: 'Se guardaron los cambios antes de cambiar de grupo.',
+        duration: 3000,
+      });
+    }
+
+    setSelectedGrupo(newGrupoId);
+  };
+
+  const handlePeriodChange = async (newPeriodId: string) => {
+    if (newPeriodId === periodId) return;
+
+    if (hasUnsavedChanges && selectedGrupo) {
+      const saved = await saveAttendanceForGroup(selectedGrupo, {
+        silent: true,
+      });
+
+      if (!saved) return;
+
+      toast.success('Asistencia guardada automáticamente', {
+        description: 'Se guardaron los cambios antes de cambiar de periodo.',
+        duration: 3000,
+      });
+    }
+
+    setPeriodId(newPeriodId);
   };
 
   const handleEditAttendance = (student: Student) => {
@@ -316,6 +381,7 @@ export default function AttendanceListPage() {
   };
 
   const handleSaveAttendanceEdit = (updatedAttendance: AttendanceData) => {
+    setHasUnsavedChanges(true);
     // Actualizar los estados locales
     setAttendance((prev) => ({
       ...prev,
@@ -395,7 +461,7 @@ export default function AttendanceListPage() {
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex flex-row gap-4">
           <div>
-            <Select value={periodId} onValueChange={setPeriodId}>
+            <Select value={periodId} onValueChange={handlePeriodChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona un periodo" />
               </SelectTrigger>
@@ -410,7 +476,7 @@ export default function AttendanceListPage() {
           </div>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div>
-              <Select value={selectedGrupo} onValueChange={setSelectedGrupo}>
+              <Select value={selectedGrupo} onValueChange={handleGrupoChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a group" />
                 </SelectTrigger>
@@ -521,8 +587,8 @@ export default function AttendanceListPage() {
             </Table>
 
             <div className="mt-6 flex justify-end">
-              <Button className="text-xs" onClick={handleSaveAttendance}>
-                Guardar
+              <Button className="text-xs" onClick={handleSaveAttendance} disabled={isSaving}>
+                {isSaving ? 'Guardando...' : 'Guardar'}
               </Button>
             </div>
           </>
