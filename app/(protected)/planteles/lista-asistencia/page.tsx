@@ -346,7 +346,7 @@ export default function AttendanceListPage() {
 
     setSelectedGrupo(newGrupoId);
   };
-
+  
   const handlePeriodChange = async (newPeriodId: string) => {
     if (newPeriodId === periodId) return;
 
@@ -364,6 +364,28 @@ export default function AttendanceListPage() {
     }
 
     setPeriodId(newPeriodId);
+  };
+
+  const handleDateChange = async (newDate: Date) => {
+    const currentDate = formatDateToLocalIso(selectedDate);
+    const nextDate = formatDateToLocalIso(newDate);
+
+    if (currentDate === nextDate) return;
+
+    if (hasUnsavedChanges && selectedGrupo) {
+      const saved = await saveAttendanceForGroup(selectedGrupo, {
+        silent: true,
+      });
+
+      if (!saved) return;
+
+      toast.success('Asistencia guardada automáticamente', {
+        description: 'Se guardaron los cambios antes de cambiar de día.',
+        duration: 3000,
+      });
+    }
+
+    setSelectedDate(newDate);
   };
 
   const handleEditAttendance = (student: Student) => {
@@ -496,7 +518,7 @@ export default function AttendanceListPage() {
                 selected={selectedDate}
                 onSelect={(date) => {
                   if (date) {
-                    setSelectedDate(date);
+                    handleDateChange(date);
                   }
                 }}
               />
