@@ -26,12 +26,19 @@ import { useAuthStore } from '@/lib/store/auth-store';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import EditAttendanceModal from '@/components/EditAttendanceModal';
 import { useUIConfig } from '@/hooks/useUIConfig';
+import { MultiSelect } from '@/components/multi-select';
 
 interface Student {
   id: string;
   firstname: string;
   lastname: string;
   matricula: string;
+}
+
+interface StudentWithGroup extends Student {
+  grupo_id: string;
+  grupo_name: string;
+  attendance_key: string;
 }
 
 interface AttendanceRecord {
@@ -55,35 +62,36 @@ export default function AttendanceListPage() {
   const { grupos, periods, getFilteredGrupos } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
   const { config } = useUIConfig();
+
   const [periodId, setPeriodId] = useState<string>('');
-  const [selectedGrupo, setSelectedGrupo] = useState<string>('');
+  const [selectedGrupos, setSelectedGrupos] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
-  const [attendanceTimes, setAttendanceTimes] = useState<
-    Record<string, string>
-  >({});
-  const [attendanceNotes, setAttendanceNotes] = useState<
-    Record<string, string>
-  >({});
-  const [attendanceIds, setAttendanceIds] = useState<Record<string, string>>(
-    {}
-  );
-  const [students, setStudents] = useState<Student[]>([]);
+  const [attendanceTimes, setAttendanceTimes] = useState<Record<string, string>>({});
+  const [attendanceNotes, setAttendanceNotes] = useState<Record<string, string>>({});
+  const [attendanceIds, setAttendanceIds] = useState<Record<string, string>>({});
+  const [students, setStudents] = useState<StudentWithGroup[]>([]);
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedAttendance, setSelectedAttendance] =
-    useState<AttendanceData | null>(null);
+  const [selectedAttendance, setSelectedAttendance] = useState<AttendanceData | null>(null);
+  const [selectedAttendanceKey, setSelectedAttendanceKey] = useState<string | null>(null);
+
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  const formatDateToLocalIso = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const getCurrentPeriodId = () => {
     if (!Array.isArray(periods) || periods.length === 0) return null;
 
     const today = new Date();
-    const todayDate = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     const activePeriod = periods.find((period: any) => {
       const start = new Date(`${period.start_date}T00:00:00`);
@@ -94,8 +102,7 @@ export default function AttendanceListPage() {
     if (activePeriod?.id) return String(activePeriod.id);
 
     const sortedByStartDate = [...periods].sort(
-      (a: any, b: any) =>
-        new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+      (a: any, b: any) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
     );
 
     return sortedByStartDate[0]?.id ? String(sortedByStartDate[0].id) : null;
@@ -125,20 +132,18 @@ export default function AttendanceListPage() {
 
   const filteredGroups = useMemo(() => {
     return campusGroups.filter(
-      (grupo) => !periodId || grupo.period_id.toString() === periodId.toString()
+      (grupo) => !periodId || String(grupo.period_id) === String(periodId)
     );
   }, [campusGroups, periodId]);
+
+  const getGroupNameById = (id: string) => {
+    const group = filteredGroups.find((item) => String(item.id) === String(id));
+    return group?.name || `Grupo ${id}`;
+  };
 
   const getPeriodNameById = (id: string | number) => {
     const period = periods.find((item: any) => String(item.id) === String(id));
     return period?.name || `Periodo ${id}`;
-  };
-
-  const formatDateToLocalIso = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   };
 
   useEffect(() => {
@@ -167,7 +172,7 @@ export default function AttendanceListPage() {
 
   useEffect(() => {
     if (filteredGroups.length === 0) {
-      setSelectedGrupo('');
+      setSelectedGrupos([]);
       setStudents([]);
       setAttendance({});
       setAttendanceTimes({});
@@ -177,27 +182,54 @@ export default function AttendanceListPage() {
       return;
     }
 
-    const groupExists = filteredGroups.some(
-      (group) => group.id.toString() === selectedGrupo
-    );
+    const validIds = new Set(filteredGroups.map((g) => String(g.id)));
+    const nextSelected = selectedGrupos.filter((id) => validIds.has(String(id)));
 
-    if (!groupExists) {
-      setSelectedGrupo(filteredGroups[0].id.toString());
+    const changed =
+      nextSelected.length !== selectedGrupos.length ||
+      nextSelected.some((id, index) => id !== selectedGrupos[index]);
+
+    if (changed) {
+      setSelectedGrupos(nextSelected);
+      return;
     }
-  }, [filteredGroups, selectedGrupo]);
 
-  const fetchAttendanceForDate = async (
-    date: Date,
-    grupoId: string,
-    currentStudents: Student[]
-  ) => {
+    if (nextSelected.length === 0) {
+      setSelectedGrupos([String(filteredGroups[0].id)]);
+    }
+  }, [filteredGroups, selectedGrupos]);
+
+  async function fetchStudentsForGrupo(grupoId: string) {
     try {
-      const formattedDate = formatDateToLocalIso(date);
       const params: any = {};
       if (activeCampus?.id) {
         params.plantel_id = activeCampus.id;
       }
+      const response = await axiosInstance.get(`/grupos/${grupoId}/students`, { params });
+      return response.data as Student[];
+    } catch (error) {
+      console.error('Error fetching students for group:', error);
+      return [];
+    }
+  }
 
+  const fetchAttendanceForDate = async (
+    date: Date,
+    grupoId: string,
+    currentStudents: StudentWithGroup[]
+  ) => {
+    const formattedDate = formatDateToLocalIso(date);
+    const params: any = {};
+    if (activeCampus?.id) {
+      params.plantel_id = activeCampus.id;
+    }
+
+    const defaultAttendanceMap: Record<string, boolean> = {};
+    currentStudents.forEach((student) => {
+      defaultAttendanceMap[student.attendance_key] = false;
+    });
+
+    try {
       const response = await axiosInstance.get(
         `/teacher/attendance/${grupoId}/${formattedDate}`,
         { params }
@@ -208,58 +240,119 @@ export default function AttendanceListPage() {
         response.data.data &&
         response.data.data.length > 0
       ) {
-        const attendanceMap: Record<string, boolean> = {};
+        const attendanceMap = { ...defaultAttendanceMap };
         const timeMap: Record<string, string> = {};
         const notesMap: Record<string, string> = {};
         const idsMap: Record<string, string> = {};
 
         response.data.data.forEach((record: AttendanceRecord) => {
-          attendanceMap[record.student_id] = record.present;
-          idsMap[record.student_id] = record.id || '';
+          const key = `${grupoId}-${record.student_id}`;
+          attendanceMap[key] = record.present;
+          idsMap[key] = record.id || '';
 
           if (record.attendance_time) {
-            timeMap[record.student_id] = record.attendance_time;
+            timeMap[key] = record.attendance_time;
           }
 
           if (record.notes) {
-            notesMap[record.student_id] = record.notes;
+            notesMap[key] = record.notes;
           }
         });
 
-        setAttendance(attendanceMap);
-        setAttendanceTimes(timeMap);
-        setAttendanceNotes(notesMap);
-        setAttendanceIds(idsMap);
-        setHasUnsavedChanges(false);
-      } else {
-        const defaultAttendance: Record<string, boolean> = {};
-        currentStudents.forEach((student) => {
-          defaultAttendance[student.id] = false;
-        });
-        setAttendance(defaultAttendance);
-        setAttendanceTimes({});
-        setAttendanceNotes({});
-        setAttendanceIds({});
-        setHasUnsavedChanges(false);
+        return {
+          attendanceMap,
+          timeMap,
+          notesMap,
+          idsMap,
+        };
       }
+
+      return {
+        attendanceMap: defaultAttendanceMap,
+        timeMap: {},
+        notesMap: {},
+        idsMap: {},
+      };
     } catch {
-      const defaultAttendance: Record<string, boolean> = {};
-      currentStudents.forEach((student) => {
-        defaultAttendance[student.id] = false;
-      });
-      setAttendance(defaultAttendance);
-      setAttendanceTimes({});
-      setAttendanceNotes({});
-      setAttendanceIds({});
-      setHasUnsavedChanges(false);
+      return {
+        attendanceMap: defaultAttendanceMap,
+        timeMap: {},
+        notesMap: {},
+        idsMap: {},
+      };
     }
   };
 
-  const handleAttendanceChange = (studentId: string, checked: boolean) => {
+  useEffect(() => {
+    if (selectedGrupos.length === 0) return;
+
+    let cancelled = false;
+
+    const loadAttendancePageData = async () => {
+      const groupResults = await Promise.all(
+        selectedGrupos.map(async (grupoId) => {
+          const fetchedStudents = await fetchStudentsForGrupo(grupoId);
+          const sortedStudents = [...fetchedStudents].sort((a, b) => {
+            const lastA = (a.lastname || '').toLowerCase();
+            const lastB = (b.lastname || '').toLowerCase();
+            if (lastA < lastB) return -1;
+            if (lastA > lastB) return 1;
+            const firstA = (a.firstname || '').toLowerCase();
+            const firstB = (b.firstname || '').toLowerCase();
+            return firstA.localeCompare(firstB);
+          });
+
+          const studentsWithGroup: StudentWithGroup[] = sortedStudents.map((student) => ({
+            ...student,
+            grupo_id: grupoId,
+            grupo_name: getGroupNameById(grupoId),
+            attendance_key: `${grupoId}-${student.id}`,
+          }));
+
+          const groupAttendance = await fetchAttendanceForDate(
+            selectedDate,
+            grupoId,
+            studentsWithGroup
+          );
+
+          return {
+            students: studentsWithGroup,
+            ...groupAttendance,
+          };
+        })
+      );
+
+      if (cancelled) return;
+
+      const mergedStudents = groupResults.flatMap((result) => result.students);
+      const mergedAttendance = Object.assign(
+        {},
+        ...groupResults.map((result) => result.attendanceMap)
+      );
+      const mergedTimes = Object.assign({}, ...groupResults.map((result) => result.timeMap));
+      const mergedNotes = Object.assign({}, ...groupResults.map((result) => result.notesMap));
+      const mergedIds = Object.assign({}, ...groupResults.map((result) => result.idsMap));
+
+      setStudents(mergedStudents);
+      setAttendance(mergedAttendance);
+      setAttendanceTimes(mergedTimes);
+      setAttendanceNotes(mergedNotes);
+      setAttendanceIds(mergedIds);
+      setHasUnsavedChanges(false);
+    };
+
+    loadAttendancePageData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedGrupos, selectedDate, activeCampus?.id]);
+
+  const handleAttendanceChange = (attendanceKey: string, checked: boolean) => {
     setHasUnsavedChanges(true);
     setAttendance((prev) => ({
       ...prev,
-      [studentId]: checked,
+      [attendanceKey]: checked,
     }));
 
     if (checked) {
@@ -267,44 +360,52 @@ export default function AttendanceListPage() {
       const fullTimestamp = now.toISOString();
       setAttendanceTimes((prev) => ({
         ...prev,
-        [studentId]: fullTimestamp,
+        [attendanceKey]: fullTimestamp,
       }));
     } else {
       setAttendanceTimes((prev) => {
         const updated = { ...prev };
-        delete updated[studentId];
+        delete updated[attendanceKey];
         return updated;
       });
     }
   };
 
-  const saveAttendanceForGroup = async (
-    grupoIdToSave: string,
+  const saveAttendanceForGroups = async (
+    grupoIdsToSave: string[],
     options?: { silent?: boolean }
   ) => {
-    if (!grupoIdToSave) return true;
+    if (grupoIdsToSave.length === 0) return true;
 
     setIsSaving(true);
 
     try {
       const formattedDate = formatDateToLocalIso(selectedDate);
-      const payload = {
-        grupo_id: grupoIdToSave,
-        date: formattedDate,
-        attendance: Object.keys(attendance).map((studentId) => ({
-          student_id: studentId,
-          present: attendance[studentId],
-          attendance_time: attendanceTimes[studentId] || null,
-          notes: attendanceNotes[studentId] || null,
-        })),
-      };
 
-      await axiosInstance.post('/teacher/attendance', payload);
+      const payloads = grupoIdsToSave.map((grupoId) => {
+        const groupStudents = students.filter((student) => student.grupo_id === grupoId);
+
+        return {
+          grupo_id: grupoId,
+          date: formattedDate,
+          attendance: groupStudents.map((student) => ({
+            student_id: student.id,
+            present: attendance[student.attendance_key] || false,
+            attendance_time: attendanceTimes[student.attendance_key] || null,
+            notes: attendanceNotes[student.attendance_key] || null,
+          })),
+        };
+      });
+
+      await Promise.all(
+        payloads.map((payload) => axiosInstance.post('/teacher/attendance', payload))
+      );
+
       setHasUnsavedChanges(false);
 
       if (!options?.silent) {
         toast.success('¡Asistencia Guardada!', {
-          description: `Se guardó correctamente la asistencia del grupo para el día ${formattedDate}`,
+          description: `Se guardó correctamente la asistencia para ${grupoIdsToSave.length} grupo(s) el día ${formattedDate}`,
           duration: 5000,
         });
       }
@@ -312,11 +413,16 @@ export default function AttendanceListPage() {
       return true;
     } catch (error: any) {
       console.error('Error al guardar la asistencia', error);
-      toast.error(options?.silent ? 'No se pudo guardar automáticamente' : 'Error al Guardar', {
-        description:
-          'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
-        duration: 4000,
-      });
+      toast.error(
+        options?.silent
+          ? 'No se pudo guardar automáticamente'
+          : 'Error al Guardar',
+        {
+          description:
+            'No se pudo guardar la asistencia. Por favor, intente nuevamente.',
+          duration: 4000,
+        }
+      );
 
       return false;
     } finally {
@@ -325,33 +431,40 @@ export default function AttendanceListPage() {
   };
 
   const handleSaveAttendance = async () => {
-    await saveAttendanceForGroup(selectedGrupo);
+    await saveAttendanceForGroups(selectedGrupos);
   };
 
-  const handleGrupoChange = async (newGrupoId: string) => {
-    if (newGrupoId === selectedGrupo) return;
+  const handleGrupoChange = async (newGrupoIds: string[]) => {
+    const nextSelection = [...newGrupoIds].sort();
+    const currentSelection = [...selectedGrupos].sort();
 
-    if (hasUnsavedChanges && selectedGrupo) {
-      const saved = await saveAttendanceForGroup(selectedGrupo, {
+    const hasSameSelection =
+      nextSelection.length === currentSelection.length &&
+      nextSelection.every((id, index) => id === currentSelection[index]);
+
+    if (hasSameSelection) return;
+
+    if (hasUnsavedChanges && selectedGrupos.length > 0) {
+      const saved = await saveAttendanceForGroups(selectedGrupos, {
         silent: true,
       });
 
       if (!saved) return;
 
       toast.success('Asistencia guardada automáticamente', {
-        description: 'Se guardaron los cambios antes de cambiar de grupo.',
+        description: 'Se guardaron los cambios antes de cambiar grupos.',
         duration: 3000,
       });
     }
 
-    setSelectedGrupo(newGrupoId);
+    setSelectedGrupos(newGrupoIds);
   };
-  
+
   const handlePeriodChange = async (newPeriodId: string) => {
     if (newPeriodId === periodId) return;
 
-    if (hasUnsavedChanges && selectedGrupo) {
-      const saved = await saveAttendanceForGroup(selectedGrupo, {
+    if (hasUnsavedChanges && selectedGrupos.length > 0) {
+      const saved = await saveAttendanceForGroups(selectedGrupos, {
         silent: true,
       });
 
@@ -372,8 +485,8 @@ export default function AttendanceListPage() {
 
     if (currentDate === nextDate) return;
 
-    if (hasUnsavedChanges && selectedGrupo) {
-      const saved = await saveAttendanceForGroup(selectedGrupo, {
+    if (hasUnsavedChanges && selectedGrupos.length > 0) {
+      const saved = await saveAttendanceForGroups(selectedGrupos, {
         silent: true,
       });
 
@@ -388,93 +501,50 @@ export default function AttendanceListPage() {
     setSelectedDate(newDate);
   };
 
-  const handleEditAttendance = (student: Student) => {
+  const handleEditAttendance = (student: StudentWithGroup) => {
     const attendanceData: AttendanceData = {
-      id: attendanceIds[student.id],
-      student: student,
-      present: attendance[student.id] || false,
-      attendance_time: attendanceTimes[student.id] || null,
-      notes: attendanceNotes[student.id] || null,
+      id: attendanceIds[student.attendance_key],
+      student,
+      present: attendance[student.attendance_key] || false,
+      attendance_time: attendanceTimes[student.attendance_key] || null,
+      notes: attendanceNotes[student.attendance_key] || null,
       date: formatDateToLocalIso(selectedDate),
     };
 
+    setSelectedAttendanceKey(student.attendance_key);
     setSelectedAttendance(attendanceData);
     setIsModalOpen(true);
   };
 
   const handleSaveAttendanceEdit = (updatedAttendance: AttendanceData) => {
+    if (!selectedAttendanceKey) return;
+
     setHasUnsavedChanges(true);
-    // Actualizar los estados locales
     setAttendance((prev) => ({
       ...prev,
-      [updatedAttendance.student.id]: updatedAttendance.present,
+      [selectedAttendanceKey]: updatedAttendance.present,
     }));
 
     if (updatedAttendance.attendance_time) {
       setAttendanceTimes((prev) => ({
         ...prev,
-        [updatedAttendance.student.id]: updatedAttendance.attendance_time!,
+        [selectedAttendanceKey]: updatedAttendance.attendance_time!,
       }));
     }
 
     if (updatedAttendance.notes) {
       setAttendanceNotes((prev) => ({
         ...prev,
-        [updatedAttendance.student.id]: updatedAttendance.notes!,
+        [selectedAttendanceKey]: updatedAttendance.notes!,
       }));
     } else {
       setAttendanceNotes((prev) => {
         const updated = { ...prev };
-        delete updated[updatedAttendance.student.id];
+        delete updated[selectedAttendanceKey];
         return updated;
       });
     }
   };
-
-  async function fetchStudentsForGrupo(grupoId: string) {
-    try {
-      const params: any = {};
-      if (activeCampus?.id) {
-        params.plantel_id = activeCampus.id;
-      }
-      const response = await axiosInstance.get(`/grupos/${grupoId}/students`, { params });
-      return response.data as Student[];
-    } catch (error) {
-      console.error('Error fetching students for group:', error);
-      return [];
-    }
-  }
-
-  useEffect(() => {
-    if (!selectedGrupo) return;
-
-    let cancelled = false;
-
-    const loadAttendancePageData = async () => {
-      const fetchedStudents = await fetchStudentsForGrupo(selectedGrupo);
-
-      // Ordenar por Apellido y luego Nombre
-      const sortedStudents = [...fetchedStudents].sort((a, b) => {
-        const lastA = (a.lastname || '').toLowerCase();
-        const lastB = (b.lastname || '').toLowerCase();
-        if (lastA < lastB) return -1;
-        if (lastA > lastB) return 1;
-        const firstA = (a.firstname || '').toLowerCase();
-        const firstB = (b.firstname || '').toLowerCase();
-        return firstA.localeCompare(firstB);
-      });
-
-      if (cancelled) return;
-      setStudents(sortedStudents);
-      await fetchAttendanceForDate(selectedDate, selectedGrupo, sortedStudents);
-    };
-
-    loadAttendancePageData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedGrupo, selectedDate, activeCampus?.id]);
 
   return (
     <div className="p-6 text-xs">
@@ -496,20 +566,21 @@ export default function AttendanceListPage() {
               </SelectContent>
             </Select>
           </div>
+
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div>
-              <Select value={selectedGrupo} onValueChange={handleGrupoChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a group" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredGroups.map((grupo) => (
-                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                      {grupo.name} - {getPeriodNameById(grupo.period_id)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiSelect
+                title="Grupos"
+                placeholder="Seleccionar grupos"
+                searchPlaceholder="Buscar grupo..."
+                emptyMessage="No se encontraron grupos"
+                options={filteredGroups.map((grupo) => ({
+                  value: String(grupo.id),
+                  label: `${grupo.name} - ${getPeriodNameById(grupo.period_id)}`,
+                }))}
+                selectedValues={selectedGrupos}
+                onSelectedChange={handleGrupoChange}
+              />
             </div>
 
             <div>
@@ -525,11 +596,13 @@ export default function AttendanceListPage() {
             </div>
           </div>
         </div>
-        {selectedGrupo && (
+
+        {selectedGrupos.length > 0 && (
           <>
             <Table className="w-full text-xs border rounded-lg">
               <TableHeader>
                 <TableRow>
+                  <TableHead className="py-3 px-4">Grupo</TableHead>
                   <TableHead className="py-3 px-4">Matrícula</TableHead>
                   <TableHead className="py-3 px-4">Estudiante (Apellido Nombre)</TableHead>
                   <TableHead className="py-3 px-4">Asistencia</TableHead>
@@ -540,7 +613,8 @@ export default function AttendanceListPage() {
               </TableHeader>
               <TableBody>
                 {students.map((student) => (
-                  <TableRow key={student.id}>
+                  <TableRow key={student.attendance_key}>
+                    <TableCell className="py-3 px-4">{student.grupo_name}</TableCell>
                     <TableCell className="py-3 px-4">
                       {student.matricula || student.id}
                     </TableCell>
@@ -555,21 +629,21 @@ export default function AttendanceListPage() {
                     </TableCell>
                     <TableCell className="py-3 px-4">
                       <Checkbox
-                        checked={attendance[student.id] || false}
+                        checked={attendance[student.attendance_key] || false}
                         onCheckedChange={(checked) =>
-                          handleAttendanceChange(student.id, checked as boolean)
+                          handleAttendanceChange(student.attendance_key, checked as boolean)
                         }
                         className="h-5 w-5"
                       />
                     </TableCell>
                     <TableCell className="py-3 px-4 text-gray-600">
                       <div className="flex items-center gap-1">
-                        {attendance[student.id] &&
-                          attendanceTimes[student.id] ? (
+                        {attendance[student.attendance_key] &&
+                        attendanceTimes[student.attendance_key] ? (
                           <>
                             <Clock className="h-3 w-3" />
                             {new Date(
-                              attendanceTimes[student.id]
+                              attendanceTimes[student.attendance_key]
                             ).toLocaleTimeString('es-ES')}
                           </>
                         ) : (
@@ -578,14 +652,14 @@ export default function AttendanceListPage() {
                       </div>
                     </TableCell>
                     <TableCell className="py-3 px-4 max-w-32">
-                      {attendanceNotes[student.id] ? (
+                      {attendanceNotes[student.attendance_key] ? (
                         <div className="flex items-center gap-1">
                           <FileText className="h-3 w-3 text-blue-600" />
                           <span
                             className="text-xs text-gray-600 truncate"
-                            title={attendanceNotes[student.id]}
+                            title={attendanceNotes[student.attendance_key]}
                           >
-                            {attendanceNotes[student.id]}
+                            {attendanceNotes[student.attendance_key]}
                           </span>
                         </div>
                       ) : (
@@ -617,7 +691,6 @@ export default function AttendanceListPage() {
         )}
       </div>
 
-      {/* Modal de edición */}
       <EditAttendanceModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
