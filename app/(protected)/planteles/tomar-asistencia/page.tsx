@@ -320,37 +320,6 @@ export default function TomarAsistenciasPage() {
                 {showQrScanner && (
                   <div className="">
                     <div className="flex flex-col gap-2 mb-3">
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant={
-                            cameraFacingMode === 'environment'
-                              ? 'default'
-                              : 'outline'
-                          }
-                          size="sm"
-                          onClick={() => {
-                            setSelectedCameraId('');
-                            setCameraFacingMode('environment');
-                          }}
-                        >
-                          Cámara trasera
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={
-                            cameraFacingMode === 'user' ? 'default' : 'outline'
-                          }
-                          size="sm"
-                          onClick={() => {
-                            setSelectedCameraId('');
-                            setCameraFacingMode('user');
-                          }}
-                        >
-                          Cámara frontal
-                        </Button>
-                      </div>
-
                       {availableCameras.length > 0 && (
                         <select
                           value={selectedCameraId}
