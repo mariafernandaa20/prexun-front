@@ -36,6 +36,78 @@ const changelogTemplate = `{
 
 const changelogItems: ChangelogItem[] = [
   {
+    id: '2026-02-28-01',
+    date: '2026-02-28',
+    type: 'fix',
+    title: 'Autosave al cambiar día en asistencias',
+    description:
+      'En lista de asistencias, ahora se guarda automáticamente antes de cambiar de fecha. Si falla el guardado, no cambia de día para evitar pérdida de datos.',
+    scope: 'planteles',
+  },
+  {
+    id: '2026-02-28-02',
+    date: '2026-02-28',
+    type: 'feat',
+    title: 'Selección de cámara en escáner QR',
+    description:
+      'En tomar asistencia se agregó selector de cámara frontal/trasera y selección por dispositivo (deviceId), con cierre seguro de stream al cambiar.',
+    scope: 'planteles',
+  },
+  {
+    id: '2026-02-28-03',
+    date: '2026-02-28',
+    type: 'feat',
+    title: 'Mensajes WhatsApp en modo masivo',
+    description:
+      'En calificaciones del estudiante se agregó modo para generar/copiar mensajes de todos los cursos en un solo bloque, además del modo individual.',
+    scope: 'planteles',
+  },
+  {
+    id: '2026-02-28-04',
+    date: '2026-02-28',
+    type: 'improvement',
+    title: 'Plantillas WhatsApp sin texto de relleno',
+    description:
+      'Cuando un curso no tiene actividades, se omite el bloque de actividades en el mensaje para evitar frases como “Sin actividad”.',
+    scope: 'planteles',
+  },
+  {
+    id: '2026-02-27-01',
+    date: '2026-02-27',
+    type: 'fix',
+    title: 'Grupos filtrados por asignación (método nuevo)',
+    description:
+      'Se centralizó el filtrado para usar asignaciones vigentes por plantel/periodo y limitar grupos globales a modalidad en línea.',
+    scope: 'planteles',
+  },
+  {
+    id: '2026-02-27-02',
+    date: '2026-02-27',
+    type: 'fix',
+    title: 'Periodo por defecto desde configuración global',
+    description:
+      'Asistencias y reportes ahora inicializan periodo con default_period_id de configuración global, con fallback al periodo actual por fechas.',
+    scope: 'planteles',
+  },
+  {
+    id: '2026-02-27-03',
+    date: '2026-02-27',
+    type: 'fix',
+    title: 'Endpoint de alumnos por grupo solo con asignaciones',
+    description:
+      'En backend, getStudents de grupos quedó únicamente con student_assignments activas (sin fallback legacy por grupo_id directo).',
+    scope: 'general',
+  },
+  {
+    id: '2026-02-27-04',
+    date: '2026-02-27',
+    type: 'improvement',
+    title: 'Asistencias con autosave por grupo y periodo',
+    description:
+      'Al cambiar grupo o periodo se guarda automáticamente la captura pendiente antes de navegar, evitando pérdida de cambios por omisión del botón Guardar.',
+    scope: 'planteles',
+  },
+  {
     id: '2026-02-26-01',
     date: '2026-02-26',
     type: 'improvement',

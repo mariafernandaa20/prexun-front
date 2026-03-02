@@ -36,6 +36,11 @@ interface AttendanceRecord {
   grupo_name?: string;
 }
 
+interface CameraDevice {
+  deviceId: string;
+  label: string;
+}
+
 export default function TomarAsistenciasPage() {
   const { activeCampus } = useActiveCampusStore();
   const [matricula, setMatricula] = useState<string>('');
@@ -46,6 +51,12 @@ export default function TomarAsistenciasPage() {
   const [todayDate] = useState<Date>(new Date());
   const [showQrScanner, setShowQrScanner] = useState(false);
   const [isQrScannerReady, setIsQrScannerReady] = useState(false);
+  const [availableCameras, setAvailableCameras] = useState<CameraDevice[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string>('');
+  const [cameraFacingMode, setCameraFacingMode] = useState<
+    'environment' | 'user'
+  >('environment');
+  const [stopStream, setStopStream] = useState(false);
 
   /*const loadTodayAttendance = async () => {
 
@@ -88,14 +99,45 @@ export default function TomarAsistenciasPage() {
   };
 
   const openQrScanner = () => {
-    setShowQrScanner(!showQrScanner);
-    setIsQrScannerReady(false);
+    const nextState = !showQrScanner;
+    setStopStream(false);
+    setShowQrScanner(nextState);
+    if (!nextState) {
+      setIsQrScannerReady(false);
+    }
   };
 
   // Cerrar el QR scanner
   const closeQrScanner = () => {
+    setStopStream(true);
     setShowQrScanner(false);
     setIsQrScannerReady(false);
+  };
+
+  const loadAvailableCameras = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((track) => track.stop());
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputs = devices
+        .filter((device) => device.kind === 'videoinput')
+        .map((device, index) => ({
+          deviceId: device.deviceId,
+          label: device.label || `Cámara ${index + 1}`,
+        }));
+
+      setAvailableCameras(videoInputs);
+
+      if (!selectedCameraId && videoInputs.length > 0) {
+        setSelectedCameraId(videoInputs[0].deviceId);
+      }
+    } catch (error) {
+      console.error('Error loading cameras:', error);
+      setAvailableCameras([]);
+    } finally {
+      setIsQrScannerReady(true);
+    }
   };
 
   const processStudentAttendance = async () => {
@@ -227,6 +269,15 @@ export default function TomarAsistenciasPage() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [showQrScanner]);
 
+  useEffect(() => {
+    if (!showQrScanner) return;
+    loadAvailableCameras();
+  }, [showQrScanner]);
+
+  const qrVideoConstraints = selectedCameraId
+    ? { deviceId: { exact: selectedCameraId } }
+    : { facingMode: cameraFacingMode };
+
   const presentCount = todayAttendance.filter(
     (record) => record.present
   ).length;
@@ -268,6 +319,27 @@ export default function TomarAsistenciasPage() {
               <div className="flex flex-col gap-3 max-w-md mx-auto mb-4">
                 {showQrScanner && (
                   <div className="">
+                    <div className="flex flex-col gap-2 mb-3">
+                      {availableCameras.length > 0 && (
+                        <select
+                          value={selectedCameraId}
+                          onChange={(event) =>
+                            setSelectedCameraId(event.target.value)
+                          }
+                          className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                        >
+                          {availableCameras.map((camera) => (
+                            <option
+                              key={camera.deviceId}
+                              value={camera.deviceId}
+                            >
+                              {camera.label}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+
                     <div className="">
                       <Button
                         onClick={closeQrScanner}
@@ -279,14 +351,23 @@ export default function TomarAsistenciasPage() {
                     </div>
 
                     <div className="relative">
-                      <QrScanner
-                        onUpdate={handleQrScanResult}
-                        onError={(error) =>
-                          console.error('QR Scanner Error:', error)
-                        }
-                        width="100%"
-                        height={300}
-                      />
+                      {isQrScannerReady ? (
+                        <QrScanner
+                          onUpdate={handleQrScanResult}
+                          onError={(error) =>
+                            console.error('QR Scanner Error:', error)
+                          }
+                          width="100%"
+                          height={300}
+                          facingMode={cameraFacingMode}
+                          videoConstraints={qrVideoConstraints}
+                          stopStream={stopStream}
+                        />
+                      ) : (
+                        <div className="h-[300px] flex items-center justify-center text-sm text-muted-foreground border rounded-md">
+                          Cargando cámaras...
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
