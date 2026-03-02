@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Edit, FileText, Clock } from 'lucide-react';
@@ -393,10 +394,11 @@ export default function AttendanceListPage() {
       <h1 className="text-4xl font-bold mb-6">Lista de asistencia</h1>
 
       <div className="flex flex-col gap-4 mb-6">
-        <div className="flex flex-row gap-4">
-          <div>
+        <div className="flex flex-row gap-4 items-end">
+          <div className="space-y-2">
+            <Label>Periodo</Label>
             <Select value={periodId} onValueChange={setPeriodId}>
-              <SelectTrigger>
+              <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Selecciona un periodo" />
               </SelectTrigger>
               <SelectContent>
@@ -408,10 +410,11 @@ export default function AttendanceListPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div>
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="space-y-2">
+              <Label>Grupo</Label>
               <Select value={selectedGrupo} onValueChange={setSelectedGrupo}>
-                <SelectTrigger>
+                <SelectTrigger className="w-[300px]">
                   <SelectValue placeholder="Select a group" />
                 </SelectTrigger>
                 <SelectContent>
@@ -424,16 +427,19 @@ export default function AttendanceListPage() {
               </Select>
             </div>
 
-            <div>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => {
-                  if (date) {
-                    setSelectedDate(date);
-                  }
-                }}
-              />
+            <div className="space-y-2">
+              <Label>Fecha de asistencia</Label>
+              <div className="border rounded-md">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => {
+                    if (date) {
+                      setSelectedDate(date);
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
