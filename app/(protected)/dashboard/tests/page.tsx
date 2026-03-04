@@ -24,7 +24,6 @@ export default function TestsPage() {
         data-prexun-float="bottom-left"
         data-prexun-attendance-url="/asistencia-publica"
         data-prexun-api-url="https://clientes.prexun.com/api"
-        data-prexun-campus-id="1"
       />
 
       {/* Primary Video Feed */}

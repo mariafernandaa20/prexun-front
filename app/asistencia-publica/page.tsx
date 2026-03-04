@@ -54,8 +54,6 @@ function PublicAttendanceContent() {
     return '';
   }, [searchParams]);
 
-  const campusId = searchParams.get('campusId');
-
   const normalizePhone = (value: string) => value.replace(/[^0-9]/g, '');
 
   const handleSubmit = async (event: FormEvent) => {
@@ -81,10 +79,6 @@ function PublicAttendanceContent() {
         whatsapp: normalized,
         phone: normalized,
       };
-
-      if (campusId) {
-        payload.campus_id = Number(campusId);
-      }
 
       const apiResponse = await fetch(`${apiBase}/public/asistencia/registrar`, {
         method: 'POST',

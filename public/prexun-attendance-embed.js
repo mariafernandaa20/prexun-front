@@ -65,7 +65,6 @@
       const attendanceBaseUrl =
         target.dataset.prexunAttendanceUrl || `${scriptOrigin}/asistencia-publica`;
       const apiUrl = target.dataset.prexunApiUrl || "";
-      const campusId = target.dataset.prexunCampusId || "";
 
       const btnText =
         target.dataset.prexunText || "Registrar asistencia";
@@ -114,7 +113,6 @@
 
         const iframeUrl = new URL(attendanceBaseUrl, window.location.origin);
         if (apiUrl) iframeUrl.searchParams.set("apiUrl", apiUrl);
-        if (campusId) iframeUrl.searchParams.set("campusId", campusId);
 
         iframe.src = iframeUrl.toString();
         iframe.style.width = "100%";
