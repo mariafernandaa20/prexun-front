@@ -39,6 +39,71 @@ const changelogTemplate = `{
 
 const changelogItems: ChangelogItem[] = [
   {
+    id: '2026-03-03-06',
+    date: '2026-03-03',
+    type: 'improvement',
+    title: 'Persistencia en lista de asistencia por query params',
+    description:
+      'Se agregó persistencia de periodo, grupos y día en URL (`p`, `g`, `d`) para recuperar contexto al recargar la página y evitar pérdida de navegación.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
+  },
+  {
+    id: '2026-03-03-07',
+    date: '2026-03-03',
+    type: 'fix',
+    title: 'Corrección de bucle infinito en lista de asistencia',
+    description:
+      'Se volvió idempotente la limpieza de estado cuando no hay grupos filtrados para eliminar el error “Maximum update depth exceeded”.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
+  },
+  {
+    id: '2026-03-03-08',
+    date: '2026-03-03',
+    type: 'feat',
+    title: 'Asistencia pública por WhatsApp con modal embebible',
+    description:
+      'Se habilitó flujo público para registrar asistencia por WhatsApp/teléfono mediante modal embebible y página pública dedicada.',
+    scope: 'general',
+    filesModified: [
+      'app/asistencia-publica/page.tsx',
+      'public/prexun-attendance-embed.js',
+      'app/Http/Controllers/Api/PublicAttendanceController.php',
+      'routes/api.php',
+    ],
+  },
+  {
+    id: '2026-03-03-09',
+    date: '2026-03-03',
+    type: 'fix',
+    title: 'Conectividad del modal de asistencia y compatibilidad iframe',
+    description:
+      'Se corrigieron problemas de conexión (`http/https`, mixed content) y se ajustaron headers para permitir embed de `/asistencia-publica` en admin/localhost.',
+    scope: 'general',
+    filesModified: [
+      'app/(protected)/dashboard/tests/page.tsx',
+      'app/asistencia-publica/page.tsx',
+      'next.config.js',
+    ],
+  },
+  {
+    id: '2026-03-03-10',
+    date: '2026-03-03',
+    type: 'fix',
+    title: 'Normalización de teléfonos para búsqueda de asistencia',
+    description:
+      'Se estandarizó almacenamiento y búsqueda por últimos 10 dígitos en backend, y en frontend se restringió captura de teléfono/tutor a números.',
+    scope: 'general',
+    filesModified: [
+      'app/Models/Student.php',
+      'app/Http/Controllers/StudentController.php',
+      'app/Http/Controllers/Api/PublicAttendanceController.php',
+      'app/(protected)/planteles/estudiantes/student-form.tsx',
+      'app/(protected)/planteles/estudiantes/Filters.tsx',
+    ],
+  },
+  {
     id: '2026-03-03-01',
     date: '2026-03-03',
     type: 'improvement',

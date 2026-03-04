@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -59,6 +60,10 @@ interface AttendanceData {
 }
 
 export default function AttendanceListPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const { grupos, periods, getFilteredGrupos } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
   const { config } = useUIConfig();
@@ -79,6 +84,7 @@ export default function AttendanceListPage() {
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const hasHydratedFromQueryRef = useRef(false);
 
   const formatDateToLocalIso = (date: Date) => {
     const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -89,6 +95,20 @@ export default function AttendanceListPage() {
     });
 
     return formatter.format(date);
+  };
+
+  const parseDateFromIso = (isoDate: string) => {
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!datePattern.test(isoDate)) {
+      return null;
+    }
+
+    const parsedDate = new Date(`${isoDate}T12:00:00`);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return null;
+    }
+
+    return parsedDate;
   };
 
   const getCurrentPeriodId = () => {
@@ -151,7 +171,49 @@ export default function AttendanceListPage() {
   };
 
   useEffect(() => {
-    if (periodId || periods.length === 0) return;
+    if (hasHydratedFromQueryRef.current) return;
+
+    const periodFromQuery = searchParams.get('p');
+    const groupsFromQuery = searchParams.get('g');
+    const dateFromQuery = searchParams.get('d');
+
+    if (periodFromQuery) {
+      setPeriodId(periodFromQuery);
+    }
+
+    if (groupsFromQuery) {
+      const queryGroupIds = Array.from(
+        new Set(
+          groupsFromQuery
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+        )
+      );
+
+      if (queryGroupIds.length > 0) {
+        setSelectedGrupos(queryGroupIds);
+      }
+    }
+
+    if (dateFromQuery) {
+      const parsedDate = parseDateFromIso(dateFromQuery);
+      if (parsedDate) {
+        setSelectedDate(parsedDate);
+      }
+    }
+
+    hasHydratedFromQueryRef.current = true;
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (periods.length === 0) return;
+
+    const hasCurrentPeriod = periodId
+      ? periods.some((period: any) => String(period.id) === String(periodId))
+      : false;
+
+    if (hasCurrentPeriod) return;
 
     const configuredPeriodId = config?.default_period_id
       ? String(config.default_period_id)
@@ -176,13 +238,21 @@ export default function AttendanceListPage() {
 
   useEffect(() => {
     if (filteredGroups.length === 0) {
-      setSelectedGrupos([]);
-      setStudents([]);
-      setAttendance({});
-      setAttendanceTimes({});
-      setAttendanceNotes({});
-      setAttendanceIds({});
-      setHasUnsavedChanges(false);
+      setSelectedGrupos((prev) => (prev.length === 0 ? prev : []));
+      setStudents((prev) => (prev.length === 0 ? prev : []));
+      setAttendance((prev) =>
+        Object.keys(prev).length === 0 ? prev : {}
+      );
+      setAttendanceTimes((prev) =>
+        Object.keys(prev).length === 0 ? prev : {}
+      );
+      setAttendanceNotes((prev) =>
+        Object.keys(prev).length === 0 ? prev : {}
+      );
+      setAttendanceIds((prev) =>
+        Object.keys(prev).length === 0 ? prev : {}
+      );
+      setHasUnsavedChanges((prev) => (prev ? false : prev));
       return;
     }
 
@@ -202,6 +272,35 @@ export default function AttendanceListPage() {
       setSelectedGrupos([String(filteredGroups[0].id)]);
     }
   }, [filteredGroups, selectedGrupos]);
+
+  useEffect(() => {
+    if (!hasHydratedFromQueryRef.current) return;
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+
+    if (periodId) {
+      nextParams.set('p', periodId);
+    } else {
+      nextParams.delete('p');
+    }
+
+    const uniqueSortedGroups = Array.from(new Set(selectedGrupos)).sort();
+    if (uniqueSortedGroups.length > 0) {
+      nextParams.set('g', uniqueSortedGroups.join(','));
+    } else {
+      nextParams.delete('g');
+    }
+
+    nextParams.set('d', formatDateToLocalIso(selectedDate));
+
+    const currentQuery = searchParams.toString();
+    const nextQuery = nextParams.toString();
+
+    if (currentQuery === nextQuery) return;
+
+    const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [periodId, selectedGrupos, selectedDate, pathname, router, searchParams]);
 
   async function fetchStudentsForGrupo(grupoId: string) {
     try {
@@ -573,7 +672,7 @@ export default function AttendanceListPage() {
               </SelectTrigger>
               <SelectContent>
                 {periods.map((period) => (
-                  <SelectItem key={period.id} value={period.id}>
+                  <SelectItem key={period.id} value={String(period.id)}>
                     {period.name}
                   </SelectItem>
                 ))}
