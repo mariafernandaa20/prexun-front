@@ -495,12 +495,11 @@ function AttendanceListContent() {
     try {
       const formattedDate = formatDateToLocalIso(selectedDate);
 
-      const payloads = grupoIdsToSave.map((grupoId) => {
+      const attendances = grupoIdsToSave.map((grupoId) => {
         const groupStudents = students.filter((student) => student.grupo_id === grupoId);
 
         return {
           grupo_id: grupoId,
-          date: formattedDate,
           attendance: groupStudents.map((student) => ({
             student_id: student.id,
             present: attendance[student.attendance_key] || false,
@@ -510,9 +509,10 @@ function AttendanceListContent() {
         };
       });
 
-      await Promise.all(
-        payloads.map((payload) => axiosInstance.post('/teacher/attendance', payload))
-      );
+      await axiosInstance.post('/teacher/attendance', {
+        date: formattedDate,
+        attendances,
+      });
 
       setHasUnsavedChanges(false);
 
