@@ -101,6 +101,8 @@ export function StudentForm({
 
   const [sendWhatsAppNotification, setSendWhatsAppNotification] = useState(true);
 
+  const normalizePhoneDigits = (value: string) => value.replace(/\D+/g, '');
+
   // Debounce email to avoid excessive API calls
   const debouncedEmail = useDebounce(formData.email, 500);
 
@@ -162,7 +164,13 @@ export function StudentForm({
     setIsLoadingButton(true);
 
     try {
-      await onSubmit({ ...formData, send_whatsapp: sendWhatsAppNotification } as any);
+      const normalizedFormData = {
+        ...formData,
+        phone: normalizePhoneDigits(String(formData.phone || '')),
+        tutor_phone: normalizePhoneDigits(String(formData.tutor_phone || '')),
+      };
+
+      await onSubmit({ ...normalizedFormData, send_whatsapp: sendWhatsAppNotification } as any);
 
       const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -174,9 +182,9 @@ export function StudentForm({
 
           await addContactToGoogle(accessToken, {
             name: studentName,
-            email: formData.email,
-            phone: formData.phone,
-            secondaryPhone: formData.tutor_phone || undefined,
+            email: normalizedFormData.email,
+            phone: normalizedFormData.phone,
+            secondaryPhone: normalizedFormData.tutor_phone || undefined,
           });
 
           toast({
@@ -212,6 +220,11 @@ export function StudentForm({
         ...prev,
         [name]: value,
         carrer_id: null,
+      }));
+    } else if (name === 'phone' || name === 'tutor_phone') {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: normalizePhoneDigits(value),
       }));
     } else {
       setFormData((prev) => ({
@@ -491,6 +504,8 @@ export function StudentForm({
             value={formData.phone}
             onChange={handleChange}
             required
+            inputMode="numeric"
+            pattern="[0-9]*"
           />
         </div>
         <div className="space-y-2">
@@ -509,6 +524,8 @@ export function StudentForm({
             name="tutor_phone"
             value={formData.tutor_phone}
             onChange={handleChange}
+            inputMode="numeric"
+            pattern="[0-9]*"
           />
         </div>
         <div className="space-y-2">

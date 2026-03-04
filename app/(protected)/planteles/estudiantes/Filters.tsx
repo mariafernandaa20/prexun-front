@@ -365,8 +365,11 @@ const Filters: React.FC<FiltersProps> = ({
               <Input
                 placeholder="Teléfono..."
                 value={phoneInput}
-                onChange={(e) => setPhoneInput(e.target.value)}
+                onChange={(e) =>
+                  setPhoneInput(e.target.value.replace(/\D+/g, ''))
+                }
                 className="w-full text-gray-500 dark:text-gray-400"
+                inputMode="numeric"
               />
             </div>
 
