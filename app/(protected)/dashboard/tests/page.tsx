@@ -23,7 +23,7 @@ export default function TestsPage() {
         data-prexun-color="#3B82F6"
         data-prexun-float="bottom-left"
         data-prexun-attendance-url="/asistencia-publica"
-        data-prexun-api-url="https://localhost:8000/api"
+        data-prexun-api-url="http://clientes.prexun.com/api"
         data-prexun-campus-id="1"
       />
 

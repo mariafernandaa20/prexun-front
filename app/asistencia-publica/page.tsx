@@ -25,10 +25,22 @@ function PublicAttendanceContent() {
 
   const apiBase = useMemo(() => {
     const paramApi = searchParams.get('apiUrl');
-    if (paramApi) return paramApi.replace(/\/$/, '');
+    if (paramApi) {
+      const cleaned = paramApi.replace(/\/$/, '');
+      if (cleaned.startsWith('https://localhost')) {
+        return cleaned.replace('https://', 'http://');
+      }
+      return cleaned;
+    }
 
     const envApi = process.env.NEXT_PUBLIC_API_URL;
-    if (envApi) return envApi.replace(/\/$/, '');
+    if (envApi) {
+      const cleaned = envApi.replace(/\/$/, '');
+      if (cleaned.startsWith('https://localhost')) {
+        return cleaned.replace('https://', 'http://');
+      }
+      return cleaned;
+    }
 
     return '';
   }, [searchParams]);
@@ -82,8 +94,9 @@ function PublicAttendanceContent() {
 
       setResponse(data);
       setWhatsapp('');
-    } catch {
-      setError('Error de conexión al registrar asistencia.');
+    } catch (error: any) {
+      const detail = error?.message ? ` (${error.message})` : '';
+      setError(`Error de conexión al registrar asistencia${detail}. Verifica apiUrl/CORS/backend activo.`);
     } finally {
       setIsLoading(false);
     }
