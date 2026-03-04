@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface AttendanceResponse {
@@ -17,6 +17,7 @@ interface AttendanceResponse {
 
 function PublicAttendanceContent() {
   const searchParams = useSearchParams();
+  const localStorageKey = 'prexun_attendance_whatsapp';
 
   const [whatsapp, setWhatsapp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +57,27 @@ function PublicAttendanceContent() {
 
   const normalizePhone = (value: string) => value.replace(/[^0-9]/g, '');
 
+  const getClientLocalDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const storedWhatsapp = window.localStorage.getItem(localStorageKey);
+    if (storedWhatsapp) {
+      setWhatsapp(storedWhatsapp);
+    }
+  }, []);
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError('');
@@ -78,6 +100,7 @@ function PublicAttendanceContent() {
       const payload: Record<string, string | number> = {
         whatsapp: normalized,
         phone: normalized,
+        attendance_time: getClientLocalDateTime(),
       };
 
       const apiResponse = await fetch(`${apiBase}/public/asistencia/registrar`, {
@@ -97,6 +120,10 @@ function PublicAttendanceContent() {
 
       setResponse(data);
       setWhatsapp('');
+
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(localStorageKey, normalized);
+      }
     } catch (error: any) {
       const detail = error?.message ? ` (${error.message})` : '';
       setError(`Error de conexión al registrar asistencia${detail}. Verifica apiUrl/CORS/backend activo.`);
