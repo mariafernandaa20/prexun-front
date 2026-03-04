@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { FormEvent, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -14,7 +15,7 @@ interface AttendanceResponse {
   };
 }
 
-export default function PublicAttendancePage() {
+function PublicAttendanceContent() {
   const searchParams = useSearchParams();
 
   const [whatsapp, setWhatsapp] = useState('');
@@ -192,5 +193,13 @@ export default function PublicAttendancePage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function PublicAttendancePage() {
+  return (
+    <Suspense fallback={null}>
+      <PublicAttendanceContent />
+    </Suspense>
   );
 }
