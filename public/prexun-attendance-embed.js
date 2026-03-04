@@ -46,6 +46,32 @@
     return window.location.origin;
   };
 
+  const getAttendanceWindow = () => {
+    const minute = new Date().getMinutes();
+
+    if (minute < 15) {
+      return {
+        mode: "check_in",
+        canOpen: true,
+        label: "Ventana de entrada activa (00-14)",
+      };
+    }
+
+    if (minute >= 45) {
+      return {
+        mode: "check_out",
+        canOpen: true,
+        label: "Ventana de salida activa (45-59)",
+      };
+    }
+
+    return {
+      mode: "locked",
+      canOpen: false,
+      label: "Registro bloqueado (15-44)",
+    };
+  };
+
   const initPrexunAttendanceEmbed = () => {
     const targets = document.querySelectorAll(
       "[data-prexun-attendance], [data-prexun-id]"
@@ -71,6 +97,7 @@
       const btnColor = target.dataset.prexunColor || "#2563eb";
       const btnFloat = target.dataset.prexunFloat || "none";
       const textColor = getLuminance(btnColor) > 0.5 ? "black" : "white";
+      const enforceWindow = (target.dataset.prexunWindowControl || "true") !== "false";
 
       const button = document.createElement("button");
       button.innerText = btnText;
@@ -95,7 +122,40 @@
         else button.style.left = "32px";
       }
 
+      const statusText = document.createElement("div");
+      Object.assign(statusText.style, {
+        marginTop: "8px",
+        fontSize: "12px",
+        color: "#374151",
+        fontFamily: "Arial, sans-serif",
+      });
+
+      const updateButtonState = () => {
+        if (!enforceWindow) {
+          button.disabled = false;
+          button.style.opacity = "1";
+          button.style.cursor = "pointer";
+          statusText.textContent = "";
+          return;
+        }
+
+        const windowState = getAttendanceWindow();
+        button.disabled = !windowState.canOpen;
+        button.style.opacity = windowState.canOpen ? "1" : "0.7";
+        button.style.cursor = windowState.canOpen ? "pointer" : "not-allowed";
+        statusText.textContent = windowState.label;
+      };
+
+      updateButtonState();
+      window.setInterval(updateButtonState, 30000);
+
       const openPopup = () => {
+        const windowState = getAttendanceWindow();
+        if (enforceWindow && !windowState.canOpen) {
+          statusText.textContent = windowState.label;
+          return;
+        }
+
         const overlay = document.createElement("div");
         overlay.className = "prexun-attendance-popup-overlay";
 
@@ -113,6 +173,7 @@
 
         const iframeUrl = new URL(attendanceBaseUrl, window.location.origin);
         if (apiUrl) iframeUrl.searchParams.set("apiUrl", apiUrl);
+        iframeUrl.searchParams.set("mode", windowState.mode);
 
         iframe.src = iframeUrl.toString();
         iframe.style.width = "100%";
@@ -147,6 +208,7 @@
 
       button.onclick = openPopup;
       target.appendChild(button);
+      target.appendChild(statusText);
       target.dataset.prexunAttendanceInitialized = "true";
     });
   };

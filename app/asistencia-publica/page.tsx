@@ -23,6 +23,7 @@ function PublicAttendanceContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<AttendanceResponse | null>(null);
   const [error, setError] = useState<string>('');
+  const [now, setNow] = useState<Date>(new Date());
 
   const normalizeApiBase = (rawUrl: string) => {
     const cleaned = rawUrl.replace(/\/$/, '');
@@ -78,6 +79,42 @@ function PublicAttendanceContent() {
     }
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, 30000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  const attendanceWindow = useMemo(() => {
+    const minute = now.getMinutes();
+
+    if (minute < 15) {
+      return {
+        mode: 'check_in',
+        canSubmit: true,
+        label: 'Ventana de entrada activa (minuto 00-14).',
+      };
+    }
+
+    if (minute >= 45) {
+      return {
+        mode: 'check_out',
+        canSubmit: true,
+        label: 'Ventana de salida activa (minuto 45-59).',
+      };
+    }
+
+    return {
+      mode: 'locked',
+      canSubmit: false,
+      label: 'Registros deshabilitados entre minuto 15 y 44.',
+    };
+  }, [now]);
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError('');
@@ -119,7 +156,7 @@ function PublicAttendanceContent() {
       }
 
       setResponse(data);
-      setWhatsapp('');
+      setWhatsapp(normalized);
 
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(localStorageKey, normalized);
@@ -159,6 +196,22 @@ function PublicAttendanceContent() {
           Ingresa tu WhatsApp para validar y registrar asistencia.
         </p>
 
+        <div
+          style={{
+            marginBottom: 12,
+            background: attendanceWindow.canSubmit ? '#eff6ff' : '#fff7ed',
+            border: attendanceWindow.canSubmit
+              ? '1px solid #bfdbfe'
+              : '1px solid #fdba74',
+            color: '#1f2937',
+            borderRadius: 8,
+            padding: 10,
+            fontSize: 13,
+          }}
+        >
+          {attendanceWindow.label}
+        </div>
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
             value={whatsapp}
@@ -177,7 +230,7 @@ function PublicAttendanceContent() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !attendanceWindow.canSubmit}
             style={{
               height: 44,
               borderRadius: 8,
@@ -186,8 +239,8 @@ function PublicAttendanceContent() {
               color: '#fff',
               fontSize: 15,
               fontWeight: 600,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              opacity: isLoading ? 0.7 : 1,
+              cursor: isLoading || !attendanceWindow.canSubmit ? 'not-allowed' : 'pointer',
+              opacity: isLoading || !attendanceWindow.canSubmit ? 0.7 : 1,
             }}
           >
             {isLoading ? 'Validando...' : 'Registrar asistencia'}
