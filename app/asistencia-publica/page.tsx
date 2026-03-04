@@ -23,23 +23,32 @@ function PublicAttendanceContent() {
   const [response, setResponse] = useState<AttendanceResponse | null>(null);
   const [error, setError] = useState<string>('');
 
+  const normalizeApiBase = (rawUrl: string) => {
+    const cleaned = rawUrl.replace(/\/$/, '');
+
+    if (cleaned.startsWith('https://localhost')) {
+      return cleaned.replace('https://', 'http://');
+    }
+
+    const isSecurePage =
+      typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+    if (isSecurePage && cleaned.startsWith('http://') && !cleaned.includes('localhost')) {
+      return cleaned.replace('http://', 'https://');
+    }
+
+    return cleaned;
+  };
+
   const apiBase = useMemo(() => {
     const paramApi = searchParams.get('apiUrl');
     if (paramApi) {
-      const cleaned = paramApi.replace(/\/$/, '');
-      if (cleaned.startsWith('https://localhost')) {
-        return cleaned.replace('https://', 'http://');
-      }
-      return cleaned;
+      return normalizeApiBase(paramApi);
     }
 
     const envApi = process.env.NEXT_PUBLIC_API_URL;
     if (envApi) {
-      const cleaned = envApi.replace(/\/$/, '');
-      if (cleaned.startsWith('https://localhost')) {
-        return cleaned.replace('https://', 'http://');
-      }
-      return cleaned;
+      return normalizeApiBase(envApi);
     }
 
     return '';
