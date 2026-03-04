@@ -58,6 +58,17 @@ export default function TomarAsistenciasPage() {
   >('environment');
   const [stopStream, setStopStream] = useState(false);
 
+  const getMexicoDateIso = (date: Date) => {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Mexico_City',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+
+    return formatter.format(date);
+  };
+
   /*const loadTodayAttendance = async () => {
 
     console.log('Loading today attendance...');
@@ -179,7 +190,7 @@ export default function TomarAsistenciasPage() {
 
       const date = new Date();
       const isoString = date.toISOString();
-      const dateFormatted = date.toISOString().split('T')[0];
+      const dateFormatted = getMexicoDateIso(date);
       const payload = {
         student_id: student.id,
         date: dateFormatted,
@@ -293,6 +304,7 @@ export default function TomarAsistenciasPage() {
           <CalendarIcon className="h-5 w-5" />
           <span className="text-lg">
             {todayDate.toLocaleDateString('es-ES', {
+              timeZone: 'America/Mexico_City',
               weekday: 'long',
               year: 'numeric',
               month: 'long',
@@ -488,7 +500,9 @@ export default function TomarAsistenciasPage() {
                         </Badge>
                         <div className="text-sm text-muted-foreground dark:text-muted-foreground text-right">
                           <div>
-                            {record.timestamp.toLocaleTimeString('es-ES')}
+                            {record.timestamp.toLocaleTimeString('es-MX', {
+                              timeZone: 'America/Mexico_City',
+                            })}
                           </div>
                         </div>
                       </div>

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import axios from 'axios';
 import {
@@ -67,6 +67,7 @@ export default function CobrosPage() {
     string[]
   >(['all']);
   const [selectedCard, setSelectedCard] = useState<string>('all');
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
   const [searchFolio, setSearchFolio] = useState('');
   const [sortBy, setSortBy] = useState('folio');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -87,7 +88,17 @@ export default function CobrosPage() {
 
   const [availableColumnIds, setAvailableColumnIds] = useState<string[]>([]);
   const { activeCampus } = useActiveCampusStore();
-  const { user } = useAuthStore();
+  const { user, grupos, getFilteredGrupos } = useAuthStore();
+    const filteredCampusGroups = useMemo(() => {
+      const baseGroups = getFilteredGrupos(activeCampus?.id, undefined);
+
+      return [...baseGroups].sort((a: any, b: any) => {
+        const nameA = String(a.name || '').toLowerCase();
+        const nameB = String(b.name || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+    }, [getFilteredGrupos, activeCampus?.id, grupos]);
+
   const { toast } = useToast();
 
   const { pagination, setPagination } = usePagination();
@@ -371,6 +382,7 @@ export default function CobrosPage() {
     searchStudent,
     selectedPaymentMethods,
     selectedCard,
+    selectedGroupId,
     searchFolio,
     sortBy,
     sortDirection,
@@ -436,7 +448,8 @@ export default function CobrosPage() {
         sortDirection,
         dateFrom,
         dateTo,
-        groupByMonth
+        groupByMonth,
+        selectedGroupId
       );
 
       setTransactions(response.data);
@@ -533,6 +546,20 @@ export default function CobrosPage() {
               onChange={(e) => setDateTo(e.target.value)}
               className="w-full"
             />
+
+            <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Grupo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los grupos</SelectItem>
+                {filteredCampusGroups.map((group: any) => (
+                  <SelectItem key={String(group.id)} value={String(group.id)}>
+                    {group.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             <div className="flex items-center gap-2">
               <input

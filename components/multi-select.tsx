@@ -94,7 +94,7 @@ export function MultiSelect({
             className={cn('w-full justify-between h-10 text-gray-500 dark:text-gray-400', className)}
           >
             {selectedValues.length > 0
-              ? `${selectedValues.length} Columnas visibles`
+              ? `${selectedValues.length} seleccionados`
               : placeholder}
             <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
           </Button>

@@ -119,6 +119,39 @@ export default function ReportesAsistenciaPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('student');
 
+  const formatDateInMexicoIso = (date: Date) => {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Mexico_City',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+
+    return formatter.format(date);
+  };
+
+  const parseDateInput = (value: string) => {
+    if (!value) return new Date();
+    return new Date(`${value}T12:00:00`);
+  };
+
+  const formatServerDate = (value?: string) => {
+    if (!value) return '-';
+
+    const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (dateOnlyPattern.test(value)) {
+      const [year, month, day] = value.split('-').map(Number);
+      return new Date(year, month - 1, day, 12, 0, 0).toLocaleDateString(
+        'es-MX',
+        { timeZone: 'America/Mexico_City' }
+      );
+    }
+
+    return new Date(value).toLocaleDateString('es-MX', {
+      timeZone: 'America/Mexico_City',
+    });
+  };
+
   const getCurrentPeriodId = () => {
     if (!Array.isArray(periods) || periods.length === 0) return null;
 
@@ -223,7 +256,23 @@ export default function ReportesAsistenciaPage() {
         params.plantel_id = activeCampus.id;
       }
       const response = await axiosInstance.get(`/grupos/${groupId}/students`, { params });
-      setStudents(response.data);
+      const uniqueStudents = Array.from(
+        new Map(
+          (response.data as Student[])
+            .filter((student) => student?.id && (student.firstname || student.lastname))
+            .map((student) => [student.id, student])
+        ).values()
+      ).sort((a, b) => {
+        const lastA = (a.lastname || '').toLowerCase();
+        const lastB = (b.lastname || '').toLowerCase();
+        if (lastA < lastB) return -1;
+        if (lastA > lastB) return 1;
+        const firstA = (a.firstname || '').toLowerCase();
+        const firstB = (b.firstname || '').toLowerCase();
+        return firstA.localeCompare(firstB);
+      });
+
+      setStudents(uniqueStudents);
     } catch (error) {
       console.error('Error fetching students:', error);
       toast.error('Error al cargar estudiantes');
@@ -246,8 +295,8 @@ export default function ReportesAsistenciaPage() {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
+        start_date: formatDateInMexicoIso(startDate),
+        end_date: formatDateInMexicoIso(endDate),
         exclude_weekends: excludeWeekends.toString(),
       });
 
@@ -281,8 +330,8 @@ export default function ReportesAsistenciaPage() {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
+        start_date: formatDateInMexicoIso(startDate),
+        end_date: formatDateInMexicoIso(endDate),
         exclude_weekends: excludeWeekends.toString(),
       });
 
@@ -383,8 +432,8 @@ export default function ReportesAsistenciaPage() {
                 </label>
                 <Input
                   type="date"
-                  value={startDate.toISOString().split('T')[0]}
-                  onChange={(e) => setStartDate(new Date(e.target.value))}
+                  value={formatDateInMexicoIso(startDate)}
+                  onChange={(e) => setStartDate(parseDateInput(e.target.value))}
                 />
               </div>
 
@@ -395,8 +444,8 @@ export default function ReportesAsistenciaPage() {
                 </label>
                 <Input
                   type="date"
-                  value={endDate.toISOString().split('T')[0]}
-                  onChange={(e) => setEndDate(new Date(e.target.value))}
+                  value={formatDateInMexicoIso(endDate)}
+                  onChange={(e) => setEndDate(parseDateInput(e.target.value))}
                 />
               </div>
             </div>
@@ -483,13 +532,8 @@ export default function ReportesAsistenciaPage() {
                         <div>
                           <p className="text-sm text-gray-600">Rango</p>
                           <p className="font-medium">
-                            {new Date(
-                              studentReport.period.start_date
-                            ).toLocaleDateString('es-ES')}{' '}
-                            -{' '}
-                            {new Date(
-                              studentReport.period.end_date
-                            ).toLocaleDateString('es-ES')}
+                            {formatServerDate(studentReport.period.start_date)} -{' '}
+                            {formatServerDate(studentReport.period.end_date)}
                           </p>
                         </div>
                       </div>
@@ -567,9 +611,7 @@ export default function ReportesAsistenciaPage() {
                                 <div className="flex items-center gap-3">
                                   <div>
                                     <div className="font-medium">
-                                      {new Date(day.date).toLocaleDateString(
-                                        'es-ES'
-                                      )}
+                                      {formatServerDate(day.date)}
                                     </div>
                                     <div className="text-sm text-gray-600">
                                       {day.day_name_es}
@@ -605,7 +647,9 @@ export default function ReportesAsistenciaPage() {
                                     <span className="text-xs text-gray-500">
                                       {new Date(
                                         day.attendance_time
-                                      ).toLocaleTimeString('es-ES')}
+                                      ).toLocaleTimeString('es-MX', {
+                                        timeZone: 'America/Mexico_City',
+                                      })}
                                     </span>
                                   )}
                                 </div>

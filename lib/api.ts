@@ -247,7 +247,7 @@ export const deletePeriod = async (id: string) => {
   return response.data;
 };
 
-export const getCharges = async (campusId: number, page: number, perPage: number, search?: string, payment_method?: string, card_id?: string, folio?: string, sortBy?: string, sortDirection?: string, dateFrom?: string, dateTo?: string, groupByMonth?: boolean) => {
+export const getCharges = async (campusId: number, page: number, perPage: number, search?: string, payment_method?: string, card_id?: string, folio?: string, sortBy?: string, sortDirection?: string, dateFrom?: string, dateTo?: string, groupByMonth?: boolean, groupId?: string) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -288,6 +288,10 @@ export const getCharges = async (campusId: number, page: number, perPage: number
 
     if (groupByMonth) {
       params.append('group_by_month', 'true');
+    }
+
+    if (groupId && groupId !== 'all') {
+      params.append('group_id', groupId);
     }
 
     const response = await axiosInstance.get(`/charges/${campusId}?${params.toString()}`);

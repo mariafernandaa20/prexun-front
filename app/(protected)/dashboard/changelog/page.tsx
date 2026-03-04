@@ -13,6 +13,7 @@ interface ChangelogItem {
   title: string;
   description: string;
   scope: 'admin' | 'planteles' | 'general';
+  filesModified: string[];
 }
 
 const changelogGuidelines = [
@@ -20,6 +21,7 @@ const changelogGuidelines = [
   'Usar fecha en formato `YYYY-MM-DD`.',
   'Título corto: qué cambió en una línea.',
   'Descripción breve: impacto funcional y contexto del cambio.',
+  'Incluir `filesModified` con los archivos tocados por el cambio.',
   'Seleccionar `type`: `feat` (nuevo), `fix` (corrección), `improvement` (mejora).',
   'Seleccionar `scope`: `admin`, `planteles` o `general`.',
   'Si un cambio depende de otro, incluirlo en la descripción para conservar contexto.',
@@ -31,10 +33,69 @@ const changelogTemplate = `{
   type: 'fix',
   title: 'Título del cambio',
   description: 'Qué se ajustó y por qué.',
-  scope: 'admin'
+  scope: 'admin',
+  filesModified: ['app/(protected)/ruta/page.tsx']
 }`;
 
 const changelogItems: ChangelogItem[] = [
+  {
+    id: '2026-03-03-01',
+    date: '2026-03-03',
+    type: 'improvement',
+    title: 'Lista de asistencia mixta ordenada global por apellido',
+    description:
+      'En selección múltiple de grupos, se eliminó la segregación por aulas y se ordena el listado completo de alumnos por apellido A-Z.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
+  },
+  {
+    id: '2026-03-03-02',
+    date: '2026-03-03',
+    type: 'fix',
+    title: 'Ingresos con orden de folio descendente funcional',
+    description:
+      'Se corrigió la lógica de ordenamiento para folios usando orden numérico real y fallback consistente entre folio, folio_cash, folio_transfer y folio_card.',
+    scope: 'general',
+    filesModified: ['app/Http/Controllers/Api/TransactionController.php'],
+  },
+  {
+    id: '2026-03-03-03',
+    date: '2026-03-03',
+    type: 'fix',
+    title: 'Filtro de grupos en ingresos por plantel/contexto activo',
+    description:
+      'El selector de grupos en ingresos ahora muestra solo grupos del plantel activo y envía el filtro al backend para restringir resultados.',
+    scope: 'planteles',
+    filesModified: [
+      'app/(protected)/planteles/ingresos/page.tsx',
+      'lib/api.ts',
+      'app/Http/Controllers/Api/TransactionController.php',
+    ],
+  },
+  {
+    id: '2026-03-03-04',
+    date: '2026-03-03',
+    type: 'fix',
+    title: 'Normalización de fechas a zona horaria CDMX en asistencia',
+    description:
+      'Se eliminó la dependencia de toISOString para fechas de asistencia y se estandarizó America/Mexico_City para evitar desfases de día.',
+    scope: 'planteles',
+    filesModified: [
+      'app/(protected)/planteles/lista-asistencia/page.tsx',
+      'app/(protected)/planteles/tomar-asistencia/page.tsx',
+      'app/(protected)/planteles/reportes-asistencia/page.tsx',
+    ],
+  },
+  {
+    id: '2026-03-03-05',
+    date: '2026-03-03',
+    type: 'improvement',
+    title: 'Limpieza de visualización de alumnos en reportes',
+    description:
+      'Se depuró el listado de alumnos en reportes: deduplicado, filtrado básico de registros inválidos y orden por apellido para reducir ruido visual.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/reportes-asistencia/page.tsx'],
+  },
   {
     id: '2026-02-28-01',
     date: '2026-02-28',
@@ -43,6 +104,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'En lista de asistencias, ahora se guarda automáticamente antes de cambiar de fecha. Si falla el guardado, no cambia de día para evitar pérdida de datos.',
     scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
   },
   {
     id: '2026-02-28-02',
@@ -52,6 +114,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'En tomar asistencia se agregó selector de cámara frontal/trasera y selección por dispositivo (deviceId), con cierre seguro de stream al cambiar.',
     scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/tomar-asistencia/page.tsx'],
   },
   {
     id: '2026-02-28-03',
@@ -61,6 +124,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'En calificaciones del estudiante se agregó modo para generar/copiar mensajes de todos los cursos en un solo bloque, además del modo individual.',
     scope: 'planteles',
+    filesModified: ['components/students/StudentGrades.tsx'],
   },
   {
     id: '2026-02-28-04',
@@ -70,6 +134,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'Cuando un curso no tiene actividades, se omite el bloque de actividades en el mensaje para evitar frases como “Sin actividad”.',
     scope: 'planteles',
+    filesModified: ['components/students/StudentGrades.tsx'],
   },
   {
     id: '2026-02-27-01',
@@ -79,6 +144,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'Se centralizó el filtrado para usar asignaciones vigentes por plantel/periodo y limitar grupos globales a modalidad en línea.',
     scope: 'planteles',
+    filesModified: ['lib/store/auth-store.ts'],
   },
   {
     id: '2026-02-27-02',
@@ -88,6 +154,10 @@ const changelogItems: ChangelogItem[] = [
     description:
       'Asistencias y reportes ahora inicializan periodo con default_period_id de configuración global, con fallback al periodo actual por fechas.',
     scope: 'planteles',
+    filesModified: [
+      'app/(protected)/planteles/lista-asistencia/page.tsx',
+      'app/(protected)/planteles/reportes-asistencia/page.tsx',
+    ],
   },
   {
     id: '2026-02-27-03',
@@ -97,6 +167,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'En backend, getStudents de grupos quedó únicamente con student_assignments activas (sin fallback legacy por grupo_id directo).',
     scope: 'general',
+    filesModified: ['app/Http/Controllers/Api/GrupoController.php'],
   },
   {
     id: '2026-02-27-04',
@@ -106,6 +177,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'Al cambiar grupo o periodo se guarda automáticamente la captura pendiente antes de navegar, evitando pérdida de cambios por omisión del botón Guardar.',
     scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
   },
   {
     id: '2026-02-26-01',
@@ -115,6 +187,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'Se cambió la vista de grupos a lista vertical izquierda con panel de detalle a la derecha para facilitar lectura rápida.',
     scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/grupos/page.tsx'],
   },
   {
     id: '2026-02-26-02',
@@ -124,6 +197,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'Se agregó ordenamiento por alfabético (default), cupo disponible, capacidad e inscritos en la lista de grupos.',
     scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/grupos/page.tsx'],
   },
   {
     id: '2026-02-26-03',
@@ -133,6 +207,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'El total de inscritos y disponibles se calcula con alumnos reales por grupo para evitar inconsistencias del backend.',
     scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/grupos/page.tsx'],
   },
   {
     id: '2026-02-26-04',
@@ -142,6 +217,10 @@ const changelogItems: ChangelogItem[] = [
     description:
       'La vista de grupos ahora muestra solo grupos del plantel activo y del periodo actual; los globales solo si son en línea.',
     scope: 'planteles',
+    filesModified: [
+      'app/(protected)/planteles/grupos/page.tsx',
+      'lib/store/auth-store.ts',
+    ],
   },
   {
     id: '2026-02-26-05',
@@ -151,6 +230,7 @@ const changelogItems: ChangelogItem[] = [
     description:
       'Se unificó el flujo de carga de alumnos y asistencia para evitar estados pisados y errores por efectos duplicados.',
     scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
   },
 ];
 
@@ -222,6 +302,9 @@ export default function AdminChangelogPage() {
                 </div>
                 <p className="text-sm font-medium">{item.title}</p>
                 <p className="text-sm text-muted-foreground">{item.description}</p>
+                <p className="text-xs text-muted-foreground">
+                  Archivos: {item.filesModified.join(', ')}
+                </p>
               </div>
             ))}
           </CardContent>
