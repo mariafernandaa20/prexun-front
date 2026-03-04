@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Table,
@@ -59,7 +59,7 @@ interface AttendanceData {
   date: string;
 }
 
-export default function AttendanceListPage() {
+function AttendanceListContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -811,5 +811,13 @@ export default function AttendanceListPage() {
         onSave={handleSaveAttendanceEdit}
       />
     </div>
+  );
+}
+
+export default function AttendanceListPage() {
+  return (
+    <Suspense fallback={null}>
+      <AttendanceListContent />
+    </Suspense>
   );
 }
