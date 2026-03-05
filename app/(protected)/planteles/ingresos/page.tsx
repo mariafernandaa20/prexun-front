@@ -70,10 +70,11 @@ export default function CobrosPage() {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
   const [searchFolio, setSearchFolio] = useState('');
   const [sortBy, setSortBy] = useState('folio');
-  const [sortDirection, setSortDirection] = useState('desc');
+  const [sortDirection, setSortDirection] = useState('asc');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [groupByMonth, setGroupByMonth] = useState(false);
+  const [rangePreset, setRangePreset] = useState<string>('all');
+  const [groupByMonth, setGroupByMonth] = useState(true);
   const [cards, setCards] = useState<any[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     'student',
@@ -388,6 +389,7 @@ export default function CobrosPage() {
     sortDirection,
     dateFrom,
     dateTo,
+    rangePreset,
     groupByMonth,
   ]);
 
@@ -449,7 +451,8 @@ export default function CobrosPage() {
         dateFrom,
         dateTo,
         groupByMonth,
-        selectedGroupId
+        selectedGroupId,
+        rangePreset
       );
 
       setTransactions(response.data);
@@ -491,99 +494,173 @@ export default function CobrosPage() {
     );
   };
 
+  const groupedTransactionsByMonth = useMemo(() => {
+    const monthFormatter = new Intl.DateTimeFormat('es-MX', {
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const groups = new Map<string, { label: string; items: Transaction[] }>();
+
+    transactions.forEach((transaction) => {
+      const rawDate = transaction.payment_date || transaction.created_at;
+      const parsedDate = rawDate ? new Date(rawDate) : null;
+
+      const key = parsedDate
+        ? `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, '0')}`
+        : 'sin-fecha';
+
+      const label = parsedDate
+        ? monthFormatter.format(parsedDate).replace(/^\w/, (char) => char.toUpperCase())
+        : 'Sin fecha';
+
+      if (!groups.has(key)) {
+        groups.set(key, { label, items: [] });
+      }
+
+      groups.get(key)?.items.push(transaction);
+    });
+
+    return Array.from(groups.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([, value]) => value);
+  }, [transactions]);
+
   return (
     <div>
       <Card className="w-full overflow-hidden">
         <CardHeader className="sticky top-0 bg-card">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
-            <Input
-              placeholder="Buscar por nombre completo..."
-              value={searchStudent}
-              onChange={(e) => {
-                setSearchStudent(e.target.value);
-                setPagination(prev => ({ ...prev, currentPage: 1 }));
-              }}
-              className="w-full"
-            />
+            <div className="space-y-1">
+              <Label className="text-xs">Buscar estudiante</Label>
+              <Input
+                placeholder="Buscar por nombre completo..."
+                value={searchStudent}
+                onChange={(e) => {
+                  setSearchStudent(e.target.value);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+                className="w-full"
+              />
+            </div>
 
-            <Input
-              placeholder="Buscar por Folio"
-              value={searchFolio}
-              onChange={(e) => {
-                setSearchFolio(e.target.value);
-                setPagination(prev => ({ ...prev, currentPage: 1 }));
-              }}
-              className="w-full"
-            />
+            <div className="space-y-1">
+              <Label className="text-xs">Buscar folio</Label>
+              <Input
+                placeholder="Buscar por Folio"
+                value={searchFolio}
+                onChange={(e) => {
+                  setSearchFolio(e.target.value);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+                className="w-full"
+              />
+            </div>
 
-            <Select
-              value={sortBy}
-              onValueChange={(val) => {
-                setSortBy(val);
-                setPagination(prev => ({ ...prev, currentPage: 1 }));
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Ordenar por" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="folio">Folio</SelectItem>
-                <SelectItem value="created_at">Fecha de creación</SelectItem>
-                <SelectItem value="payment_date">Fecha de pago</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-1">
+              <Label className="text-xs">Ordenar por</Label>
+              <Select
+                value={sortBy}
+                onValueChange={(val) => {
+                  setSortBy(val);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="folio">Folio</SelectItem>
+                  <SelectItem value="created_at">Fecha de creación</SelectItem>
+                  <SelectItem value="payment_date">Fecha de pago</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Select
-              value={sortDirection}
-              onValueChange={(val) => {
-                setSortDirection(val);
-                setPagination(prev => ({ ...prev, currentPage: 1 }));
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Dirección" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="asc">Ascendente</SelectItem>
-                <SelectItem value="desc">Descendente</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-1">
+              <Label className="text-xs">Dirección</Label>
+              <Select
+                value={sortDirection}
+                onValueChange={(val) => {
+                  setSortDirection(val);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Dirección" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Ascendente</SelectItem>
+                  <SelectItem value="desc">Descendente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            <Input
-              type="date"
-              placeholder="Desde"
-              value={dateFrom}
-              onChange={(e) => {
-                setDateFrom(e.target.value);
-                setPagination(prev => ({ ...prev, currentPage: 1 }));
-              }}
-              className="w-full"
-            />
+            <div className="space-y-1">
+              <Label className="text-xs">Fecha desde</Label>
+              <Input
+                type="date"
+                placeholder="Desde"
+                value={dateFrom}
+                onChange={(e) => {
+                  setDateFrom(e.target.value);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+                className="w-full"
+              />
+            </div>
 
-            <Input
-              type="date"
-              placeholder="Hasta"
-              value={dateTo}
-              onChange={(e) => {
-                setDateTo(e.target.value);
-                setPagination(prev => ({ ...prev, currentPage: 1 }));
-              }}
-              className="w-full"
-            />
+            <div className="space-y-1">
+              <Label className="text-xs">Fecha hasta</Label>
+              <Input
+                type="date"
+                placeholder="Hasta"
+                value={dateTo}
+                onChange={(e) => {
+                  setDateTo(e.target.value);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+                className="w-full"
+              />
+            </div>
 
-            <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Grupo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los grupos</SelectItem>
-                {filteredCampusGroups.map((group: any) => (
-                  <SelectItem key={String(group.id)} value={String(group.id)}>
-                    {group.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-1">
+              <Label className="text-xs">Rango rápido</Label>
+              <Select
+                value={rangePreset}
+                onValueChange={(value) => {
+                  setRangePreset(value);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Rango" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todo</SelectItem>
+                  <SelectItem value="current_month">Este mes</SelectItem>
+                  <SelectItem value="last_3_months">Últimos 3 meses</SelectItem>
+                  <SelectItem value="last_100_folios">Últimos 100 folios</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">Grupo</Label>
+              <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Grupo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los grupos</SelectItem>
+                  {filteredCampusGroups.map((group: any) => (
+                    <SelectItem key={String(group.id)} value={String(group.id)}>
+                      {group.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="flex items-center gap-2">
               <input
@@ -601,75 +678,84 @@ export default function CobrosPage() {
               </Label>
             </div>
 
-            <Select
-              value={
-                selectedPaymentMethods.includes('all')
-                  ? 'all'
-                  : selectedPaymentMethods[0]
-              }
-              onValueChange={(value) => {
-                setPagination(prev => ({ ...prev, currentPage: 1 }));
-                if (value === 'all') {
-                  setSelectedPaymentMethods(['all']);
-                  setSelectedCard('all');
-                } else {
-                  setSelectedPaymentMethods([value]);
-                  if (value !== 'card') {
-                    setSelectedCard('all');
-                  }
+            <div className="space-y-1">
+              <Label className="text-xs">Método de pago</Label>
+              <Select
+                value={
+                  selectedPaymentMethods.includes('all')
+                    ? 'all'
+                    : selectedPaymentMethods[0]
                 }
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Método de pago" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {uiConfig?.payment_methods_enabled?.includes('transfer') && (
-                  <SelectItem value="transfer">Transferencia</SelectItem>
-                )}
-                {uiConfig?.payment_methods_enabled?.includes('card') && (
-                  <SelectItem value="card">Tarjeta</SelectItem>
-                )}
-                {uiConfig?.payment_methods_enabled?.includes('cash') && (
-                  <SelectItem value="cash">Efectivo</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+                onValueChange={(value) => {
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  if (value === 'all') {
+                    setSelectedPaymentMethods(['all']);
+                    setSelectedCard('all');
+                  } else {
+                    setSelectedPaymentMethods([value]);
+                    if (value !== 'card') {
+                      setSelectedCard('all');
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Método de pago" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {uiConfig?.payment_methods_enabled?.includes('transfer') && (
+                    <SelectItem value="transfer">Transferencia</SelectItem>
+                  )}
+                  {uiConfig?.payment_methods_enabled?.includes('card') && (
+                    <SelectItem value="card">Tarjeta</SelectItem>
+                  )}
+                  {uiConfig?.payment_methods_enabled?.includes('cash') && (
+                    <SelectItem value="cash">Efectivo</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
 
             {!selectedPaymentMethods.includes('all') &&
               selectedPaymentMethods[0] === 'card' && (
-                <Select
-                  value={selectedCard}
-                  onValueChange={(val) => {
-                    setSelectedCard(val);
-                    setPagination(prev => ({ ...prev, currentPage: 1 }));
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleccionar tarjeta" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las tarjetas</SelectItem>
-                    {cards.map((card) => (
-                      <SelectItem key={card.id} value={card.id.toString()}>
-                        {card.number} - {card.bank}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-1">
+                  <Label className="text-xs">Tarjeta</Label>
+                  <Select
+                    value={selectedCard}
+                    onValueChange={(val) => {
+                      setSelectedCard(val);
+                      setPagination(prev => ({ ...prev, currentPage: 1 }));
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Seleccionar tarjeta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas las tarjetas</SelectItem>
+                      {cards.map((card) => (
+                        <SelectItem key={card.id} value={card.id.toString()}>
+                          {card.number} - {card.bank}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
 
-            <MultiSelect
-              options={columnOptions}
-              hiddeBadages={true}
-              selectedValues={visibleColumns}
-              onSelectedChange={handleColumnSelect}
-              title="Columnas"
-              placeholder="Seleccionar columnas"
-              searchPlaceholder="Buscar columna..."
-              emptyMessage="No se encontraron columnas"
-            />
+            <div className="space-y-1">
+              <Label className="text-xs">Columnas visibles</Label>
+              <MultiSelect
+                options={columnOptions}
+                hiddeBadages={true}
+                selectedValues={visibleColumns}
+                onSelectedChange={handleColumnSelect}
+                title="Columnas"
+                placeholder="Seleccionar columnas"
+                searchPlaceholder="Buscar columna..."
+                emptyMessage="No se encontraron columnas"
+              />
+            </div>
 
             <AgregarIngreso />
             <Link
@@ -699,18 +785,45 @@ export default function CobrosPage() {
                 </TableHeader>
                 <TableBody>
                   {transactions.length > 0 ? (
-                    transactions.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        {getVisibleColumns().map((column) => (
-                          <TableCell
-                            key={`${transaction.id}-${column.id}`}
-                            className="whitespace-nowrap"
-                          >
-                            {column.render(transaction)}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
+                    groupByMonth ? (
+                      groupedTransactionsByMonth.flatMap((group) => {
+                        const monthLabelRow = (
+                          <TableRow key={`month-${group.label}`} className="bg-muted/40">
+                            <TableCell colSpan={getVisibleColumns().length} className="font-semibold">
+                              {group.label}
+                            </TableCell>
+                          </TableRow>
+                        );
+
+                        const rows = group.items.map((transaction) => (
+                          <TableRow key={transaction.id}>
+                            {getVisibleColumns().map((column) => (
+                              <TableCell
+                                key={`${transaction.id}-${column.id}`}
+                                className="whitespace-nowrap"
+                              >
+                                {column.render(transaction)}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ));
+
+                        return [monthLabelRow, ...rows];
+                      })
+                    ) : (
+                      transactions.map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          {getVisibleColumns().map((column) => (
+                            <TableCell
+                              key={`${transaction.id}-${column.id}`}
+                              className="whitespace-nowrap"
+                            >
+                              {column.render(transaction)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    )
                   ) : (
                     <TableRow>
                       <TableCell colSpan={getVisibleColumns().length}>
