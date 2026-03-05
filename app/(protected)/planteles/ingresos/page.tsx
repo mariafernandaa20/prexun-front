@@ -113,6 +113,34 @@ export default function CobrosPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  const getFolioPrefix = (transaction: Transaction) => {
+    if (transaction.folio_new) {
+      return transaction.folio_new;
+    }
+
+    const dateSource = transaction.payment_date || transaction.created_at;
+    const folioDate = dateSource ? new Date(dateSource) : new Date();
+    const month = String(folioDate.getMonth() + 1).padStart(2, '0');
+    const year = String(folioDate.getFullYear()).slice(-2);
+
+    const campusName = (activeCampus as any)?.name || '';
+    const campusLetter = campusName ? String(campusName).charAt(0).toUpperCase() : '';
+
+    const isSatTransfer =
+      transaction.payment_method === 'transfer' &&
+      !!transaction.card_id &&
+      (transaction as any)?.card?.sat;
+
+    const methodCode =
+      transaction.payment_method === 'cash'
+        ? 'E'
+        : transaction.payment_method === 'transfer'
+          ? (isSatTransfer ? 'I' : 'A')
+          : 'I';
+
+    return `${campusLetter}${methodCode}-${month}${year} | `;
+  };
+
 
   const handleUploadClick = (transaction: Transaction) => {
     setTransactionToUpload(transaction);
@@ -270,11 +298,12 @@ export default function CobrosPage() {
           transaction.folio ||
           transaction.folio_cash ||
           transaction.folio_transfer ||
+          transaction.folio_card ||
           0;
 
-        return (
-          transaction.folio_new + ' ' + folioNumber.toString().padStart(4, '0')
-        );
+        const prefix = getFolioPrefix(transaction);
+
+        return prefix + folioNumber.toString().padStart(4, '0');
       },
     },
     {
@@ -790,7 +819,7 @@ export default function CobrosPage() {
                         const monthLabelRow = (
                           <TableRow key={`month-${group.label}`} className="bg-muted/40">
                             <TableCell colSpan={getVisibleColumns().length} className="font-semibold">
-                              {group.label}
+                              {group.label} · {group.items.length} folios
                             </TableCell>
                           </TableRow>
                         );
