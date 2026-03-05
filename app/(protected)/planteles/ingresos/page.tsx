@@ -486,18 +486,30 @@ export default function CobrosPage() {
             <Input
               placeholder="Buscar por nombre completo..."
               value={searchStudent}
-              onChange={(e) => setSearchStudent(e.target.value)}
+              onChange={(e) => {
+                setSearchStudent(e.target.value);
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
+              }}
               className="w-full"
             />
 
             <Input
               placeholder="Buscar por Folio"
               value={searchFolio}
-              onChange={(e) => setSearchFolio(e.target.value)}
+              onChange={(e) => {
+                setSearchFolio(e.target.value);
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
+              }}
               className="w-full"
             />
 
-            <Select value={sortBy} onValueChange={setSortBy}>
+            <Select
+              value={sortBy}
+              onValueChange={(val) => {
+                setSortBy(val);
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
@@ -508,7 +520,13 @@ export default function CobrosPage() {
               </SelectContent>
             </Select>
 
-            <Select value={sortDirection} onValueChange={setSortDirection}>
+            <Select
+              value={sortDirection}
+              onValueChange={(val) => {
+                setSortDirection(val);
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Dirección" />
               </SelectTrigger>
@@ -522,7 +540,10 @@ export default function CobrosPage() {
               type="date"
               placeholder="Desde"
               value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
+              }}
               className="w-full"
             />
 
@@ -530,7 +551,10 @@ export default function CobrosPage() {
               type="date"
               placeholder="Hasta"
               value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
+              }}
               className="w-full"
             />
 
@@ -539,7 +563,10 @@ export default function CobrosPage() {
                 type="checkbox"
                 id="groupByMonth"
                 checked={groupByMonth}
-                onChange={(e) => setGroupByMonth(e.target.checked)}
+                onChange={(e) => {
+                  setGroupByMonth(e.target.checked);
+                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                }}
                 className="h-4 w-4"
               />
               <Label htmlFor="groupByMonth" className="text-sm cursor-pointer">
@@ -554,6 +581,7 @@ export default function CobrosPage() {
                   : selectedPaymentMethods[0]
               }
               onValueChange={(value) => {
+                setPagination(prev => ({ ...prev, currentPage: 1 }));
                 if (value === 'all') {
                   setSelectedPaymentMethods(['all']);
                   setSelectedCard('all');
@@ -584,7 +612,13 @@ export default function CobrosPage() {
 
             {!selectedPaymentMethods.includes('all') &&
               selectedPaymentMethods[0] === 'card' && (
-                <Select value={selectedCard} onValueChange={setSelectedCard}>
+                <Select
+                  value={selectedCard}
+                  onValueChange={(val) => {
+                    setSelectedCard(val);
+                    setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  }}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Seleccionar tarjeta" />
                   </SelectTrigger>
