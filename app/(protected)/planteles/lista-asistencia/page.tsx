@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Edit, FileText, Clock } from 'lucide-react';
@@ -664,10 +665,18 @@ function AttendanceListContent() {
       <h1 className="text-4xl font-bold mb-6">Lista de asistencia</h1>
 
       <div className="flex flex-col gap-4 mb-6">
+
+        <div className="flex flex-row gap-4 items-end">
+          <div className="space-y-2">
+            <Label>Periodo</Label>
+            <Select value={periodId} onValueChange={setPeriodId}>
+              <SelectTrigger className="w-[200px]">
+
         <div className="flex flex-row gap-4">
           <div>
             <Select value={periodId} onValueChange={handlePeriodChange}>
               <SelectTrigger>
+
                 <SelectValue placeholder="Selecciona un periodo" />
               </SelectTrigger>
               <SelectContent>
@@ -679,6 +688,38 @@ function AttendanceListContent() {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="space-y-2">
+              <Label>Grupo</Label>
+              <Select value={selectedGrupo} onValueChange={setSelectedGrupo}>
+                <SelectTrigger className="w-[300px]">
+                  <SelectValue placeholder="Select a group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredGroups.map((grupo) => (
+                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                      {grupo.name} - {getPeriodNameById(grupo.period_id)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Fecha de asistencia</Label>
+              <div className="border rounded-md">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => {
+                    if (date) {
+                      setSelectedDate(date);
+                    }
+                  }}
+                />
+              </div>
+
 
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div>
@@ -706,6 +747,7 @@ function AttendanceListContent() {
                   }
                 }}
               />
+
             </div>
           </div>
         </div>
