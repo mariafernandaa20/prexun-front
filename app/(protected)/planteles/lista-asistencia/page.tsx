@@ -798,6 +798,22 @@ function AttendanceListContent() {
 
         {selectedGrupos.length > 0 && (
           <>
+            <div className="flex justify-end">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="text-xs"
+                  onClick={handleMarkMissingAsAbsent}
+                  disabled={isSaving}
+                >
+                  Marcar inasistencias
+                </Button>
+                <Button className="text-xs" onClick={handleSaveAttendance} disabled={isSaving}>
+                  {isSaving ? 'Guardando...' : 'Guardar'}
+                </Button>
+              </div>
+            </div>
+
             <Table className="w-full text-xs border rounded-lg">
               <TableHeader>
                 <TableRow>
@@ -881,21 +897,6 @@ function AttendanceListContent() {
               </TableBody>
             </Table>
 
-            <div className="mt-6 flex justify-end">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="text-xs"
-                  onClick={handleMarkMissingAsAbsent}
-                  disabled={isSaving}
-                >
-                  Marcar inasistencias
-                </Button>
-                <Button className="text-xs" onClick={handleSaveAttendance} disabled={isSaving}>
-                {isSaving ? 'Guardando...' : 'Guardar'}
-                </Button>
-              </div>
-            </div>
           </>
         )}
       </div>
