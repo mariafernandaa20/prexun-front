@@ -95,7 +95,12 @@ export default function AttendanceCalendar({
   ];
 
   const getLocalDateKey = (rawDate: string) => {
-    const dateOnlyMatch = rawDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!rawDate) {
+      return '';
+    }
+
+    const isoLikeDate = rawDate.slice(0, 10);
+    const dateOnlyMatch = isoLikeDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
     if (dateOnlyMatch) {
       const parsedYear = Number(dateOnlyMatch[1]);
@@ -106,6 +111,11 @@ export default function AttendanceCalendar({
     }
 
     const parsedDate = new Date(rawDate);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '';
+    }
+
     return `${parsedDate.getFullYear()}-${parsedDate.getMonth()}-${parsedDate.getDate()}`;
   };
 
