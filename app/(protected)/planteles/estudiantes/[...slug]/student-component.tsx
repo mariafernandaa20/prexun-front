@@ -283,6 +283,20 @@ export function StudentComponent({ slug }: { slug: string[] }) {
     id: Number(student.id),
   };
 
+  const getLastConnectionLabel = () => {
+    if (!student.moodle_lastaccess) {
+      return 'Sin conexión registrada';
+    }
+
+    return new Date(student.moodle_lastaccess * 1000).toLocaleString('es-MX', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return (
     <div className="space-y-4 ">
       <Card className="w-full">
@@ -292,9 +306,14 @@ export function StudentComponent({ slug }: { slug: string[] }) {
             <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
               <div className='md:col-span-2 lg:col-span-3'>
                 <div className="flex flex-col lg:flex-row items-center gap-4">
-                  <h1 className="text-2xl font-bold">
-                    {student.firstname} {student.lastname}
-                  </h1>
+                  <div className="flex flex-col">
+                    <h1 className="text-2xl font-bold">
+                      {student.firstname} {student.lastname}
+                    </h1>
+                    <p className="text-xs text-muted-foreground">
+                      Última conexión Moodle: {getLastConnectionLabel()}
+                    </p>
+                  </div>
                   <div className="flex gap-2">
                     <Purchace
                       campusId={campusId}

@@ -114,6 +114,7 @@ export interface Student {
     campus_id: number;
     color?: string;
   }>;
+  moodle_lastaccess?: number | null;
 }
 
 export interface Cohort {

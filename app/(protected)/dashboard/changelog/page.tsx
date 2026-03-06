@@ -39,6 +39,103 @@ const changelogTemplate = `{
 
 const changelogItems: ChangelogItem[] = [
   {
+    id: '2026-03-06-01',
+    date: '2026-03-06',
+    type: 'feat',
+    title: 'Autoguardado inmediato al marcar asistencia',
+    description:
+      'Al marcar o desmarcar checkbox en lista de asistencia se guarda automáticamente en backend por grupo afectado, evitando pérdida de cambios por omisión del botón Guardar.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
+  },
+  {
+    id: '2026-03-06-02',
+    date: '2026-03-06',
+    type: 'feat',
+    title: 'Acción masiva para marcar inasistencias pendientes',
+    description:
+      'Se agregó botón para marcar como inasistencia a estudiantes sin registro previo del día y guardar en bloque, con nota automática de inasistencia cuando aplica.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
+  },
+  {
+    id: '2026-03-06-03',
+    date: '2026-03-06',
+    type: 'improvement',
+    title: 'Indicadores visuales de estado en checkbox de asistencia',
+    description:
+      'En la columna de asistencia se muestran estados claros por alumno: presente, inasistencia marcada o sin registrar, para reducir ambigüedad operativa.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
+  },
+  {
+    id: '2026-03-06-04',
+    date: '2026-03-06',
+    type: 'fix',
+    title: 'Corrección de comentarios cuando la asistencia es recién creada',
+    description:
+      'El guardado de asistencia ahora devuelve IDs procesados por alumno y el frontend sincroniza `attendanceIds`, corrigiendo el error de “asistencia no encontrada” al editar notas.',
+    scope: 'planteles',
+    filesModified: [
+      'app/Http/Controllers/Api/TeacherAttendanceController.php',
+      'app/(protected)/planteles/lista-asistencia/page.tsx',
+    ],
+  },
+  {
+    id: '2026-03-06-05',
+    date: '2026-03-06',
+    type: 'fix',
+    title: 'Corrección de fecha desplazada en calendario de asistencias',
+    description:
+      'Se ajustó el parseo de fechas para evitar corrimiento al día anterior por conversiones UTC cuando los registros llegan como `YYYY-MM-DD` o con sufijo de zona horaria.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/estudiantes/[...slug]/AttendanceCalendar.tsx'],
+  },
+  {
+    id: '2026-03-06-06',
+    date: '2026-03-06',
+    type: 'fix',
+    title: 'Ajustes visuales de dark mode en edición de asistencia',
+    description:
+      'Se reemplazaron colores grises fijos por tokens de tema en el modal de edición de asistencia para mantener contraste correcto en modo oscuro.',
+    scope: 'planteles',
+    filesModified: ['components/EditAttendanceModal.tsx'],
+  },
+  {
+    id: '2026-03-05-01',
+    date: '2026-03-05',
+    type: 'improvement',
+    title: 'Filtros de ingresos con labels descriptivos',
+    description:
+      'Se añadieron etiquetas visibles sobre los controles de búsqueda, fechas, orden, método y columnas para mejorar legibilidad de filtros en ingresos.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/ingresos/page.tsx'],
+  },
+  {
+    id: '2026-03-05-02',
+    date: '2026-03-05',
+    type: 'feat',
+    title: 'Agrupación visual de ingresos por mes con encabezado',
+    description:
+      'Al activar agrupación por mes, la tabla separa bloques mensuales y muestra encabezado con mes/año y total de folios del bloque.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/ingresos/page.tsx'],
+  },
+  {
+    id: '2026-03-05-03',
+    date: '2026-03-05',
+    type: 'fix',
+    title: 'Orden de folios por mes de pago y presets de rango',
+    description:
+      'En ingresos se estabilizó el orden por folio dentro del mes de `payment_date`, se agregaron rangos rápidos (mes actual, 3 meses, últimos 100 folios) y fallback de prefijo para evitar `null` en folio.',
+    scope: 'general',
+    filesModified: [
+      'app/Http/Controllers/Api/TransactionController.php',
+      'lib/api.ts',
+      'app/(protected)/planteles/ingresos/page.tsx',
+    ],
+  },
+  {
     id: '2026-03-03-06',
     date: '2026-03-03',
     type: 'improvement',
