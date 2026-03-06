@@ -94,11 +94,25 @@ export default function AttendanceCalendar({
     'Diciembre',
   ];
 
+  const getLocalDateKey = (rawDate: string) => {
+    const dateOnlyMatch = rawDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+    if (dateOnlyMatch) {
+      const parsedYear = Number(dateOnlyMatch[1]);
+      const parsedMonth = Number(dateOnlyMatch[2]) - 1;
+      const parsedDay = Number(dateOnlyMatch[3]);
+
+      return `${parsedYear}-${parsedMonth}-${parsedDay}`;
+    }
+
+    const parsedDate = new Date(rawDate);
+    return `${parsedDate.getFullYear()}-${parsedDate.getMonth()}-${parsedDate.getDate()}`;
+  };
+
   // Crear un mapa de asistencias por fecha
   const attendanceMap = new Map<string, AttendanceRecord>();
   attendance.forEach((record) => {
-    const date = new Date(record.date);
-    const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    const dateKey = getLocalDateKey(record.date);
     attendanceMap.set(dateKey, record);
   });
 
