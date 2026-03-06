@@ -94,13 +94,14 @@ export default function AttendanceCalendar({
     'Diciembre',
   ];
 
-  // Crear un mapa de asistencias por fecha
+
   const attendanceMap = new Map<string, AttendanceRecord>();
   attendance.forEach((record) => {
-    const date = new Date(record.date);
-    const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    const [year, month, day] = record.date.split('-').map(Number);
+    const dateKey = `${year}-${month - 1}-${day}`;
     attendanceMap.set(dateKey, record);
   });
+
 
   // Generar los días del calendario
   const calendarDays = [];
@@ -176,12 +177,11 @@ export default function AttendanceCalendar({
                 <div
                   className={`
                     aspect-square p-1 text-center text-sm border rounded-md cursor-pointer
-                    ${
-                      dayData.hasAttendance
-                        ? dayData.isPresent
-                          ? 'bg-green-100 border-green-300 text-green-800 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300'
-                          : 'bg-red-100 border-red-300 text-red-800 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300'
-                        : 'bg-muted/50 border-border text-muted-foreground'
+                    ${dayData.hasAttendance
+                      ? dayData.isPresent
+                        ? 'bg-green-100 border-green-300 text-green-800 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300'
+                        : 'bg-red-100 border-red-300 text-red-800 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300'
+                      : 'bg-muted/50 border-border text-muted-foreground'
                     }
                   `}
                 >
