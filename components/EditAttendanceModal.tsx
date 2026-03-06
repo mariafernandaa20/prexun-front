@@ -153,12 +153,12 @@ export default function EditAttendanceModal({
 
         <div className="space-y-4">
           {/* Información del estudiante */}
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-muted rounded-lg">
             <div className="font-semibold text-lg">
               {attendanceData.student.firstname}{' '}
               {attendanceData.student.lastname}
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               Matrícula:{' '}
               {attendanceData.student.matricula || attendanceData.student.id}
             </div>
@@ -240,7 +240,7 @@ export default function EditAttendanceModal({
               rows={3}
               className="resize-none"
             />
-            <div className="text-xs text-gray-500 text-right">
+            <div className="text-xs text-muted-foreground text-right">
               {notes.length}/500 caracteres
             </div>
           </div>

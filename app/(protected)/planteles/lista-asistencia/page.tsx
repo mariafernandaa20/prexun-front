@@ -66,6 +66,14 @@ interface SaveAttendanceOptions {
   attendanceNotesSnapshot?: Record<string, string>;
 }
 
+interface SaveAttendanceResponse {
+  processed_records?: Array<{
+    grupo_id: string;
+    student_id: string;
+    attendance_id: string;
+  }>;
+}
+
 function AttendanceListContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -526,10 +534,24 @@ function AttendanceListContent() {
         };
       });
 
-      await axiosInstance.post('/teacher/attendance', {
+      const response = await axiosInstance.post<SaveAttendanceResponse>('/teacher/attendance', {
         date: formattedDate,
         attendances,
       });
+
+      const processedRecords = response.data?.processed_records || [];
+      if (processedRecords.length > 0) {
+        setAttendanceIds((prev) => {
+          const nextIds = { ...prev };
+
+          processedRecords.forEach((record) => {
+            const attendanceKey = `${record.grupo_id}-${record.student_id}`;
+            nextIds[attendanceKey] = record.attendance_id;
+          });
+
+          return nextIds;
+        });
+      }
 
       setHasUnsavedChanges(false);
 
@@ -562,6 +584,53 @@ function AttendanceListContent() {
 
   const handleSaveAttendance = async () => {
     await saveAttendanceForGroups(selectedGrupos);
+  };
+
+  const handleMarkMissingAsAbsent = async () => {
+    if (selectedGrupos.length === 0 || students.length === 0) return;
+
+    const missingStudents = students.filter(
+      (student) => !attendanceIds[student.attendance_key]
+    );
+
+    if (missingStudents.length === 0) {
+      toast.info('No hay inasistencias pendientes', {
+        description: 'Todos los estudiantes ya tienen registro de asistencia.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    const nextAttendance = { ...attendance };
+    const nextAttendanceTimes = { ...attendanceTimes };
+    const nextAttendanceNotes = { ...attendanceNotes };
+
+    missingStudents.forEach((student) => {
+      nextAttendance[student.attendance_key] = false;
+      delete nextAttendanceTimes[student.attendance_key];
+      if (!nextAttendanceNotes[student.attendance_key]) {
+        nextAttendanceNotes[student.attendance_key] = 'Inasistencia';
+      }
+    });
+
+    setAttendance(nextAttendance);
+    setAttendanceTimes(nextAttendanceTimes);
+    setAttendanceNotes(nextAttendanceNotes);
+    setHasUnsavedChanges(true);
+
+    const groupsToSave = Array.from(new Set(missingStudents.map((student) => student.grupo_id)));
+    const saved = await saveAttendanceForGroups(groupsToSave, {
+      attendanceSnapshot: nextAttendance,
+      attendanceTimesSnapshot: nextAttendanceTimes,
+      attendanceNotesSnapshot: nextAttendanceNotes,
+    });
+
+    if (saved) {
+      toast.success('Inasistencias registradas', {
+        description: `Se marcaron ${missingStudents.length} estudiantes sin registro como inasistencia.`,
+        duration: 4000,
+      });
+    }
   };
 
   const handleGrupoChange = async (newGrupoIds: string[]) => {
@@ -813,9 +882,19 @@ function AttendanceListContent() {
             </Table>
 
             <div className="mt-6 flex justify-end">
-              <Button className="text-xs" onClick={handleSaveAttendance} disabled={isSaving}>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="text-xs"
+                  onClick={handleMarkMissingAsAbsent}
+                  disabled={isSaving}
+                >
+                  Marcar inasistencias
+                </Button>
+                <Button className="text-xs" onClick={handleSaveAttendance} disabled={isSaving}>
                 {isSaving ? 'Guardando...' : 'Guardar'}
-              </Button>
+                </Button>
+              </div>
             </div>
           </>
         )}
