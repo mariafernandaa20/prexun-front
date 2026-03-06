@@ -59,6 +59,13 @@ interface AttendanceData {
   date: string;
 }
 
+interface SaveAttendanceOptions {
+  silent?: boolean;
+  attendanceSnapshot?: Record<string, boolean>;
+  attendanceTimesSnapshot?: Record<string, string>;
+  attendanceNotesSnapshot?: Record<string, string>;
+}
+
 function AttendanceListContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -461,32 +468,39 @@ function AttendanceListContent() {
     };
   }, [selectedGrupos, selectedDate, activeCampus?.id]);
 
-  const handleAttendanceChange = (attendanceKey: string, checked: boolean) => {
-    setHasUnsavedChanges(true);
-    setAttendance((prev) => ({
-      ...prev,
+  const handleAttendanceChange = async (attendanceKey: string, checked: boolean) => {
+    const [grupoId] = attendanceKey.split('-');
+
+    const nextAttendance = {
+      ...attendance,
       [attendanceKey]: checked,
-    }));
+    };
+
+    const nextAttendanceTimes = { ...attendanceTimes };
 
     if (checked) {
-      const now = new Date();
-      const fullTimestamp = now.toISOString();
-      setAttendanceTimes((prev) => ({
-        ...prev,
-        [attendanceKey]: fullTimestamp,
-      }));
+      nextAttendanceTimes[attendanceKey] = new Date().toISOString();
     } else {
-      setAttendanceTimes((prev) => {
-        const updated = { ...prev };
-        delete updated[attendanceKey];
-        return updated;
-      });
+      delete nextAttendanceTimes[attendanceKey];
     }
+
+    setHasUnsavedChanges(true);
+    setAttendance(nextAttendance);
+    setAttendanceTimes(nextAttendanceTimes);
+
+    if (!grupoId) return;
+
+    await saveAttendanceForGroups([grupoId], {
+      silent: true,
+      attendanceSnapshot: nextAttendance,
+      attendanceTimesSnapshot: nextAttendanceTimes,
+      attendanceNotesSnapshot: attendanceNotes,
+    });
   };
 
   const saveAttendanceForGroups = async (
     grupoIdsToSave: string[],
-    options?: { silent?: boolean }
+    options?: SaveAttendanceOptions
   ) => {
     if (grupoIdsToSave.length === 0) return true;
 
@@ -494,6 +508,9 @@ function AttendanceListContent() {
 
     try {
       const formattedDate = formatDateToLocalIso(selectedDate);
+      const attendanceState = options?.attendanceSnapshot ?? attendance;
+      const attendanceTimesState = options?.attendanceTimesSnapshot ?? attendanceTimes;
+      const attendanceNotesState = options?.attendanceNotesSnapshot ?? attendanceNotes;
 
       const attendances = grupoIdsToSave.map((grupoId) => {
         const groupStudents = students.filter((student) => student.grupo_id === grupoId);
@@ -502,9 +519,9 @@ function AttendanceListContent() {
           grupo_id: grupoId,
           attendance: groupStudents.map((student) => ({
             student_id: student.id,
-            present: attendance[student.attendance_key] || false,
-            attendance_time: attendanceTimes[student.attendance_key] || null,
-            notes: attendanceNotes[student.attendance_key] || null,
+            present: attendanceState[student.attendance_key] || false,
+            attendance_time: attendanceTimesState[student.attendance_key] || null,
+            notes: attendanceNotesState[student.attendance_key] || null,
           })),
         };
       });
