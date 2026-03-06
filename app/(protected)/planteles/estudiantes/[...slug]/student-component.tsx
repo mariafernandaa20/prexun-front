@@ -44,6 +44,7 @@ interface TransactionsTableProps {
   cards: CardType[];
   showNotes: boolean;
   onRefresh: () => void;
+  lastConnectionLabel: string;
 }
 
 const TransactionsTable: React.FC<TransactionsTableProps> = ({
@@ -52,11 +53,13 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   cards,
   showNotes,
   onRefresh,
+  lastConnectionLabel,
 }) => (
   <Table>
     <TableHeader>
       <TableRow>
         <TableHead>ID</TableHead>
+        <TableHead>Última conexión Moodle</TableHead>
         <TableHead>Acciones</TableHead>
         <TableHead>Folio</TableHead>
         <TableHead>Método</TableHead>
@@ -72,6 +75,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
       {transactions.map((transaction) => (
         <TableRow key={transaction.id}>
           <TableCell>{transaction.id}</TableCell>
+          <TableCell>{lastConnectionLabel}</TableCell>
           <TableCell>
             <div className="flex justify-left items-center gap-2">
               <Link href={`/recibo/${transaction.uuid}`} target="_blank">
@@ -485,6 +489,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                         onRefresh={refetch}
                         cards={cards}
                         showNotes={showNotes}
+                        lastConnectionLabel={getLastConnectionLabel()}
                       />
                     )}
                   </SectionContainer>
