@@ -222,6 +222,24 @@ export const getColumnDefinitions = (
       defaultVisible: false,
       render: (student: Student) => student.preferred_communication || '-',
     },
+    {
+      id: 'moodle_lastaccess',
+      label: 'Última conexión Moodle',
+      defaultVisible: true,
+      render: (student: Student) => {
+        if (!student?.moodle_lastaccess) {
+          return '-';
+        }
+
+        return new Date(student.moodle_lastaccess * 1000).toLocaleString('es-MX', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      },
+    },
 
     {
       id: 'actions',

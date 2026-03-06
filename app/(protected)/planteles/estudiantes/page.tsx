@@ -251,6 +251,36 @@ export default function Page() {
       .map((col) => col.id);
   });
 
+  useEffect(() => {
+    const defaultVisibleColumns = columnDefinitions
+      .filter((col) => col.defaultVisible)
+      .map((col) => col.id);
+
+    setVisibleColumns((prev) => {
+      const prevSet = new Set(prev);
+      let changed = false;
+
+      defaultVisibleColumns.forEach((columnId) => {
+        if (!prevSet.has(columnId)) {
+          prevSet.add(columnId);
+          changed = true;
+        }
+      });
+
+      if (!changed) {
+        return prev;
+      }
+
+      const next = Array.from(prevSet);
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(INITIAL_VISIBLE_COLUMNS_KEY, JSON.stringify(next));
+      }
+
+      return next;
+    });
+  }, [columnDefinitions]);
+
   const visibleColumnDefs = useMemo(
     () => columnDefinitions.filter((col) => visibleColumns.includes(col.id)),
     [columnDefinitions, visibleColumns]
