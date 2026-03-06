@@ -843,13 +843,30 @@ function AttendanceListContent() {
                       </a>
                     </TableCell>
                     <TableCell className="py-3 px-4">
-                      <Checkbox
-                        checked={attendance[student.attendance_key] || false}
-                        onCheckedChange={(checked) =>
-                          handleAttendanceChange(student.attendance_key, checked as boolean)
-                        }
-                        className="h-5 w-5"
-                      />
+                      {(() => {
+                        const hasRecord = Boolean(attendanceIds[student.attendance_key]);
+                        const isPresent = attendance[student.attendance_key] || false;
+
+                        return (
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={isPresent}
+                              onCheckedChange={(checked) =>
+                                handleAttendanceChange(student.attendance_key, checked as boolean)
+                              }
+                              className="h-5 w-5"
+                            />
+
+                            {isPresent ? (
+                              <span className="text-xs font-medium text-green-600">✓ Presente</span>
+                            ) : hasRecord ? (
+                              <span className="text-xs font-medium text-red-600">✕ Inasistencia</span>
+                            ) : (
+                              <span className="text-xs text-gray-500">Sin registrar</span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="py-3 px-4 text-gray-600">
                       <div className="flex items-center gap-1">
