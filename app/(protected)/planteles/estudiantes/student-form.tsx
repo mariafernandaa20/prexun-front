@@ -17,7 +17,6 @@ import {
 } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { addContactToGoogle } from '@/lib/googleContacts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { checkStudentExists } from '@/lib/api';
 import useDebounce from '@/hooks/useDebounce';
@@ -173,35 +172,11 @@ export function StudentForm({
       };
 
       await onSubmit({ ...normalizedFormData, send_whatsapp: sendWhatsAppNotification } as any);
-
-      const accessToken = useAuthStore((state) => state.accessToken);
-
-      if (accessToken) {
-        try {
-          const grupo = grupos.find((g) => g.id === Number(formData.grupo_id));
-          const studentName =
-            `${grupo?.name || ''} ${formData.lastname} ${formData.firstname}`.trim();
-
-          await addContactToGoogle(accessToken, {
-            name: studentName,
-            email: normalizedFormData.email,
-            phone: normalizedFormData.phone,
-            secondaryPhone: normalizedFormData.tutor_phone || undefined,
-          });
-
-          toast({
-            title: 'Estudiante sincronizado con Google Contacts',
-            description: `${studentName} fue añadido a tus contactos`,
-          });
-        } catch (err) {
-          toast({
-            title: 'Error al sincronizar con Google Contacts',
-            description:
-              'El estudiante fue guardado pero no se pudo añadir a tus contactos',
-            variant: 'warning',
-          });
-        }
-      }
+      
+      toast({
+        title: 'Estudiante guardado exitosamente',
+        description: 'La información y los contactos han sido sincronizados en el servidor',
+      });
     } catch (error: any) {
       toast({
         title: 'Error al guardar',
