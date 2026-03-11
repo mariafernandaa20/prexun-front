@@ -21,6 +21,8 @@ import { addContactToGoogle } from '@/lib/googleContacts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { checkStudentExists } from '@/lib/api';
 import useDebounce from '@/hooks/useDebounce';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 import {
   Select,
@@ -498,16 +500,16 @@ export function StudentForm({
 
         <div className="space-y-2">
           <Label htmlFor="phone">Teléfono</Label>
-          <Input
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            required
-            inputMode="numeric"
-            pattern="[0-9]*"
+          <PhoneInput
+            placeholder="Número de teléfono"
+            value={formData.phone ? (formData.phone.startsWith('+') ? formData.phone : `+${formData.phone}`) : ''}
+            onChange={(value) => setFormData(prev => ({ ...prev, phone: value || '' }))}
+            defaultCountry="MX"
+
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
+
         <div className="space-y-2">
           <Label htmlFor="tutor_name">Nombre del tutor</Label>
           <Input
@@ -519,15 +521,16 @@ export function StudentForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="tutor_phone">Teléfono del tutor</Label>
-          <Input
-            id="tutor_phone"
-            name="tutor_phone"
-            value={formData.tutor_phone}
-            onChange={handleChange}
-            inputMode="numeric"
-            pattern="[0-9]*"
+          <PhoneInput
+            placeholder="Teléfono del tutor"
+            value={formData.tutor_phone ? (formData.tutor_phone.startsWith('+') ? formData.tutor_phone : `+${formData.tutor_phone}`) : ''}
+            onChange={(value) => setFormData(prev => ({ ...prev, tutor_phone: value || '' }))}
+            defaultCountry="MX"
+
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
+
         <div className="space-y-2">
           <Label htmlFor="tutor_relationship">Relación con el estudiante</Label>
           <Select
