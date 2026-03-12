@@ -185,8 +185,10 @@ export function StudentForm({
           await addContactToGoogle(accessToken, {
             name: studentName,
             email: normalizedFormData.email,
-            phone: normalizedFormData.phone,
-            secondaryPhone: normalizedFormData.tutor_phone || undefined,
+            phone: formData.phone.startsWith('+') ? formData.phone : `+${formData.phone}`,
+            secondaryPhone: formData.tutor_phone
+              ? (formData.tutor_phone.startsWith('+') ? formData.tutor_phone : `+${formData.tutor_phone}`)
+              : undefined,
           });
 
           toast({
