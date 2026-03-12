@@ -172,11 +172,45 @@ export function StudentForm({
       };
 
       await onSubmit({ ...normalizedFormData, send_whatsapp: sendWhatsAppNotification } as any);
-      
+ metodo-de-ingreso
+
+      const accessToken = useAuthStore((state) => state.accessToken);
+
+      if (accessToken) {
+        try {
+          const grupo = grupos.find((g) => g.id === Number(formData.grupo_id));
+          const studentName =
+            `${grupo?.name || ''} ${formData.lastname} ${formData.firstname}`.trim();
+
+          await addContactToGoogle(accessToken, {
+            name: studentName,
+            email: normalizedFormData.email,
+            phone: formData.phone.startsWith('+') ? formData.phone : `+${formData.phone}`,
+            secondaryPhone: formData.tutor_phone
+              ? (formData.tutor_phone.startsWith('+') ? formData.tutor_phone : `+${formData.tutor_phone}`)
+              : undefined,
+          });
+
+          toast({
+            title: 'Estudiante sincronizado con Google Contacts',
+            description: `${studentName} fue añadido a tus contactos`,
+          });
+        } catch (err) {
+          toast({
+            title: 'Error al sincronizar con Google Contacts',
+            description:
+              'El estudiante fue guardado pero no se pudo añadir a tus contactos',
+            variant: 'warning',
+          });
+        }
+      }
+
+    
       toast({
         title: 'Estudiante guardado exitosamente',
         description: 'La información y los contactos han sido sincronizados en el servidor',
       });
+ master
     } catch (error: any) {
       toast({
         title: 'Error al guardar',
