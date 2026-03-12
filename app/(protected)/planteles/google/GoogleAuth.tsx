@@ -1,131 +1,117 @@
 'use client';
 
-import { useAuthStore } from '@/lib/store/auth-store';
-import { useEffect, useRef, useState } from 'react';
-import { FaGoogle } from 'react-icons/fa6';
+import { useEffect, useState } from 'react';
+import { FaGoogle, FaTrash } from 'react-icons/fa6';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import axiosInstance from '@/lib/api/axiosConfig';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
-const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
-const SCOPES =
-  'https://www.googleapis.com/auth/contacts https://www.googleapis.com/auth/userinfo.email';
+interface GoogleSession {
+  id: number;
+  email: string;
+  updated_at: string;
+}
 
 export default function GoogleAuth() {
-  const tokenClientRef = useRef<any>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
-
-  const handleAuth = (token: string) => {
-    setAccessToken(token);
-    localStorage.setItem('google_access_token', token);
-    setSuccessMessage('Inicio de sesión exitoso ✅');
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('google_access_token');
-    setAccessToken('');
-    setSuccessMessage('');
-  };
+  const { activeCampus } = useActiveCampusStore();
+  const [sessions, setSessions] = useState<GoogleSession[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const token = localStorage.getItem('google_access_token');
-    if (token) {
-      handleAuth(token);
+    if (activeCampus?.id) {
+      fetchSessions();
     }
+  }, [activeCampus?.id]);
 
-    const loadGoogleLibs = async () => {
-      const loadScript = (src: string) =>
-        new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = src;
-          script.async = true;
-          script.defer = true;
-          script.onload = resolve;
-          script.onerror = reject;
-          document.body.appendChild(script);
-        });
-
-      await loadScript('https://accounts.google.com/gsi/client');
-      await loadScript('https://apis.google.com/js/api.js');
-
-      await new Promise((resolve) => {
-        (window as any).gapi.load('client', resolve);
-      });
-
-      await (window as any).gapi.client.init({
-        discoveryDocs: [
-          'https://people.googleapis.com/$discovery/rest?version=v1',
-        ],
-      });
-
-      tokenClientRef.current = (
-        window as any
-      ).google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: (response: any) => {
-          if (response.access_token) {
-            (window as any).gapi.client.setToken(response);
-            handleAuth(response.access_token);
-          }
-        },
-      });
-
-      setIsReady(true);
-    };
-
-    loadGoogleLibs();
-  }, []);
-
-  const handleLogin = () => {
-    tokenClientRef.current?.requestAccessToken();
+  const fetchSessions = async () => {
+    if (!activeCampus?.id) return;
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.get(`/campuses/${activeCampus.id}/google-sessions`);
+      setSessions(response.data);
+    } catch (error) {
+      console.error('Error cargando sesiones de Google:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (!isReady) return null;
+  const handleLinkNewAccount = async () => {
+    if (!activeCampus?.id) return;
+    setIsLinking(true);
+    try {
+      const response = await axiosInstance.get(`/google/auth-url?campus_id=${activeCampus.id}`);
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo generar la URL de vinculación con Google.',
+        variant: 'destructive',
+      });
+      setIsLinking(false);
+    }
+  };
+
+  const handleUnlink = async (sessionId: number) => {
+    try {
+      await axiosInstance.delete(`/google-sessions/${sessionId}`);
+      toast({ title: 'Cuenta desvinculada exitosamente' });
+      fetchSessions();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo desvincular la cuenta.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (!activeCampus) return null;
 
   return (
-    <>
-      {!successMessage && (
-        <button
-          onClick={handleLogin}
-          className="flex items-center gap-2 "
-          style={{
-            backgroundColor: '#fff',
-            color: 'black',
-            border: 'none',
-            borderRadius: '5px',
-            padding: '5px 10px',
-            cursor: 'pointer',
-          }}
-        >
-          <img
-            src="https://developers.google.com/identity/images/g-logo.png"
-            alt="Google logo"
-            style={{ width: '18px', height: '18px' }}
-          />
-          <span>Iniciar sesión con Google</span>
-        </button>
-      )}
-
-      {successMessage && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2"
-            style={{
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              padding: '5px 10px',
-              cursor: 'pointer',
-              marginTop: '10px',
-            }}
+    <div className="flex items-center gap-2">
+      {isLoading ? (
+        <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+      ) : (
+        sessions.map((session) => (
+          <div
+            key={session.id}
+            className="flex items-center gap-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-3 py-1.5 rounded-full text-sm font-medium border border-green-200 dark:border-green-800"
+            title="Sincronización de contactos activa"
           >
-            <FaGoogle />
-            Cerrar sesión
-          </button>
-        </div>
+            <FaGoogle className="w-3.5 h-3.5" />
+            <span className="max-w-[120px] truncate">{session.email}</span>
+            <button
+              onClick={() => handleUnlink(session.id)}
+              className="ml-1 text-green-600 hover:text-red-500 dark:text-green-400 dark:hover:text-red-400 transition-colors"
+              title="Desvincular cuenta"
+            >
+              <FaTrash className="w-3 h-3" />
+            </button>
+          </div>
+        ))
       )}
-    </>
+      
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleLinkNewAccount}
+        disabled={isLinking || isLoading}
+        className="h-8 shadow-sm flex items-center gap-2"
+      >
+        {isLinking ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : (
+          <FaGoogle className="w-3.5 h-3.5 text-blue-500" />
+        )}
+        <span className="hidden sm:inline">Vincular cuenta</span>
+      </Button>
+    </div>
   );
 }

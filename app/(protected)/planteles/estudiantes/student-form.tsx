@@ -17,7 +17,6 @@ import {
 } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { addContactToGoogle } from '@/lib/googleContacts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { checkStudentExists } from '@/lib/api';
 import useDebounce from '@/hooks/useDebounce';
@@ -173,6 +172,7 @@ export function StudentForm({
       };
 
       await onSubmit({ ...normalizedFormData, send_whatsapp: sendWhatsAppNotification } as any);
+ metodo-de-ingreso
 
       const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -204,6 +204,13 @@ export function StudentForm({
           });
         }
       }
+
+    
+      toast({
+        title: 'Estudiante guardado exitosamente',
+        description: 'La información y los contactos han sido sincronizados en el servidor',
+      });
+ master
     } catch (error: any) {
       toast({
         title: 'Error al guardar',
