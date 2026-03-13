@@ -94,6 +94,7 @@ export const API_ENDPOINTS = {
   BULK_CREATE_STUDENT_ASSIGNMENTS: '/student-assignments/bulk',
   BULK_UPDATE_STUDENT_ASSIGNMENTS: '/student-assignments/bulk',
   TOGGLE_STUDENT_ASSIGNMENT_ACTIVE: '/student-assignments',
+  RESYNC_STUDENT_ASSIGNMENT_MOODLE: '/student-assignments',
   // Notes
   NOTES: '/notes',
   CREATE_NOTE: '/notes',

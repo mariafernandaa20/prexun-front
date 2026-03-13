@@ -46,6 +46,7 @@ import {
   Clock,
   BookOpen,
   Package,
+  RefreshCw,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
@@ -64,6 +65,7 @@ import {
   updateStudentAssignment,
   deleteStudentAssignment,
   toggleStudentAssignmentActive,
+  resyncStudentAssignmentMoodle,
 } from '@/lib/api';
 import SearchableSelect from '@/components/SearchableSelect';
 import StudentGrades from '@/components/students/StudentGrades';
@@ -105,6 +107,7 @@ export default function StudentPeriod({
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [resyncingAssignmentId, setResyncingAssignmentId] = useState<number | null>(null);
   const [editingAssignment, setEditingAssignment] =
     useState<StudentAssignment | null>(null);
   const [formData, setFormData] = useState<AssignmentFormData>({
@@ -325,6 +328,25 @@ export default function StudentPeriod({
         description: error.response?.data?.message || 'Intente nuevamente',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleResyncToMoodle = async (assignmentId: number) => {
+    try {
+      setResyncingAssignmentId(assignmentId);
+      await resyncStudentAssignmentMoodle(assignmentId);
+      toast({
+        title: 'Reasignación enviada',
+        description: 'La asignación se reenvió a Moodle correctamente',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error al reenviar a Moodle',
+        description: error.response?.data?.message || 'Intente nuevamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setResyncingAssignmentId(null);
     }
   };
 
@@ -759,6 +781,15 @@ export default function StudentPeriod({
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleResyncToMoodle(assignment.id!)}
+                              disabled={resyncingAssignmentId === assignment.id}
+                              className="h-8 w-8 p-0"
+                            >
+                              <RefreshCw className={`h-4 w-4 ${resyncingAssignmentId === assignment.id ? 'animate-spin' : ''}`} />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"

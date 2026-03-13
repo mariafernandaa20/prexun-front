@@ -8,7 +8,7 @@ import { Pencil, Trash2, Eye, MessageSquare, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { User } from '@/lib/types';
 import AdeudosModal from '@/components/dashboard/AdeudosModal';
-import StudentPeriod from './student-period';
+import StudentPeriod from './student-assignment';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const StudentPeriodDialog = ({ student }: { student: Student }) => {

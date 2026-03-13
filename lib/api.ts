@@ -818,6 +818,13 @@ export const toggleStudentAssignmentActive = async (id: number) => {
   return response.data;
 };
 
+export const resyncStudentAssignmentMoodle = async (id: number) => {
+  const response = await axiosInstance.post(
+    `${API_ENDPOINTS.RESYNC_STUDENT_ASSIGNMENT_MOODLE}/${id}/resync-moodle`
+  );
+  return response.data;
+};
+
 // Site Settings API
 export const getSiteSettings = async () => {
   const response = await axiosInstance.get('/site-settings');

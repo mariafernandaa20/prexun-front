@@ -37,8 +37,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/lib/store/auth-store';
 import SearchableSelect from '@/components/SearchableSelect';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
-import StudentPeriod from './student-period';
+import StudentPeriod from './student-assignment';
 import { StudentTagsSelector } from '@/components/students/StudentTagsSelector';
+import { addContactToGoogle } from '@/lib/googleContacts';
 
 interface StudentFormProps {
   student?: Student | null;
@@ -172,8 +173,6 @@ export function StudentForm({
       };
 
       await onSubmit({ ...normalizedFormData, send_whatsapp: sendWhatsAppNotification } as any);
- metodo-de-ingreso
-
       const accessToken = useAuthStore((state) => state.accessToken);
 
       if (accessToken) {
@@ -210,7 +209,6 @@ export function StudentForm({
         title: 'Estudiante guardado exitosamente',
         description: 'La información y los contactos han sido sincronizados en el servidor',
       });
- master
     } catch (error: any) {
       toast({
         title: 'Error al guardar',

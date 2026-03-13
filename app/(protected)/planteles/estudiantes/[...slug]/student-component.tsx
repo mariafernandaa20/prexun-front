@@ -26,7 +26,7 @@ import UpdatePersonalInfo from '@/components/dashboard/UpdatePersonalInfo';
 import UpdatePassword from '@/components/dashboard/UpdatePassword';
 import axiosInstance from '@/lib/api/axiosConfig';
 import SectionContainer from '@/components/SectionContainer';
-import StudentPeriod from '../student-period';
+import StudentAssignment from '../student-assignment';
 import StudentLogs from './StudentLogs';
 import StudentNotes from './StudentNotes';
 import StudentDebtsManager from '@/components/dashboard/estudiantes/StudentDebtsManager';
@@ -502,7 +502,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
         <TabsContent value="asignacion" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className='col-span-2 flex-col flex gap-4'>
-              <StudentPeriod student={student} onRefresh={refetch} />
+              <StudentAssignment student={student} onRefresh={refetch} />
               <StudentGrades studentId={student.id} />
 
             </div>
