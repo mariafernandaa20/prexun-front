@@ -17,6 +17,14 @@ import { Transaction } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { Pencil } from 'lucide-react';
+import { useAuthStore } from '@/lib/store/auth-store';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface EditarFolioProps {
   transaction: Transaction;
@@ -34,6 +42,8 @@ export default function EditarFolio({
       ? String(transaction.amount)
       : ''
   );
+  const [paymentMethod, setPaymentMethod] = useState(transaction.payment_method || 'cash');
+  const { user } = useAuthStore();
   const [paymentDate, setPaymentDate] = useState(() => {
     if (!transaction.payment_date) return '';
     const date = new Date(transaction.payment_date);
@@ -135,6 +145,35 @@ export default function EditarFolio({
       setLoading(false);
     }
   };
+
+  const handleSubmitPaymentMethod = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await axiosInstance.put(`/charges/${transaction.id}`, {
+        payment_method: paymentMethod,
+      });
+
+      toast({
+        title: 'Método de pago actualizado',
+        description: `El método de pago se actualizó correctamente.`,
+        variant: 'default',
+      });
+
+      setOpen(false);
+      onSuccess();
+    } catch (error) {
+      console.error('Error al actualizar el método de pago:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar el método de pago.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -173,6 +212,38 @@ export default function EditarFolio({
             </Button>
           </DialogFooter>
         </form>
+
+        {(user?.role === 'super_admin' || user?.role === 'contador' || user?.role === 'contadora') && (
+          <form onSubmit={handleSubmitPaymentMethod}>
+            <div className="grid gap-2 py-4 border-t">
+              <div className="grid grid-cols-4 items-center gap-2">
+                <Label htmlFor="payment_method" className="text-right">
+                  Método Pago
+                </Label>
+                <div className="col-span-3">
+                  <Select
+                    value={paymentMethod}
+                    onValueChange={(val) => setPaymentMethod(val as any)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar método" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Efectivo</SelectItem>
+                      <SelectItem value="transfer">Transferencia</SelectItem>
+                      <SelectItem value="card">Tarjeta</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Guardando...' : 'Guardar método'}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
         <form onSubmit={handleSubmitDate}>
           <div className="grid gap-2 py-4 border-t mt-4"> {/* Agregué un borde para separar */}
             <div className="grid grid-cols-4 items-center gap-2">
