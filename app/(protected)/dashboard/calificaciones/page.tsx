@@ -3,14 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import {
     Select,
     SelectContent,
     SelectItem,
@@ -19,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
-import { Loader2, ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { getGrupos } from '@/lib/api';
 import { Grupo } from '@/lib/types';
@@ -49,12 +41,8 @@ export default function CalificacionesPage() {
     const [grades, setGrades] = useState<Record<string | number, Grade[]>>({});
     const [loadingGrupos, setLoadingGrupos] = useState(true);
     const [loadingEstudiantes, setLoadingEstudiantes] = useState(false);
-    const [expandedStudents, setExpandedStudents] = useState<Record<string | number, boolean>>({});
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
-
-    const toggleStudent = (id: string | number) => {
-        setExpandedStudents(prev => ({ ...prev, [id]: !prev[id] }));
-    };
 
     useEffect(() => {
         const fetchGrupos = async () => {
@@ -74,40 +62,19 @@ export default function CalificacionesPage() {
     useEffect(() => {
         if (!selectedGrupoId) return;
 
-        const fetchStudentsAndGrades = async () => {
+        const fetchStudents = async () => {
             setLoadingEstudiantes(true);
             setStudents([]);
             setGrades({});
+            setSelectedStudent(null);
 
             try {
                 const studentsRes = await axiosInstance.get(`/grupos/${selectedGrupoId}/students`);
                 const studentsData: Student[] = studentsRes.data;
                 setStudents(studentsData);
 
-                const gradesData: Record<string | number, Grade[]> = {};
-
-                await Promise.all(
-                    studentsData.map(async (student) => {
-                        try {
-                            const gradesRes = await axiosInstance.get(`/students/${student.id}/grades`);
-                            const gr = gradesRes.data;
-
-                            if (Array.isArray(gr)) {
-                                gradesData[student.id] = gr;
-                            } else if (gr && Array.isArray(gr.grades)) {
-                                gradesData[student.id] = gr.grades;
-                            } else if (gr && gr.data && Array.isArray(gr.data.grades)) {
-                                gradesData[student.id] = gr.data.grades;
-                            } else {
-                                gradesData[student.id] = [];
-                            }
-                        } catch (err) {
-                            console.error(`Error con alumno ${student.id}:`, err);
-                            gradesData[student.id] = [];
-                        }
-                    })
-                );
-                setGrades(gradesData);
+                // Fetch grades in background
+                fetchGradesInBackground(studentsData);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -115,7 +82,34 @@ export default function CalificacionesPage() {
             }
         };
 
-        fetchStudentsAndGrades();
+        const fetchGradesInBackground = async (studentsData: Student[]) => {
+            const gradesData: Record<string | number, Grade[]> = {};
+
+            await Promise.all(
+                studentsData.map(async (student) => {
+                    try {
+                        const gradesRes = await axiosInstance.get(`/students/${student.id}/grades`);
+                        const gr = gradesRes.data;
+
+                        if (Array.isArray(gr)) {
+                            gradesData[student.id] = gr;
+                        } else if (gr && Array.isArray(gr.grades)) {
+                            gradesData[student.id] = gr.grades;
+                        } else if (gr && gr.data && Array.isArray(gr.data.grades)) {
+                            gradesData[student.id] = gr.data.grades;
+                        } else {
+                            gradesData[student.id] = [];
+                        }
+                    } catch (err) {
+                        console.error(`Error con alumno ${student.id}:`, err);
+                        gradesData[student.id] = [];
+                    }
+                })
+            );
+            setGrades(gradesData);
+        };
+
+        fetchStudents();
     }, [selectedGrupoId]);
 
     const filteredStudents = students.filter(student => {
@@ -124,6 +118,26 @@ export default function CalificacionesPage() {
         const matricula = String(student.matricula || student.id).toLowerCase();
         return fullName.includes(query) || matricula.includes(query);
     });
+
+    const getStudentAverage = (student: Student): string | number => {
+        if (!(student.id in grades)) return 'Cargando...';
+
+        const studentGrades = grades[student.id] || [];
+        if (studentGrades.length === 0) return 'N/A';
+
+        const validGrades = studentGrades.filter(g => {
+            const val = g.final_grade ?? g.rawgrade ?? g.grade;
+            return String(val).trim() !== '-' && val !== null && val !== undefined && String(val).trim() !== '';
+        });
+
+        if (validGrades.length === 0) return 'N/A';
+
+        const sum = validGrades.reduce((acc, g) => {
+            const val = g.final_grade ?? g.rawgrade ?? String(g.grade).replace(/[^0-9.]/g, '');
+            return acc + (Number(val) || 0);
+        }, 0);
+        return (sum / validGrades.length).toFixed(2);
+    };
 
     return (
         <div className="w-full flex-1 min-w-0 p-4 space-y-6">
@@ -172,121 +186,112 @@ export default function CalificacionesPage() {
             </Card>
 
             {selectedGrupoId && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Alumnos y Notas</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loadingEstudiantes ? (
-                            <div className="flex justify-center items-center p-8">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mr-2" />
-                                <span className="text-muted-foreground">Cargando datos...</span>
-                            </div>
-                        ) : students.length === 0 ? (
-                            <Alert>
-                                <AlertDescription>No hay alumnos inscritos.</AlertDescription>
-                            </Alert>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[40px]"></TableHead>
-                                            <TableHead>Matrícula</TableHead>
-                                            <TableHead>Nombre del Alumno</TableHead>
-                                            <TableHead className="text-right">Promedio Final</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {filteredStudents.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={4} className="h-24 text-center">
-                                                    No se encontraron resultados.
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : filteredStudents.map((student) => {
-                                            const studentGrades = grades[student.id] || [];
-                                            const isExpanded = !!expandedStudents[student.id];
+                <div className="flex gap-4 h-[600px]">
+                    {/* Tabla de estudiantes a la izquierda */}
+                    <Card className="flex-1 flex flex-col">
+                        <CardHeader>
+                            <CardTitle>Alumnos y Notas</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-1 overflow-y-auto">
+                            {loadingEstudiantes ? (
+                                <div className="flex justify-center items-center p-8">
+                                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mr-2" />
+                                    <span className="text-muted-foreground">Cargando datos...</span>
+                                </div>
+                            ) : students.length === 0 ? (
+                                <Alert>
+                                    <AlertDescription>No hay alumnos inscritos.</AlertDescription>
+                                </Alert>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full caption-bottom text-sm">
+                                        <thead className="[&_tr]:border-b">
+                                            <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">Matrícula</th>
+                                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">Nombre del Alumno</th>
+                                                <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">Promedio Final</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="[&_tr:last-child]:border-0">
+                                            {filteredStudents.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={3} className="h-24 text-center">
+                                                        No se encontraron resultados.
+                                                    </td>
+                                                </tr>
+                                            ) : filteredStudents.map((student) => {
+                                                const average = getStudentAverage(student);
+                                                const isSelected = selectedStudent?.id === student.id;
 
-                                            let average: string | number = 'N/A';
-                                            if (studentGrades.length > 0) {
-                                                const validGrades = studentGrades.filter(g => {
-                                                    const val = g.final_grade ?? g.rawgrade ?? g.grade;
-                                                    return String(val).trim() !== '-' && val !== null && val !== undefined && String(val).trim() !== '';
-                                                });
-
-                                                if (validGrades.length > 0) {
-                                                    const sum = validGrades.reduce((acc, g) => {
-                                                        const val = g.final_grade ?? g.rawgrade ?? String(g.grade).replace(/[^0-9.]/g, '');
-                                                        return acc + (Number(val) || 0);
-                                                    }, 0);
-                                                    average = (sum / validGrades.length).toFixed(2);
-                                                }
-                                            }
-
-                                            return (
-                                                <React.Fragment key={student.id}>
-                                                    <TableRow
-                                                        className="cursor-pointer hover:bg-muted/50 transition-colors"
-                                                        onClick={() => toggleStudent(student.id)}
+                                                return (
+                                                    <tr
+                                                        key={student.id}
+                                                        className={`cursor-pointer border-b transition-colors ${
+                                                            isSelected
+                                                                ? 'bg-primary/10 border-primary'
+                                                                : 'hover:bg-muted/50'
+                                                        }`}
+                                                        onClick={() => setSelectedStudent(student)}
                                                     >
-                                                        <TableCell>
-                                                            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                                        </TableCell>
-                                                        <TableCell className="font-medium text-xs text-muted-foreground">
+                                                        <td className="p-4 align-middle font-medium text-xs text-muted-foreground">
                                                             {student.matricula || student.id || '-'}
-                                                        </TableCell>
-                                                        <TableCell className="font-medium">
+                                                        </td>
+                                                        <td className="p-4 align-middle font-medium">
                                                             {student.firstname} {student.lastname}
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            <span className={`px-3 py-1 rounded-md font-bold ${average !== 'N/A' && Number(average) < 60 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-800'}`}>
+                                                        </td>
+                                                        <td className="p-4 align-middle text-right">
+                                                            <span className={`px-3 py-1 rounded-md font-bold ${
+                                                                average !== 'N/A' && Number(average) < 60
+                                                                    ? 'bg-red-100 text-red-700'
+                                                                    : 'bg-gray-100 text-gray-800'
+                                                            }`}>
                                                                 {average}
                                                             </span>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                    {isExpanded && (
-                                                        <TableRow className="bg-muted/20">
-                                                            <TableCell colSpan={4} className="p-0 border-b-0">
-                                                                <div className="p-4 px-12">
-                                                                    <div className="rounded-xl border bg-card shadow-sm">
-                                                                        <div className="p-4 font-semibold border-b bg-muted/40 flex justify-between">
-                                                                            <span>Materias y Calificaciones</span>
-                                                                        </div>
-                                                                        <div className="p-5">
-                                                                            {studentGrades.length > 0 ? (
-                                                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                                                                    {studentGrades.map((g, idx) => {
-                                                                                        const name = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
-                                                                                        const val = g.final_grade ?? g.rawgrade ?? g.grade ?? 'N/A';
-                                                                                        return (
-                                                                                            <div key={idx} className="flex justify-between items-center py-2 border-b last:border-0">
-                                                                                                <span className="text-sm truncate mr-4">{name}</span>
-                                                                                                <span className="px-2 py-1 text-xs rounded-md font-bold border bg-background">
-                                                                                                    {val === '-' ? 'N/A' : val}
-                                                                                                </span>
-                                                                                            </div>
-                                                                                        );
-                                                                                    })}
-                                                                                </div>
-                                                                            ) : (
-                                                                                <div className="text-center py-4 text-muted-foreground">Sin notas.</div>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    )}
-                                                </React.Fragment>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Detalles de calificaciones a la derecha */}
+                    {selectedStudent && (
+                        <Card className="w-1/3 flex flex-col">
+                            <CardHeader>
+                                <CardTitle>
+                                    Calificaciones de {selectedStudent.firstname} {selectedStudent.lastname}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex-1 overflow-y-auto">
+                                {(() => {
+                                    const studentGrades = grades[selectedStudent.id] || [];
+                                    return studentGrades.length > 0 ? (
+                                        <div className="space-y-4">
+                                            {studentGrades.map((g, idx) => {
+                                                const name = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+                                                const val = g.final_grade ?? g.rawgrade ?? g.grade ?? 'N/A';
+                                                return (
+                                                    <div key={idx} className="flex justify-between items-center py-3 px-4 border rounded-lg bg-card">
+                                                        <span className="text-sm font-medium truncate mr-4">{name}</span>
+                                                        <span className="px-3 py-1 text-sm rounded-md font-bold border bg-background">
+                                                            {val === '-' ? 'N/A' : val}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-muted-foreground">Sin notas disponibles.</div>
+                                    );
+                                })()}
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
             )}
         </div>
     );
