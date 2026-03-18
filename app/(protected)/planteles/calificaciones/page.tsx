@@ -98,6 +98,8 @@ export default function CalificacionesPage() {
                 const response = await getGrupos();
                 const gruposOrdenados = response.sort((a, b) => a.name.localeCompare(b.name));
                 setGrupos(gruposOrdenados);
+                console.log('All grupos loaded:', gruposOrdenados.length);
+                console.log('First few grupos:', gruposOrdenados.slice(0, 5));
                 setIsInitialized(true);
             } catch (error) {
                 console.error('Error cargando grupos:', error);
@@ -145,7 +147,10 @@ export default function CalificacionesPage() {
     }, [isInitialized, planteles, periodos, grupos]);
 
     useEffect(() => {
-        if (!selectedGrupoId) return;
+        if (!selectedPlantelId) return;
+
+        console.log('Selected plantel changed:', selectedPlantelId);
+        console.log('Filtered grupos available:', filteredGrupos.length);
 
         const fetchStudents = async () => {
             setLoadingEstudiantes(true);
@@ -154,9 +159,14 @@ export default function CalificacionesPage() {
             setSelectedStudent(null);
 
             try {
-                console.log('Fetching students for grupo:', selectedGrupoId);
-                const studentsRes = await axiosInstance.get(`/grupos/${selectedGrupoId}/students`);
+                console.log('Fetching all students for plantel:', selectedPlantelId);
+                // Cargar todos los estudiantes del plantel
+                const studentsRes = await axiosInstance.get('/students', {
+                    params: { campus_id: selectedPlantelId }
+                });
                 console.log('Students response:', studentsRes.data);
+                console.log('Students response status:', studentsRes.status);
+                console.log('Students response headers:', studentsRes.headers);
                 
                 let studentsData: Student[] = [];
                 
@@ -170,6 +180,7 @@ export default function CalificacionesPage() {
                 }
                 
                 console.log('Processed students:', studentsData.length);
+                console.log('First few students:', studentsData.slice(0, 3));
                 setStudents(studentsData);
 
                 // Fetch grades in background
@@ -178,6 +189,7 @@ export default function CalificacionesPage() {
                 }
             } catch (error) {
                 console.error('Error fetching students:', error);
+                console.error('Error details:', error.response?.data || error.message);
                 setStudents([]);
             } finally {
                 setLoadingEstudiantes(false);
@@ -190,18 +202,36 @@ export default function CalificacionesPage() {
             await Promise.all(
                 studentsData.map(async (student) => {
                     try {
+                        console.log(`Fetching grades for student ${student.id} (${student.firstname} ${student.lastname})`);
                         const gradesRes = await axiosInstance.get(`/students/${student.id}/grades`);
+                        console.log(`Raw grades response for student ${student.id}:`, gradesRes.data);
                         const gr = gradesRes.data;
 
+                        let processedGrades: Grade[] = [];
+                        
                         if (Array.isArray(gr)) {
-                            gradesData[student.id] = gr;
+                            processedGrades = gr;
+                            console.log(`Student ${student.id}: Found ${gr.length} grades (array format)`);
                         } else if (gr && Array.isArray(gr.grades)) {
-                            gradesData[student.id] = gr.grades;
+                            processedGrades = gr.grades;
+                            console.log(`Student ${student.id}: Found ${gr.grades.length} grades (gr.grades format)`);
                         } else if (gr && gr.data && Array.isArray(gr.data.grades)) {
-                            gradesData[student.id] = gr.data.grades;
+                            processedGrades = gr.data.grades;
+                            console.log(`Student ${student.id}: Found ${gr.data.grades.length} grades (gr.data.grades format)`);
+                        } else if (gr && gr.data && Array.isArray(gr.data)) {
+                            processedGrades = gr.data;
+                            console.log(`Student ${student.id}: Found ${gr.data.length} grades (gr.data array format)`);
                         } else {
-                            gradesData[student.id] = [];
+                            console.warn(`Student ${student.id}: Unknown grades format:`, gr);
+                            processedGrades = [];
                         }
+                        
+                        // Log first few grades for debugging
+                        if (processedGrades.length > 0) {
+                            console.log(`Student ${student.id} first 3 grades:`, processedGrades.slice(0, 3));
+                        }
+                        
+                        gradesData[student.id] = processedGrades;
                     } catch (err) {
                         console.error(`Error con alumno ${student.id}:`, err);
                         gradesData[student.id] = [];
@@ -212,24 +242,54 @@ export default function CalificacionesPage() {
         };
 
         fetchStudents();
-    }, [selectedGrupoId]);
+    }, [selectedPlantelId]);
 
     const filteredGrupos = selectedPlantelId && selectedPeriodoId
         ? grupos.filter(grupo => grupo.plantel_id === parseInt(selectedPlantelId) && grupo.period_id === parseInt(selectedPeriodoId))
         : [];
 
+    console.log('Filtered grupos:', filteredGrupos.length, 'for plantel:', selectedPlantelId, 'periodo:', selectedPeriodoId);
+
     const filteredStudents = students.filter(student => {
+        // Primero filtrar por búsqueda de texto
         const query = searchQuery.toLowerCase();
         const fullName = `${student.firstname} ${student.lastname}`.toLowerCase();
         const matricula = String(student.matricula || student.id).toLowerCase();
-        return fullName.includes(query) || matricula.includes(query);
+        const matchesSearch = fullName.includes(query) || matricula.includes(query);
+        
+        // Si hay un grupo seleccionado, filtrar también por grupo
+        if (selectedGrupoId) {
+            // Aquí necesitaríamos verificar si el estudiante pertenece al grupo seleccionado
+            // Por ahora, mostramos todos los estudiantes del plantel cuando hay grupo seleccionado
+            // pero podríamos agregar lógica adicional si tenemos la información de asignación
+        }
+        
+        return matchesSearch;
     });
 
     const getStudentAverage = (student: Student): string | number => {
         if (!(student.id in grades)) return 'Cargando...';
 
         const studentGrades = grades[student.id] || [];
-        if (studentGrades.length === 0) return 'N/A';
+        console.log(`Calculando promedio para ${student.firstname} ${student.lastname} (ID: ${student.id})`);
+        console.log(`Total de calificaciones encontradas: ${studentGrades.length}`);
+        
+        if (studentGrades.length === 0) {
+            console.log(`No hay calificaciones para ${student.firstname}`);
+            return 'N/A';
+        }
+
+        // Log de todas las calificaciones para debugging
+        studentGrades.forEach((g, index) => {
+            console.log(`Calificación ${index + 1}:`, {
+                course_name: g.course_name,
+                course_fullname: g.course_fullname,
+                name: g.name,
+                final_grade: g.final_grade,
+                rawgrade: g.rawgrade,
+                grade: g.grade
+            });
+        });
 
         // Filtrar y convertir valores válidos a números
         const validGrades: number[] = [];
@@ -241,23 +301,37 @@ export default function CalificacionesPage() {
                     : g.grade !== undefined && g.grade !== null ? g.grade 
                     : null;
             
-            if (val === null || val === undefined) return;
+            console.log(`Procesando calificación - Materia: ${g.course_name || g.course_fullname || g.name}, Valor extraído: ${val}`);
+            
+            if (val === null || val === undefined) {
+                console.log(`Valor nulo/undefined, saltando`);
+                return;
+            }
             
             // Convertir a número
             const numVal = typeof val === 'number' ? val : Number(String(val).trim());
+            console.log(`Convertido a número: ${numVal}`);
             
             // Validar que sea un número válido y no sea -1 (valor de error común)
             if (!isNaN(numVal) && numVal >= 0) {
                 validGrades.push(numVal);
+                console.log(`Calificación válida agregada: ${numVal}`);
+            } else {
+                console.log(`Calificación inválida descartada: ${numVal}`);
             }
         });
 
-        if (validGrades.length === 0) return 'N/A';
+        console.log(`Calificaciones válidas encontradas: ${validGrades.length} de ${studentGrades.length}`);
+        
+        if (validGrades.length === 0) {
+            console.log(`No hay calificaciones válidas para ${student.firstname}`);
+            return 'N/A';
+        }
 
         const sum = validGrades.reduce((acc, val) => acc + val, 0);
         const average = sum / validGrades.length;
         
-        console.log(`Promedio de ${student.firstname}: ${average.toFixed(2)} (${validGrades.length} de ${studentGrades.length} calificaciones)`);
+        console.log(`Promedio calculado para ${student.firstname}: ${average.toFixed(2)} (suma: ${sum}, calificaciones válidas: ${validGrades.length})`);
         
         return average.toFixed(2);
     };
@@ -268,9 +342,11 @@ export default function CalificacionesPage() {
                 <h1 className="text-3xl font-bold">Calificaciones por Plantel y Período</h1>
             </div>
 
+          
+
             <Card>
                 <CardHeader>
-                    <CardTitle>Selecciona Plantel, Período y Grupo</CardTitle>
+                    <CardTitle>Selecciona Plantel</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -384,6 +460,10 @@ export default function CalificacionesPage() {
                                 <Alert>
                                     <AlertDescription>
                                         No hay alumnos inscritos en este grupo. Verifica que el grupo tenga estudiantes asignados.
+                                        <br />
+                                        <strong>Grupo seleccionado:</strong> {filteredGrupos.find(g => g.id?.toString() === selectedGrupoId)?.name || 'Desconocido'}
+                                        <br />
+                                        <strong>ID del grupo:</strong> {selectedGrupoId}
                                     </AlertDescription>
                                 </Alert>
                             ) : (
