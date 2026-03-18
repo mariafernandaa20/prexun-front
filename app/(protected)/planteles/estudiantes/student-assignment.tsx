@@ -563,12 +563,18 @@ export default function StudentPeriod({
                                 ? ` (${facultades.find((f) => f.id === carrera.facultad_id)?.name || ''})`
                                 : ''),
                           }))}
-                          value={formData.carrer_id?.toString() || ''}
+                          value={
+                            formData.carrer_id !== null &&
+                            formData.carrer_id !== undefined
+                              ? formData.carrer_id.toString()
+                              : null
+                          }
                           placeholder="Seleccionar carrera (opcional)"
                           onChange={(value) =>
-                            handleInputChange(
-                              'carrer_id',
-                              value === '' ? null : parseInt(value)
+                            handleInputChange('carrer_id',
+                              value !== null && value !== ''
+                                ? Number.parseInt(value, 10)
+                                : null
                             )
                           }
                           showAllOption={true}
