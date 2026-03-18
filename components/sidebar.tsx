@@ -157,11 +157,7 @@ export const data = {
       url: '/dashboard/planteles',
       icon: Building,
     },
-    {
-      name: 'Calificaciones',
-      url: '/dashboard/calificaciones',
-      icon: BookOpen,
-    },
+ 
     {
       name: 'Usuarios',
       url: '/dashboard/usuarios',
@@ -229,6 +225,11 @@ export const data = {
       name: 'Caja',
       url: '/planteles/caja',
       icon: CreditCard,
+    },
+       {
+      name: 'Calificaciones',
+      url: '/planteles/calificaciones',
+      icon: BookOpen,
     },
     {
       name: 'Estudiantes',

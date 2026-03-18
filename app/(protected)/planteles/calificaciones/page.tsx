@@ -13,8 +13,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Loader2, Search } from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
-import { getGrupos } from '@/lib/api';
-import { Grupo } from '@/lib/types';
+import { getGrupos, getCampuses, getPeriods } from '@/lib/api';
+import { Grupo, Campus, Period } from '@/lib/types';
 
 interface Student {
     id: number | string;
@@ -35,14 +35,62 @@ interface Grade {
 }
 
 export default function CalificacionesPage() {
+    const [isMounted, setIsMounted] = useState(false);
+    
+    const [planteles, setPlanteles] = useState<Campus[]>([]);
+    const [selectedPlantelId, setSelectedPlantelId] = useState<string>('');
+    const [periodos, setPeriodos] = useState<Period[]>([]);
+    const [selectedPeriodoId, setSelectedPeriodoId] = useState<string>('');
     const [grupos, setGrupos] = useState<Grupo[]>([]);
     const [selectedGrupoId, setSelectedGrupoId] = useState<string>('');
     const [students, setStudents] = useState<Student[]>([]);
     const [grades, setGrades] = useState<Record<string | number, Grade[]>>({});
-    const [loadingGrupos, setLoadingGrupos] = useState(true);
+    const [loadingPlanteles, setLoadingPlanteles] = useState(true);
+    const [loadingPeriodos, setLoadingPeriodos] = useState(true);
     const [loadingEstudiantes, setLoadingEstudiantes] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    // Montar componente y recuperar valores del localStorage
+    useEffect(() => {
+        setIsMounted(true);
+        const plantelId = localStorage.getItem('calificaciones_plantelId') || '';
+        const periodoId = localStorage.getItem('calificaciones_periodoId') || '';
+        const grupoId = localStorage.getItem('calificaciones_grupoId') || '';
+        
+        setSelectedPlantelId(plantelId);
+        setSelectedPeriodoId(periodoId);
+        setSelectedGrupoId(grupoId);
+    }, []);
+
+    useEffect(() => {
+        const fetchPlanteles = async () => {
+            try {
+                const response = await getCampuses();
+                setPlanteles(response);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoadingPlanteles(false);
+            }
+        };
+        fetchPlanteles();
+    }, []);
+
+    useEffect(() => {
+        const fetchPeriodos = async () => {
+            try {
+                const response = await getPeriods();
+                setPeriodos(response);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoadingPeriodos(false);
+            }
+        };
+        fetchPeriodos();
+    }, []);
 
     useEffect(() => {
         const fetchGrupos = async () => {
@@ -50,14 +98,51 @@ export default function CalificacionesPage() {
                 const response = await getGrupos();
                 const gruposOrdenados = response.sort((a, b) => a.name.localeCompare(b.name));
                 setGrupos(gruposOrdenados);
+                setIsInitialized(true);
             } catch (error) {
-                console.error(error);
-            } finally {
-                setLoadingGrupos(false);
+                console.error('Error cargando grupos:', error);
+                setIsInitialized(true);
             }
         };
         fetchGrupos();
     }, []);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('calificaciones_plantelId', selectedPlantelId);
+        }
+    }, [selectedPlantelId]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('calificaciones_periodoId', selectedPeriodoId);
+        }
+    }, [selectedPeriodoId]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('calificaciones_grupoId', selectedGrupoId);
+        }
+    }, [selectedGrupoId]);
+
+    useEffect(() => {
+        if (!isInitialized) return;
+        
+        if (selectedPlantelId && !planteles.find(p => p.id?.toString() === selectedPlantelId)) {
+            setSelectedPlantelId('');
+            localStorage.removeItem('calificaciones_plantelId');
+        }
+        
+        if (selectedPeriodoId && !periodos.find(p => p.id === selectedPeriodoId)) {
+            setSelectedPeriodoId('');
+            localStorage.removeItem('calificaciones_periodoId');
+        }
+        
+        if (selectedGrupoId && !grupos.find(g => g.id?.toString() === selectedGrupoId)) {
+            setSelectedGrupoId('');
+            localStorage.removeItem('calificaciones_grupoId');
+        }
+    }, [isInitialized, planteles, periodos, grupos]);
 
     useEffect(() => {
         if (!selectedGrupoId) return;
@@ -69,14 +154,31 @@ export default function CalificacionesPage() {
             setSelectedStudent(null);
 
             try {
+                console.log('Fetching students for grupo:', selectedGrupoId);
                 const studentsRes = await axiosInstance.get(`/grupos/${selectedGrupoId}/students`);
-                const studentsData: Student[] = studentsRes.data;
+                console.log('Students response:', studentsRes.data);
+                
+                let studentsData: Student[] = [];
+                
+                // Handle different response formats
+                if (Array.isArray(studentsRes.data)) {
+                    studentsData = studentsRes.data;
+                } else if (studentsRes.data?.data && Array.isArray(studentsRes.data.data)) {
+                    studentsData = studentsRes.data.data;
+                } else if (studentsRes.data?.students && Array.isArray(studentsRes.data.students)) {
+                    studentsData = studentsRes.data.students;
+                }
+                
+                console.log('Processed students:', studentsData.length);
                 setStudents(studentsData);
 
                 // Fetch grades in background
-                fetchGradesInBackground(studentsData);
+                if (studentsData.length > 0) {
+                    fetchGradesInBackground(studentsData);
+                }
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching students:', error);
+                setStudents([]);
             } finally {
                 setLoadingEstudiantes(false);
             }
@@ -112,6 +214,10 @@ export default function CalificacionesPage() {
         fetchStudents();
     }, [selectedGrupoId]);
 
+    const filteredGrupos = selectedPlantelId && selectedPeriodoId
+        ? grupos.filter(grupo => grupo.plantel_id === parseInt(selectedPlantelId) && grupo.period_id === parseInt(selectedPeriodoId))
+        : [];
+
     const filteredStudents = students.filter(student => {
         const query = searchQuery.toLowerCase();
         const fullName = `${student.firstname} ${student.lastname}`.toLowerCase();
@@ -125,43 +231,117 @@ export default function CalificacionesPage() {
         const studentGrades = grades[student.id] || [];
         if (studentGrades.length === 0) return 'N/A';
 
-        const validGrades = studentGrades.filter(g => {
-            const val = g.final_grade ?? g.rawgrade ?? g.grade;
-            return String(val).trim() !== '-' && val !== null && val !== undefined && String(val).trim() !== '';
+        // Filtrar y convertir valores válidos a números
+        const validGrades: number[] = [];
+        
+        studentGrades.forEach(g => {
+            // Preferencia: final_grade > rawgrade > grade
+            let val = g.final_grade !== undefined && g.final_grade !== null ? g.final_grade 
+                    : g.rawgrade !== undefined && g.rawgrade !== null ? g.rawgrade 
+                    : g.grade !== undefined && g.grade !== null ? g.grade 
+                    : null;
+            
+            if (val === null || val === undefined) return;
+            
+            // Convertir a número
+            const numVal = typeof val === 'number' ? val : Number(String(val).trim());
+            
+            // Validar que sea un número válido y no sea -1 (valor de error común)
+            if (!isNaN(numVal) && numVal >= 0) {
+                validGrades.push(numVal);
+            }
         });
 
         if (validGrades.length === 0) return 'N/A';
 
-        const sum = validGrades.reduce((acc, g) => {
-            const val = g.final_grade ?? g.rawgrade ?? String(g.grade).replace(/[^0-9.]/g, '');
-            return acc + (Number(val) || 0);
-        }, 0);
-        return (sum / validGrades.length).toFixed(2);
+        const sum = validGrades.reduce((acc, val) => acc + val, 0);
+        const average = sum / validGrades.length;
+        
+        console.log(`Promedio de ${student.firstname}: ${average.toFixed(2)} (${validGrades.length} de ${studentGrades.length} calificaciones)`);
+        
+        return average.toFixed(2);
     };
 
     return (
         <div className="w-full flex-1 min-w-0 p-4 space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">Calificaciones por Grupo</h1>
+                <h1 className="text-3xl font-bold">Calificaciones por Plantel y Período</h1>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Selecciona un Grupo</CardTitle>
+                    <CardTitle>Selecciona Plantel, Período y Grupo</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
-                        <div className="w-full sm:max-w-md">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="w-full">
+                            <Select
+                                value={selectedPlantelId}
+                                onValueChange={(value) => {
+                                    setSelectedPlantelId(value);
+                                    setSelectedPeriodoId(''); // Reset período when plantel changes
+                                    setSelectedGrupoId(''); // Reset grupo when plantel changes
+                                    setStudents([]);
+                                    setGrades({});
+                                    setSelectedStudent(null);
+                                }}
+                                disabled={loadingPlanteles}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona un plantel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {planteles.map((plantel) => (
+                                        <SelectItem key={plantel.id} value={plantel.id?.toString() || ''}>
+                                            {plantel.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="w-full">
+                            <Select
+                                value={selectedPeriodoId}
+                                onValueChange={(value) => {
+                                    setSelectedPeriodoId(value);
+                                    setSelectedGrupoId(''); // Reset grupo when período changes
+                                    setStudents([]);
+                                    setGrades({});
+                                    setSelectedStudent(null);
+                                }}
+                                disabled={loadingPeriodos || !selectedPlantelId}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona un período" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {periodos.map((periodo) => (
+                                        <SelectItem key={periodo.id} value={periodo.id}>
+                                            {periodo.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="w-full">
                             <Select
                                 value={selectedGrupoId}
                                 onValueChange={setSelectedGrupoId}
-                                disabled={loadingGrupos}
+                                disabled={!selectedPlantelId || !selectedPeriodoId}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder={loadingGrupos ? "Cargando grupos..." : "Despliega y elige un grupo"} />
+                                    <SelectValue placeholder={
+                                        !selectedPlantelId || !selectedPeriodoId
+                                            ? "Primero selecciona plantel y período"
+                                            : filteredGrupos.length === 0
+                                                ? "No hay grupos disponibles"
+                                                : "Despliega y elige un grupo"
+                                    } />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {grupos.map((grupo) => (
+                                    {filteredGrupos.map((grupo) => (
                                         <SelectItem key={grupo.id} value={grupo.id.toString()}>
                                             {grupo.name} {grupo.type ? `(${grupo.type})` : ''}
                                         </SelectItem>
@@ -170,17 +350,19 @@ export default function CalificacionesPage() {
                             </Select>
                         </div>
 
-                        {selectedGrupoId && (
-                            <div className="relative w-full sm:max-w-xs">
-                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Buscar alumno..."
-                                    className="pl-8"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
-                        )}
+                        <div className="w-full">
+                            {selectedGrupoId && (
+                                <div className="relative">
+                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Buscar alumno..."
+                                        className="pl-8"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -200,7 +382,9 @@ export default function CalificacionesPage() {
                                 </div>
                             ) : students.length === 0 ? (
                                 <Alert>
-                                    <AlertDescription>No hay alumnos inscritos.</AlertDescription>
+                                    <AlertDescription>
+                                        No hay alumnos inscritos en este grupo. Verifica que el grupo tenga estudiantes asignados.
+                                    </AlertDescription>
                                 </Alert>
                             ) : (
                                 <div className="overflow-x-auto">
