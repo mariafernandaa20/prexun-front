@@ -5,10 +5,13 @@ import { auth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import axios from 'axios';
 
+import { Campus } from "@/lib/types";
+
 interface User {
   id: number;
   name: string;
   email: string;
+  campuses?: Campus[];
 }
 
 interface AuthContextType {

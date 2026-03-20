@@ -539,8 +539,8 @@ export const deletePromo = async (id: string) => {
   return response.data;
 };
 
-export const getGrupos = async () => {
-  const response = await axiosInstance.get(API_ENDPOINTS.GRUPOS);
+export const getGrupos = async (params?: Record<string, any>) => {
+  const response = await axiosInstance.get(API_ENDPOINTS.GRUPOS, { params });
   return response.data;
 };
 
