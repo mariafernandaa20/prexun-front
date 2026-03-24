@@ -15,6 +15,9 @@ import { Loader2, Search } from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { getGrupos, getCampuses, getPeriods } from '@/lib/api';
 import { Grupo, Campus, Period } from '@/lib/types';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { useActiveCampusStore } from '@/lib/store/plantel-store';
+import { useUIConfig } from '@/hooks/useUIConfig';
 
 interface Student {
     id: number | string;
@@ -36,7 +39,7 @@ interface Grade {
 
 export default function CalificacionesPage() {
     const [isMounted, setIsMounted] = useState(false);
-    
+
     const [planteles, setPlanteles] = useState<Campus[]>([]);
     const [selectedPlantelId, setSelectedPlantelId] = useState<string>('');
     const [periodos, setPeriodos] = useState<Period[]>([]);
@@ -52,17 +55,63 @@ export default function CalificacionesPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isInitialized, setIsInitialized] = useState(false);
 
+    const { user } = useAuthStore();
+    const { activeCampus } = useActiveCampusStore();
+    const { config: uiConfig } = useUIConfig();
+    const [isInitializedData, setIsInitializedData] = useState(false);
+
     // Montar componente y recuperar valores del localStorage
     useEffect(() => {
-        setIsMounted(true);
-        const plantelId = localStorage.getItem('calificaciones_plantelId') || '';
-        const periodoId = localStorage.getItem('calificaciones_periodoId') || '';
-        const grupoId = localStorage.getItem('calificaciones_grupoId') || '';
-        
-        setSelectedPlantelId(plantelId);
-        setSelectedPeriodoId(periodoId);
-        setSelectedGrupoId(grupoId);
-    }, []);
+        if (!isMounted) {
+            setIsMounted(true);
+            return;
+        }
+
+        // Recuperar lo que tengamos a la mano
+        let plantelId = selectedPlantelId || localStorage.getItem('calificaciones_plantelId') || '';
+        let periodoId = selectedPeriodoId || localStorage.getItem('calificaciones_periodoId') || '';
+        let grupoId = selectedGrupoId || localStorage.getItem('calificaciones_grupoId') || '';
+
+        // Prioridad del Plantel
+        if (!plantelId) {
+            if (activeCampus?.id) {
+                plantelId = activeCampus.id.toString();
+            } else if (user?.campuses && user.campuses.length > 0) {
+                plantelId = user.campuses[0].id?.toString() || '';
+            }
+        }
+
+
+        if (periodos.length > 0) {
+            const jun2026Period = periodos.find(p =>
+                p.name?.toUpperCase().replace(/\s+/g, '').includes('JUN2026')
+            );
+
+            if (jun2026Period) {
+                periodoId = jun2026Period.id.toString();
+            } else if (!periodoId && uiConfig?.default_period_id) {
+                periodoId = uiConfig.default_period_id.toString();
+            }
+        }
+
+
+        if (plantelId && plantelId !== selectedPlantelId) {
+            setSelectedPlantelId(plantelId);
+        }
+
+        if (periodoId && periodoId !== selectedPeriodoId) {
+            setSelectedPeriodoId(periodoId);
+        }
+
+        if (grupoId && grupoId !== selectedGrupoId) {
+            setSelectedGrupoId(grupoId);
+        }
+
+
+        if (plantelId && periodoId && !isInitializedData) {
+            setIsInitializedData(true);
+        }
+    }, [isMounted, user, activeCampus, uiConfig, periodos]);
 
     useEffect(() => {
         const fetchPlanteles = async () => {
@@ -95,11 +144,13 @@ export default function CalificacionesPage() {
     useEffect(() => {
         const fetchGrupos = async () => {
             try {
-                const response = await getGrupos();
+                const params: Record<string, any> = {};
+                if (selectedPlantelId) params.plantel_id = selectedPlantelId;
+                if (selectedPeriodoId) params.period_id = selectedPeriodoId;
+
+                const response = await getGrupos(params);
                 const gruposOrdenados = response.sort((a, b) => a.name.localeCompare(b.name));
                 setGrupos(gruposOrdenados);
-                console.log('All grupos loaded:', gruposOrdenados.length);
-                console.log('First few grupos:', gruposOrdenados.slice(0, 5));
                 setIsInitialized(true);
             } catch (error) {
                 console.error('Error cargando grupos:', error);
@@ -107,7 +158,7 @@ export default function CalificacionesPage() {
             }
         };
         fetchGrupos();
-    }, []);
+    }, [selectedPlantelId, selectedPeriodoId]);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -128,29 +179,26 @@ export default function CalificacionesPage() {
     }, [selectedGrupoId]);
 
     useEffect(() => {
-        if (!isInitialized) return;
-        
+        if (!isInitialized || loadingPlanteles || loadingPeriodos) return;
+
         if (selectedPlantelId && !planteles.find(p => p.id?.toString() === selectedPlantelId)) {
             setSelectedPlantelId('');
             localStorage.removeItem('calificaciones_plantelId');
         }
-        
+
         if (selectedPeriodoId && !periodos.find(p => p.id === selectedPeriodoId)) {
             setSelectedPeriodoId('');
             localStorage.removeItem('calificaciones_periodoId');
         }
-        
+
         if (selectedGrupoId && !grupos.find(g => g.id?.toString() === selectedGrupoId)) {
             setSelectedGrupoId('');
             localStorage.removeItem('calificaciones_grupoId');
         }
-    }, [isInitialized, planteles, periodos, grupos]);
+    }, [isInitialized, loadingPlanteles, loadingPeriodos, planteles, periodos, grupos]);
 
     useEffect(() => {
-        if (!selectedPlantelId) return;
-
-        console.log('Selected plantel changed:', selectedPlantelId);
-        console.log('Filtered grupos available:', filteredGrupos.length);
+        if (!selectedPlantelId || !selectedPeriodoId) return;
 
         const fetchStudents = async () => {
             setLoadingEstudiantes(true);
@@ -159,37 +207,32 @@ export default function CalificacionesPage() {
             setSelectedStudent(null);
 
             try {
-                console.log('Fetching all students for plantel:', selectedPlantelId);
-                // Cargar todos los estudiantes del plantel
-                const studentsRes = await axiosInstance.get('/students', {
-                    params: { campus_id: selectedPlantelId }
-                });
-                console.log('Students response:', studentsRes.data);
-                console.log('Students response status:', studentsRes.status);
-                console.log('Students response headers:', studentsRes.headers);
-                
+                // Usamos el endpoint especializado que busca alumnos tanto por grupo_id como por assignments
+                const params = {
+                    campus_id: selectedPlantelId,
+                    grupo: selectedGrupoId || undefined,
+                    perPage: 1000 // Traer todos los alumnos
+                };
+
+                const studentsRes = await axiosInstance.get(`/student-assignments/students-by-period/${selectedPeriodoId}`, { params });
+
                 let studentsData: Student[] = [];
-                
-                // Handle different response formats
+
                 if (Array.isArray(studentsRes.data)) {
                     studentsData = studentsRes.data;
-                } else if (studentsRes.data?.data && Array.isArray(studentsRes.data.data)) {
+                } else if (studentsRes.data?.data) {
                     studentsData = studentsRes.data.data;
-                } else if (studentsRes.data?.students && Array.isArray(studentsRes.data.students)) {
+                } else if (studentsRes.data?.students) {
                     studentsData = studentsRes.data.students;
                 }
-                
-                console.log('Processed students:', studentsData.length);
-                console.log('First few students:', studentsData.slice(0, 3));
+
                 setStudents(studentsData);
 
-                // Fetch grades in background
                 if (studentsData.length > 0) {
                     fetchGradesInBackground(studentsData);
                 }
             } catch (error) {
                 console.error('Error fetching students:', error);
-                console.error('Error details:', error.response?.data || error.message);
                 setStudents([]);
             } finally {
                 setLoadingEstudiantes(false);
@@ -202,35 +245,23 @@ export default function CalificacionesPage() {
             await Promise.all(
                 studentsData.map(async (student) => {
                     try {
-                        console.log(`Fetching grades for student ${student.id} (${student.firstname} ${student.lastname})`);
                         const gradesRes = await axiosInstance.get(`/students/${student.id}/grades`);
-                        console.log(`Raw grades response for student ${student.id}:`, gradesRes.data);
                         const gr = gradesRes.data;
 
                         let processedGrades: Grade[] = [];
-                        
+
                         if (Array.isArray(gr)) {
                             processedGrades = gr;
-                            console.log(`Student ${student.id}: Found ${gr.length} grades (array format)`);
                         } else if (gr && Array.isArray(gr.grades)) {
                             processedGrades = gr.grades;
-                            console.log(`Student ${student.id}: Found ${gr.grades.length} grades (gr.grades format)`);
                         } else if (gr && gr.data && Array.isArray(gr.data.grades)) {
                             processedGrades = gr.data.grades;
-                            console.log(`Student ${student.id}: Found ${gr.data.grades.length} grades (gr.data.grades format)`);
                         } else if (gr && gr.data && Array.isArray(gr.data)) {
                             processedGrades = gr.data;
-                            console.log(`Student ${student.id}: Found ${gr.data.length} grades (gr.data array format)`);
                         } else {
-                            console.warn(`Student ${student.id}: Unknown grades format:`, gr);
                             processedGrades = [];
                         }
-                        
-                        // Log first few grades for debugging
-                        if (processedGrades.length > 0) {
-                            console.log(`Student ${student.id} first 3 grades:`, processedGrades.slice(0, 3));
-                        }
-                        
+
                         gradesData[student.id] = processedGrades;
                     } catch (err) {
                         console.error(`Error con alumno ${student.id}:`, err);
@@ -242,97 +273,78 @@ export default function CalificacionesPage() {
         };
 
         fetchStudents();
-    }, [selectedPlantelId]);
+    }, [selectedPlantelId, selectedPeriodoId, selectedGrupoId]);
 
-    const filteredGrupos = selectedPlantelId && selectedPeriodoId
-        ? grupos.filter(grupo => grupo.plantel_id === parseInt(selectedPlantelId) && grupo.period_id === parseInt(selectedPeriodoId))
-        : [];
+    const filteredGrupos = React.useMemo(() => {
+        if (!selectedPlantelId || !selectedPeriodoId) return [];
 
-    console.log('Filtered grupos:', filteredGrupos.length, 'for plantel:', selectedPlantelId, 'periodo:', selectedPeriodoId);
+        return grupos.filter((grupo) => {
+            // Forzamos a String ambos para que no importe si es número o texto
+            const matchPeriodo = String(grupo.period_id) === String(selectedPeriodoId);
+
+            // plantel_id puede no estar presente si el grupo se relaciona vía la tabla pivot campus_group_pivot
+            const matchPlantelFromField = grupo.plantel_id
+                ? String(grupo.plantel_id) === String(selectedPlantelId)
+                : false;
+
+            const matchPlantelFromPivot = Array.isArray(grupo.campuses)
+                ? grupo.campuses.some((campus) => String(campus.id) === String(selectedPlantelId))
+                : false;
+
+            const matchPlantel = matchPlantelFromField || matchPlantelFromPivot;
+
+            return matchPlantel && matchPeriodo;
+        });
+    }, [selectedPlantelId, selectedPeriodoId, grupos]);
 
     const filteredStudents = students.filter(student => {
-        // Primero filtrar por búsqueda de texto
+
         const query = searchQuery.toLowerCase();
         const fullName = `${student.firstname} ${student.lastname}`.toLowerCase();
         const matricula = String(student.matricula || student.id).toLowerCase();
-        const matchesSearch = fullName.includes(query) || matricula.includes(query);
-        
-        // Si hay un grupo seleccionado, filtrar también por grupo
-        if (selectedGrupoId) {
-            // Aquí necesitaríamos verificar si el estudiante pertenece al grupo seleccionado
-            // Por ahora, mostramos todos los estudiantes del plantel cuando hay grupo seleccionado
-            // pero podríamos agregar lógica adicional si tenemos la información de asignación
-        }
-        
-        return matchesSearch;
+
+        return fullName.includes(query) || matricula.includes(query);
     });
 
     const getStudentAverage = (student: Student): string | number => {
         if (!(student.id in grades)) return 'Cargando...';
 
         const studentGrades = grades[student.id] || [];
-        console.log(`Calculando promedio para ${student.firstname} ${student.lastname} (ID: ${student.id})`);
-        console.log(`Total de calificaciones encontradas: ${studentGrades.length}`);
-        
+
         if (studentGrades.length === 0) {
-            console.log(`No hay calificaciones para ${student.firstname}`);
             return 'N/A';
         }
 
-        // Log de todas las calificaciones para debugging
-        studentGrades.forEach((g, index) => {
-            console.log(`Calificación ${index + 1}:`, {
-                course_name: g.course_name,
-                course_fullname: g.course_fullname,
-                name: g.name,
-                final_grade: g.final_grade,
-                rawgrade: g.rawgrade,
-                grade: g.grade
-            });
-        });
-
         // Filtrar y convertir valores válidos a números
         const validGrades: number[] = [];
-        
+
         studentGrades.forEach(g => {
             // Preferencia: final_grade > rawgrade > grade
-            let val = g.final_grade !== undefined && g.final_grade !== null ? g.final_grade 
-                    : g.rawgrade !== undefined && g.rawgrade !== null ? g.rawgrade 
-                    : g.grade !== undefined && g.grade !== null ? g.grade 
-                    : null;
-            
-            console.log(`Procesando calificación - Materia: ${g.course_name || g.course_fullname || g.name}, Valor extraído: ${val}`);
-            
+            let val = g.final_grade !== undefined && g.final_grade !== null ? g.final_grade
+                : g.rawgrade !== undefined && g.rawgrade !== null ? g.rawgrade
+                    : g.grade !== undefined && g.grade !== null ? g.grade
+                        : null;
+
             if (val === null || val === undefined) {
-                console.log(`Valor nulo/undefined, saltando`);
                 return;
             }
-            
+
             // Convertir a número
             const numVal = typeof val === 'number' ? val : Number(String(val).trim());
-            console.log(`Convertido a número: ${numVal}`);
-            
-            // Validar que sea un número válido y no sea -1 (valor de error común)
+
+            // Validar que sea un número válido y no sea -1
             if (!isNaN(numVal) && numVal >= 0) {
                 validGrades.push(numVal);
-                console.log(`Calificación válida agregada: ${numVal}`);
-            } else {
-                console.log(`Calificación inválida descartada: ${numVal}`);
             }
         });
 
-        console.log(`Calificaciones válidas encontradas: ${validGrades.length} de ${studentGrades.length}`);
-        
         if (validGrades.length === 0) {
-            console.log(`No hay calificaciones válidas para ${student.firstname}`);
             return 'N/A';
         }
 
         const sum = validGrades.reduce((acc, val) => acc + val, 0);
         const average = sum / validGrades.length;
-        
-        console.log(`Promedio calculado para ${student.firstname}: ${average.toFixed(2)} (suma: ${sum}, calificaciones válidas: ${validGrades.length})`);
-        
+
         return average.toFixed(2);
     };
 
@@ -342,7 +354,7 @@ export default function CalificacionesPage() {
                 <h1 className="text-3xl font-bold">Calificaciones por Plantel y Período</h1>
             </div>
 
-          
+
 
             <Card>
                 <CardHeader>
@@ -444,7 +456,7 @@ export default function CalificacionesPage() {
             </Card>
 
             {selectedGrupoId && (
-                <div className="flex gap-4 h-[600px]">
+                <div className="flex gap-4 h-[750px]">
                     {/* Tabla de estudiantes a la izquierda */}
                     <Card className="flex-1 flex flex-col">
                         <CardHeader>
@@ -490,11 +502,10 @@ export default function CalificacionesPage() {
                                                 return (
                                                     <tr
                                                         key={student.id}
-                                                        className={`cursor-pointer border-b transition-colors ${
-                                                            isSelected
-                                                                ? 'bg-primary/10 border-primary'
-                                                                : 'hover:bg-muted/50'
-                                                        }`}
+                                                        className={`cursor-pointer border-b transition-colors ${isSelected
+                                                            ? 'bg-primary/10 border-primary'
+                                                            : 'hover:bg-muted/50'
+                                                            }`}
                                                         onClick={() => setSelectedStudent(student)}
                                                     >
                                                         <td className="p-4 align-middle font-medium text-xs text-muted-foreground">
@@ -504,11 +515,10 @@ export default function CalificacionesPage() {
                                                             {student.firstname} {student.lastname}
                                                         </td>
                                                         <td className="p-4 align-middle text-right">
-                                                            <span className={`px-3 py-1 rounded-md font-bold ${
-                                                                average !== 'N/A' && Number(average) < 60
-                                                                    ? 'bg-red-100 text-red-700'
-                                                                    : 'bg-gray-100 text-gray-800'
-                                                            }`}>
+                                                            <span className={`px-3 py-1 rounded-md font-bold ${average !== 'N/A' && Number(average) < 60
+                                                                ? 'bg-red-100 text-red-700'
+                                                                : 'bg-gray-100 text-gray-800'
+                                                                }`}>
                                                                 {average}
                                                             </span>
                                                         </td>
@@ -559,4 +569,4 @@ export default function CalificacionesPage() {
             )}
         </div>
     );
-}
+};
