@@ -44,6 +44,7 @@ interface StudentWithGroup extends Student {
 
 interface AttendanceRecord {
   id?: string;
+  grupo_id: string;
   student_id: string;
   present: boolean;
   attendance_time?: string;
@@ -351,57 +352,63 @@ function AttendanceListContent() {
     router.replace(nextUrl, { scroll: false });
   }, [periodId, selectedGrupos, selectedDate, pathname, router, searchParams]);
 
-  async function fetchStudentsForGrupo(grupoId: string) {
-    try {
-      const params: any = { _t: Date.now() };
-      if (activeCampus?.id) {
-        params.plantel_id = activeCampus.id;
-      }
-      const response = await axiosInstance.get(`/grupos/${grupoId}/students`, {
-        params,
-      });
-      return response.data as Student[];
-    } catch (error) {
-      console.error('Error fetching students for group:', error);
-      return [];
-    }
-  }
+  useEffect(() => {
+    if (selectedGrupos.length === 0) return;
 
-  const fetchAttendanceForDate = async (
-    date: Date,
-    grupoId: string,
-    currentStudents: StudentWithGroup[]
-  ) => {
-    const formattedDate = formatDateToLocalIso(date);
-    const params: any = { _t: Date.now() };
-    if (activeCampus?.id) {
-      params.plantel_id = activeCampus.id;
-    }
+    let cancelled = false;
 
-    const defaultAttendanceMap: Record<string, boolean> = {};
-    currentStudents.forEach((student) => {
-      defaultAttendanceMap[student.attendance_key] = false;
-    });
+    const loadAttendancePageData = async (isPolling = false) => {
+      try {
+        const formattedDate = formatDateToLocalIso(selectedDate);
+        const params: any = {};
+        if (activeCampus?.id) {
+          params.plantel_id = activeCampus.id;
+        }
 
-    try {
-      const response = await axiosInstance.get(
-        `/teacher/attendance/${grupoId}/${formattedDate}`,
-        { params }
-      );
+        const response = await axiosInstance.post(
+          '/teacher/attendance/batch-get',
+          {
+            grupo_ids: selectedGrupos,
+            date: formattedDate,
+            ...params
+          }
+        );
 
-      if (
-        response.data.success &&
-        response.data.data &&
-        response.data.data.length > 0
-      ) {
-        const attendanceMap = { ...defaultAttendanceMap };
+        if (!response.data || !response.data.success) {
+          throw new Error('Failed to load batch attendance data');
+        }
+
+        const data = response.data.data;
+        const fetchedStudents: StudentWithGroup[] = data.students || [];
+        const attendanceRecords: AttendanceRecord[] = data.attendance || [];
+
+        const enrichedStudents = fetchedStudents.map((student) => ({
+          ...student,
+          grupo_name: getGroupNameById(student.grupo_id),
+        }));
+
+        enrichedStudents.sort((a, b) => {
+          const lastA = (a.lastname || '').toLowerCase();
+          const lastB = (b.lastname || '').toLowerCase();
+          if (lastA < lastB) return -1;
+          if (lastA > lastB) return 1;
+          const firstA = (a.firstname || '').toLowerCase();
+          const firstB = (b.firstname || '').toLowerCase();
+          return firstA.localeCompare(firstB);
+        });
+
+        const defaultAttendanceMap: Record<string, boolean> = {};
         const timeMap: Record<string, string> = {};
         const notesMap: Record<string, string> = {};
         const idsMap: Record<string, string> = {};
 
-        response.data.data.forEach((record: AttendanceRecord) => {
-          const key = `${grupoId}-${record.student_id}`;
-          attendanceMap[key] = record.present;
+        enrichedStudents.forEach((student) => {
+          defaultAttendanceMap[student.attendance_key] = false;
+        });
+
+        attendanceRecords.forEach((record) => {
+          const key = `${record.grupo_id}-${record.student_id}`;
+          defaultAttendanceMap[key] = record.present;
           idsMap[key] = record.id || '';
 
           if (record.attendance_time) {
@@ -413,109 +420,20 @@ function AttendanceListContent() {
           }
         });
 
-        return {
-          attendanceMap,
-          timeMap,
-          notesMap,
-          idsMap,
-        };
-      }
+        if (cancelled) return;
+        if (isPolling && hasUnsavedChangesRef.current) return;
 
-      return {
-        attendanceMap: defaultAttendanceMap,
-        timeMap: {},
-        notesMap: {},
-        idsMap: {},
-      };
-    } catch {
-      return {
-        attendanceMap: defaultAttendanceMap,
-        timeMap: {},
-        notesMap: {},
-        idsMap: {},
-      };
-    }
-  };
-
-  useEffect(() => {
-    if (selectedGrupos.length === 0) return;
-
-    let cancelled = false;
-
-    const loadAttendancePageData = async (isPolling = false) => {
-      const groupResults = await Promise.all(
-        selectedGrupos.map(async (grupoId) => {
-          const fetchedStudents = await fetchStudentsForGrupo(grupoId);
-          const sortedStudents = [...fetchedStudents].sort((a, b) => {
-            const lastA = (a.lastname || '').toLowerCase();
-            const lastB = (b.lastname || '').toLowerCase();
-            if (lastA < lastB) return -1;
-            if (lastA > lastB) return 1;
-            const firstA = (a.firstname || '').toLowerCase();
-            const firstB = (b.firstname || '').toLowerCase();
-            return firstA.localeCompare(firstB);
-          });
-
-          const studentsWithGroup: StudentWithGroup[] = sortedStudents.map(
-            (student) => ({
-              ...student,
-              grupo_id: grupoId,
-              grupo_name: getGroupNameById(grupoId),
-              attendance_key: `${grupoId}-${student.id}`,
-            })
-          );
-
-          const groupAttendance = await fetchAttendanceForDate(
-            selectedDate,
-            grupoId,
-            studentsWithGroup
-          );
-
-          return {
-            students: studentsWithGroup,
-            ...groupAttendance,
-          };
-        })
-      );
-
-      if (cancelled) return;
-      if (isPolling && hasUnsavedChangesRef.current) return;
-
-      const mergedStudents = groupResults
-        .flatMap((result) => result.students)
-        .sort((a, b) => {
-          const lastA = (a.lastname || '').toLowerCase();
-          const lastB = (b.lastname || '').toLowerCase();
-          if (lastA < lastB) return -1;
-          if (lastA > lastB) return 1;
-          const firstA = (a.firstname || '').toLowerCase();
-          const firstB = (b.firstname || '').toLowerCase();
-          return firstA.localeCompare(firstB);
-        });
-      const mergedAttendance = Object.assign(
-        {},
-        ...groupResults.map((result) => result.attendanceMap)
-      );
-      const mergedTimes = Object.assign(
-        {},
-        ...groupResults.map((result) => result.timeMap)
-      );
-      const mergedNotes = Object.assign(
-        {},
-        ...groupResults.map((result) => result.notesMap)
-      );
-      const mergedIds = Object.assign(
-        {},
-        ...groupResults.map((result) => result.idsMap)
-      );
-
-      setStudents(mergedStudents);
-      setAttendance(mergedAttendance);
-      setAttendanceTimes(mergedTimes);
-      setAttendanceNotes(mergedNotes);
-      setAttendanceIds(mergedIds);
-      if (!isPolling) {
-        setHasUnsavedChanges(false);
+        setStudents(enrichedStudents);
+        setAttendance(defaultAttendanceMap);
+        setAttendanceTimes(timeMap);
+        setAttendanceNotes(notesMap);
+        setAttendanceIds(idsMap);
+        
+        if (!isPolling) {
+          setHasUnsavedChanges(false);
+        }
+      } catch (error) {
+        console.error('Error fetching batch attendance:', error);
       }
     };
 

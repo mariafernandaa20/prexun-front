@@ -265,38 +265,23 @@ export default function CalificacionesPage() {
     };
 
     const fetchGradesInBackground = async (studentsData: Student[]) => {
-      const gradesData: Record<string | number, Grade[]> = {};
+      if (!studentsData || studentsData.length === 0) return;
 
-      await Promise.all(
-        studentsData.map(async (student) => {
-          try {
-            const gradesRes = await axiosInstance.get(
-              `/students/${student.id}/grades`
-            );
-            const gr = gradesRes.data;
-
-            let processedGrades: Grade[] = [];
-
-            if (Array.isArray(gr)) {
-              processedGrades = gr;
-            } else if (gr && Array.isArray(gr.grades)) {
-              processedGrades = gr.grades;
-            } else if (gr && gr.data && Array.isArray(gr.data.grades)) {
-              processedGrades = gr.data.grades;
-            } else if (gr && gr.data && Array.isArray(gr.data)) {
-              processedGrades = gr.data;
-            } else {
-              processedGrades = [];
-            }
-
-            gradesData[student.id] = processedGrades;
-          } catch (err) {
-            console.error(`Error con alumno ${student.id}:`, err);
-            gradesData[student.id] = [];
-          }
-        })
-      );
-      setGrades(gradesData);
+      try {
+        const studentIds = studentsData.map((s) => s.id);
+        const gradesRes = await axiosInstance.post('/students/batch-grades', {
+          student_ids: studentIds,
+        });
+        
+        if (gradesRes.data && typeof gradesRes.data === 'object') {
+          setGrades(gradesRes.data);
+        } else {
+          setGrades({});
+        }
+      } catch (err) {
+        console.error('Error fetching batch grades:', err);
+        setGrades({});
+      }
     };
 
     fetchStudents();
