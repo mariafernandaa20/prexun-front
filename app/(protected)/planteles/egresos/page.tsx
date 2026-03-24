@@ -442,10 +442,10 @@ export default function GastosPage() {
                 <strong>Fecha:</strong>{' '}
                 {selectedGastoForSignature?.date
                   ? format(
-                    new Date(selectedGastoForSignature.date),
-                    'dd/MM/yyyy',
-                    { locale: es }
-                  )
+                      new Date(selectedGastoForSignature.date),
+                      'dd/MM/yyyy',
+                      { locale: es }
+                    )
                   : ''}
               </p>
             </div>

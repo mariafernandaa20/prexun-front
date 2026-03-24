@@ -27,7 +27,8 @@ import { processCajaData } from '@/lib/helpers/cajaHelpers';
 import { toast } from 'sonner';
 
 export default function CajaPage() {
-  const { caja, loading, error, openCaja, closeCaja, fetchCaja } = useCajaActiva();
+  const { caja, loading, error, openCaja, closeCaja, fetchCaja } =
+    useCajaActiva();
 
   useEffect(() => {
     fetchCaja();
@@ -51,7 +52,9 @@ export default function CajaPage() {
       await openCaja(initialAmount, initialAmountCash, notes);
     } catch (error) {
       console.error('Error al abrir caja:', error);
-      toast.error(error instanceof Error ? error.message : 'Error al abrir caja');
+      toast.error(
+        error instanceof Error ? error.message : 'Error al abrir caja'
+      );
     }
   };
 
@@ -72,7 +75,9 @@ export default function CajaPage() {
       );
     } catch (error) {
       console.error('Error al cerrar caja:', error);
-      toast.error(error instanceof Error ? error.message : 'Error al cerrar caja');
+      toast.error(
+        error instanceof Error ? error.message : 'Error al cerrar caja'
+      );
     }
   };
 
@@ -216,7 +221,9 @@ export default function CajaPage() {
                     <TableBody>
                       {processed?.cashGastos.map((gasto: any) => (
                         <TableRow key={gasto.id}>
-                          <TableCell>{gasto.folio_prefix + gasto.folio}</TableCell>
+                          <TableCell>
+                            {gasto.folio_prefix + gasto.folio}
+                          </TableCell>
                           <TableCell>
                             {new Date(gasto.date).toLocaleString()}
                           </TableCell>

@@ -166,6 +166,4 @@ export default function StudentNotes({ studentId }: Props) {
       minute: '2-digit',
     });
   };
-
-
 }

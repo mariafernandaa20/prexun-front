@@ -89,7 +89,9 @@ const changelogItems: ChangelogItem[] = [
     description:
       'Se ajustó el parseo de fechas para evitar corrimiento al día anterior por conversiones UTC cuando los registros llegan como `YYYY-MM-DD` o con sufijo de zona horaria.',
     scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/estudiantes/[...slug]/AttendanceCalendar.tsx'],
+    filesModified: [
+      'app/(protected)/planteles/estudiantes/[...slug]/AttendanceCalendar.tsx',
+    ],
   },
   {
     id: '2026-03-06-06',
@@ -418,7 +420,9 @@ export default function AdminChangelogPage() {
     );
   }, [itemsSorted]);
 
-  const dateKeys = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+  const dateKeys = Object.keys(groupedByDate).sort((a, b) =>
+    b.localeCompare(a)
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -442,7 +446,9 @@ export default function AdminChangelogPage() {
 
           <div className="border rounded-md p-3 bg-muted/30">
             <p className="text-sm font-medium mb-2">Plantilla sugerida</p>
-            <pre className="text-xs whitespace-pre-wrap">{changelogTemplate}</pre>
+            <pre className="text-xs whitespace-pre-wrap">
+              {changelogTemplate}
+            </pre>
           </div>
         </CardContent>
       </Card>
@@ -463,7 +469,9 @@ export default function AdminChangelogPage() {
                   <Badge variant="secondary">{item.scope}</Badge>
                 </div>
                 <p className="text-sm font-medium">{item.title}</p>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {item.description}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   Archivos: {item.filesModified.join(', ')}
                 </p>

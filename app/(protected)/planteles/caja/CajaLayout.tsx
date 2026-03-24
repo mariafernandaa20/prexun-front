@@ -30,7 +30,6 @@ interface FormData {
 }
 
 export default function CajaLayout({
-
   children,
   caja,
   onOpen,
@@ -106,7 +105,7 @@ export default function CajaLayout({
         try {
           denominationsValue = JSON.parse(lastClosedCaja.next_day_cash);
         } catch (e) {
-          console.error("Error parsing next_day_cash", e);
+          console.error('Error parsing next_day_cash', e);
           return;
         }
       } else {
@@ -199,7 +198,6 @@ export default function CajaLayout({
           </DialogHeader>
 
           <div className="grid gap-2 py-4">
-              
             <div>
               {isOpen ? (
                 // SI LA CAJA ESTÁ ABIERTA (MODO CIERRE): Mostrar billetes para contar
@@ -210,7 +208,16 @@ export default function CajaLayout({
                   <div className="space-y-2 col-span-3">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {[
-                        '1000', '500', '200', '100', '50', '20', '10', '5', '2', '1',
+                        '1000',
+                        '500',
+                        '200',
+                        '100',
+                        '50',
+                        '20',
+                        '10',
+                        '5',
+                        '2',
+                        '1',
                       ].map((denom) => (
                         <div key={denom} className="space-y-1">
                           <Label>${denom}</Label>
@@ -225,8 +232,13 @@ export default function CajaLayout({
                       ))}
                     </div>
                     <p className="text-sm text-gray-500 mt-2">
-                      <span className="text-white"> Total en denominaciones:</span>{' '}
-                      {formatCurrency(calculateDenominationsTotal(formData.denominations))}
+                      <span className="text-white">
+                        {' '}
+                        Total en denominaciones:
+                      </span>{' '}
+                      {formatCurrency(
+                        calculateDenominationsTotal(formData.denominations)
+                      )}
                     </p>
                     <p className="col-span-4 text-sm text-gray-500">
                       <span className="text-white"> Monto actual en caja:</span>{' '}
@@ -237,7 +249,6 @@ export default function CajaLayout({
               ) : (
                 // SI LA CAJA ESTÁ CERRADA (MODO APERTURA): No mostrar nada, solo confirmar
                 <div className="py-10 text-center">
-                
                   <p className="text-gray-500 text-sm mt-2">
                     El monto inicial se cargará automáticamente.
                   </p>
@@ -273,7 +284,6 @@ export default function CajaLayout({
                               setValueAs: (v) => Number(v) || 0,
                             })}
                           />
-
                         </div>
                       ))}
                     </div>

@@ -35,7 +35,11 @@ function PublicAttendanceContent() {
     const isSecurePage =
       typeof window !== 'undefined' && window.location.protocol === 'https:';
 
-    if (isSecurePage && cleaned.startsWith('http://') && !cleaned.includes('localhost')) {
+    if (
+      isSecurePage &&
+      cleaned.startsWith('http://') &&
+      !cleaned.includes('localhost')
+    ) {
       return cleaned.replace('http://', 'https://');
     }
 
@@ -127,7 +131,9 @@ function PublicAttendanceContent() {
     }
 
     if (!apiBase) {
-      setError('No se encontró la URL de API. Configura apiUrl en el script embebido.');
+      setError(
+        'No se encontró la URL de API. Configura apiUrl en el script embebido.'
+      );
       return;
     }
 
@@ -140,13 +146,16 @@ function PublicAttendanceContent() {
         attendance_time: getClientLocalDateTime(),
       };
 
-      const apiResponse = await fetch(`${apiBase}/public/asistencia/registrar`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const apiResponse = await fetch(
+        `${apiBase}/public/asistencia/registrar`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = (await apiResponse.json()) as AttendanceResponse;
 
@@ -163,7 +172,9 @@ function PublicAttendanceContent() {
       }
     } catch (error: any) {
       const detail = error?.message ? ` (${error.message})` : '';
-      setError(`Error de conexión al registrar asistencia${detail}. Verifica apiUrl/CORS/backend activo.`);
+      setError(
+        `Error de conexión al registrar asistencia${detail}. Verifica apiUrl/CORS/backend activo.`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -192,7 +203,14 @@ function PublicAttendanceContent() {
         }}
       >
         <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Asistencia</h1>
-        <p style={{ marginTop: 6, marginBottom: 16, color: '#4b5563', fontSize: 14 }}>
+        <p
+          style={{
+            marginTop: 6,
+            marginBottom: 16,
+            color: '#4b5563',
+            fontSize: 14,
+          }}
+        >
           Ingresa tu WhatsApp para validar y registrar asistencia.
         </p>
 
@@ -212,7 +230,10 @@ function PublicAttendanceContent() {
           {attendanceWindow.label}
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
+        >
           <input
             value={whatsapp}
             onChange={(event) => setWhatsapp(event.target.value)}
@@ -239,7 +260,10 @@ function PublicAttendanceContent() {
               color: '#fff',
               fontSize: 15,
               fontWeight: 600,
-              cursor: isLoading || !attendanceWindow.canSubmit ? 'not-allowed' : 'pointer',
+              cursor:
+                isLoading || !attendanceWindow.canSubmit
+                  ? 'not-allowed'
+                  : 'pointer',
               opacity: isLoading || !attendanceWindow.canSubmit ? 0.7 : 1,
             }}
           >
@@ -278,7 +302,11 @@ function PublicAttendanceContent() {
               gap: 4,
             }}
           >
-            <strong>{response.already_registered ? 'Asistencia ya registrada' : 'Asistencia registrada'}</strong>
+            <strong>
+              {response.already_registered
+                ? 'Asistencia ya registrada'
+                : 'Asistencia registrada'}
+            </strong>
             <span>{response.message}</span>
             {response.student && (
               <span>

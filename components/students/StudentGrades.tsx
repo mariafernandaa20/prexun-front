@@ -100,7 +100,8 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
   const [grades, setGrades] = useState<CourseGrades[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [studentInfo, setStudentInfo] = useState<any>(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('resumen');
+  const [selectedTemplateId, setSelectedTemplateId] =
+    useState<string>('resumen');
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [messageMode, setMessageMode] = useState<'single' | 'all'>('single');
   const [expandedCourses, setExpandedCourses] = useState<Set<number>>(
@@ -222,7 +223,10 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
     : '';
 
   const generatedBulkMessage = validGrades
-    .map((course, index) => `${index + 1}. ${buildWhatsAppMessageForCourse(course)}`)
+    .map(
+      (course, index) =>
+        `${index + 1}. ${buildWhatsAppMessageForCourse(course)}`
+    )
     .join('\n\n');
 
   const generatedMessage =
@@ -311,8 +315,8 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               Calificaciones
             </CardTitle>
             <CardDescription className="mt-1.5">
-              {validGrades.length} {validGrades.length === 1 ? 'curso' : 'cursos'} con
-              calificaciones
+              {validGrades.length}{' '}
+              {validGrades.length === 1 ? 'curso' : 'cursos'} con calificaciones
             </CardDescription>
           </div>
           <Button onClick={fetchGrades} size="sm" variant="outline">
@@ -357,7 +361,9 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               <p className="text-sm font-medium mb-1">Curso para variables</p>
               <select
                 value={selectedCourseId?.toString() || ''}
-                onChange={(event) => setSelectedCourseId(Number(event.target.value))}
+                onChange={(event) =>
+                  setSelectedCourseId(Number(event.target.value))
+                }
                 className="w-full border rounded-md px-3 py-2 text-sm bg-background"
                 disabled={messageMode === 'all'}
               >
@@ -385,7 +391,11 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
 
           <div>
             <p className="text-sm font-medium mb-1">Vista previa</p>
-            <Textarea value={generatedMessage} readOnly className="min-h-[120px]" />
+            <Textarea
+              value={generatedMessage}
+              readOnly
+              className="min-h-[120px]"
+            />
           </div>
         </div>
 
@@ -398,7 +408,7 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-base">
-                    {courseGrade.course_name }
+                    {courseGrade.course_name}
                   </h3>
                   {courseGrade.course_type && (
                     <Badge variant="outline" className="text-xs">

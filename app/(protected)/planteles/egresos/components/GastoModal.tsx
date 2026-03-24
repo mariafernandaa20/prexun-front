@@ -52,36 +52,36 @@ export function GastoModal({
   >({
     defaultValues: selectedGasto
       ? {
-        id: selectedGasto.id,
-        concept: selectedGasto.concept,
-        amount: selectedGasto.amount,
-        date: selectedGasto.date,
-        method: selectedGasto.method,
-        denominations: null,
-        user_id: selectedGasto.user_id,
-        admin_id: selectedGasto.admin_id,
-        category: selectedGasto.category,
-        campus_id: selectedGasto.campus_id,
-        cash_register_id: selectedGasto.cash_register_id || activeCaja?.id,
-        image: null,
-        signature: selectedGasto.signature,
-        user: selectedGasto.user,
-        admin: selectedGasto.admin,
-      }
+          id: selectedGasto.id,
+          concept: selectedGasto.concept,
+          amount: selectedGasto.amount,
+          date: selectedGasto.date,
+          method: selectedGasto.method,
+          denominations: null,
+          user_id: selectedGasto.user_id,
+          admin_id: selectedGasto.admin_id,
+          category: selectedGasto.category,
+          campus_id: selectedGasto.campus_id,
+          cash_register_id: selectedGasto.cash_register_id || activeCaja?.id,
+          image: null,
+          signature: selectedGasto.signature,
+          user: selectedGasto.user,
+          admin: selectedGasto.admin,
+        }
       : {
-        concept: '',
-        amount: 0,
-        date: new Date().toISOString().split('T')[0],
-        method: 'cash',
-        denominations: null,
-        user_id: undefined,
-        admin_id: undefined,
-        category: '',
-        campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
-        cash_register_id: activeCaja?.id,
-        image: null,
-        signature: null,
-      },
+          concept: '',
+          amount: 0,
+          date: new Date().toISOString().split('T')[0],
+          method: 'cash',
+          denominations: null,
+          user_id: undefined,
+          admin_id: undefined,
+          category: '',
+          campus_id: activeCampus?.id ? Number(activeCampus.id) : undefined,
+          cash_register_id: activeCaja?.id,
+          image: null,
+          signature: null,
+        },
   });
 
   const formData = watch();
@@ -197,9 +197,7 @@ export function GastoModal({
         admin_id: selectedGasto.admin_id,
         category: selectedGasto.category,
         campus_id: selectedGasto.campus_id,
-        cash_register_id:
-          selectedGasto.cash_register_id ||
-          activeCaja?.id,
+        cash_register_id: selectedGasto.cash_register_id || activeCaja?.id,
         image: null,
         signature: selectedGasto.signature,
         user: selectedGasto.user,
@@ -372,9 +370,9 @@ export function GastoModal({
                     selectedGasto?.id
                       ? undefined
                       : () => {
-                        setSignatureUrl(null);
-                        setValue('signature', null);
-                      }
+                          setSignatureUrl(null);
+                          setValue('signature', null);
+                        }
                   }
                   onEdit={
                     selectedGasto?.id

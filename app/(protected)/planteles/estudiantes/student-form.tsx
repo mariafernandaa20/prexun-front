@@ -101,7 +101,8 @@ export function StudentForm({
     semana_intensiva_id: student?.semana_intensiva_id || null,
   });
 
-  const [sendWhatsAppNotification, setSendWhatsAppNotification] = useState(true);
+  const [sendWhatsAppNotification, setSendWhatsAppNotification] =
+    useState(true);
 
   const normalizePhoneDigits = (value: string) => value.replace(/\D+/g, '');
 
@@ -172,7 +173,10 @@ export function StudentForm({
         tutor_phone: normalizePhoneDigits(String(formData.tutor_phone || '')),
       };
 
-      await onSubmit({ ...normalizedFormData, send_whatsapp: sendWhatsAppNotification } as any);
+      await onSubmit({
+        ...normalizedFormData,
+        send_whatsapp: sendWhatsAppNotification,
+      } as any);
       const accessToken = useAuthStore((state) => state.accessToken);
 
       if (accessToken) {
@@ -184,9 +188,13 @@ export function StudentForm({
           await addContactToGoogle(accessToken, {
             name: studentName,
             email: normalizedFormData.email,
-            phone: formData.phone.startsWith('+') ? formData.phone : `+${formData.phone}`,
+            phone: formData.phone.startsWith('+')
+              ? formData.phone
+              : `+${formData.phone}`,
             secondaryPhone: formData.tutor_phone
-              ? (formData.tutor_phone.startsWith('+') ? formData.tutor_phone : `+${formData.tutor_phone}`)
+              ? formData.tutor_phone.startsWith('+')
+                ? formData.tutor_phone
+                : `+${formData.tutor_phone}`
               : undefined,
           });
 
@@ -204,10 +212,10 @@ export function StudentForm({
         }
       }
 
-    
       toast({
         title: 'Estudiante guardado exitosamente',
-        description: 'La información y los contactos han sido sincronizados en el servidor',
+        description:
+          'La información y los contactos han sido sincronizados en el servidor',
       });
     } catch (error: any) {
       toast({
@@ -509,10 +517,17 @@ export function StudentForm({
           <Label htmlFor="phone">Teléfono</Label>
           <PhoneInput
             placeholder="Número de teléfono"
-            value={formData.phone ? (formData.phone.startsWith('+') ? formData.phone : `+${formData.phone}`) : ''}
-            onChange={(value) => setFormData(prev => ({ ...prev, phone: value || '' }))}
+            value={
+              formData.phone
+                ? formData.phone.startsWith('+')
+                  ? formData.phone
+                  : `+${formData.phone}`
+                : ''
+            }
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, phone: value || '' }))
+            }
             defaultCountry="MX"
-
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
@@ -530,10 +545,17 @@ export function StudentForm({
           <Label htmlFor="tutor_phone">Teléfono del tutor</Label>
           <PhoneInput
             placeholder="Teléfono del tutor"
-            value={formData.tutor_phone ? (formData.tutor_phone.startsWith('+') ? formData.tutor_phone : `+${formData.tutor_phone}`) : ''}
-            onChange={(value) => setFormData(prev => ({ ...prev, tutor_phone: value || '' }))}
+            value={
+              formData.tutor_phone
+                ? formData.tutor_phone.startsWith('+')
+                  ? formData.tutor_phone
+                  : `+${formData.tutor_phone}`
+                : ''
+            }
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, tutor_phone: value || '' }))
+            }
             defaultCountry="MX"
-
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
@@ -632,14 +654,7 @@ export function StudentForm({
           </Select>
         </div>
 
-        {formData.type && formData.type === 'facultad' ? (
-          <>
-
-
-          </>
-        ) : (
-          <></>
-        )}
+        {formData.type && formData.type === 'facultad' ? <></> : <></>}
         <div className="space-y-2">
           <Label htmlFor="prepa_id">Preparatoria</Label>
           <Select
@@ -862,7 +877,9 @@ export function StudentForm({
             <Checkbox
               id="send_whatsapp"
               checked={sendWhatsAppNotification}
-              onCheckedChange={(checked) => setSendWhatsAppNotification(checked as boolean)}
+              onCheckedChange={(checked) =>
+                setSendWhatsAppNotification(checked as boolean)
+              }
             />
             <div className="flex items-center gap-2">
               <MessageCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -879,10 +896,12 @@ export function StudentForm({
         {/* Tags Selector for existing students */}
         {student?.id && (
           <div className="space-y-2 lg:col-span-3 border-t pt-4 mt-2">
-            <Label className="text-sm font-medium">Etiquetas del Estudiante</Label>
+            <Label className="text-sm font-medium">
+              Etiquetas del Estudiante
+            </Label>
             <StudentTagsSelector
               studentId={Number(student.id)}
-              initialTags={student.tags as any || []}
+              initialTags={(student.tags as any) || []}
             />
           </div>
         )}

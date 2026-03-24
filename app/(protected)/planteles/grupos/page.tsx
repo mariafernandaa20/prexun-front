@@ -54,7 +54,9 @@ export default function TeachergruposPage() {
   const [alumnos, setAlumnos] = useState<Student[]>([]);
   const [asistencia, setAsistencia] = useState<AsistenciaItem[]>([]);
   const [mostrarTabla, setMostrarTabla] = useState(true);
-  const [studentCounts, setStudentCounts] = useState<Record<number, number>>({});
+  const [studentCounts, setStudentCounts] = useState<Record<number, number>>(
+    {}
+  );
 
   const getCurrentPeriodId = () => {
     if (!Array.isArray(periods) || periods.length === 0) return null;
@@ -158,9 +160,12 @@ export default function TeachergruposPage() {
 
     Promise.all(
       filteredGrupos.map(async (group) => {
-        const response = await axiosInstance.get(`/grupos/${group.id}/students`, {
-          params,
-        });
+        const response = await axiosInstance.get(
+          `/grupos/${group.id}/students`,
+          {
+            params,
+          }
+        );
         return { groupId: group.id, count: response.data.length as number };
       })
     )
@@ -187,7 +192,8 @@ export default function TeachergruposPage() {
   const selectedGroupData = filteredGrupos.find((g) => g.id === selectedGroup);
 
   const getGroupStudentsCount = (group: any) => {
-    if (typeof studentCounts[group.id] === 'number') return studentCounts[group.id];
+    if (typeof studentCounts[group.id] === 'number')
+      return studentCounts[group.id];
     if (Array.isArray(group.students)) return group.students.length;
     return group.students_count || 0;
   };
@@ -207,7 +213,9 @@ export default function TeachergruposPage() {
   };
 
   const sortedGroups = useMemo(() => {
-    const presencialGroups = filteredGrupos.filter((group) => !isOnlineGroup(group));
+    const presencialGroups = filteredGrupos.filter(
+      (group) => !isOnlineGroup(group)
+    );
     const onlineGroups = filteredGrupos.filter((group) => isOnlineGroup(group));
 
     const sortGroupList = (groupsList: any[]) => {
@@ -257,10 +265,10 @@ export default function TeachergruposPage() {
                   onChange={(e) =>
                     setSortBy(
                       e.target.value as
-                      | 'alfabetico'
-                      | 'cupo'
-                      | 'capacidad'
-                      | 'inscritos'
+                        | 'alfabetico'
+                        | 'cupo'
+                        | 'capacidad'
+                        | 'inscritos'
                     )
                   }
                 >
@@ -322,7 +330,9 @@ export default function TeachergruposPage() {
                   </p>
                   <p className="text-sm text-gray-600">
                     Frecuencia:{' '}
-                    {Object.entries(JSON.parse(selectedGroupData.frequency as any))
+                    {Object.entries(
+                      JSON.parse(selectedGroupData.frequency as any)
+                    )
                       .map(([day, value]) => value)
                       .join(', ')}
                   </p>
@@ -379,7 +389,9 @@ export default function TeachergruposPage() {
                                 >
                                   <option value="presente">Presente</option>
                                   <option value="ausente">Ausente</option>
-                                  <option value="justificado">Justificado</option>
+                                  <option value="justificado">
+                                    Justificado
+                                  </option>
                                 </select>
                               </TableCell>
                             </TableRow>

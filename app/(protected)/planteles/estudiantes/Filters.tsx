@@ -12,7 +12,11 @@ import { useAuthStore } from '@/lib/store/auth-store';
 import { tagsService, Tag } from '@/app/services/tags';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { MultiSelect } from '@/components/multi-select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -145,7 +149,6 @@ const Filters: React.FC<FiltersProps> = ({
     fetchTags();
   }, [activeCampus?.id]);
 
-
   useEffect(() => {
     setSearchFirstname(debouncedFirstname);
   }, [debouncedFirstname, setSearchFirstname]);
@@ -234,7 +237,6 @@ const Filters: React.FC<FiltersProps> = ({
             <span className="text-sm ml-1 dark:text-white">Libro Módulos</span>
             <SearchableSelect
               options={[
-
                 { value: 'no entregado', label: 'No entregado' },
                 { value: 'paqueteria', label: 'Paquetería' },
                 { value: 'en fisico', label: 'En físico' },
@@ -269,7 +271,8 @@ const Filters: React.FC<FiltersProps> = ({
                 .filter(
                   (grupo) =>
                     !assignedPeriodFilter ||
-                    grupo.period_id.toString() === assignedPeriodFilter.toString()
+                    grupo.period_id.toString() ===
+                      assignedPeriodFilter.toString()
                 )
                 .map((grupo) => ({
                   value: grupo.id.toString(),
@@ -282,7 +285,9 @@ const Filters: React.FC<FiltersProps> = ({
             />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-sm ml-1 dark:text-white">Semana intensiva</span>
+            <span className="text-sm ml-1 dark:text-white">
+              Semana intensiva
+            </span>
             <SearchableSelect
               options={semanasIntensivas
                 .filter(
@@ -383,8 +388,6 @@ const Filters: React.FC<FiltersProps> = ({
                 type="number"
               />
             </div>
-
-
 
             <div className="flex flex-col gap-1">
               <span className="text-sm ml-1 dark:text-white">Carrera</span>

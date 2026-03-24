@@ -146,7 +146,9 @@ export function StudentTagsSelector({
             </Badge>
           ))
         ) : (
-          <p className="text-xs text-muted-foreground italic">Sin etiquetas asignadas</p>
+          <p className="text-xs text-muted-foreground italic">
+            Sin etiquetas asignadas
+          </p>
         )}
       </div>
 
@@ -167,7 +169,10 @@ export function StudentTagsSelector({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <PopoverContent
+          className="w-[var(--radix-popover-trigger-width)] p-0"
+          align="start"
+        >
           <Command className="w-full">
             <CommandInput placeholder="Buscar etiqueta..." />
             <CommandList>
@@ -180,7 +185,9 @@ export function StudentTagsSelector({
                     return a.name.localeCompare(b.name);
                   })
                   .map((tag) => {
-                    const isSelected = selectedTags.some((t) => t.id === tag.id);
+                    const isSelected = selectedTags.some(
+                      (t) => t.id === tag.id
+                    );
                     return (
                       <CommandItem
                         key={tag.id}

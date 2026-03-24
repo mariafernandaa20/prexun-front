@@ -5,12 +5,7 @@ import { tagsService, Tag } from '@/app/services/tags';
 import { useToast } from '@/hooks/use-toast';
 import SectionContainer from '@/components/SectionContainer';
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -151,10 +146,24 @@ export default function TagsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleToggleFavorite(tag)}
-                          className={tag.is_favorite ? "text-yellow-500" : "text-gray-400"}
-                          title={tag.is_favorite ? "Quitar de favoritos" : "Marcar como favorito"}
+                          className={
+                            tag.is_favorite
+                              ? 'text-yellow-500'
+                              : 'text-gray-400'
+                          }
+                          title={
+                            tag.is_favorite
+                              ? 'Quitar de favoritos'
+                              : 'Marcar como favorito'
+                          }
                         >
-                          <Star className={tag.is_favorite ? "fill-current h-4 w-4" : "h-4 w-4"} />
+                          <Star
+                            className={
+                              tag.is_favorite
+                                ? 'fill-current h-4 w-4'
+                                : 'h-4 w-4'
+                            }
+                          />
                         </Button>
                         <Button
                           variant="ghost"

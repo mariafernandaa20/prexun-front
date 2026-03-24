@@ -69,7 +69,11 @@ interface Template {
   is_active: boolean;
 }
 
-export default function GroupGradesPage({ params }: { params: { id: string } }) {
+export default function GroupGradesPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
   const { activeCampus } = useActiveCampusStore();
   const [group, setGroup] = useState<Group | null>(null);
@@ -79,7 +83,9 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
-  const [templateParams, setTemplateParams] = useState<Record<string, string>>({});
+  const [templateParams, setTemplateParams] = useState<Record<string, string>>(
+    {}
+  );
   const [languageCode, setLanguageCode] = useState('es');
   const [sendingBulk, setSendingBulk] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -94,7 +100,9 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
 
         const [groupRes, studentsRes, templatesRes] = await Promise.all([
           axiosInstance.get(`/grupos/${params.id}`),
-          axiosInstance.get(`/grupos/${params.id}/students`, { params: queryParams }),
+          axiosInstance.get(`/grupos/${params.id}/students`, {
+            params: queryParams,
+          }),
           axiosInstance.get('/whatsapp/templates'),
         ]);
 
@@ -217,11 +225,7 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
@@ -252,20 +256,22 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Enviar Plantilla de WhatsApp al Grupo</DialogTitle>
+                    <DialogTitle>
+                      Enviar Plantilla de WhatsApp al Grupo
+                    </DialogTitle>
                     <DialogDescription>
-                      Envía una plantilla de WhatsApp a todos los estudiantes del
-                      grupo que tengan número de teléfono registrado (
-                      {students.filter((s) => s.phone).length} de {students.length}
-                      )
+                      Envía una plantilla de WhatsApp a todos los estudiantes
+                      del grupo que tengan número de teléfono registrado (
+                      {students.filter((s) => s.phone).length} de{' '}
+                      {students.length})
                     </DialogDescription>
                   </DialogHeader>
 
                   <div className="space-y-4">
                     <Alert>
                       <AlertDescription>
-                        Los mensajes se enviarán uno por uno con un intervalo de 1
-                        segundo para evitar límites de la API.
+                        Los mensajes se enviarán uno por uno con un intervalo de
+                        1 segundo para evitar límites de la API.
                       </AlertDescription>
                     </Alert>
 
@@ -286,7 +292,10 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
                             templates
                               .filter((t) => t.is_active)
                               .map((template) => (
-                                <SelectItem key={template.id} value={template.name}>
+                                <SelectItem
+                                  key={template.id}
+                                  value={template.name}
+                                >
                                   {template.name}
                                 </SelectItem>
                               ))
@@ -307,8 +316,9 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
                             <strong>Ejemplo de mensaje:</strong>
                             <div className="mt-2 whitespace-pre-wrap">
                               {
-                                templates.find((t) => t.name === selectedTemplate)
-                                  ?.example_message
+                                templates.find(
+                                  (t) => t.name === selectedTemplate
+                                )?.example_message
                               }
                             </div>
                           </AlertDescription>
@@ -348,7 +358,8 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
                               </div>
                             ))}
                           <p className="text-xs text-muted-foreground">
-                            Estos parámetros se aplicarán a todos los estudiantes
+                            Estos parámetros se aplicarán a todos los
+                            estudiantes
                           </p>
                         </div>
                       )}
@@ -407,11 +418,11 @@ export default function GroupGradesPage({ params }: { params: { id: string } }) 
                   const average =
                     studentGrades.length > 0
                       ? (
-                        studentGrades.reduce(
-                          (sum, g) => sum + (g.final_grade || g.grade || 0),
-                          0
-                        ) / studentGrades.length
-                      ).toFixed(2)
+                          studentGrades.reduce(
+                            (sum, g) => sum + (g.final_grade || g.grade || 0),
+                            0
+                          ) / studentGrades.length
+                        ).toFixed(2)
                       : 'N/A';
 
                   return (

@@ -178,9 +178,9 @@ export default function Page() {
                   setSelectedCarrera((prev) =>
                     prev
                       ? {
-                        ...prev,
-                        orden: e.target.value ? Number(e.target.value) : null,
-                      }
+                          ...prev,
+                          orden: e.target.value ? Number(e.target.value) : null,
+                        }
                       : null
                   )
                 }
@@ -219,10 +219,10 @@ export default function Page() {
         return (
           <div key={facultad.id} className="mb-8 w-full">
             <h2 className="text-xl font-semibold mb-4">{facultad.name}</h2>
-                       <Table>
+            <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Orden</TableHead> 
+                  <TableHead>Orden</TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Módulos</TableHead>
                   <TableHead>Acciones</TableHead>
@@ -231,7 +231,7 @@ export default function Page() {
               <TableBody>
                 {carrerasFacultad.map((carrera) => (
                   <TableRow key={carrera.id}>
-                    <TableCell>{carrera.orden}</TableCell> 
+                    <TableCell>{carrera.orden}</TableCell>
                     <TableCell>{carrera.name}</TableCell>
                     <TableCell>
                       {carrera.modulos
@@ -257,7 +257,7 @@ export default function Page() {
                 {carrerasFacultad.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={4} 
+                      colSpan={4}
                       className="text-center text-muted-foreground"
                     >
                       No hay carreras registradas para esta facultad

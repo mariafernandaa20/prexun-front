@@ -19,7 +19,12 @@ interface SignatureModalProps {
   loading?: boolean;
 }
 
-export function SignatureModal({ isOpen, onClose, onConfirm, loading }: SignatureModalProps) {
+export function SignatureModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  loading,
+}: SignatureModalProps) {
   const sigCanvas = useRef<SignatureCanvas>(null);
 
   const clear = () => {
@@ -29,7 +34,7 @@ export function SignatureModal({ isOpen, onClose, onConfirm, loading }: Signatur
   const save = () => {
     const signature = sigCanvas.current;
     if (!signature || signature.isEmpty()) return;
-    
+
     try {
       // Intentamos obtener el canvas recortado (sin espacios en blanco)
       // Downgraded to 1.0.6 to fix WEBPACK_IMPORTED_MODULE error
@@ -37,7 +42,10 @@ export function SignatureModal({ isOpen, onClose, onConfirm, loading }: Signatur
       try {
         canvas = signature.getTrimmedCanvas();
       } catch (trimError) {
-        console.warn("getTrimmedCanvas falló, usando canvas completo:", trimError);
+        console.warn(
+          'getTrimmedCanvas falló, usando canvas completo:',
+          trimError
+        );
         canvas = signature.getCanvas();
       }
 
@@ -46,7 +54,7 @@ export function SignatureModal({ isOpen, onClose, onConfirm, loading }: Signatur
         onConfirm(base64);
       }
     } catch (error) {
-      console.error("Error crítico al obtener la imagen de la firma:", error);
+      console.error('Error crítico al obtener la imagen de la firma:', error);
     }
   };
 
@@ -58,7 +66,8 @@ export function SignatureModal({ isOpen, onClose, onConfirm, loading }: Signatur
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
-            Dibuja tu firma en el recuadro de abajo de forma clara. Esta firma se estampará en tu recibo de nómina.
+            Dibuja tu firma en el recuadro de abajo de forma clara. Esta firma
+            se estampará en tu recibo de nómina.
           </p>
           <div className="border rounded-md bg-white p-2">
             <SignatureCanvas
@@ -86,7 +95,9 @@ export function SignatureModal({ isOpen, onClose, onConfirm, loading }: Signatur
             Cancelar
           </Button>
           <Button onClick={save} disabled={loading}>
-            {loading ? 'Procesando...' : (
+            {loading ? (
+              'Procesando...'
+            ) : (
               <>
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Confirmar Firma

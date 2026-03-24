@@ -153,7 +153,10 @@ export default function WhatsAppPage() {
     }
 
     // Validar parámetros si la plantilla los requiere
-    if (selectedTemplate?.parameters && selectedTemplate.parameters.length > 0) {
+    if (
+      selectedTemplate?.parameters &&
+      selectedTemplate.parameters.length > 0
+    ) {
       const missingParams = selectedTemplate.parameters.filter(
         (param) => !templateParameters[param.name]?.trim()
       );
@@ -677,7 +680,9 @@ export default function WhatsAppPage() {
                     id="new-template-example"
                     placeholder="Tus calificaciones están listas.&#10;Puedes consultarlas aquí.&#10;Tu matrícula es {{1}}."
                     value={newTemplateExampleMessage}
-                    onChange={(e) => setNewTemplateExampleMessage(e.target.value)}
+                    onChange={(e) =>
+                      setNewTemplateExampleMessage(e.target.value)
+                    }
                     rows={3}
                   />
                   <p className="text-xs text-muted-foreground">
@@ -814,7 +819,9 @@ export default function WhatsAppPage() {
                           <div className="space-y-3">
                             <div className="flex items-start justify-between">
                               <div className="space-y-1">
-                                <div className="font-medium">{template.name}</div>
+                                <div className="font-medium">
+                                  {template.name}
+                                </div>
                                 <div className="text-sm text-muted-foreground">
                                   ID: {template.meta_id}
                                 </div>
@@ -851,9 +858,7 @@ export default function WhatsAppPage() {
                                 <div className="text-xs">
                                   <strong>Parámetros:</strong>{' '}
                                   {template.parameters
-                                    .map(
-                                      (p) => `${p.name} (ej: ${p.example})`
-                                    )
+                                    .map((p) => `${p.name} (ej: ${p.example})`)
                                     .join(', ')}
                                 </div>
                               )}

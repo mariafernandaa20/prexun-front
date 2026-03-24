@@ -17,7 +17,6 @@ import {
 
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 
-
 interface CajaContextValue {
   caja: Caja | null;
   lastClosedCaja: Caja | null;
@@ -67,10 +66,14 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
 
       const [currentResponse, historyResponse] = await Promise.all([
         getCurrentCaja(campusId),
-        getCajasHistorial(campusId)
+        getCajasHistorial(campusId),
       ]);
       // 1. Guardamos la caja actual (si hay una abierta)
-      if (!currentResponse || (typeof currentResponse === 'object' && Object.keys(currentResponse).length === 0)) {
+      if (
+        !currentResponse ||
+        (typeof currentResponse === 'object' &&
+          Object.keys(currentResponse).length === 0)
+      ) {
         setCaja(null);
       } else {
         setCaja(currentResponse);
@@ -78,7 +81,9 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
 
       // 2. Buscamos en el historial la última que se cerró
       if (Array.isArray(historyResponse)) {
-        const closedCajas = historyResponse.filter(c => c.status === 'cerrada');
+        const closedCajas = historyResponse.filter(
+          (c) => c.status === 'cerrada'
+        );
         if (closedCajas.length > 0) {
           setLastClosedCaja(closedCajas[0]);
         } else {
@@ -106,7 +111,8 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
       initialAmountCash: Denomination,
       notes: string
     ) => {
-      if (!campusId) throw new Error('No se ha seleccionado ningún campus activo.');
+      if (!campusId)
+        throw new Error('No se ha seleccionado ningún campus activo.');
 
       try {
         setLoading(true);
@@ -167,8 +173,7 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
   }, [fetchCaja]);
 
   return (
-
-    < CajaContext.Provider
+    <CajaContext.Provider
       value={{
         caja,
         lastClosedCaja,
@@ -177,11 +182,10 @@ export function CajaProvider({ children }: { children: React.ReactNode }) {
         fetchCaja,
         openCaja,
         closeCaja,
-      }
-      }
+      }}
     >
       {children}
-    </CajaContext.Provider >
+    </CajaContext.Provider>
   );
 }
 

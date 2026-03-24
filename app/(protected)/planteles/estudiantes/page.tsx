@@ -130,7 +130,8 @@ export default function Page() {
         (!isSearching && semanaIntensivaFilter) || undefined,
       period: (!isSearching && periodFilter) || undefined,
       assignedPeriod: (!isSearching && assignedPeriodFilter) || undefined,
-      assignedGrupo: assignedGrupoFilter.length > 0 ? assignedGrupoFilter : undefined,
+      assignedGrupo:
+        assignedGrupoFilter.length > 0 ? assignedGrupoFilter : undefined,
       carrera: (!isSearching && carreraFilter) || undefined,
       facultad: (!isSearching && facultadFilter) || undefined,
       modulo: (!isSearching && moduloFilter) || undefined,
@@ -140,9 +141,6 @@ export default function Page() {
       book_modulos: bookModulosFilter || undefined,
       book_general: bookGeneralFilter || undefined,
       tag: tagFilter || undefined,
-
-
-
     };
 
     try {

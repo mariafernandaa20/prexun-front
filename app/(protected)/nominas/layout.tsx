@@ -8,7 +8,11 @@ import {
 } from '@/components/ui/sidebar';
 import { useAppInit } from '@/hooks/use-app-init';
 
-export default function NominasLayout({ children }: { children: React.ReactNode }) {
+export default function NominasLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   // Usar el hook personalizado para inicialización
   useAppInit();
 

@@ -31,7 +31,8 @@ export default function UpdatePassword({ studentId }: UpdatePasswordProps) {
       if (response.message) {
         toast({
           title: 'Contraseña actualizada',
-          description: 'La contraseña de Moodle ha sido actualizada correctamente.',
+          description:
+            'La contraseña de Moodle ha sido actualizada correctamente.',
         });
         setOpen(false);
         setPassword('');
@@ -40,7 +41,8 @@ export default function UpdatePassword({ studentId }: UpdatePasswordProps) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.response?.data?.message || 'Error al actualizar la contraseña.',
+        description:
+          error.response?.data?.message || 'Error al actualizar la contraseña.',
       });
     } finally {
       setLoading(false);
@@ -74,7 +76,11 @@ export default function UpdatePassword({ studentId }: UpdatePasswordProps) {
               required
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading || password.length < 6}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading || password.length < 6}
+          >
             {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
           </Button>
         </form>

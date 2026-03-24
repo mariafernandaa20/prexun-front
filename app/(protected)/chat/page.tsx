@@ -244,14 +244,16 @@ export default function InstruccionesPage() {
         },
       });
 
-      setMessages((prev) => 
-        prev.map((msg, index) => 
-          index === prev.length - 1 
-            ? { 
-                ...msg, 
+      setMessages((prev) =>
+        prev.map((msg, index) =>
+          index === prev.length - 1
+            ? {
+                ...msg,
                 id: response.data.mensaje?.id,
                 created_at: response.data.mensaje?.created_at,
-                timestamp: new Date(response.data.mensaje?.created_at || Date.now())
+                timestamp: new Date(
+                  response.data.mensaje?.created_at || Date.now()
+                ),
               }
             : msg
         )
@@ -295,17 +297,20 @@ export default function InstruccionesPage() {
 
   const loadChatHistory = async () => {
     if (!activeStudentId) return;
-    
+
     try {
-      const response = await axiosInstance.get(`/mensajes?student_id=${activeStudentId}`);
-      const history = response.data.data?.map((msg: any) => ({
-        id: msg.id,
-        role: msg.role,
-        content: msg.mensaje,
-        timestamp: new Date(msg.created_at),
-        created_at: msg.created_at,
-        images: msg.images,
-      })) || [];
+      const response = await axiosInstance.get(
+        `/mensajes?student_id=${activeStudentId}`
+      );
+      const history =
+        response.data.data?.map((msg: any) => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.mensaje,
+          timestamp: new Date(msg.created_at),
+          created_at: msg.created_at,
+          images: msg.images,
+        })) || [];
       setMessages(history);
     } catch (error) {
       console.error('Error loading chat history:', error);
@@ -363,7 +368,9 @@ export default function InstruccionesPage() {
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">Estudiante Activo:</label>
+        <label className="block text-sm font-medium mb-2">
+          Estudiante Activo:
+        </label>
         <select
           value={activeStudentId || ''}
           onChange={(e) => setActiveStudentId(Number(e.target.value))}
@@ -401,9 +408,9 @@ export default function InstruccionesPage() {
                       Estudiante ID: {activeStudentId}
                     </span>
                   )}
-                  <Button 
-                    onClick={resetChat} 
-                    variant="outline" 
+                  <Button
+                    onClick={resetChat}
+                    variant="outline"
                     size="sm"
                     disabled={!activeStudentId}
                   >
@@ -431,10 +438,11 @@ export default function InstruccionesPage() {
                           className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[80%] p-3 rounded-lg ${message.role === 'user'
+                            className={`max-w-[80%] p-3 rounded-lg ${
+                              message.role === 'user'
                                 ? 'bg-blue-500 text-white'
                                 : 'bg-gray-100 text-gray-900'
-                              }`}
+                            }`}
                           >
                             {message.images && message.images.length > 0 && (
                               <div className="flex flex-wrap gap-2 mb-2">
@@ -492,11 +500,18 @@ export default function InstruccionesPage() {
                   <div className="flex gap-2">
                     <div className="flex-1 flex gap-2">
                       <Input
-                        placeholder={activeStudentId ? "Escribe tu mensaje..." : "Selecciona un estudiante primero..."}
+                        placeholder={
+                          activeStudentId
+                            ? 'Escribe tu mensaje...'
+                            : 'Selecciona un estudiante primero...'
+                        }
                         value={currentMessage}
                         onChange={(e) => setCurrentMessage(e.target.value)}
                         onKeyPress={(e) =>
-                          e.key === 'Enter' && !isLoadingChat && activeStudentId && sendMessage()
+                          e.key === 'Enter' &&
+                          !isLoadingChat &&
+                          activeStudentId &&
+                          sendMessage()
                         }
                         disabled={isLoadingChat || !activeStudentId}
                       />

@@ -255,11 +255,16 @@ export default function ReportesAsistenciaPage() {
       if (activeCampus?.id) {
         params.plantel_id = activeCampus.id;
       }
-      const response = await axiosInstance.get(`/grupos/${groupId}/students`, { params });
+      const response = await axiosInstance.get(`/grupos/${groupId}/students`, {
+        params,
+      });
       const uniqueStudents = Array.from(
         new Map(
           (response.data as Student[])
-            .filter((student) => student?.id && (student.firstname || student.lastname))
+            .filter(
+              (student) =>
+                student?.id && (student.firstname || student.lastname)
+            )
             .map((student) => [student.id, student])
         ).values()
       ).sort((a, b) => {
@@ -532,8 +537,8 @@ export default function ReportesAsistenciaPage() {
                         <div>
                           <p className="text-sm text-gray-600">Rango</p>
                           <p className="font-medium">
-                            {formatServerDate(studentReport.period.start_date)} -{' '}
-                            {formatServerDate(studentReport.period.end_date)}
+                            {formatServerDate(studentReport.period.start_date)}{' '}
+                            - {formatServerDate(studentReport.period.end_date)}
                           </p>
                         </div>
                       </div>

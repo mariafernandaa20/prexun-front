@@ -331,7 +331,9 @@ const CardManagement = () => {
                         <TableCell>{card.name}</TableCell>
 
                         <TableCell>{getCampusName(card.campus_id)}</TableCell>
-                        <TableCell>{card.is_hidden ? 'Oculto' : 'Visible'}</TableCell>
+                        <TableCell>
+                          {card.is_hidden ? 'Oculto' : 'Visible'}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -438,16 +440,17 @@ const CardManagement = () => {
               <DialogFooter>
                 <div className="flex justify-between w-full items-center">
                   <Label>
-                  <Checkbox
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        is_hidden: Boolean(checked),
-                      }))
-                    }
-                    checked={formData.is_hidden}
-                  />Ocultar la tarjeta
-                </Label>
+                    <Checkbox
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          is_hidden: Boolean(checked),
+                        }))
+                      }
+                      checked={formData.is_hidden}
+                    />
+                    Ocultar la tarjeta
+                  </Label>
                   <div className="flex gap-2">
                     <DialogClose asChild>
                       <Button variant="outline">Cancelar</Button>

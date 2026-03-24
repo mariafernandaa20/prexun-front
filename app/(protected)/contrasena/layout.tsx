@@ -1,9 +1,17 @@
 'use client';
 import { NominasSidebar } from '@/components/sidebar';
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 import { useAppInit } from '@/hooks/use-app-init';
 
-export default function ContrasenaLayout({ children }: { children: React.ReactNode }) {
+export default function ContrasenaLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   useAppInit();
   return (
     <SidebarProvider>

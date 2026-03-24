@@ -35,7 +35,7 @@ export default function TagDialog({
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
 
-   useEffect(() => {
+  useEffect(() => {
     if (tag) {
       setName(tag.name);
       setColor(tag.color || '#000000');
@@ -49,7 +49,7 @@ export default function TagDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim()) {
       toast({
         title: 'Error',
@@ -71,7 +71,7 @@ export default function TagDialog({
     setIsSubmitting(true);
     try {
       if (tag) {
-        await tagsService.updateTag(tag.id, { 
+        await tagsService.updateTag(tag.id, {
           name: name.trim(),
           color: color,
           is_favorite: isFavorite,
@@ -96,7 +96,8 @@ export default function TagDialog({
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error?.response?.data?.message || 'Error al guardar la etiqueta',
+        description:
+          error?.response?.data?.message || 'Error al guardar la etiqueta',
         variant: 'destructive',
       });
     } finally {
@@ -114,7 +115,7 @@ export default function TagDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
-                        <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>
               <div className="flex gap-2">
                 <Input
@@ -130,10 +131,12 @@ export default function TagDialog({
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsFavorite(!isFavorite)}
-                  className={isFavorite ? "text-yellow-500" : "text-gray-400"}
-                  title={isFavorite ? "Quitar de favoritos" : "Marcar como favorito"}
+                  className={isFavorite ? 'text-yellow-500' : 'text-gray-400'}
+                  title={
+                    isFavorite ? 'Quitar de favoritos' : 'Marcar como favorito'
+                  }
                 >
-                  <Star className={isFavorite ? "fill-current" : ""} />
+                  <Star className={isFavorite ? 'fill-current' : ''} />
                 </Button>
               </div>
             </div>

@@ -215,7 +215,9 @@ export default function AttendanceListPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="py-3 px-4">Matrícula</TableHead>
-                    <TableHead className="py-3 px-4">Estudiante (Apellido Nombre)</TableHead>
+                    <TableHead className="py-3 px-4">
+                      Estudiante (Apellido Nombre)
+                    </TableHead>
                     <TableHead className="py-3 px-4">Asistencia</TableHead>
                   </TableRow>
                 </TableHeader>

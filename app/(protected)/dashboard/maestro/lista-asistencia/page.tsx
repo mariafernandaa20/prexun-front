@@ -140,7 +140,9 @@ export default function AsistenciaPage() {
               {selectedGroupStudents.map((student: any) => (
                 <TableRow key={student.id}>
                   <TableCell>
-                    {student.lastname ? `${student.lastname} ${student.firstname}` : student.name}
+                    {student.lastname
+                      ? `${student.lastname} ${student.firstname}`
+                      : student.name}
                   </TableCell>
                   <TableCell>
                     <Checkbox

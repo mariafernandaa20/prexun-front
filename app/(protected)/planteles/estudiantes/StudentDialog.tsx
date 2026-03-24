@@ -33,8 +33,8 @@ export const StudentDialog = ({
           </DialogTitle>
           {/* 2. Agregamos la descripción (puede estar oculta visualmente si prefieres) */}
           <DialogDescription>
-            {selectedStudent 
-              ? 'Realiza cambios en la información del estudiante seleccionado.' 
+            {selectedStudent
+              ? 'Realiza cambios en la información del estudiante seleccionado.'
               : 'Completa el formulario para registrar un nuevo estudiante.'}
           </DialogDescription>
         </DialogHeader>

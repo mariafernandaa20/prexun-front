@@ -56,16 +56,14 @@ export function QRSignature({ gastoId, onSignatureUpdate }: QRSignatureProps) {
         // También verificar con la API real
         try {
           // Importar la función aquí para evitar problemas de dependencias circulares
-          const { checkPublicSignatureStatus } = await import(
-            '@/lib/api/gastos-signature'
-          );
+          const { checkPublicSignatureStatus } =
+            await import('@/lib/api/gastos-signature');
           const data = await checkPublicSignatureStatus(gastoId);
           if (data.signature && onSignatureUpdate) {
             onSignatureUpdate(data.signature);
             clearInterval(interval);
           }
-        } catch (apiError) {
-        }
+        } catch (apiError) {}
       } catch (error) {
         console.error('Error verificando firma:', error);
       }

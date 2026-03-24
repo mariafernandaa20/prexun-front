@@ -10,7 +10,7 @@ import {
   getPromos,
   getMunicipios,
   getFacultades,
-  getPrepas
+  getPrepas,
 } from '@/lib/api';
 import {
   Grupo,
@@ -21,7 +21,7 @@ import {
   Promocion,
   Municipio,
   Facultad,
-  Prepa
+  Prepa,
 } from '@/lib/types';
 import React, { useEffect, useState } from 'react';
 
@@ -73,7 +73,7 @@ export default function StudentLogs({ studentId }: Props) {
           promosRes,
           municipiosRes,
           facultadesRes,
-          prepasRes
+          prepasRes,
         ] = await Promise.all([
           getStudentEvents(studentId),
           getGrupos(),
@@ -84,20 +84,21 @@ export default function StudentLogs({ studentId }: Props) {
           getPromos(),
           getMunicipios(),
           getFacultades(),
-          getPrepas()
+          getPrepas(),
         ]);
 
         setLogs(eventsRes.data || []);
         setGroups(groupsRes || []);
         setCampuses(campusesRes || []);
-        setSemanas(Array.isArray(semanasRes) ? semanasRes : (semanasRes.data || []));
+        setSemanas(
+          Array.isArray(semanasRes) ? semanasRes : semanasRes.data || []
+        );
         setPeriods(periodsRes || []);
         setCarreras(carrerasRes || []);
         setPromos(promosRes || []);
         setMunicipios(municipiosRes || []);
         setFacultades(facultadesRes || []);
         setPrepas(prepasRes || []);
-
       } catch (err) {
         setError('Failed to fetch logs or metadata');
         console.error('Error fetching data:', err);
@@ -114,7 +115,7 @@ export default function StudentLogs({ studentId }: Props) {
 
     // Helper to find name safely
     const findName = (list: any[], id: any) => {
-      const item = list.find(i => String(i.id) === String(id));
+      const item = list.find((i) => String(i.id) === String(id));
       return item ? item.name : value; // Fallback to ID if not found
     };
 

@@ -17,9 +17,9 @@ export default function TestsPage() {
   return (
     <div className="interface-container">
       {/* Prexun Widget Asset */}
-      <div 
+      <div
         data-prexun-attendance="true"
-        data-prexun-text="Asistencia" 
+        data-prexun-text="Asistencia"
         data-prexun-color="#3B82F6"
         data-prexun-float="bottom-left"
         data-prexun-attendance-url="/asistencia-publica"
@@ -29,12 +29,12 @@ export default function TestsPage() {
       {/* Primary Video Feed */}
       <div style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
         <iframe
-          style={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            width: '100%', 
-            height: '100%' 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
           }}
           src="https://vimeo.com/event/5762643/embed"
           frameBorder="0"

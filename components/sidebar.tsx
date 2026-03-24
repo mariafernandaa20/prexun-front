@@ -157,7 +157,7 @@ export const data = {
       url: '/dashboard/planteles',
       icon: Building,
     },
- 
+
     {
       name: 'Usuarios',
       url: '/dashboard/usuarios',
@@ -226,7 +226,7 @@ export const data = {
       url: '/planteles/caja',
       icon: CreditCard,
     },
-       {
+    {
       name: 'Calificaciones',
       url: '/planteles/calificaciones',
       icon: BookOpen,
@@ -306,7 +306,6 @@ export const data = {
     },
   ],
 
-
   chatbot_navigation: [
     {
       name: 'Chat',
@@ -336,10 +335,9 @@ export function TemplateSidebar({
   );
 }
 
-export function
-  AdminSidebar({
-    ...props
-  }: React.ComponentProps<typeof Sidebar>) {
+export function AdminSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

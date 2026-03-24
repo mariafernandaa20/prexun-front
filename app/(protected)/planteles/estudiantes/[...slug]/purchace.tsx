@@ -184,8 +184,6 @@ export default function Purchase({
 
   return (
     <>
-
-
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
           <div className="p-4">

@@ -1,27 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { 
-  FileSignature, 
-  FileText, 
-  CheckCircle2, 
+import {
+  FileSignature,
+  FileText,
+  CheckCircle2,
   Clock,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { getNominasUser, signNomina, getNominaUserView } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -46,9 +41,9 @@ export default function UserNominas() {
       setNominas(data);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "No se pudieron cargar tus nóminas",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudieron cargar tus nóminas',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -67,17 +62,17 @@ export default function UserNominas() {
     try {
       await signNomina(signingNomina.id, signatureBase64);
       toast({
-        title: "Éxito",
-        description: "Nómina firmada correctamente",
+        title: 'Éxito',
+        description: 'Nómina firmada correctamente',
       });
       setIsSignModalOpen(false);
       setSigningNomina(null);
       fetchNominas();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "No se pudo firmar la nómina",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudo firmar la nómina',
+        variant: 'destructive',
       });
     } finally {
       setIsProcessingSignature(false);
@@ -91,9 +86,9 @@ export default function UserNominas() {
       window.open(url, '_blank');
     } catch (error) {
       toast({
-        title: "Error",
-        description: "No se pudo abrir el PDF",
-        variant: "destructive",
+        title: 'Error',
+        description: 'No se pudo abrir el PDF',
+        variant: 'destructive',
       });
     }
   };
@@ -103,7 +98,12 @@ export default function UserNominas() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Mis Recibos de Nómina</CardTitle>
-          <Button variant="ghost" size="sm" onClick={fetchNominas} disabled={loading}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchNominas}
+            disabled={loading}
+          >
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Actualizar
           </Button>
@@ -124,7 +124,9 @@ export default function UserNominas() {
             <TableBody>
               {nominas.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium whitespace-nowrap">{item.seccion?.nombre}</TableCell>
+                  <TableCell className="font-medium whitespace-nowrap">
+                    {item.seccion?.nombre}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {item.estado === 'firmado' ? (
@@ -139,21 +141,28 @@ export default function UserNominas() {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground whitespace-nowrap text-xs">
-                    {item.fecha_firma ? new Date(item.fecha_firma).toLocaleString() : '-'}
+                    {item.fecha_firma
+                      ? new Date(item.fecha_firma).toLocaleString()
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-muted-foreground whitespace-nowrap text-xs">
                     {new Date(item.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground" onClick={() => viewPdf(item.id)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-muted-foreground"
+                      onClick={() => viewPdf(item.id)}
+                    >
                       <FileText className="h-4 w-4 mr-1" /> Original
                     </Button>
                   </TableCell>
                   <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 px-2 text-blue-600" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-blue-600"
                       disabled={item.estado !== 'firmado'}
                       onClick={() => viewPdf(item.id)}
                     >
@@ -162,9 +171,9 @@ export default function UserNominas() {
                   </TableCell>
                   <TableCell className="text-right">
                     {item.estado === 'pendiente' && (
-                      <Button 
-                        variant="default" 
-                        size="sm" 
+                      <Button
+                        variant="default"
+                        size="sm"
                         className="flex gap-2 font-bold bg-blue-600 hover:bg-blue-700"
                         onClick={() => handleOpenSignModal(item)}
                       >
@@ -176,7 +185,10 @@ export default function UserNominas() {
               ))}
               {nominas.length === 0 && !loading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10 text-muted-foreground italic">
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-10 text-muted-foreground italic"
+                  >
                     No tienes nóminas disponibles para este periodo.
                   </TableCell>
                 </TableRow>
@@ -193,17 +205,21 @@ export default function UserNominas() {
               <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h4 className="font-semibold text-blue-900 dark:text-blue-100">Importante</h4>
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+                Importante
+              </h4>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Recuerda que tus recibos de nómina deben ser firmados electrónicamente antes de que finalice la semana actual. 
-                Si tienes algún problema con los datos mostrados, contacta al departamento de contabilidad.
+                Recuerda que tus recibos de nómina deben ser firmados
+                electrónicamente antes de que finalice la semana actual. Si
+                tienes algún problema con los datos mostrados, contacta al
+                departamento de contabilidad.
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <SignatureModal 
+      <SignatureModal
         isOpen={isSignModalOpen}
         onClose={() => setIsSignModalOpen(false)}
         onConfirm={handleSign}
@@ -212,4 +228,3 @@ export default function UserNominas() {
     </div>
   );
 }
-

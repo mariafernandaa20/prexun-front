@@ -29,11 +29,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { createCharge, deleteChargeImage, getCards, getCharges, updateCharge } from '@/lib/api';
+import {
+  createCharge,
+  deleteChargeImage,
+  getCards,
+  getCharges,
+  updateCharge,
+} from '@/lib/api';
 import { Student, Transaction } from '@/lib/types';
 import { MultiSelect } from '@/components/multi-select';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
-import { ChevronLeft, ChevronRight, Eye, Upload, DollarSign, Pencil, Trash2, Camera } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Upload,
+  DollarSign,
+  Pencil,
+  Trash2,
+  Camera,
+} from 'lucide-react';
 
 import { useToast } from '@/hooks/use-toast';
 
@@ -48,18 +63,17 @@ import Link from 'next/link';
 import AgregarIngreso from './AgregarIngreso';
 import EditarFolio from './EditarFolio';
 
-
 import ActualizarFolios from './actualizar/ActualizarFolios';
 import { useAuthStore } from '@/lib/store/auth-store';
 import PaginationComponent from '@/components/ui/PaginationComponent';
 import { usePagination } from '@/hooks/usePagination';
 import { useUIConfig } from '@/hooks/useUIConfig';
 
-
 export default function CobrosPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
   const [deletingImage, setDeletingImage] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchStudent, setSearchStudent] = useState('');
@@ -90,15 +104,15 @@ export default function CobrosPage() {
   const [availableColumnIds, setAvailableColumnIds] = useState<string[]>([]);
   const { activeCampus } = useActiveCampusStore();
   const { user, grupos, getFilteredGrupos } = useAuthStore();
-    const filteredCampusGroups = useMemo(() => {
-      const baseGroups = getFilteredGrupos(activeCampus?.id, undefined);
+  const filteredCampusGroups = useMemo(() => {
+    const baseGroups = getFilteredGrupos(activeCampus?.id, undefined);
 
-      return [...baseGroups].sort((a: any, b: any) => {
-        const nameA = String(a.name || '').toLowerCase();
-        const nameB = String(b.name || '').toLowerCase();
-        return nameA.localeCompare(nameB);
-      });
-    }, [getFilteredGrupos, activeCampus?.id, grupos]);
+    return [...baseGroups].sort((a: any, b: any) => {
+      const nameA = String(a.name || '').toLowerCase();
+      const nameB = String(b.name || '').toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }, [getFilteredGrupos, activeCampus?.id, grupos]);
 
   const { toast } = useToast();
 
@@ -107,9 +121,9 @@ export default function CobrosPage() {
 
   const [loading, setLoading] = useState(false);
 
-
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [transactionToUpload, setTransactionToUpload] = useState<Transaction | null>(null);
+  const [transactionToUpload, setTransactionToUpload] =
+    useState<Transaction | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -124,7 +138,9 @@ export default function CobrosPage() {
     const year = String(folioDate.getFullYear()).slice(-2);
 
     const campusName = (activeCampus as any)?.name || '';
-    const campusLetter = campusName ? String(campusName).charAt(0).toUpperCase() : '';
+    const campusLetter = campusName
+      ? String(campusName).charAt(0).toUpperCase()
+      : '';
 
     const isSatTransfer =
       transaction.payment_method === 'transfer' &&
@@ -135,19 +151,19 @@ export default function CobrosPage() {
       transaction.payment_method === 'cash'
         ? 'E'
         : transaction.payment_method === 'transfer'
-          ? (isSatTransfer ? 'I' : 'A')
+          ? isSatTransfer
+            ? 'I'
+            : 'A'
           : 'I';
 
     return `${campusLetter}${methodCode}-${month}${year} | `;
   };
-
 
   const handleUploadClick = (transaction: Transaction) => {
     setTransactionToUpload(transaction);
     setSelectedFile(null);
     setUploadModalOpen(true);
   };
-
 
   const handleConfirmUpload = async () => {
     if (!selectedFile || !transactionToUpload) return;
@@ -157,22 +173,28 @@ export default function CobrosPage() {
 
       const payload = {
         id: transactionToUpload.id,
-        image: selectedFile
+        image: selectedFile,
       } as unknown as Transaction;
 
       await updateCharge(payload);
 
-      toast({ title: 'Éxito', description: 'Comprobante subido correctamente.' });
+      toast({
+        title: 'Éxito',
+        description: 'Comprobante subido correctamente.',
+      });
       setUploadModalOpen(false);
       fetchIngresos(pagination.currentPage);
     } catch (error) {
       console.error(error);
-      toast({ title: 'Error', description: 'No se pudo subir.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'No se pudo subir.',
+        variant: 'destructive',
+      });
     } finally {
       setUploading(false);
     }
   };
-
 
   const commonColumnDefinitions = [
     {
@@ -184,7 +206,9 @@ export default function CobrosPage() {
           <Link href={`/recibo/${transaction.uuid}`} target="_blank">
             <Eye className="w-4 h-4 mr-2" />
           </Link>
-          {(user?.role === 'super_admin' || user?.role === 'contador' || user?.role === 'contadora') && (
+          {(user?.role === 'super_admin' ||
+            user?.role === 'contador' ||
+            user?.role === 'contadora') && (
             <>
               <EditarFolio
                 transaction={transaction}
@@ -262,7 +286,7 @@ export default function CobrosPage() {
                 size="icon"
                 title="Subir comprobante"
                 onClick={() => handleUploadClick(transaction)}
-                className='h-9 w-9 p-0 flex items-center justify-center'
+                className="h-9 w-9 p-0 flex items-center justify-center"
               >
                 <Upload className="h-4 w-4" />
               </Button>
@@ -339,7 +363,10 @@ export default function CobrosPage() {
       setDeletingImage(true);
       await deleteChargeImage(targetId);
 
-      toast({ title: 'Éxito', description: 'Comprobante eliminado correctamente.' });
+      toast({
+        title: 'Éxito',
+        description: 'Comprobante eliminado correctamente.',
+      });
 
       setImageModalOpen(false);
       setSelectedImage('');
@@ -348,7 +375,11 @@ export default function CobrosPage() {
       fetchIngresos(pagination.currentPage);
     } catch (error) {
       console.error(error);
-      toast({ title: 'Error', description: 'No se pudo eliminar.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar.',
+        variant: 'destructive',
+      });
     } finally {
       setDeletingImage(false);
     }
@@ -510,12 +541,9 @@ export default function CobrosPage() {
     setImageModalOpen(true);
   };
 
-
   const columnOptions = columnDefinitions
     .filter((col) => !col.alwaysVisible)
     .map((col) => ({ value: col.id, label: col.label }));
-
-
 
   const getVisibleColumns = () => {
     return columnDefinitions.filter(
@@ -540,7 +568,9 @@ export default function CobrosPage() {
         : 'sin-fecha';
 
       const label = parsedDate
-        ? monthFormatter.format(parsedDate).replace(/^\w/, (char) => char.toUpperCase())
+        ? monthFormatter
+            .format(parsedDate)
+            .replace(/^\w/, (char) => char.toUpperCase())
         : 'Sin fecha';
 
       if (!groups.has(key)) {
@@ -567,7 +597,7 @@ export default function CobrosPage() {
                 value={searchStudent}
                 onChange={(e) => {
                   setSearchStudent(e.target.value);
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 }}
                 className="w-full"
               />
@@ -580,7 +610,7 @@ export default function CobrosPage() {
                 value={searchFolio}
                 onChange={(e) => {
                   setSearchFolio(e.target.value);
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 }}
                 className="w-full"
               />
@@ -592,7 +622,7 @@ export default function CobrosPage() {
                 value={sortBy}
                 onValueChange={(val) => {
                   setSortBy(val);
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 }}
               >
                 <SelectTrigger className="w-full">
@@ -612,7 +642,7 @@ export default function CobrosPage() {
                 value={sortDirection}
                 onValueChange={(val) => {
                   setSortDirection(val);
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 }}
               >
                 <SelectTrigger className="w-full">
@@ -633,7 +663,7 @@ export default function CobrosPage() {
                 value={dateFrom}
                 onChange={(e) => {
                   setDateFrom(e.target.value);
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 }}
                 className="w-full"
               />
@@ -647,7 +677,7 @@ export default function CobrosPage() {
                 value={dateTo}
                 onChange={(e) => {
                   setDateTo(e.target.value);
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 }}
                 className="w-full"
               />
@@ -659,7 +689,7 @@ export default function CobrosPage() {
                 value={rangePreset}
                 onValueChange={(value) => {
                   setRangePreset(value);
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 }}
               >
                 <SelectTrigger className="w-full">
@@ -669,14 +699,19 @@ export default function CobrosPage() {
                   <SelectItem value="all">Todo</SelectItem>
                   <SelectItem value="current_month">Este mes</SelectItem>
                   <SelectItem value="last_3_months">Últimos 3 meses</SelectItem>
-                  <SelectItem value="last_100_folios">Últimos 100 folios</SelectItem>
+                  <SelectItem value="last_100_folios">
+                    Últimos 100 folios
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1">
               <Label className="text-xs">Grupo</Label>
-              <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+              <Select
+                value={selectedGroupId}
+                onValueChange={setSelectedGroupId}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Grupo" />
                 </SelectTrigger>
@@ -698,7 +733,7 @@ export default function CobrosPage() {
                 checked={groupByMonth}
                 onChange={(e) => {
                   setGroupByMonth(e.target.checked);
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                 }}
                 className="h-4 w-4"
               />
@@ -716,7 +751,7 @@ export default function CobrosPage() {
                     : selectedPaymentMethods[0]
                 }
                 onValueChange={(value) => {
-                  setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  setPagination((prev) => ({ ...prev, currentPage: 1 }));
                   if (value === 'all') {
                     setSelectedPaymentMethods(['all']);
                     setSelectedCard('all');
@@ -754,7 +789,7 @@ export default function CobrosPage() {
                     value={selectedCard}
                     onValueChange={(val) => {
                       setSelectedCard(val);
-                      setPagination(prev => ({ ...prev, currentPage: 1 }));
+                      setPagination((prev) => ({ ...prev, currentPage: 1 }));
                     }}
                   >
                     <SelectTrigger className="w-full">
@@ -817,8 +852,14 @@ export default function CobrosPage() {
                     groupByMonth ? (
                       groupedTransactionsByMonth.flatMap((group) => {
                         const monthLabelRow = (
-                          <TableRow key={`month-${group.label}`} className="bg-muted/40">
-                            <TableCell colSpan={getVisibleColumns().length} className="font-semibold">
+                          <TableRow
+                            key={`month-${group.label}`}
+                            className="bg-muted/40"
+                          >
+                            <TableCell
+                              colSpan={getVisibleColumns().length}
+                              className="font-semibold"
+                            >
                               {group.label} · {group.items.length} folios
                             </TableCell>
                           </TableRow>
@@ -919,25 +960,42 @@ export default function CobrosPage() {
           </DialogFooter>
           {user?.role === 'super_admin' && (
             <div className="py-4 border-t mt-4">
-              <h4 className="text-sm font-medium mb-2">Gestión de Comprobante (Solo Admin)</h4>
+              <h4 className="text-sm font-medium mb-2">
+                Gestión de Comprobante (Solo Admin)
+              </h4>
               {/* Cambia transaction.image por transactionToUpload?.image */}
               {transactionToUpload?.image ? (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1" asChild>
-                    <a href={transactionToUpload.image as string} target="_blank"> <Eye className="w-4 h-4 mr-2" /> Ver </a>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    asChild
+                  >
+                    <a
+                      href={transactionToUpload.image as string}
+                      target="_blank"
+                    >
+                      {' '}
+                      <Eye className="w-4 h-4 mr-2" /> Ver{' '}
+                    </a>
                   </Button>
                   {/* Cambia handleDelete por handleDeleteComprobante(transactionToUpload.id) */}
                   <Button
                     variant="destructive"
                     size="sm"
                     className="flex-1"
-                    onClick={() => handleDeleteComprobante(transactionToUpload.id)}
+                    onClick={() =>
+                      handleDeleteComprobante(transactionToUpload.id)
+                    }
                   >
                     <Trash2 className="w-4 h-4 mr-2" /> Eliminar
                   </Button>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground text-center">Sin comprobante</p>
+                <p className="text-xs text-muted-foreground text-center">
+                  Sin comprobante
+                </p>
               )}
             </div>
           )}
@@ -956,11 +1014,12 @@ export default function CobrosPage() {
         }}
       >
         <DialogContent className="max-w-4xl w-full h-[90vh] p-0 overflow-hidden bg-black/90 border-none [&>button]:text-white [&>button]:top-4 [&>button]:right-4">
-          <DialogTitle className="sr-only">Vista previa del comprobante</DialogTitle>
+          <DialogTitle className="sr-only">
+            Vista previa del comprobante
+          </DialogTitle>
           <DialogDescription className="sr-only">
             Imagen ampliada del comprobante de pago seleccionado
           </DialogDescription>
-
 
           <div className="absolute top-4 right-14 z-50 flex items-center gap-2">
             {canDeleteComprobante && (

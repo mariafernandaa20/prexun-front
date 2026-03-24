@@ -42,7 +42,9 @@ export default function EditarFolio({
       ? String(transaction.amount)
       : ''
   );
-  const [paymentMethod, setPaymentMethod] = useState(transaction.payment_method || 'cash');
+  const [paymentMethod, setPaymentMethod] = useState(
+    transaction.payment_method || 'cash'
+  );
   const { user } = useAuthStore();
   const [paymentDate, setPaymentDate] = useState(() => {
     if (!transaction.payment_date) return '';
@@ -124,7 +126,6 @@ export default function EditarFolio({
       await axiosInstance.put(`/charges/${transaction.id}`, {
         payment_date: paymentDate ? `${paymentDate} 12:00:00` : null,
       });
-
 
       toast({
         title: 'Fecha actualizada',
@@ -213,7 +214,9 @@ export default function EditarFolio({
           </DialogFooter>
         </form>
 
-        {(user?.role === 'super_admin' || user?.role === 'contador' || user?.role === 'contadora') && (
+        {(user?.role === 'super_admin' ||
+          user?.role === 'contador' ||
+          user?.role === 'contadora') && (
           <form onSubmit={handleSubmitPaymentMethod}>
             <div className="grid gap-2 py-4 border-t">
               <div className="grid grid-cols-4 items-center gap-2">
@@ -245,7 +248,9 @@ export default function EditarFolio({
           </form>
         )}
         <form onSubmit={handleSubmitDate}>
-          <div className="grid gap-2 py-4 border-t mt-4"> {/* Agregué un borde para separar */}
+          <div className="grid gap-2 py-4 border-t mt-4">
+            {' '}
+            {/* Agregué un borde para separar */}
             <div className="grid grid-cols-4 items-center gap-2">
               <Label htmlFor="payment_date" className="text-right">
                 Fecha Pago

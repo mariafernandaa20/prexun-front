@@ -231,8 +231,6 @@ const BulkActions: React.FC<BulkActionsProps> = ({
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 w-full">
-
-
       <Button
         disabled={selectedStudents.length === 0}
         onClick={handleBulkMarkAsActive}

@@ -88,16 +88,40 @@ function AttendanceListContent() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
-  const [attendanceTimes, setAttendanceTimes] = useState<Record<string, string>>({});
-  const [attendanceNotes, setAttendanceNotes] = useState<Record<string, string>>({});
-  const [attendanceIds, setAttendanceIds] = useState<Record<string, string>>({});
+  const [attendanceTimes, setAttendanceTimes] = useState<
+    Record<string, string>
+  >({});
+  const [attendanceNotes, setAttendanceNotes] = useState<
+    Record<string, string>
+  >({});
+  const [attendanceIds, setAttendanceIds] = useState<Record<string, string>>(
+    {}
+  );
   const [students, setStudents] = useState<StudentWithGroup[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedAttendance, setSelectedAttendance] = useState<AttendanceData | null>(null);
-  const [selectedAttendanceKey, setSelectedAttendanceKey] = useState<string | null>(null);
+  const [selectedAttendance, setSelectedAttendance] =
+    useState<AttendanceData | null>(null);
+  const [selectedAttendanceKey, setSelectedAttendanceKey] = useState<
+    string | null
+  >(null);
 
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+  const [hasUnsavedChanges, _setHasUnsavedChanges] = useState<boolean>(false);
+  const hasUnsavedChangesRef = useRef(false);
+  const setHasUnsavedChanges = (
+    val: boolean | ((prev: boolean) => boolean)
+  ) => {
+    if (typeof val === 'function') {
+      _setHasUnsavedChanges((prev) => {
+        const nextVal = val(prev);
+        hasUnsavedChangesRef.current = nextVal;
+        return nextVal;
+      });
+    } else {
+      hasUnsavedChangesRef.current = val;
+      _setHasUnsavedChanges(val);
+    }
+  };
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const hasHydratedFromQueryRef = useRef(false);
 
@@ -130,7 +154,11 @@ function AttendanceListContent() {
     if (!Array.isArray(periods) || periods.length === 0) return null;
 
     const today = new Date();
-    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
 
     const activePeriod = periods.find((period: any) => {
       const start = new Date(`${period.start_date}T00:00:00`);
@@ -141,7 +169,8 @@ function AttendanceListContent() {
     if (activePeriod?.id) return String(activePeriod.id);
 
     const sortedByStartDate = [...periods].sort(
-      (a: any, b: any) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+      (a: any, b: any) =>
+        new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
     );
 
     return sortedByStartDate[0]?.id ? String(sortedByStartDate[0].id) : null;
@@ -252,27 +281,32 @@ function AttendanceListContent() {
   }, [periodId, periods, config?.default_period_id, currentPeriodId]);
 
   useEffect(() => {
+    if (!hasHydratedFromQueryRef.current || grupos.length === 0) return;
+
     if (filteredGroups.length === 0) {
+      if (!activeCampus) return;
       setSelectedGrupos((prev) => (prev.length === 0 ? prev : []));
       setStudents((prev) => (prev.length === 0 ? prev : []));
-      setAttendance((prev) =>
-        Object.keys(prev).length === 0 ? prev : {}
-      );
+      setAttendance((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       setAttendanceTimes((prev) =>
         Object.keys(prev).length === 0 ? prev : {}
       );
       setAttendanceNotes((prev) =>
         Object.keys(prev).length === 0 ? prev : {}
       );
-      setAttendanceIds((prev) =>
-        Object.keys(prev).length === 0 ? prev : {}
-      );
+      setAttendanceIds((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       setHasUnsavedChanges((prev) => (prev ? false : prev));
       return;
     }
 
     const validIds = new Set(filteredGroups.map((g) => String(g.id)));
-    const nextSelected = selectedGrupos.filter((id) => validIds.has(String(id)));
+    const nextSelected = selectedGrupos.filter((id) =>
+      validIds.has(String(id))
+    );
+
+    if (nextSelected.length === 0 && selectedGrupos.length > 0) {
+      if (!activeCampus) return;
+    }
 
     const changed =
       nextSelected.length !== selectedGrupos.length ||
@@ -286,7 +320,7 @@ function AttendanceListContent() {
     if (nextSelected.length === 0) {
       setSelectedGrupos([String(filteredGroups[0].id)]);
     }
-  }, [filteredGroups, selectedGrupos]);
+  }, [filteredGroups, selectedGrupos, grupos.length, activeCampus]);
 
   useEffect(() => {
     if (!hasHydratedFromQueryRef.current) return;
@@ -319,11 +353,13 @@ function AttendanceListContent() {
 
   async function fetchStudentsForGrupo(grupoId: string) {
     try {
-      const params: any = {};
+      const params: any = { _t: Date.now() };
       if (activeCampus?.id) {
         params.plantel_id = activeCampus.id;
       }
-      const response = await axiosInstance.get(`/grupos/${grupoId}/students`, { params });
+      const response = await axiosInstance.get(`/grupos/${grupoId}/students`, {
+        params,
+      });
       return response.data as Student[];
     } catch (error) {
       console.error('Error fetching students for group:', error);
@@ -337,7 +373,7 @@ function AttendanceListContent() {
     currentStudents: StudentWithGroup[]
   ) => {
     const formattedDate = formatDateToLocalIso(date);
-    const params: any = {};
+    const params: any = { _t: Date.now() };
     if (activeCampus?.id) {
       params.plantel_id = activeCampus.id;
     }
@@ -406,7 +442,7 @@ function AttendanceListContent() {
 
     let cancelled = false;
 
-    const loadAttendancePageData = async () => {
+    const loadAttendancePageData = async (isPolling = false) => {
       const groupResults = await Promise.all(
         selectedGrupos.map(async (grupoId) => {
           const fetchedStudents = await fetchStudentsForGrupo(grupoId);
@@ -420,12 +456,14 @@ function AttendanceListContent() {
             return firstA.localeCompare(firstB);
           });
 
-          const studentsWithGroup: StudentWithGroup[] = sortedStudents.map((student) => ({
-            ...student,
-            grupo_id: grupoId,
-            grupo_name: getGroupNameById(grupoId),
-            attendance_key: `${grupoId}-${student.id}`,
-          }));
+          const studentsWithGroup: StudentWithGroup[] = sortedStudents.map(
+            (student) => ({
+              ...student,
+              grupo_id: grupoId,
+              grupo_name: getGroupNameById(grupoId),
+              attendance_key: `${grupoId}-${student.id}`,
+            })
+          );
 
           const groupAttendance = await fetchAttendanceForDate(
             selectedDate,
@@ -441,6 +479,7 @@ function AttendanceListContent() {
       );
 
       if (cancelled) return;
+      if (isPolling && hasUnsavedChangesRef.current) return;
 
       const mergedStudents = groupResults
         .flatMap((result) => result.students)
@@ -457,26 +496,45 @@ function AttendanceListContent() {
         {},
         ...groupResults.map((result) => result.attendanceMap)
       );
-      const mergedTimes = Object.assign({}, ...groupResults.map((result) => result.timeMap));
-      const mergedNotes = Object.assign({}, ...groupResults.map((result) => result.notesMap));
-      const mergedIds = Object.assign({}, ...groupResults.map((result) => result.idsMap));
+      const mergedTimes = Object.assign(
+        {},
+        ...groupResults.map((result) => result.timeMap)
+      );
+      const mergedNotes = Object.assign(
+        {},
+        ...groupResults.map((result) => result.notesMap)
+      );
+      const mergedIds = Object.assign(
+        {},
+        ...groupResults.map((result) => result.idsMap)
+      );
 
       setStudents(mergedStudents);
       setAttendance(mergedAttendance);
       setAttendanceTimes(mergedTimes);
       setAttendanceNotes(mergedNotes);
       setAttendanceIds(mergedIds);
-      setHasUnsavedChanges(false);
+      if (!isPolling) {
+        setHasUnsavedChanges(false);
+      }
     };
 
-    loadAttendancePageData();
+    loadAttendancePageData(false);
+
+    const intervalId = setInterval(() => {
+      loadAttendancePageData(true);
+    }, 500);
 
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
     };
   }, [selectedGrupos, selectedDate, activeCampus?.id]);
 
-  const handleAttendanceChange = async (attendanceKey: string, checked: boolean) => {
+  const handleAttendanceChange = async (
+    attendanceKey: string,
+    checked: boolean
+  ) => {
     const [grupoId] = attendanceKey.split('-');
 
     const nextAttendance = {
@@ -517,27 +575,35 @@ function AttendanceListContent() {
     try {
       const formattedDate = formatDateToLocalIso(selectedDate);
       const attendanceState = options?.attendanceSnapshot ?? attendance;
-      const attendanceTimesState = options?.attendanceTimesSnapshot ?? attendanceTimes;
-      const attendanceNotesState = options?.attendanceNotesSnapshot ?? attendanceNotes;
+      const attendanceTimesState =
+        options?.attendanceTimesSnapshot ?? attendanceTimes;
+      const attendanceNotesState =
+        options?.attendanceNotesSnapshot ?? attendanceNotes;
 
       const attendances = grupoIdsToSave.map((grupoId) => {
-        const groupStudents = students.filter((student) => student.grupo_id === grupoId);
+        const groupStudents = students.filter(
+          (student) => student.grupo_id === grupoId
+        );
 
         return {
           grupo_id: grupoId,
           attendance: groupStudents.map((student) => ({
             student_id: student.id,
             present: attendanceState[student.attendance_key] || false,
-            attendance_time: attendanceTimesState[student.attendance_key] || null,
+            attendance_time:
+              attendanceTimesState[student.attendance_key] || null,
             notes: attendanceNotesState[student.attendance_key] || null,
           })),
         };
       });
 
-      const response = await axiosInstance.post<SaveAttendanceResponse>('/teacher/attendance', {
-        date: formattedDate,
-        attendances,
-      });
+      const response = await axiosInstance.post<SaveAttendanceResponse>(
+        '/teacher/attendance',
+        {
+          date: formattedDate,
+          attendances,
+        }
+      );
 
       const processedRecords = response.data?.processed_records || [];
       if (processedRecords.length > 0) {
@@ -618,7 +684,9 @@ function AttendanceListContent() {
     setAttendanceNotes(nextAttendanceNotes);
     setHasUnsavedChanges(true);
 
-    const groupsToSave = Array.from(new Set(missingStudents.map((student) => student.grupo_id)));
+    const groupsToSave = Array.from(
+      new Set(missingStudents.map((student) => student.grupo_id))
+    );
     const saved = await saveAttendanceForGroups(groupsToSave, {
       attendanceSnapshot: nextAttendance,
       attendanceTimesSnapshot: nextAttendanceTimes,
@@ -808,7 +876,11 @@ function AttendanceListContent() {
                 >
                   Marcar inasistencias
                 </Button>
-                <Button className="text-xs" onClick={handleSaveAttendance} disabled={isSaving}>
+                <Button
+                  className="text-xs"
+                  onClick={handleSaveAttendance}
+                  disabled={isSaving}
+                >
                   {isSaving ? 'Guardando...' : 'Guardar'}
                 </Button>
               </div>
@@ -819,7 +891,9 @@ function AttendanceListContent() {
                 <TableRow>
                   <TableHead className="py-3 px-4">Grupo</TableHead>
                   <TableHead className="py-3 px-4">Matrícula</TableHead>
-                  <TableHead className="py-3 px-4">Estudiante (Apellido Nombre)</TableHead>
+                  <TableHead className="py-3 px-4">
+                    Estudiante (Apellido Nombre)
+                  </TableHead>
                   <TableHead className="py-3 px-4">Asistencia</TableHead>
                   <TableHead className="py-3 px-4">Hora de Registro</TableHead>
                   <TableHead className="py-3 px-4">Notas</TableHead>
@@ -829,7 +903,9 @@ function AttendanceListContent() {
               <TableBody>
                 {students.map((student) => (
                   <TableRow key={student.attendance_key}>
-                    <TableCell className="py-3 px-4">{student.grupo_name}</TableCell>
+                    <TableCell className="py-3 px-4">
+                      {student.grupo_name}
+                    </TableCell>
                     <TableCell className="py-3 px-4">
                       {student.matricula || student.id}
                     </TableCell>
@@ -844,25 +920,37 @@ function AttendanceListContent() {
                     </TableCell>
                     <TableCell className="py-3 px-4">
                       {(() => {
-                        const hasRecord = Boolean(attendanceIds[student.attendance_key]);
-                        const isPresent = attendance[student.attendance_key] || false;
+                        const hasRecord = Boolean(
+                          attendanceIds[student.attendance_key]
+                        );
+                        const isPresent =
+                          attendance[student.attendance_key] || false;
 
                         return (
                           <div className="flex items-center gap-2">
                             <Checkbox
                               checked={isPresent}
                               onCheckedChange={(checked) =>
-                                handleAttendanceChange(student.attendance_key, checked as boolean)
+                                handleAttendanceChange(
+                                  student.attendance_key,
+                                  checked as boolean
+                                )
                               }
                               className="h-5 w-5"
                             />
 
                             {isPresent ? (
-                              <span className="text-xs font-medium text-green-600">✓ Presente</span>
+                              <span className="text-xs font-medium text-green-600">
+                                ✓ Presente
+                              </span>
                             ) : hasRecord ? (
-                              <span className="text-xs font-medium text-red-600">✕ Inasistencia</span>
+                              <span className="text-xs font-medium text-red-600">
+                                ✕ Inasistencia
+                              </span>
                             ) : (
-                              <span className="text-xs text-gray-500">Sin registrar</span>
+                              <span className="text-xs text-gray-500">
+                                Sin registrar
+                              </span>
                             )}
                           </div>
                         );
@@ -871,7 +959,7 @@ function AttendanceListContent() {
                     <TableCell className="py-3 px-4 text-gray-600">
                       <div className="flex items-center gap-1">
                         {attendance[student.attendance_key] &&
-                        attendanceTimes[student.attendance_key] ? (
+                          attendanceTimes[student.attendance_key] ? (
                           <>
                             <Clock className="h-3 w-3" />
                             {new Date(
@@ -913,7 +1001,6 @@ function AttendanceListContent() {
                 ))}
               </TableBody>
             </Table>
-
           </>
         )}
       </div>

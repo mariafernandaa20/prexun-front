@@ -31,7 +31,9 @@ export default function GoogleAuth() {
     if (!activeCampus?.id) return;
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get(`/campuses/${activeCampus.id}/google-sessions`);
+      const response = await axiosInstance.get(
+        `/campuses/${activeCampus.id}/google-sessions`
+      );
       setSessions(response.data);
     } catch (error) {
       console.error('Error cargando sesiones de Google:', error);
@@ -44,7 +46,9 @@ export default function GoogleAuth() {
     if (!activeCampus?.id) return;
     setIsLinking(true);
     try {
-      const response = await axiosInstance.get(`/google/auth-url?campus_id=${activeCampus.id}`);
+      const response = await axiosInstance.get(
+        `/google/auth-url?campus_id=${activeCampus.id}`
+      );
       if (response.data?.url) {
         window.location.href = response.data.url;
       }
@@ -97,7 +101,7 @@ export default function GoogleAuth() {
           </div>
         ))
       )}
-      
+
       <Button
         variant="outline"
         size="sm"

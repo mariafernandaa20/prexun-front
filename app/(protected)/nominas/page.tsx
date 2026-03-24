@@ -24,14 +24,16 @@ export default function NominasPage() {
     <SectionContainer>
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Gestión de Nóminas</h1>
-        <p className="text-muted-foreground text-sm">Administra y firma los recibos de nómina de los empleados.</p>
+        <p className="text-muted-foreground text-sm">
+          Administra y firma los recibos de nómina de los empleados.
+        </p>
       </div>
-      
+
       {isContador && (
         <div className="mb-6 flex items-center justify-end gap-2 border-b pb-4">
           <p className="text-sm text-muted-foreground mr-2">Simular rol:</p>
-          <Button 
-            variant={role === 'contador' ? 'default' : 'outline'} 
+          <Button
+            variant={role === 'contador' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setRole('contador')}
             className="flex gap-2"
@@ -39,8 +41,8 @@ export default function NominasPage() {
             <ShieldCheck className="h-4 w-4" />
             Administrador (Contador)
           </Button>
-          <Button 
-            variant={role === 'usuario' ? 'default' : 'outline'} 
+          <Button
+            variant={role === 'usuario' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setRole('usuario')}
             className="flex gap-2"

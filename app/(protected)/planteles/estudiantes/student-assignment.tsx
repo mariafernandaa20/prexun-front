@@ -97,17 +97,24 @@ export default function StudentPeriod({
   onRefresh,
 }: StudentPeriodProps) {
   const { toast } = useToast();
-  const { periods, getFilteredGrupos, getFilteredSemanas, carreras, facultades, campuses } = useAuthStore();
+  const {
+    periods,
+    getFilteredGrupos,
+    getFilteredSemanas,
+    carreras,
+    facultades,
+    campuses,
+  } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
   const { config } = useUIConfig();
-
-
 
   const [assignments, setAssignments] = useState<StudentAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [resyncingAssignmentId, setResyncingAssignmentId] = useState<number | null>(null);
+  const [resyncingAssignmentId, setResyncingAssignmentId] = useState<
+    number | null
+  >(null);
   const [editingAssignment, setEditingAssignment] =
     useState<StudentAssignment | null>(null);
   const [formData, setFormData] = useState<AssignmentFormData>({
@@ -127,13 +134,19 @@ export default function StudentPeriod({
     book_general: 'no entregado',
   });
 
-  const grupos = getFilteredGrupos(activeCampus?.id, formData.period_id || config?.default_period_id);
-  const semanasIntensivas = getFilteredSemanas(activeCampus?.id, formData.period_id || config?.default_period_id);
+  const grupos = getFilteredGrupos(
+    activeCampus?.id,
+    formData.period_id || config?.default_period_id
+  );
+  const semanasIntensivas = getFilteredSemanas(
+    activeCampus?.id,
+    formData.period_id || config?.default_period_id
+  );
 
   // Sincronizar el periodo por defecto cuando carga la configuración global
   useEffect(() => {
     if (config?.default_period_id && !formData.period_id) {
-      setFormData(prev => ({ ...prev, period_id: config.default_period_id }));
+      setFormData((prev) => ({ ...prev, period_id: config.default_period_id }));
     }
   }, [config?.default_period_id]);
 
@@ -495,8 +508,15 @@ export default function StudentPeriod({
                           <SelectContent>
                             <SelectItem value="none">Ninguno</SelectItem>
                             {grupos.map((grupo) => {
-                              const available = (grupo.capacity || 0) - (grupo.active_assignments_count || 0);
-                              const colorClass = available <= 0 ? 'text-red-500' : available <= 5 ? 'text-yellow-500' : 'text-green-500';
+                              const available =
+                                (grupo.capacity || 0) -
+                                (grupo.active_assignments_count || 0);
+                              const colorClass =
+                                available <= 0
+                                  ? 'text-red-500'
+                                  : available <= 5
+                                    ? 'text-yellow-500'
+                                    : 'text-green-500';
                               return (
                                 <SelectItem
                                   key={grupo.id}
@@ -504,8 +524,10 @@ export default function StudentPeriod({
                                 >
                                   {grupo.name} (
                                   <span className={colorClass}>
-                                    {grupo.active_assignments_count || 0}/{grupo.capacity}
-                                  </span>)
+                                    {grupo.active_assignments_count || 0}/
+                                    {grupo.capacity}
+                                  </span>
+                                  )
                                 </SelectItem>
                               );
                             })}
@@ -534,8 +556,15 @@ export default function StudentPeriod({
                           <SelectContent>
                             <SelectItem value="none">Ninguna</SelectItem>
                             {semanasIntensivas.map((semana) => {
-                              const available = (semana.capacity || 0) - (semana.active_assignments_count || 0);
-                              const colorClass = available <= 0 ? 'text-red-500' : available <= 5 ? 'text-yellow-500' : 'text-green-500';
+                              const available =
+                                (semana.capacity || 0) -
+                                (semana.active_assignments_count || 0);
+                              const colorClass =
+                                available <= 0
+                                  ? 'text-red-500'
+                                  : available <= 5
+                                    ? 'text-yellow-500'
+                                    : 'text-green-500';
                               return (
                                 <SelectItem
                                   key={semana.id}
@@ -543,8 +572,10 @@ export default function StudentPeriod({
                                 >
                                   {semana.name} (
                                   <span className={colorClass}>
-                                    {semana.active_assignments_count || 0}/{semana.capacity}
-                                  </span>)
+                                    {semana.active_assignments_count || 0}/
+                                    {semana.capacity}
+                                  </span>
+                                  )
                                 </SelectItem>
                               );
                             })}
@@ -571,7 +602,8 @@ export default function StudentPeriod({
                           }
                           placeholder="Seleccionar carrera (opcional)"
                           onChange={(value) =>
-                            handleInputChange('carrer_id',
+                            handleInputChange(
+                              'carrer_id',
                               value !== null && value !== ''
                                 ? Number.parseInt(value, 10)
                                 : null
@@ -584,8 +616,6 @@ export default function StudentPeriod({
                     </div>
                   </div>
 
-
-
                   {/* Sección: Entrega de Libro */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
@@ -597,10 +627,6 @@ export default function StudentPeriod({
                     <Separator />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-
-
-
                       <div className="space-y-2">
                         <Label htmlFor="book_general">Libro General</Label>
                         <Select
@@ -654,7 +680,6 @@ export default function StudentPeriod({
                           </SelectContent>
                         </Select>
                       </div>
-
 
                       <div className="space-y-2 md:col-span-2">
                         <Label htmlFor="book_notes">Notas adicionales</Label>
@@ -790,11 +815,15 @@ export default function StudentPeriod({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleResyncToMoodle(assignment.id!)}
+                              onClick={() =>
+                                handleResyncToMoodle(assignment.id!)
+                              }
                               disabled={resyncingAssignmentId === assignment.id}
                               className="h-8 w-8 p-0"
                             >
-                              <RefreshCw className={`h-4 w-4 ${resyncingAssignmentId === assignment.id ? 'animate-spin' : ''}`} />
+                              <RefreshCw
+                                className={`h-4 w-4 ${resyncingAssignmentId === assignment.id ? 'animate-spin' : ''}`}
+                              />
                             </Button>
                             <Button
                               variant="ghost"

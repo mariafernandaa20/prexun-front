@@ -4,7 +4,12 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Student, Transaction, Card as CardType } from '@/lib/types';
 import {
   Table,
@@ -92,7 +97,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 student_id={transaction.student_id}
                 transaction={transaction}
                 formData={transaction}
-                setFormData={() => { }}
+                setFormData={() => {}}
                 onTransactionUpdate={onUpdateTransaction}
                 icon={false}
               />
@@ -102,7 +107,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                   size="icon"
                   className="text-red-500 hover:text-red-700 hover:bg-red-50"
                   onClick={async () => {
-                    if (confirm('¿Estás seguro de eliminar el comprobante de esta transacción?')) {
+                    if (
+                      confirm(
+                        '¿Estás seguro de eliminar el comprobante de esta transacción?'
+                      )
+                    ) {
                       try {
                         await deleteChargeImage(transaction.id!);
                         onRefresh();
@@ -119,8 +128,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             </div>
           </TableCell>
           <TableCell>
-
-
             {transaction?.paid ? (
               <>
                 {transaction?.folio_new + ' '}
@@ -136,7 +143,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             ) : (
               'No Pagado'
             )}
-
           </TableCell>
 
           <TableCell>
@@ -189,7 +195,9 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
       setError(null);
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error('Error al cargar datos del estudiante')
+        err instanceof Error
+          ? err
+          : new Error('Error al cargar datos del estudiante')
       );
     } finally {
       setLoading(false);
@@ -226,10 +234,10 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
         ...prevStudent,
         transactions: transactionExists
           ? prevStudent.transactions.map((transaction) =>
-            transaction.id === updatedTransaction.id
-              ? updatedTransaction
-              : transaction
-          )
+              transaction.id === updatedTransaction.id
+                ? updatedTransaction
+                : transaction
+            )
           : [...prevStudent.transactions, updatedTransaction],
       };
     });
@@ -247,7 +255,6 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
 }
 
 export function StudentComponent({ slug }: { slug: string[] }) {
-
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -259,8 +266,15 @@ export function StudentComponent({ slug }: { slug: string[] }) {
   const activeTab = searchParams.get('tab') || 'pagos';
 
   const campusId = useActiveCampusStore((state) => state.activeCampus?.id);
-  const { student, loading, error, updateTransaction, refetch, cards, notesCount } =
-    useStudentData(studentId, campusId);
+  const {
+    student,
+    loading,
+    error,
+    updateTransaction,
+    refetch,
+    cards,
+    notesCount,
+  } = useStudentData(studentId, campusId);
   const [showNotes, setShowNotes] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
@@ -305,10 +319,9 @@ export function StudentComponent({ slug }: { slug: string[] }) {
     <div className="space-y-4 ">
       <Card className="w-full">
         <CardHeader className="sticky top-0 z-8 bg-card">
-
-          <div className='grid grid-cols-1 xl:grid-cols-4 gap-4'>
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
             <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-              <div className='md:col-span-2 lg:col-span-3'>
+              <div className="md:col-span-2 lg:col-span-3">
                 <div className="flex flex-col lg:flex-row items-center gap-4">
                   <div className="flex flex-col">
                     <h1 className="text-2xl font-bold">
@@ -324,7 +337,9 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                       studentId={student.id}
                       onPurchaseComplete={handlePurchaseComplete}
                     />
-                    <UpdatePersonalInfo student={studentForUpdatePersonalInfo} />
+                    <UpdatePersonalInfo
+                      student={studentForUpdatePersonalInfo}
+                    />
                     <UpdatePassword studentId={Number(student.id)} />
                     <Button
                       variant="outline"
@@ -378,7 +393,9 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 </p>
                 <p>
                   <span className="text-muted-foreground">Grupo:</span>{' '}
-                  {student?.grupo ? student.grupo.name : (student?.grupo_id || 'No asignado')}
+                  {student?.grupo
+                    ? student.grupo.name
+                    : student?.grupo_id || 'No asignado'}
                 </p>
                 <p>
                   <span className="text-muted-foreground">
@@ -397,12 +414,12 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 <h3 className="font-semibold">Etiquetas</h3>
                 <StudentTagsSelector
                   studentId={Number(student.id)}
-                  initialTags={(student.tags || []).map(tag => ({
+                  initialTags={(student.tags || []).map((tag) => ({
                     id: tag.id,
                     name: tag.name,
                     campus_id: tag.campus_id,
                     created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
+                    updated_at: new Date().toISOString(),
                   }))}
                   onTagsChange={(tags) => {
                     if (student) {
@@ -430,31 +447,32 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                   <span className="text-muted-foreground">Último pago:</span>{' '}
                   {student.transactions?.length
                     ? formatTime({
-                      time: student.transactions[
-                        student.transactions.length - 1
-                      ].payment_date,
-                    })
+                        time: student.transactions[
+                          student.transactions.length - 1
+                        ].payment_date,
+                      })
                     : 'Sin pagos'}
                 </p>
               </div>
-
             </div>
             <StudentAttendance studentId={student.id} />
           </div>
         </CardHeader>
-        <CardContent>
-
-        </CardContent>
+        <CardContent></CardContent>
       </Card>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="pagos">Pagos y Deudas</TabsTrigger>
           <TabsTrigger value="asignacion">Asignación</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pagos" className="space-y-4">
-          <div className='flex flex-col gap-4'>
+          <div className="flex flex-col gap-4">
             {!SAT && (
               <div className="lg:col-span-2">
                 <StudentDebtsManager
@@ -501,10 +519,9 @@ export function StudentComponent({ slug }: { slug: string[] }) {
 
         <TabsContent value="asignacion" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className='col-span-2 flex-col flex gap-4'>
+            <div className="col-span-2 flex-col flex gap-4">
               <StudentAssignment student={student} onRefresh={refetch} />
               <StudentGrades studentId={student.id} />
-
             </div>
           </div>
         </TabsContent>
@@ -526,7 +543,6 @@ export function StudentComponent({ slug }: { slug: string[] }) {
           <DialogHeader>
             <DialogTitle>Notas de {student.firstname}</DialogTitle>
           </DialogHeader>
-
         </DialogContent>
       </Dialog>
     </div>
