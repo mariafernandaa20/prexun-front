@@ -272,7 +272,7 @@ export default function CalificacionesPage() {
         const gradesRes = await axiosInstance.post('/students/batch-grades', {
           student_ids: studentIds,
         });
-        
+
         if (gradesRes.data && typeof gradesRes.data === 'object') {
           setGrades(gradesRes.data);
         } else {
@@ -483,7 +483,18 @@ export default function CalificacionesPage() {
           {/* Tabla de estudiantes a la izquierda */}
           <Card className="flex-1 flex flex-col">
             <CardHeader>
-              <CardTitle>Alumnos y Notas</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>Alumnos y Notas</span>
+                {!loadingEstudiantes && students.length > 0 && (
+                  <span className="text-sm font-normal text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full border">
+                    {searchQuery
+                      ? `Mostrando ${filteredStudents.length} de ${students.length}`
+                      : `${students.length} ${
+                          students.length === 1 ? 'alumno' : 'alumnos'
+                        }`}
+                  </span>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto">
               {loadingEstudiantes ? (
