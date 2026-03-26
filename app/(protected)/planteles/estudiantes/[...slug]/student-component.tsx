@@ -339,6 +339,7 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                     />
                     <UpdatePersonalInfo
                       student={studentForUpdatePersonalInfo}
+                      onSuccess={refetch}
                     />
                     <UpdatePassword studentId={Number(student.id)} />
                     <Button
@@ -383,6 +384,10 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                 <p>
                   <span className="text-muted-foreground">Teléfono:</span>{' '}
                   {student.phone || 'No registrado'}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Plantel:</span>{' '}
+                  {student.campus?.name || 'No asignado'}
                 </p>
               </div>
               <div className="space-y-2">
