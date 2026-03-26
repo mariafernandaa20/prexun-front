@@ -107,6 +107,7 @@ export interface Student {
   | 'En línea y en fisico';
   transactions?: Transaction[];
   grupo?: Grupo;
+  campus?: Campus;
   semana_intensiva_id: number | null;
   tags?: Array<{
     id: number;

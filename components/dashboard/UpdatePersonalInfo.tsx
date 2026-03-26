@@ -11,7 +11,7 @@ import {
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { updateStudent } from '@/lib/api/studentApi';
-import { getGrupos, getSemanas } from '@/lib/api';
+import { getGrupos, getSemanas, getCampuses } from '@/lib/api';
 import {
   Select,
   SelectContent,
@@ -27,6 +27,12 @@ interface Student {
   firstname: string;
   lastname: string;
   grupo_id?: number;
+  campus_id: number;
+}
+
+interface Campus {
+  id: number;
+  name: string;
 }
 
 interface Grupo {
@@ -36,9 +42,10 @@ interface Grupo {
   students_count?: number;
 }
 
-export default function UpdatePersonalInfo({ student }: { student: Student }) {
+export default function UpdatePersonalInfo({ student, onSuccess }: { student: Student; onSuccess?: () => void }) {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [semanas, setSemanas] = useState<Grupo[]>([]);
+  const [campuses, setCampuses] = useState<Campus[]>([]);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     id: student.id,
@@ -47,22 +54,27 @@ export default function UpdatePersonalInfo({ student }: { student: Student }) {
     lastname: student.lastname,
     grupo_id: student.grupo_id || '',
     semana_intensiva_id: student.grupo_id || '',
+    campus_id: student.campus_id || '',
   });
 
   useEffect(() => {
-    const fetchGrupos = async () => {
+    const fetchData = async () => {
       try {
-        const grupos = await getGrupos();
-        const semanas = await getSemanas();
+        const [gruposData, semanasData, campusesData] = await Promise.all([
+          getGrupos(),
+          getSemanas(),
+          getCampuses(),
+        ]);
 
-        setSemanas(semanas);
-        setGrupos(grupos);
+        setSemanas(semanasData);
+        setGrupos(gruposData);
+        setCampuses(campusesData);
       } catch (error) {
-        console.error('Error al cargar grupos:', error);
+        console.error('Error al cargar datos:', error);
       }
     };
 
-    fetchGrupos();
+    fetchData();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,6 +101,7 @@ export default function UpdatePersonalInfo({ student }: { student: Student }) {
         description:
           'Tu información personal ha sido actualizada correctamente.',
       });
+      if (onSuccess) onSuccess();
       setOpen(false);
     } else {
       toast({
@@ -150,6 +163,25 @@ export default function UpdatePersonalInfo({ student }: { student: Student }) {
               placeholder="Apellido"
               required
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="campus_id">Plantel</Label>
+            <Select
+              name="campus_id"
+              value={formData.campus_id.toString()}
+              onValueChange={(value) => handleSelectChange(value, 'campus_id')}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el plantel" />
+              </SelectTrigger>
+              <SelectContent>
+                {campuses.map((campus) => (
+                  <SelectItem key={campus.id} value={campus.id.toString()}>
+                    {campus.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {/* <div className="space-y-2">
             <Label htmlFor="grupo_id">Grupo</Label>
