@@ -97,7 +97,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 student_id={transaction.student_id}
                 transaction={transaction}
                 formData={transaction}
-                setFormData={() => {}}
+                setFormData={() => { }}
                 onTransactionUpdate={onUpdateTransaction}
                 icon={false}
               />
@@ -187,12 +187,15 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
     setLoading(true);
     try {
       const studentData = await getStudent(studentId);
+      studentData.moodle_lastaccess = null;
       setStudent(studentData);
 
       const notesData = await getStudentNotes(studentId);
       setNotesCount(notesData.notes?.length || 0);
 
       setError(null);
+
+      fetchMoodleActivity(studentId);
     } catch (err) {
       setError(
         err instanceof Error
@@ -201,6 +204,21 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMoodleActivity = async (id: number) => {
+    try {
+      const response = await axiosInstance.get(
+        `/student/${id}/moodle-activity`
+      );
+      setStudent((prev) =>
+        prev
+          ? { ...prev, moodle_lastaccess: response.data.moodle_lastaccess }
+          : prev
+      );
+    } catch (err) {
+      console.error('Error fetching moodle activity:', err);
     }
   };
 
@@ -234,10 +252,10 @@ function useStudentData(studentId: number, campusId?: number): UseStudentData {
         ...prevStudent,
         transactions: transactionExists
           ? prevStudent.transactions.map((transaction) =>
-              transaction.id === updatedTransaction.id
-                ? updatedTransaction
-                : transaction
-            )
+            transaction.id === updatedTransaction.id
+              ? updatedTransaction
+              : transaction
+          )
           : [...prevStudent.transactions, updatedTransaction],
       };
     });
@@ -302,6 +320,9 @@ export function StudentComponent({ slug }: { slug: string[] }) {
   };
 
   const getLastConnectionLabel = () => {
+    if (student.moodle_lastaccess === undefined) {
+      return 'Cargando...';
+    }
     if (!student.moodle_lastaccess) {
       return 'Sin conexión registrada';
     }
@@ -452,10 +473,10 @@ export function StudentComponent({ slug }: { slug: string[] }) {
                   <span className="text-muted-foreground">Último pago:</span>{' '}
                   {student.transactions?.length
                     ? formatTime({
-                        time: student.transactions[
-                          student.transactions.length - 1
-                        ].payment_date,
-                      })
+                      time: student.transactions[
+                        student.transactions.length - 1
+                      ].payment_date,
+                    })
                     : 'Sin pagos'}
                 </p>
               </div>
