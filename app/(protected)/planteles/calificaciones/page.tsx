@@ -300,8 +300,9 @@ export default function CalificacionesPage() {
         setStudents(studentsData);
 
         if (studentsData.length > 0) {
-          await fetchGradesInBackground(studentsData, false);
-          fetchGradesInBackground(studentsData, true);
+          fetchGradesInBackground(studentsData, false).finally(() => {
+            if (active) fetchGradesInBackground(studentsData, true);
+          });
         } else {
           setGrades({});
         }
