@@ -11,7 +11,10 @@ import {
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Search, MessageCircle } from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { getGrupos, getCampuses, getPeriods } from '@/lib/api';
 import { Grupo, Campus, Period } from '@/lib/types';
@@ -25,7 +28,35 @@ interface Student {
   lastname: string;
   email: string;
   matricula: string | null;
+  phone?: string;
 }
+
+interface MessageTemplate {
+  id: string;
+  name: string;
+  content: string;
+}
+
+const whatsappTemplates: MessageTemplate[] = [
+  {
+    id: 'resumen',
+    name: 'Resumen general',
+    content:
+      'Hola {{nombre}}, te compartimos tu avance:\n\n{{calificaciones}}\n\n¡Sigue esforzándote!',
+  },
+  {
+    id: 'seguimiento',
+    name: 'Seguimiento académico',
+    content:
+      'Hola {{nombre}}, este es el seguimiento de tus calificaciones:\n\n{{calificaciones}}\n\nPor favor contáctanos si tienes alguna duda.',
+  },
+  {
+    id: 'felicitacion',
+    name: 'Felicitación',
+    content:
+      'Hola {{nombre}}, ¡excelente trabajo en este periodo!\n\n{{calificaciones}}\n\nEstamos muy orgullosos de tu progreso.',
+  },
+];
 
 interface Grade {
   student_id: number | string;
@@ -54,10 +85,13 @@ export default function CalificacionesPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] =
+    useState<string>('resumen');
 
   const { user } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
   const { config: uiConfig } = useUIConfig();
+  const { toast } = useToast();
   const [isInitializedData, setIsInitializedData] = useState(false);
 
   // Montar componente y recuperar valores del localStorage
@@ -307,8 +341,9 @@ export default function CalificacionesPage() {
         : false;
 
       const matchPlantel = matchPlantelFromField || matchPlantelFromPivot;
+      const hasStudents = (grupo.active_assignments_count || 0) > 0;
 
-      return matchPlantel && matchPeriodo;
+      return matchPlantel && matchPeriodo && hasStudents;
     });
   }, [selectedPlantelId, selectedPeriodoId, grupos]);
 
@@ -334,36 +369,100 @@ export default function CalificacionesPage() {
 
     studentGrades.forEach((g) => {
       // Preferencia: final_grade > rawgrade > grade
-      let val =
-        g.final_grade !== undefined && g.final_grade !== null
-          ? g.final_grade
-          : g.rawgrade !== undefined && g.rawgrade !== null
-            ? g.rawgrade
-            : g.grade !== undefined && g.grade !== null
-              ? g.grade
-              : null;
+      let gradeStr = g.final_grade ?? g.rawgrade ?? g.grade ?? 'N/A';
 
-      if (val === null || val === undefined) {
-        return;
-      }
-
-      // Convertir a número
-      const numVal = typeof val === 'number' ? val : Number(String(val).trim());
-
-      // Validar que sea un número válido y no sea -1
-      if (!isNaN(numVal) && numVal >= 0) {
-        validGrades.push(numVal);
+      // Filtrar null o 'N/A'
+      if (gradeStr !== 'N/A' && gradeStr != null && gradeStr !== '-') {
+        const numericGrade = parseFloat(gradeStr.toString());
+        if (!isNaN(numericGrade)) {
+          validGrades.push(numericGrade);
+        }
       }
     });
 
-    if (validGrades.length === 0) {
-      return 'N/A';
-    }
+    if (validGrades.length === 0) return 'N/A';
 
     const sum = validGrades.reduce((acc, val) => acc + val, 0);
     const average = sum / validGrades.length;
 
     return average.toFixed(2);
+  };
+
+  const getGeneratedWhatsAppMessage = () => {
+    if (!selectedStudent) return '';
+
+    const template =
+      whatsappTemplates.find((t) => t.id === selectedTemplateId) ||
+      whatsappTemplates[0];
+    const studentGrades = grades[selectedStudent.id] || [];
+
+    const validGradesForMessage = studentGrades.filter((g) => {
+      const name = g.course_name ?? g.course_fullname ?? g.name ?? '';
+      const val = g.final_grade ?? g.rawgrade ?? g.grade;
+      return (
+        name !== 'Curso desconocido' &&
+        val != null &&
+        val !== 'N/A' &&
+        val !== '-'
+      );
+    });
+
+    const calificacionesText =
+      validGradesForMessage.length > 0
+        ? validGradesForMessage
+            .map((g) => {
+              const name =
+                g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+              const val = g.final_grade ?? g.rawgrade ?? g.grade;
+              return `- ${name}: ${typeof val === 'number' ? val.toFixed(2) : val}`;
+            })
+            .join('\n')
+        : 'Sin calificaciones registradas.';
+
+    const nombre =
+      `${selectedStudent.firstname} ${selectedStudent.lastname}`.trim();
+
+    return template.content
+      .replace(/{{nombre}}/g, nombre)
+      .replace(/{{calificaciones}}/g, calificacionesText)
+      .replace(/\s{2,}/g, ' ')
+      .trim(); // Sanitiza dobles espacios
+  };
+
+  const generatedWhatsAppMessage = getGeneratedWhatsAppMessage();
+
+  const handleCopyMessage = async () => {
+    if (!generatedWhatsAppMessage) return;
+
+    try {
+      await navigator.clipboard.writeText(generatedWhatsAppMessage);
+      toast({
+        title: 'Mensaje copiado',
+        description: 'El mensaje se copió al portapapeles.',
+      });
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Cópialo manualmente desde la caja de texto.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!generatedWhatsAppMessage) return;
+
+    const encodedMessage = encodeURIComponent(generatedWhatsAppMessage);
+    const phone = selectedStudent?.phone
+      ? selectedStudent.phone.replace(/\D/g, '')
+      : '';
+    const phoneWithCode = phone.length === 10 ? `52${phone}` : phone;
+
+    const whatsappUrl = phoneWithCode
+      ? `https://api.whatsapp.com/send?phone=${phoneWithCode}&text=${encodedMessage}`
+      : `https://api.whatsapp.com/send?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -454,7 +553,11 @@ export default function CalificacionesPage() {
                 <SelectContent>
                   {filteredGrupos.map((grupo) => (
                     <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                      {grupo.name} {grupo.type ? `(${grupo.type})` : ''}
+                      {grupo.name} {grupo.type ? `(${grupo.type})` : ''} -{' '}
+                      {grupo.active_assignments_count || 0}{' '}
+                      {grupo.active_assignments_count === 1
+                        ? 'alumno'
+                        : 'alumnos'}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -595,17 +698,30 @@ export default function CalificacionesPage() {
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto">
                 {(() => {
-                  const studentGrades = grades[selectedStudent.id] || [];
-                  return studentGrades.length > 0 ? (
+                  const allStudentGrades = grades[selectedStudent.id] || [];
+                  const validStudentGrades = allStudentGrades.filter((g) => {
+                    const name =
+                      g.course_name ?? g.course_fullname ?? g.name ?? '';
+                    const val = g.final_grade ?? g.rawgrade ?? g.grade;
+                    return (
+                      name !== 'Curso desconocido' &&
+                      val != null &&
+                      val !== 'N/A' &&
+                      val !== '-'
+                    );
+                  });
+
+                  return validStudentGrades.length > 0 ? (
                     <div className="space-y-4">
-                      {studentGrades.map((g, idx) => {
+                      {validStudentGrades.map((g, idx) => {
                         const name =
                           g.course_name ??
                           g.course_fullname ??
                           g.name ??
                           'Materia';
-                        const val =
-                          g.final_grade ?? g.rawgrade ?? g.grade ?? 'N/A';
+                        const val = g.final_grade ?? g.rawgrade ?? g.grade;
+                        const displayVal =
+                          typeof val === 'number' ? val.toFixed(2) : val;
                         return (
                           <div
                             key={idx}
@@ -615,18 +731,76 @@ export default function CalificacionesPage() {
                               {name}
                             </span>
                             <span className="px-3 py-1 text-sm rounded-md font-bold border bg-background">
-                              {val === '-' ? 'N/A' : val}
+                              {displayVal}
                             </span>
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-8 text-muted-foreground border-b pb-8">
                       Sin notas disponibles.
                     </div>
                   );
                 })()}
+
+                {/* Generador de Mensajes (WhatsApp) */}
+                {grades[selectedStudent.id] &&
+                  grades[selectedStudent.id].length > 0 && (
+                    <div className="mt-6 border-t pt-4 space-y-4">
+                      <h4 className="font-semibold text-sm">Enviar reporte</h4>
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          <p className="text-xs font-medium mb-1 text-muted-foreground">
+                            Plantilla
+                          </p>
+                          <select
+                            value={selectedTemplateId}
+                            onChange={(e) =>
+                              setSelectedTemplateId(e.target.value)
+                            }
+                            className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+                          >
+                            {whatsappTemplates.map((t) => (
+                              <option key={t.id} value={t.id}>
+                                {t.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-medium mb-1 text-muted-foreground">
+                            Vista Previa
+                          </p>
+                          <Textarea
+                            readOnly
+                            value={generatedWhatsAppMessage}
+                            className="min-h-[140px] text-xs resize-none bg-muted/30"
+                          />
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-2 mt-1">
+                          <Button
+                            variant="outline"
+                            className="w-full sm:w-auto text-xs"
+                            onClick={handleCopyMessage}
+                            disabled={!generatedWhatsAppMessage}
+                          >
+                            Copiar texto
+                          </Button>
+                          <Button
+                            onClick={handleSendWhatsApp}
+                            disabled={!generatedWhatsAppMessage}
+                            className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebd5a] text-white flex gap-2 text-xs"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            WhatsApp
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
               </CardContent>
             </Card>
           )}

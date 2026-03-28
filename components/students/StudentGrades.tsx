@@ -26,6 +26,7 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  MessageCircle,
 } from 'lucide-react';
 import { getStudentGrades } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -144,9 +145,12 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
     fetchGrades();
   }, [studentId]);
 
-  const validGrades = grades.filter(
-    (courseGrade) => courseGrade.course_name !== 'Curso desconocido'
-  );
+  const validGrades = grades
+    .filter((courseGrade) => courseGrade.course_name !== 'Curso desconocido')
+    .map((course) => ({
+      ...course,
+      activities: (course.activities || []).filter((a) => a != null),
+    }));
 
   useEffect(() => {
     if (validGrades.length === 0) {
@@ -248,6 +252,22 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!generatedMessage) return;
+
+    const phone = studentInfo?.phone
+      ? studentInfo.phone.replace(/\D/g, '')
+      : '';
+    const phoneWithCode = phone.length === 10 ? `52${phone}` : phone;
+
+    const encodedMessage = encodeURIComponent(generatedMessage);
+    const whatsappUrl = phoneWithCode
+      ? `https://api.whatsapp.com/send?phone=${phoneWithCode}&text=${encodedMessage}`
+      : `https://api.whatsapp.com/send?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, '_blank');
   };
 
   if (isLoading) {
@@ -378,15 +398,24 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
               </select>
             </div>
 
-            <Button
-              variant="outline"
-              onClick={handleCopyMessage}
-              disabled={!generatedMessage}
-            >
-              {messageMode === 'all'
-                ? 'Copiar todos al portapapeles'
-                : 'Copiar al portapapeles'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0">
+              <Button
+                variant="outline"
+                onClick={handleCopyMessage}
+                disabled={!generatedMessage}
+                className="w-full sm:w-auto"
+              >
+                {messageMode === 'all' ? 'Copiar todos' : 'Copiar texto'}
+              </Button>
+              <Button
+                onClick={handleSendWhatsApp}
+                disabled={!generatedMessage}
+                className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebd5a] text-white flex gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                WhatsApp
+              </Button>
+            </div>
           </div>
 
           <div>
