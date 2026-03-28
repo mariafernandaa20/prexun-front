@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Search, MessageCircle } from 'lucide-react';
+import { Loader2, Search, MessageCircle, RefreshCw, Copy } from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { getGrupos, getCampuses, getPeriods } from '@/lib/api';
 import { Grupo, Campus, Period } from '@/lib/types';
@@ -66,6 +66,7 @@ interface Grade {
   rawgrade?: number;
   course_fullname?: string;
   name?: string;
+  course_id?: number | string;
 }
 
 export default function CalificacionesPage() {
@@ -85,14 +86,21 @@ export default function CalificacionesPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] =
-    useState<string>('resumen');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('resumen');
+  const [selectedCourseId, setSelectedCourseId] = useState<string>('all');
+  const [messageDraft, setMessageDraft] = useState<string>('');
+  const [syncingMoodle, setSyncingMoodle] = useState(false);
 
   const { user } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
   const { config: uiConfig } = useUIConfig();
   const { toast } = useToast();
   const [isInitializedData, setIsInitializedData] = useState(false);
+
+  useEffect(() => {
+    const template = whatsappTemplates.find((t) => t.id === selectedTemplateId) || whatsappTemplates[0];
+    setMessageDraft(template.content);
+  }, [selectedTemplateId]);
 
   // Montar componente y recuperar valores del localStorage
   useEffect(() => {
@@ -256,6 +264,8 @@ export default function CalificacionesPage() {
   useEffect(() => {
     if (!selectedPlantelId || !selectedPeriodoId) return;
 
+    let active = true;
+
     const fetchStudents = async () => {
       setLoadingEstudiantes(true);
       setStudents([]);
@@ -275,6 +285,8 @@ export default function CalificacionesPage() {
           { params }
         );
 
+        if (!active) return;
+
         let studentsData: Student[] = [];
 
         if (Array.isArray(studentsRes.data)) {
@@ -288,24 +300,32 @@ export default function CalificacionesPage() {
         setStudents(studentsData);
 
         if (studentsData.length > 0) {
-          fetchGradesInBackground(studentsData);
+          await fetchGradesInBackground(studentsData, false);
+          fetchGradesInBackground(studentsData, true);
+        } else {
+          setGrades({});
         }
       } catch (error) {
         console.error('Error fetching students:', error);
-        setStudents([]);
+        if (active) setStudents([]);
       } finally {
-        setLoadingEstudiantes(false);
+        if (active) setLoadingEstudiantes(false);
       }
     };
 
-    const fetchGradesInBackground = async (studentsData: Student[]) => {
+    const fetchGradesInBackground = async (studentsData: Student[], sync: boolean = false) => {
       if (!studentsData || studentsData.length === 0) return;
+      if (sync) setSyncingMoodle(true);
 
       try {
         const studentIds = studentsData.map((s) => s.id);
         const gradesRes = await axiosInstance.post('/students/batch-grades', {
           student_ids: studentIds,
+          period_id: selectedPeriodoId,
+          sync_moodle: sync
         });
+
+        if (!active) return;
 
         if (gradesRes.data && typeof gradesRes.data === 'object') {
           setGrades(gradesRes.data);
@@ -314,12 +334,39 @@ export default function CalificacionesPage() {
         }
       } catch (err) {
         console.error('Error fetching batch grades:', err);
-        setGrades({});
+        if (active && !sync) setGrades({});
+      } finally {
+        if (active && sync) setSyncingMoodle(false);
+      }
+    };
+    
+    // Attach to window for the button outside useEffect
+    (window as any).syncMoodleGrades = () => {
+      if (students.length > 0) {
+        fetchGradesInBackground(students, true);
       }
     };
 
     fetchStudents();
+
+    return () => {
+      active = false;
+    };
   }, [selectedPlantelId, selectedPeriodoId, selectedGrupoId]);
+
+  const availableCourses = React.useMemo(() => {
+    const coursesMap = new Map<string, string>();
+    Object.values(grades).forEach(studentGrades => {
+      studentGrades.forEach(g => {
+        const name = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+        const id = g.course_id ?? name;
+        if (name !== 'Curso desconocido') {
+          coursesMap.set(String(id), name);
+        }
+      });
+    });
+    return Array.from(coursesMap.entries()).map(([id, name]) => ({ id, name }));
+  }, [grades]);
 
   const filteredGrupos = React.useMemo(() => {
     if (!selectedPlantelId || !selectedPeriodoId) return [];
@@ -388,15 +435,15 @@ export default function CalificacionesPage() {
     return average.toFixed(2);
   };
 
-  const getGeneratedWhatsAppMessage = () => {
-    if (!selectedStudent) return '';
+  const generateMessageForStudent = (student: Student) => {
+    let calificacionesText = '';
+    
+    const studentGrades = grades[student.id] || [];
+    const filteredGrades = selectedCourseId !== 'all' 
+      ? studentGrades.filter(g => String(g.course_id ?? g.course_name ?? g.course_fullname ?? g.name) === selectedCourseId)
+      : studentGrades;
 
-    const template =
-      whatsappTemplates.find((t) => t.id === selectedTemplateId) ||
-      whatsappTemplates[0];
-    const studentGrades = grades[selectedStudent.id] || [];
-
-    const validGradesForMessage = studentGrades.filter((g) => {
+    const validGradesForMessage = filteredGrades.filter((g) => {
       const name = g.course_name ?? g.course_fullname ?? g.name ?? '';
       const val = g.final_grade ?? g.rawgrade ?? g.grade;
       return (
@@ -407,57 +454,43 @@ export default function CalificacionesPage() {
       );
     });
 
-    const calificacionesText =
-      validGradesForMessage.length > 0
-        ? validGradesForMessage
-            .map((g) => {
-              const name =
-                g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
-              const val = g.final_grade ?? g.rawgrade ?? g.grade;
-              return `- ${name}: ${typeof val === 'number' ? val.toFixed(2) : val}`;
-            })
-            .join('\n')
-        : 'Sin calificaciones registradas.';
+    if (validGradesForMessage.length > 0) {
+      calificacionesText = validGradesForMessage
+        .map((g) => {
+          const name = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+          const val = g.final_grade ?? g.rawgrade ?? g.grade;
+          return `- ${name}: ${typeof val === 'number' ? val.toFixed(2) : val}`;
+        })
+        .join('\n');
+    } else {
+      calificacionesText = 'Sin calificaciones registradas.';
+    }
 
-    const nombre =
-      `${selectedStudent.firstname} ${selectedStudent.lastname}`.trim();
+    const nombre = `${student.firstname} ${student.lastname}`.trim();
 
-    return template.content
-      .replace(/{{nombre}}/g, nombre)
-      .replace(/{{calificaciones}}/g, calificacionesText)
+    return messageDraft
+      .replace(/\{\{nombre\}\}/g, nombre)
+      .replace(/\{\{calificaciones\}\}/g, calificacionesText)
       .replace(/\s{2,}/g, ' ')
-      .trim(); // Sanitiza dobles espacios
+      .trim(); 
   };
 
-  const generatedWhatsAppMessage = getGeneratedWhatsAppMessage();
-
-  const handleCopyMessage = async () => {
-    if (!generatedWhatsAppMessage) return;
-
+  const handleCopyForStudent = async (student: Student) => {
+    const msg = generateMessageForStudent(student);
     try {
-      await navigator.clipboard.writeText(generatedWhatsAppMessage);
-      toast({
-        title: 'Mensaje copiado',
-        description: 'El mensaje se copió al portapapeles.',
-      });
+      await navigator.clipboard.writeText(msg);
+      toast({ title: 'Mensaje copiado', description: `Copiado para ${student.firstname}` });
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Cópialo manualmente desde la caja de texto.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', variant: 'destructive', description: 'No se pudo copiar.' });
     }
   };
 
-  const handleSendWhatsApp = () => {
-    if (!generatedWhatsAppMessage) return;
-
-    const encodedMessage = encodeURIComponent(generatedWhatsAppMessage);
-    const phone = selectedStudent?.phone
-      ? selectedStudent.phone.replace(/\D/g, '')
-      : '';
+  const handleSendForStudent = (student: Student) => {
+    const msg = generateMessageForStudent(student);
+    const phone = student.phone ? student.phone.replace(/\D/g, '') : '';
     const phoneWithCode = phone.length === 10 ? `52${phone}` : phone;
 
+    const encodedMessage = encodeURIComponent(msg);
     const whatsappUrl = phoneWithCode
       ? `https://api.whatsapp.com/send?phone=${phoneWithCode}&text=${encodedMessage}`
       : `https://api.whatsapp.com/send?text=${encodedMessage}`;
@@ -467,10 +500,18 @@ export default function CalificacionesPage() {
 
   return (
     <div className="w-full flex-1 min-w-0 p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">
-          Calificaciones por Plantel y Período
-        </h1>
+      <div className="flex justify-between items-center h-10">
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">
+            Calificaciones por Plantel y Período
+          </h1>
+          {syncingMoodle && (
+            <span className="flex items-center text-xs font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full animate-pulse">
+              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              Actualizando desde Moodle...
+            </span>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -478,7 +519,7 @@ export default function CalificacionesPage() {
           <CardTitle>Selecciona Plantel</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <div className="w-full">
               <Select
                 value={selectedPlantelId}
@@ -565,6 +606,26 @@ export default function CalificacionesPage() {
             </div>
 
             <div className="w-full">
+              <Select
+                value={selectedCourseId}
+                onValueChange={setSelectedCourseId}
+                disabled={availableCourses.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={availableCourses.length === 0 ? "Sin materias" : "Todas las materias"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las materias</SelectItem>
+                  {availableCourses.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="w-full">
               {selectedGrupoId && (
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -580,6 +641,45 @@ export default function CalificacionesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {selectedGrupoId && grades && Object.keys(grades).length > 0 && (
+        <Card className="bg-muted/30">
+          <CardHeader className="py-3">
+            <CardTitle className="text-lg">Redactar Mensaje Multidifusión</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="w-full lg:w-1/3">
+                <p className="text-xs font-medium mb-1 text-muted-foreground">Plantilla base</p>
+                <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Selecciona plantilla" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {whatsappTemplates.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="mt-4 text-xs text-muted-foreground space-y-1">
+                  <p><strong>Variables disponibles:</strong></p>
+                  <p><code className="bg-muted px-1 py-0.5 rounded">{"{{nombre}}"}</code> - Nombre del alumno</p>
+                  <p><code className="bg-muted px-1 py-0.5 rounded">{"{{calificaciones}}"}</code> - Lista de notas</p>
+                </div>
+              </div>
+              <div className="w-full lg:w-2/3">
+                <p className="text-xs font-medium mb-1 text-muted-foreground">Borrador del mensaje (Materia actual: {selectedCourseId === 'all' ? 'Todas' : availableCourses.find(c => c.id === selectedCourseId)?.name})</p>
+                <Textarea
+                  value={messageDraft}
+                  onChange={(e) => setMessageDraft(e.target.value)}
+                  className="min-h-[100px] text-sm resize-none bg-background shadow-sm"
+                  placeholder="Escribe el mensaje aquí..."
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {selectedGrupoId && (
         <div className="flex gap-4 h-[750px]">
@@ -635,6 +735,9 @@ export default function CalificacionesPage() {
                         <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
                           Promedio Final
                         </th>
+                        <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                          Acciones
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="[&_tr:last-child]:border-0">
@@ -675,6 +778,26 @@ export default function CalificacionesPage() {
                                 >
                                   {average}
                                 </span>
+                              </td>
+                              <td className="p-4 align-middle text-right flex justify-end gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 shadow-sm"
+                                  onClick={(e) => { e.stopPropagation(); handleCopyForStudent(student); }}
+                                  title="Copiar mensaje"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="h-8 bg-[#25D366] hover:bg-[#1ebd5a] text-white shadow-sm"
+                                  onClick={(e) => { e.stopPropagation(); handleSendForStudent(student); }}
+                                  title="Enviar WhatsApp"
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5 mr-1" />
+                                  <span className="hidden sm:inline text-xs">Enviar</span>
+                                </Button>
                               </td>
                             </tr>
                           );
@@ -744,63 +867,7 @@ export default function CalificacionesPage() {
                   );
                 })()}
 
-                {/* Generador de Mensajes (WhatsApp) */}
-                {grades[selectedStudent.id] &&
-                  grades[selectedStudent.id].length > 0 && (
-                    <div className="mt-6 border-t pt-4 space-y-4">
-                      <h4 className="font-semibold text-sm">Enviar reporte</h4>
-                      <div className="flex flex-col gap-3">
-                        <div>
-                          <p className="text-xs font-medium mb-1 text-muted-foreground">
-                            Plantilla
-                          </p>
-                          <select
-                            value={selectedTemplateId}
-                            onChange={(e) =>
-                              setSelectedTemplateId(e.target.value)
-                            }
-                            className="w-full border rounded-md px-3 py-2 text-sm bg-background"
-                          >
-                            {whatsappTemplates.map((t) => (
-                              <option key={t.id} value={t.id}>
-                                {t.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <p className="text-xs font-medium mb-1 text-muted-foreground">
-                            Vista Previa
-                          </p>
-                          <Textarea
-                            readOnly
-                            value={generatedWhatsAppMessage}
-                            className="min-h-[140px] text-xs resize-none bg-muted/30"
-                          />
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-2 mt-1">
-                          <Button
-                            variant="outline"
-                            className="w-full sm:w-auto text-xs"
-                            onClick={handleCopyMessage}
-                            disabled={!generatedWhatsAppMessage}
-                          >
-                            Copiar texto
-                          </Button>
-                          <Button
-                            onClick={handleSendWhatsApp}
-                            disabled={!generatedWhatsAppMessage}
-                            className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebd5a] text-white flex gap-2 text-xs"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                            WhatsApp
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                
               </CardContent>
             </Card>
           )}
