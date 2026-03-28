@@ -514,10 +514,11 @@ export default function StudentGrades({ studentId }: StudentGradesProps) {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            {activity.rawgrade !== null &&
-                            activity.max_grade !== null ? (
+                            {activity.rawgrade != null &&
+                            activity.max_grade != null &&
+                            !isNaN(Number(activity.rawgrade)) ? (
                               <span>
-                                {activity.rawgrade.toFixed(2)} /{' '}
+                                {Number(activity.rawgrade).toFixed(2)} /{' '}
                                 {activity.max_grade}
                               </span>
                             ) : (
