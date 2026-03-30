@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Select,
   SelectContent,
@@ -14,13 +13,25 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Search, MessageCircle, RefreshCw, Copy } from 'lucide-react';
+import {
+  Loader2,
+  Search,
+  MessageCircle,
+  Copy,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  BarChart3,
+} from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { getGrupos, getCampuses, getPeriods } from '@/lib/api';
 import { Grupo, Campus, Period } from '@/lib/types';
 import { useAuthStore } from '@/lib/store/auth-store';
 import { useActiveCampusStore } from '@/lib/store/plantel-store';
 import { useUIConfig } from '@/hooks/useUIConfig';
+
+/* ─── Tipos ──────────────────────────────────────────────────────────────── */
 
 interface Student {
   id: number | string;
@@ -31,11 +42,34 @@ interface Student {
   phone?: string;
 }
 
+interface Activity {
+  name: string;
+  grade: string;
+  rawgrade?: number | null;
+  max_grade?: number | null;
+  percentage?: string | null;
+}
+
+interface Grade {
+  student_id: number | string;
+  course_name: string;
+  grade: number | string;
+  final_grade?: number;
+  rawgrade?: number;
+  course_fullname?: string;
+  name?: string;
+  course_id?: number | string;
+  activities?: Activity[];
+  activities_count?: number;
+}
+
 interface MessageTemplate {
   id: string;
   name: string;
   content: string;
 }
+
+/* ─── Templates WhatsApp ─────────────────────────────────────────────────── */
 
 const whatsappTemplates: MessageTemplate[] = [
   {
@@ -58,16 +92,45 @@ const whatsappTemplates: MessageTemplate[] = [
   },
 ];
 
-interface Grade {
-  student_id: number | string;
-  course_name: string;
-  grade: number | string;
-  final_grade?: number;
-  rawgrade?: number;
-  course_fullname?: string;
-  name?: string;
-  course_id?: number | string;
+/* ─── Helpers ────────────────────────────────────────────────────────────── */
+
+function gradeValue(g: Grade): number | null {
+  const raw = g.final_grade ?? g.rawgrade ?? g.grade;
+  if (raw == null || raw === 'N/A' || raw === '-') return null;
+  const n = parseFloat(String(raw));
+  return isNaN(n) ? null : n;
 }
+
+type EstatusType = 'aprobado' | 'reprobado' | 'alerta' | 'no_presento' | 'pendiente';
+
+function calcEstatus(cal1: number | null, cal2: number | null): EstatusType {
+  if (cal1 === null && cal2 === null) return 'no_presento';
+  if (cal1 === null || cal2 === null) return 'alerta';
+  const prom = (cal1 + cal2) / 2;
+  if (prom >= 60) return 'aprobado';
+  if (prom < 60) return 'reprobado';
+  return 'pendiente';
+}
+
+const EstatusBadge = ({ estatus }: { estatus: EstatusType }) => {
+  const map: Record<EstatusType, { label: string; cls: string; icon: React.ReactNode }> = {
+    aprobado:    { label: 'Aprobado',      cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400',  icon: <CheckCircle2 className="w-3 h-3" /> },
+    reprobado:   { label: 'Reprobado',     cls: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400',                      icon: <XCircle className="w-3 h-3" /> },
+    alerta:      { label: '⚠ Sin datos',   cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400',             icon: <AlertTriangle className="w-3 h-3" /> },
+    no_presento: { label: 'No presentó',   cls: 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400',               icon: <XCircle className="w-3 h-3" /> },
+    pendiente:   { label: 'Pendiente',     cls: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400',                  icon: <Clock className="w-3 h-3" /> },
+  };
+  const { label, cls, icon } = map[estatus];
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${cls}`}>
+      {icon} {label}
+    </span>
+  );
+};
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Componente principal
+   ────────────────────────────────────────────────────────────────────────── */
 
 export default function CalificacionesPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -83,797 +146,694 @@ export default function CalificacionesPage() {
   const [loadingPlanteles, setLoadingPlanteles] = useState(true);
   const [loadingPeriodos, setLoadingPeriodos] = useState(true);
   const [loadingEstudiantes, setLoadingEstudiantes] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('resumen');
-  const [selectedCourseId, setSelectedCourseId] = useState<string>('all');
   const [messageDraft, setMessageDraft] = useState<string>('');
   const [syncingMoodle, setSyncingMoodle] = useState(false);
+  const [isInitializedData, setIsInitializedData] = useState(false);
+  const [showWaPanel, setShowWaPanel] = useState(false);
 
   const { user } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
   const { config: uiConfig } = useUIConfig();
   const { toast } = useToast();
-  const [isInitializedData, setIsInitializedData] = useState(false);
 
+  /* ── Template draft sync ─────────────────────────────────────────────── */
   useEffect(() => {
     const template = whatsappTemplates.find((t) => t.id === selectedTemplateId) || whatsappTemplates[0];
     setMessageDraft(template.content);
   }, [selectedTemplateId]);
 
-  // Montar componente y recuperar valores del localStorage
+  /* ── Inicialización desde localStorage ───────────────────────────────── */
   useEffect(() => {
-    if (!isMounted) {
-      setIsMounted(true);
-      return;
-    }
+    if (!isMounted) { setIsMounted(true); return; }
 
-    // Recuperar lo que tengamos a la mano
-    let plantelId =
-      selectedPlantelId ||
-      localStorage.getItem('calificaciones_plantelId') ||
-      '';
-    let periodoId =
-      selectedPeriodoId ||
-      localStorage.getItem('calificaciones_periodoId') ||
-      '';
-    let grupoId =
-      selectedGrupoId || localStorage.getItem('calificaciones_grupoId') || '';
+    let plantelId = selectedPlantelId || localStorage.getItem('calificaciones_plantelId') || '';
+    let periodoId = selectedPeriodoId || localStorage.getItem('calificaciones_periodoId') || '';
+    let grupoId   = selectedGrupoId   || localStorage.getItem('calificaciones_grupoId')   || '';
 
-    // Prioridad del Plantel
     if (!plantelId) {
-      if (activeCampus?.id) {
-        plantelId = activeCampus.id.toString();
-      } else if (user?.campuses && user.campuses.length > 0) {
-        plantelId = user.campuses[0].id?.toString() || '';
-      }
+      if (activeCampus?.id) plantelId = activeCampus.id.toString();
+      else if (user?.campuses?.length) plantelId = user.campuses[0].id?.toString() || '';
     }
 
     if (periodos.length > 0) {
-      const jun2026Period = periodos.find((p) =>
-        p.name?.toUpperCase().replace(/\s+/g, '').includes('JUN2026')
-      );
-
-      if (jun2026Period) {
-        periodoId = jun2026Period.id.toString();
-      } else if (!periodoId && uiConfig?.default_period_id) {
-        periodoId = uiConfig.default_period_id.toString();
-      }
+      const jun2026 = periodos.find((p) => p.name?.toUpperCase().replace(/\s+/g, '').includes('JUN2026'));
+      if (jun2026) periodoId = jun2026.id.toString();
+      else if (!periodoId && uiConfig?.default_period_id) periodoId = uiConfig.default_period_id.toString();
     }
 
-    if (plantelId && plantelId !== selectedPlantelId) {
-      setSelectedPlantelId(plantelId);
-    }
-
-    if (periodoId && periodoId !== selectedPeriodoId) {
-      setSelectedPeriodoId(periodoId);
-    }
-
-    if (grupoId && grupoId !== selectedGrupoId) {
-      setSelectedGrupoId(grupoId);
-    }
-
-    if (plantelId && periodoId && !isInitializedData) {
-      setIsInitializedData(true);
-    }
+    if (plantelId && plantelId !== selectedPlantelId) setSelectedPlantelId(plantelId);
+    if (periodoId && periodoId !== selectedPeriodoId) setSelectedPeriodoId(periodoId);
+    if (grupoId   && grupoId   !== selectedGrupoId)   setSelectedGrupoId(grupoId);
+    if (plantelId && periodoId && !isInitializedData) setIsInitializedData(true);
   }, [isMounted, user, activeCampus, uiConfig, periodos]);
 
+  /* ── Fetch planteles ─────────────────────────────────────────────────── */
   useEffect(() => {
-    const fetchPlanteles = async () => {
-      try {
-        const response = await getCampuses();
-        setPlanteles(response);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoadingPlanteles(false);
-      }
-    };
-    fetchPlanteles();
+    getCampuses()
+      .then(setPlanteles)
+      .catch(console.error)
+      .finally(() => setLoadingPlanteles(false));
   }, []);
 
+  /* ── Fetch periodos ──────────────────────────────────────────────────── */
   useEffect(() => {
-    const fetchPeriodos = async () => {
-      try {
-        const response = await getPeriods();
-        setPeriodos(response);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoadingPeriodos(false);
-      }
-    };
-    fetchPeriodos();
+    getPeriods()
+      .then(setPeriodos)
+      .catch(console.error)
+      .finally(() => setLoadingPeriodos(false));
   }, []);
 
+  /* ── Fetch grupos ────────────────────────────────────────────────────── */
   useEffect(() => {
-    const fetchGrupos = async () => {
-      try {
-        const params: Record<string, any> = {};
-        if (selectedPlantelId) params.plantel_id = selectedPlantelId;
-        if (selectedPeriodoId) params.period_id = selectedPeriodoId;
-
-        const response = await getGrupos(params);
-        const gruposOrdenados = response.sort((a, b) =>
-          a.name.localeCompare(b.name)
-        );
-        setGrupos(gruposOrdenados);
-        setIsInitialized(true);
-      } catch (error) {
-        console.error('Error cargando grupos:', error);
-        setIsInitialized(true);
-      }
-    };
-    fetchGrupos();
+    const params: Record<string, any> = {};
+    if (selectedPlantelId) params.plantel_id = selectedPlantelId;
+    if (selectedPeriodoId) params.period_id  = selectedPeriodoId;
+    getGrupos(params)
+      .then((res) => { setGrupos(res.sort((a, b) => a.name.localeCompare(b.name))); setIsInitialized(true); })
+      .catch(() => setIsInitialized(true));
   }, [selectedPlantelId, selectedPeriodoId]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('calificaciones_plantelId', selectedPlantelId);
-    }
-  }, [selectedPlantelId]);
+  /* ── Persistir selecciones ───────────────────────────────────────────── */
+  useEffect(() => { if (typeof window !== 'undefined') localStorage.setItem('calificaciones_plantelId', selectedPlantelId); }, [selectedPlantelId]);
+  useEffect(() => { if (typeof window !== 'undefined') localStorage.setItem('calificaciones_periodoId', selectedPeriodoId); }, [selectedPeriodoId]);
+  useEffect(() => { if (typeof window !== 'undefined') localStorage.setItem('calificaciones_grupoId',   selectedGrupoId);   }, [selectedGrupoId]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('calificaciones_periodoId', selectedPeriodoId);
-    }
-  }, [selectedPeriodoId]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('calificaciones_grupoId', selectedGrupoId);
-    }
-  }, [selectedGrupoId]);
-
+  /* ── Validar selecciones contra datos disponibles ────────────────────── */
   useEffect(() => {
     if (!isInitialized || loadingPlanteles || loadingPeriodos) return;
-
-    if (
-      selectedPlantelId &&
-      !planteles.find((p) => p.id?.toString() === selectedPlantelId)
-    ) {
-      setSelectedPlantelId('');
-      localStorage.removeItem('calificaciones_plantelId');
+    if (selectedPlantelId && !planteles.find((p) => p.id?.toString() === selectedPlantelId)) {
+      setSelectedPlantelId(''); localStorage.removeItem('calificaciones_plantelId');
     }
-
-    if (
-      selectedPeriodoId &&
-      !periodos.find((p) => p.id === selectedPeriodoId)
-    ) {
-      setSelectedPeriodoId('');
-      localStorage.removeItem('calificaciones_periodoId');
+    if (selectedPeriodoId && !periodos.find((p) => p.id === selectedPeriodoId)) {
+      setSelectedPeriodoId(''); localStorage.removeItem('calificaciones_periodoId');
     }
-
-    if (
-      selectedGrupoId &&
-      !grupos.find((g) => g.id?.toString() === selectedGrupoId)
-    ) {
-      setSelectedGrupoId('');
-      localStorage.removeItem('calificaciones_grupoId');
+    if (selectedGrupoId && !grupos.find((g) => g.id?.toString() === selectedGrupoId)) {
+      setSelectedGrupoId(''); localStorage.removeItem('calificaciones_grupoId');
     }
-  }, [
-    isInitialized,
-    loadingPlanteles,
-    loadingPeriodos,
-    planteles,
-    periodos,
-    grupos,
-  ]);
+  }, [isInitialized, loadingPlanteles, loadingPeriodos, planteles, periodos, grupos]);
 
+  /* ── Fetch students + grades ─────────────────────────────────────────── */
   useEffect(() => {
     if (!selectedPlantelId || !selectedPeriodoId) return;
-
     let active = true;
+
+    const fetchGradesInBackground = async (studentsData: Student[], sync: boolean) => {
+      if (!studentsData.length) return;
+      if (sync) setSyncingMoodle(true);
+      try {
+        const res = await axiosInstance.post('/students/batch-grades', {
+          student_ids: studentsData.map((s) => s.id),
+          period_id: selectedPeriodoId,
+          sync_moodle: sync,
+        });
+        if (active && res.data && typeof res.data === 'object') setGrades(res.data);
+      } catch (err) {
+        console.error('Error batch grades:', err);
+        if (active && !sync) setGrades({});
+      } finally {
+        if (active && sync) setSyncingMoodle(false);
+      }
+    };
 
     const fetchStudents = async () => {
       setLoadingEstudiantes(true);
-      setStudents([]);
-      setGrades({});
-      setSelectedStudent(null);
-
+      setStudents([]); setGrades({});
       try {
-        // Usamos el endpoint especializado que busca alumnos tanto por grupo_id como por assignments
-        const params = {
-          campus_id: selectedPlantelId,
-          grupo: selectedGrupoId || undefined,
-          perPage: 1000, // Traer todos los alumnos
-        };
-
-        const studentsRes = await axiosInstance.get(
-          `/student-assignments/students-by-period/${selectedPeriodoId}`,
-          { params }
-        );
-
+        const res = await axiosInstance.get(`/student-assignments/students-by-period/${selectedPeriodoId}`, {
+          params: { campus_id: selectedPlantelId, grupo: selectedGrupoId || undefined, perPage: 1000 },
+        });
         if (!active) return;
-
-        let studentsData: Student[] = [];
-
-        if (Array.isArray(studentsRes.data)) {
-          studentsData = studentsRes.data;
-        } else if (studentsRes.data?.data) {
-          studentsData = studentsRes.data.data;
-        } else if (studentsRes.data?.students) {
-          studentsData = studentsRes.data.students;
+        let data: Student[] = [];
+        if (Array.isArray(res.data)) data = res.data;
+        else if (res.data?.data) data = res.data.data;
+        else if (res.data?.students) data = res.data.students;
+        setStudents(data);
+        if (data.length > 0) {
+          fetchGradesInBackground(data, false).finally(() => { if (active) fetchGradesInBackground(data, true); });
         }
-
-        setStudents(studentsData);
-
-        if (studentsData.length > 0) {
-          fetchGradesInBackground(studentsData, false).finally(() => {
-            if (active) fetchGradesInBackground(studentsData, true);
-          });
-        } else {
-          setGrades({});
-        }
-      } catch (error) {
-        console.error('Error fetching students:', error);
+      } catch (err) {
+        console.error('Error fetching students:', err);
         if (active) setStudents([]);
       } finally {
         if (active) setLoadingEstudiantes(false);
       }
     };
 
-    const fetchGradesInBackground = async (studentsData: Student[], sync: boolean = false) => {
-      if (!studentsData || studentsData.length === 0) return;
-      if (sync) setSyncingMoodle(true);
-
-      try {
-        const studentIds = studentsData.map((s) => s.id);
-        const gradesRes = await axiosInstance.post('/students/batch-grades', {
-          student_ids: studentIds,
-          period_id: selectedPeriodoId,
-          sync_moodle: sync
-        });
-
-        if (!active) return;
-
-        if (gradesRes.data && typeof gradesRes.data === 'object') {
-          setGrades(gradesRes.data);
-        } else {
-          setGrades({});
-        }
-      } catch (err) {
-        console.error('Error fetching batch grades:', err);
-        if (active && !sync) setGrades({});
-      } finally {
-        if (active && sync) setSyncingMoodle(false);
-      }
-    };
-    
-    // Attach to window for the button outside useEffect
-    (window as any).syncMoodleGrades = () => {
-      if (students.length > 0) {
-        fetchGradesInBackground(students, true);
-      }
-    };
-
+    (window as any).syncMoodleGrades = () => { if (students.length > 0) fetchGradesInBackground(students, true); };
     fetchStudents();
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [selectedPlantelId, selectedPeriodoId, selectedGrupoId]);
 
-  const availableCourses = React.useMemo(() => {
-    const coursesMap = new Map<string, string>();
-    Object.values(grades).forEach(studentGrades => {
-      studentGrades.forEach(g => {
-        const name = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
-        const id = g.course_id ?? name;
-        if (name !== 'Curso desconocido') {
-          coursesMap.set(String(id), name);
-        }
-      });
-    });
-    return Array.from(coursesMap.entries()).map(([id, name]) => ({ id, name }));
-  }, [grades]);
+  /* ── Datos derivados ─────────────────────────────────────────────────── */
 
-  const filteredGrupos = React.useMemo(() => {
+  const filteredGrupos = useMemo(() => {
     if (!selectedPlantelId || !selectedPeriodoId) return [];
-
-    return grupos.filter((grupo) => {
-      // Forzamos a String ambos para que no importe si es número o texto
-      const matchPeriodo =
-        String(grupo.period_id) === String(selectedPeriodoId);
-
-      // plantel_id puede no estar presente si el grupo se relaciona vía la tabla pivot campus_group_pivot
-      const matchPlantelFromField = grupo.plantel_id
-        ? String(grupo.plantel_id) === String(selectedPlantelId)
-        : false;
-
-      const matchPlantelFromPivot = Array.isArray(grupo.campuses)
-        ? grupo.campuses.some(
-            (campus) => String(campus.id) === String(selectedPlantelId)
-          )
-        : false;
-
-      const matchPlantel = matchPlantelFromField || matchPlantelFromPivot;
-      const hasStudents = (grupo.active_assignments_count || 0) > 0;
-
-      return matchPlantel && matchPeriodo && hasStudents;
+    return grupos.filter((g) => {
+      const matchPeriodo = String(g.period_id) === String(selectedPeriodoId);
+      const matchPlantel =
+        (g.plantel_id ? String(g.plantel_id) === String(selectedPlantelId) : false) ||
+        (Array.isArray(g.campuses) ? g.campuses.some((c) => String(c.id) === String(selectedPlantelId)) : false);
+      return matchPlantel && matchPeriodo && (g.active_assignments_count || 0) > 0;
     });
   }, [selectedPlantelId, selectedPeriodoId, grupos]);
 
-  const filteredStudents = students.filter((student) => {
-    const query = searchQuery.toLowerCase();
-    const fullName = `${student.firstname} ${student.lastname}`.toLowerCase();
-    const matricula = String(student.matricula || student.id).toLowerCase();
+  /**
+   * Columnas de la matriz:
+   * - Si hay actividades en algún curso → expandir actividades individuales agrupadas por curso.
+   * - Si no hay actividades → una columna por curso (comportamiento anterior).
+   */
+  const matrixColumns = useMemo(() => {
+    // Verificar si algún alumno tiene actividades cargadas
+    const hasActivities = Object.values(grades).some((sg) =>
+      sg.some((g) => g.activities && g.activities.length > 0)
+    );
 
-    return fullName.includes(query) || matricula.includes(query);
-  });
+    if (hasActivities) {
+      // Expandir actividades: { id: courseId+actName, courseId, courseName, activityName }
+      type ActivityCol = { id: string; courseId: string; courseName: string; name: string; isActivity: true };
+      type CourseCol   = { id: string; courseId: string; courseName: string; name: string; isActivity: false };
+      type MatrixCol   = ActivityCol | CourseCol;
 
-  const getStudentAverage = (student: Student): string | number => {
-    if (!(student.id in grades)) return 'Cargando...';
+      const seen = new Map<string, MatrixCol>();
+      Object.values(grades).forEach((sg) =>
+        sg.forEach((g) => {
+          const courseId = String(g.course_id ?? g.course_name ?? g.name ?? '');
+          const courseName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+          if (courseName === 'Curso desconocido') return;
 
-    const studentGrades = grades[student.id] || [];
-
-    if (studentGrades.length === 0) {
-      return 'N/A';
+          if (g.activities && g.activities.length > 0) {
+            g.activities.forEach((act) => {
+              const colId = `${courseId}::${act.name}`;
+              if (!seen.has(colId)) {
+                seen.set(colId, { id: colId, courseId, courseName, name: act.name, isActivity: true });
+              }
+            });
+          } else if (!seen.has(courseId)) {
+            // Curso sin actividades: columna de curso normal
+            seen.set(courseId, { id: courseId, courseId, courseName, name: courseName, isActivity: false });
+          }
+        })
+      );
+      return Array.from(seen.values());
     }
 
-    // Filtrar y convertir valores válidos a números
-    const validGrades: number[] = [];
-
-    studentGrades.forEach((g) => {
-      // Preferencia: final_grade > rawgrade > grade
-      let gradeStr = g.final_grade ?? g.rawgrade ?? g.grade ?? 'N/A';
-
-      // Filtrar null o 'N/A'
-      if (gradeStr !== 'N/A' && gradeStr != null && gradeStr !== '-') {
-        const numericGrade = parseFloat(gradeStr.toString());
-        if (!isNaN(numericGrade)) {
-          validGrades.push(numericGrade);
+    // Sin actividades: columnas por curso
+    const seen = new Map<string, { id: string; courseId: string; courseName: string; name: string; isActivity: false }>();
+    Object.values(grades).forEach((sg) =>
+      sg.forEach((g) => {
+        const id = String(g.course_id ?? g.course_name ?? g.name ?? '');
+        const name = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+        if (name !== 'Curso desconocido' && !seen.has(id)) {
+          seen.set(id, { id, courseId: id, courseName: name, name, isActivity: false });
         }
+      })
+    );
+    return Array.from(seen.values());
+  }, [grades]);
+
+  /** Grupos de columnas por curso (para mostrar sub-cabecera agrupada) */
+  const columnGroups = useMemo(() => {
+    const groups: { courseName: string; count: number }[] = [];
+    let prev = '';
+    matrixColumns.forEach((col) => {
+      if (col.courseName !== prev) {
+        groups.push({ courseName: col.courseName, count: 1 });
+        prev = col.courseName;
+      } else {
+        groups[groups.length - 1].count++;
+      }
+    });
+    return groups;
+  }, [matrixColumns]);
+
+  const filteredStudents = useMemo(() =>
+    students.filter((s) => {
+      const q = searchQuery.toLowerCase();
+      return (
+        `${s.firstname} ${s.lastname}`.toLowerCase().includes(q) ||
+        String(s.matricula || s.id).toLowerCase().includes(q)
+      );
+    }),
+  [students, searchQuery]);
+
+  /* Stats del grupo */
+  const stats = useMemo(() => {
+    if (!students.length || !Object.keys(grades).length) return null;
+    let aprobados = 0, reprobados = 0, alertas = 0, noPresentaron = 0;
+    students.forEach((s) => {
+      const sg = grades[s.id] || [];
+      const vals = sg.map(gradeValue);
+      const cal1 = vals[0] ?? null;
+      const cal2 = vals[1] ?? null;
+      const est = calcEstatus(cal1, cal2);
+      if (est === 'aprobado')    aprobados++;
+      if (est === 'reprobado')   reprobados++;
+      if (est === 'alerta')      alertas++;
+      if (est === 'no_presento') noPresentaron++;
+    });
+    return { aprobados, reprobados, alertas, noPresentaron, total: students.length };
+  }, [students, grades]);
+
+  /* ── WhatsApp helpers ────────────────────────────────────────────────── */
+  const generateMessage = (student: Student) => {
+    const sg = grades[student.id] || [];
+
+    const lines: string[] = [];
+    sg.forEach((g) => {
+      const courseName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+      if (courseName === 'Curso desconocido') return;
+      const v = gradeValue(g);
+
+      if (g.activities && g.activities.length > 0) {
+        // Mostrar actividades detalladas
+        lines.push(`\n*${courseName}*`);
+        g.activities.forEach((act) => {
+          const actVal = act.rawgrade !== null && act.rawgrade !== undefined
+            ? Number(act.rawgrade).toFixed(2)
+            : act.grade && act.grade !== '-' ? act.grade : 'No presentó';
+          lines.push(`  - ${act.name}: ${actVal}`);
+        });
+        if (v !== null) lines.push(`  → Promedio curso: ${Number(v).toFixed(2)}`);
+      } else {
+        const valStr = v !== null ? Number(v).toFixed(2) : 'No presentó';
+        lines.push(`- ${courseName}: ${valStr}`);
       }
     });
 
-    if (validGrades.length === 0) return 'N/A';
-
-    const sum = validGrades.reduce((acc, val) => acc + val, 0);
-    const average = sum / validGrades.length;
-
-    return average.toFixed(2);
-  };
-
-  const generateMessageForStudent = (student: Student) => {
-    let calificacionesText = '';
-    
-    const studentGrades = grades[student.id] || [];
-    const filteredGrades = selectedCourseId !== 'all' 
-      ? studentGrades.filter(g => String(g.course_id ?? g.course_name ?? g.course_fullname ?? g.name) === selectedCourseId)
-      : studentGrades;
-
-    const validGradesForMessage = filteredGrades.filter((g) => {
-      const name = g.course_name ?? g.course_fullname ?? g.name ?? '';
-      const val = g.final_grade ?? g.rawgrade ?? g.grade;
-      return (
-        name !== 'Curso desconocido' &&
-        val != null &&
-        val !== 'N/A' &&
-        val !== '-'
-      );
-    });
-
-    if (validGradesForMessage.length > 0) {
-      calificacionesText = validGradesForMessage
-        .map((g) => {
-          const name = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
-          const val = g.final_grade ?? g.rawgrade ?? g.grade;
-          return `- ${name}: ${typeof val === 'number' ? val.toFixed(2) : val}`;
-        })
-        .join('\n');
-    } else {
-      calificacionesText = 'Sin calificaciones registradas.';
-    }
-
-    const nombre = `${student.firstname} ${student.lastname}`.trim();
+    const calText = lines.length ? lines.join('\n') : 'Sin calificaciones registradas.';
 
     return messageDraft
-      .replace(/\{\{nombre\}\}/g, nombre)
-      .replace(/\{\{calificaciones\}\}/g, calificacionesText)
-      .replace(/\s{2,}/g, ' ')
-      .trim(); 
+      .replace(/\{\{nombre\}\}/g, `${student.firstname} ${student.lastname}`.trim())
+      .replace(/\{\{calificaciones\}\}/g, calText)
+      .trim();
   };
 
-  const handleCopyForStudent = async (student: Student) => {
-    const msg = generateMessageForStudent(student);
+  const handleCopy = async (student: Student) => {
     try {
-      await navigator.clipboard.writeText(msg);
+      await navigator.clipboard.writeText(generateMessage(student));
       toast({ title: 'Mensaje copiado', description: `Copiado para ${student.firstname}` });
     } catch {
       toast({ title: 'Error', variant: 'destructive', description: 'No se pudo copiar.' });
     }
   };
 
-  const handleSendForStudent = (student: Student) => {
-    const msg = generateMessageForStudent(student);
+  const handleSend = (student: Student) => {
+    const msg   = generateMessage(student);
     const phone = student.phone ? student.phone.replace(/\D/g, '') : '';
-    const phoneWithCode = phone.length === 10 ? `52${phone}` : phone;
-
-    const encodedMessage = encodeURIComponent(msg);
-    const whatsappUrl = phoneWithCode
-      ? `https://api.whatsapp.com/send?phone=${phoneWithCode}&text=${encodedMessage}`
-      : `https://api.whatsapp.com/send?text=${encodedMessage}`;
-
-    window.open(whatsappUrl, '_blank');
+    const num   = phone.length === 10 ? `52${phone}` : phone;
+    window.open(
+      num
+        ? `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(msg)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`,
+      '_blank'
+    );
   };
 
+  /* ─── Render ─────────────────────────────────────────────────────────── */
   return (
-    <div className="w-full flex-1 min-w-0 p-4 space-y-6">
-      <div className="flex justify-between items-center h-10">
-        <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold">
-            Calificaciones por Plantel y Período
-          </h1>
-          {syncingMoodle && (
-            <span className="flex items-center text-xs font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full animate-pulse">
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-              Actualizando desde Moodle...
-            </span>
-          )}
-        </div>
+    <div className="w-full flex-1 min-w-0 flex flex-col h-full">
+
+      {/* ══ Barra superior: Título + filtros en una sola línea ══════════════ */}
+      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex flex-wrap items-center gap-3">
+        <h1 className="text-lg font-bold shrink-0 mr-2">Calificaciones</h1>
+
+        {/* Plantel */}
+        <Select
+          value={selectedPlantelId}
+          onValueChange={(v) => {
+            setSelectedPlantelId(v);
+            setSelectedPeriodoId('');
+            setSelectedGrupoId('');
+            setStudents([]);
+            setGrades({});
+          }}
+          disabled={loadingPlanteles}
+        >
+          <SelectTrigger className="h-8 text-sm w-36">
+            <SelectValue placeholder="Plantel" />
+          </SelectTrigger>
+          <SelectContent>
+            {planteles.map((p) => (
+              <SelectItem key={p.id} value={p.id?.toString() || ''}>{p.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Período */}
+        <Select
+          value={selectedPeriodoId}
+          onValueChange={(v) => { setSelectedPeriodoId(v); setSelectedGrupoId(''); setStudents([]); setGrades({}); }}
+          disabled={loadingPeriodos || !selectedPlantelId}
+        >
+          <SelectTrigger className="h-8 text-sm w-40">
+            <SelectValue placeholder="Período" />
+          </SelectTrigger>
+          <SelectContent>
+            {periodos.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Grupo */}
+        <Select
+          value={selectedGrupoId}
+          onValueChange={setSelectedGrupoId}
+          disabled={!selectedPlantelId || !selectedPeriodoId}
+        >
+          <SelectTrigger className="h-8 text-sm w-44">
+            <SelectValue placeholder={filteredGrupos.length === 0 ? 'Sin grupos' : 'Grupo'} />
+          </SelectTrigger>
+          <SelectContent>
+            {filteredGrupos.map((g) => (
+              <SelectItem key={g.id} value={g.id.toString()}>
+                {g.name} {g.type ? `(${g.type})` : ''} · {g.active_assignments_count || 0} alumnos
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Búsqueda */}
+        {selectedGrupoId && (
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar alumno..."
+              className="pl-7 h-8 text-sm w-44"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* Estado Moodle */}
+        {syncingMoodle && (
+          <span className="flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full animate-pulse">
+            <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+            Sincronizando…
+          </span>
+        )}
+
+        {/* Botón panel WA */}
+        {selectedGrupoId && Object.keys(grades).length > 0 && (
+          <button
+            onClick={() => setShowWaPanel((v) => !v)}
+            className={`ml-auto flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+              showWaPanel
+                ? 'bg-[#25D366] text-white border-[#25D366]'
+                : 'border-border hover:border-[#25D366] hover:text-[#25D366]'
+            }`}
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            WhatsApp masivo
+          </button>
+        )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Selecciona Plantel</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div className="w-full">
-              <Select
-                value={selectedPlantelId}
-                onValueChange={(value) => {
-                  setSelectedPlantelId(value);
-                  setSelectedPeriodoId(''); // Reset período when plantel changes
-                  setSelectedGrupoId(''); // Reset grupo when plantel changes
-                  setStudents([]);
-                  setGrades({});
-                  setSelectedStudent(null);
-                }}
-                disabled={loadingPlanteles}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un plantel" />
-                </SelectTrigger>
-                <SelectContent>
-                  {planteles.map((plantel) => (
-                    <SelectItem
-                      key={plantel.id}
-                      value={plantel.id?.toString() || ''}
-                    >
-                      {plantel.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="w-full">
-              <Select
-                value={selectedPeriodoId}
-                onValueChange={(value) => {
-                  setSelectedPeriodoId(value);
-                  setSelectedGrupoId(''); // Reset grupo when período changes
-                  setStudents([]);
-                  setGrades({});
-                  setSelectedStudent(null);
-                }}
-                disabled={loadingPeriodos || !selectedPlantelId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un período" />
-                </SelectTrigger>
-                <SelectContent>
-                  {periodos.map((periodo) => (
-                    <SelectItem key={periodo.id} value={periodo.id}>
-                      {periodo.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="w-full">
-              <Select
-                value={selectedGrupoId}
-                onValueChange={setSelectedGrupoId}
-                disabled={!selectedPlantelId || !selectedPeriodoId}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      !selectedPlantelId || !selectedPeriodoId
-                        ? 'Primero selecciona plantel y período'
-                        : filteredGrupos.length === 0
-                          ? 'No hay grupos disponibles'
-                          : 'Despliega y elige un grupo'
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredGrupos.map((grupo) => (
-                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                      {grupo.name} {grupo.type ? `(${grupo.type})` : ''} -{' '}
-                      {grupo.active_assignments_count || 0}{' '}
-                      {grupo.active_assignments_count === 1
-                        ? 'alumno'
-                        : 'alumnos'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="w-full">
-              <Select
-                value={selectedCourseId}
-                onValueChange={setSelectedCourseId}
-                disabled={availableCourses.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={availableCourses.length === 0 ? "Sin materias" : "Todas las materias"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las materias</SelectItem>
-                  {availableCourses.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="w-full">
-              {selectedGrupoId && (
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar alumno..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
+      {/* ══ Panel de WhatsApp (colapsable, bajo barra) ═══════════════════════ */}
+      {showWaPanel && selectedGrupoId && (
+        <div className="border-b bg-muted/30 px-4 py-3 flex flex-col lg:flex-row gap-4">
+          <div className="w-full lg:w-1/4">
+            <p className="text-xs font-medium mb-1 text-muted-foreground">Plantilla</p>
+            <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {whatsappTemplates.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              Variables: <code className="bg-muted px-1 rounded">{'{{nombre}}'}</code>,{' '}
+              <code className="bg-muted px-1 rounded">{'{{calificaciones}}'}</code>
+            </p>
           </div>
-        </CardContent>
-      </Card>
-
-      {selectedGrupoId && grades && Object.keys(grades).length > 0 && (
-        <Card className="bg-muted/30">
-          <CardHeader className="py-3">
-            <CardTitle className="text-lg">Redactar Mensaje Multidifusión</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="w-full lg:w-1/3">
-                <p className="text-xs font-medium mb-1 text-muted-foreground">Plantilla base</p>
-                <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="Selecciona plantilla" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {whatsappTemplates.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="mt-4 text-xs text-muted-foreground space-y-1">
-                  <p><strong>Variables disponibles:</strong></p>
-                  <p><code className="bg-muted px-1 py-0.5 rounded">{"{{nombre}}"}</code> - Nombre del alumno</p>
-                  <p><code className="bg-muted px-1 py-0.5 rounded">{"{{calificaciones}}"}</code> - Lista de notas</p>
-                </div>
-              </div>
-              <div className="w-full lg:w-2/3">
-                <p className="text-xs font-medium mb-1 text-muted-foreground">Borrador del mensaje (Materia actual: {selectedCourseId === 'all' ? 'Todas' : availableCourses.find(c => c.id === selectedCourseId)?.name})</p>
-                <Textarea
-                  value={messageDraft}
-                  onChange={(e) => setMessageDraft(e.target.value)}
-                  className="min-h-[100px] text-sm resize-none bg-background shadow-sm"
-                  placeholder="Escribe el mensaje aquí..."
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="w-full lg:flex-1">
+            <p className="text-xs font-medium mb-1 text-muted-foreground">Borrador del mensaje</p>
+            <Textarea
+              value={messageDraft}
+              onChange={(e) => setMessageDraft(e.target.value)}
+              className="min-h-[72px] text-sm resize-none bg-background"
+            />
+          </div>
+        </div>
       )}
 
-      {selectedGrupoId && (
-        <div className="flex gap-4 h-[750px]">
-          {/* Tabla de estudiantes a la izquierda */}
-          <Card className="flex-1 flex flex-col">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Alumnos y Notas</span>
-                {!loadingEstudiantes && students.length > 0 && (
-                  <span className="text-sm font-normal text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full border">
-                    {searchQuery
-                      ? `Mostrando ${filteredStudents.length} de ${students.length}`
-                      : `${students.length} ${
-                          students.length === 1 ? 'alumno' : 'alumnos'
-                        }`}
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-y-auto">
-              {loadingEstudiantes ? (
-                <div className="flex justify-center items-center p-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mr-2" />
-                  <span className="text-muted-foreground">
-                    Cargando datos...
-                  </span>
-                </div>
-              ) : students.length === 0 ? (
-                <Alert>
-                  <AlertDescription>
-                    No hay alumnos inscritos en este grupo. Verifica que el
-                    grupo tenga estudiantes asignados.
-                    <br />
-                    <strong>Grupo seleccionado:</strong>{' '}
-                    {filteredGrupos.find(
-                      (g) => g.id?.toString() === selectedGrupoId
-                    )?.name || 'Desconocido'}
-                    <br />
-                    <strong>ID del grupo:</strong> {selectedGrupoId}
-                  </AlertDescription>
-                </Alert>
+      {/* ══ Estadísticas rápidas ═══════════════════════════════════════════ */}
+      {stats && (
+        <div className="px-4 py-2 border-b flex gap-6 text-xs flex-wrap">
+          {/* Urgentes primero */}
+          <StatPill label="No presentó"  value={stats.noPresentaron} color="slate"   />
+          <StatPill label="⚠ Sin datos"  value={stats.alertas}       color="amber"   />
+          <StatPill label="Reprobados"   value={stats.reprobados}     color="red"     />
+          {/* Acabadas junto a urgentes */}
+          <StatPill label="Aprobados"    value={stats.aprobados}      color="emerald" />
+          <span className="ml-auto text-muted-foreground">
+            <BarChart3 className="inline w-3.5 h-3.5 mr-1" />
+            {stats.total} alumnos totales
+          </span>
+        </div>
+      )}
+
+      {/* ══ Estado vacío ════════════════════════════════════════════════════ */}
+      {!selectedGrupoId && (
+        <div className="flex flex-1 items-center justify-center text-muted-foreground text-sm p-8">
+          Selecciona plantel, período y grupo para ver la matriz de calificaciones.
+        </div>
+      )}
+
+      {selectedGrupoId && loadingEstudiantes && (
+        <div className="flex flex-1 items-center justify-center gap-2 text-muted-foreground p-8">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          Cargando alumnos…
+        </div>
+      )}
+
+      {selectedGrupoId && !loadingEstudiantes && students.length === 0 && (
+        <div className="p-6">
+          <Alert>
+            <AlertDescription>
+              No hay alumnos inscritos en este grupo.{' '}
+              <strong>Grupo ID:</strong> {selectedGrupoId}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {/* ══ MATRIZ DE CALIFICACIONES ════════════════════════════════════════ */}
+      {selectedGrupoId && !loadingEstudiantes && students.length > 0 && (
+        <div className="flex-1 overflow-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead className="sticky top-0 z-[5] bg-background border-b">
+              {/* Fila 1: identificadores + grupos de cursos */}
+              <tr className="border-b border-muted">
+                <th rowSpan={2} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap border-r bg-muted/60 sticky left-0 z-10 min-w-[160px]">
+                  Alumno
+                </th>
+                <th rowSpan={2} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap border-r bg-muted/60 w-24">
+                  Matrícula
+                </th>
+
+                {/* Grupos de cursos (colspan por cuantas actividades tiene) */}
+                {columnGroups.map((grp) => (
+                  <th
+                    key={grp.courseName}
+                    colSpan={grp.count}
+                    className="px-2 py-1.5 text-center text-[10px] font-bold text-foreground border-r border-b border-muted bg-muted/40 truncate max-w-[200px]"
+                    title={grp.courseName}
+                  >
+                    {grp.courseName}
+                  </th>
+                ))}
+
+                <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap border-r min-w-[110px] bg-muted/60">
+                  Estatus
+                </th>
+                <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap min-w-[80px] bg-muted/60">
+                  Enviar
+                </th>
+              </tr>
+
+              {/* Fila 2: nombre de cada actividad */}
+              <tr>
+                {matrixColumns.map((col) => (
+                  <th
+                    key={col.id}
+                    className="px-2 py-1.5 text-center text-[10px] font-medium text-muted-foreground border-r min-w-[80px] bg-muted/20"
+                    title={col.name}
+                  >
+                    <span className="block truncate max-w-[100px] mx-auto">{col.name}</span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredStudents.length === 0 ? (
+                <tr>
+                  <td colSpan={matrixColumns.length + 4} className="text-center py-12 text-muted-foreground">
+                    No se encontraron resultados para &ldquo;{searchQuery}&rdquo;
+                  </td>
+                </tr>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full caption-bottom text-sm">
-                    <thead className="[&_tr]:border-b">
-                      <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
-                          Matrícula
-                        </th>
-                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
-                          Nombre del Alumno
-                        </th>
-                        <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
-                          Promedio Final
-                        </th>
-                        <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
-                          Acciones
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="[&_tr:last-child]:border-0">
-                      {filteredStudents.length === 0 ? (
-                        <tr>
-                          <td colSpan={3} className="h-24 text-center">
-                            No se encontraron resultados.
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredStudents.map((student) => {
-                          const average = getStudentAverage(student);
-                          const isSelected = selectedStudent?.id === student.id;
+                filteredStudents.map((student, rowIdx) => {
+                  const sg = grades[student.id] || [];
 
-                          return (
-                            <tr
-                              key={student.id}
-                              className={`cursor-pointer border-b transition-colors ${
-                                isSelected
-                                  ? 'bg-primary/10 border-primary'
-                                  : 'hover:bg-muted/50'
-                              }`}
-                              onClick={() => setSelectedStudent(student)}
-                            >
-                              <td className="p-4 align-middle font-medium text-xs text-muted-foreground">
-                                {student.matricula || student.id || '-'}
-                              </td>
-                              <td className="p-4 align-middle font-medium">
-                                {student.firstname} {student.lastname}
-                              </td>
-                              <td className="p-4 align-middle text-right">
-                                <span
-                                  className={`px-3 py-1 rounded-md font-bold ${
-                                    average !== 'N/A' && Number(average) < 60
-                                      ? 'bg-red-100 text-red-700'
-                                      : 'bg-gray-100 text-gray-800'
-                                  }`}
-                                >
-                                  {average}
-                                </span>
-                              </td>
-                              <td className="p-4 align-middle text-right flex justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 shadow-sm"
-                                  onClick={(e) => { e.stopPropagation(); handleCopyForStudent(student); }}
-                                  title="Copiar mensaje"
-                                >
-                                  <Copy className="w-3.5 h-3.5" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  className="h-8 bg-[#25D366] hover:bg-[#1ebd5a] text-white shadow-sm"
-                                  onClick={(e) => { e.stopPropagation(); handleSendForStudent(student); }}
-                                  title="Enviar WhatsApp"
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5 mr-1" />
-                                  <span className="hidden sm:inline text-xs">Enviar</span>
-                                </Button>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Detalles de calificaciones a la derecha */}
-          {selectedStudent && (
-            <Card className="w-1/3 flex flex-col">
-              <CardHeader>
-                <CardTitle>
-                  Calificaciones de {selectedStudent.firstname}{' '}
-                  {selectedStudent.lastname}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto">
-                {(() => {
-                  const allStudentGrades = grades[selectedStudent.id] || [];
-                  const validStudentGrades = allStudentGrades.filter((g) => {
-                    const name =
-                      g.course_name ?? g.course_fullname ?? g.name ?? '';
-                    const val = g.final_grade ?? g.rawgrade ?? g.grade;
-                    return (
-                      name !== 'Curso desconocido' &&
-                      val != null &&
-                      val !== 'N/A' &&
-                      val !== '-'
-                    );
+                  // Mapear calificaciones del estudiante por column id
+                  const gradeByColId = new Map<string, Grade>();
+                  sg.forEach((g) => {
+                    const id = String(g.course_id ?? g.course_name ?? g.name ?? '');
+                    gradeByColId.set(id, g);
                   });
 
-                  return validStudentGrades.length > 0 ? (
-                    <div className="space-y-4">
-                      {validStudentGrades.map((g, idx) => {
-                        const name =
-                          g.course_name ??
-                          g.course_fullname ??
-                          g.name ??
-                          'Materia';
-                        const val = g.final_grade ?? g.rawgrade ?? g.grade;
-                        const displayVal =
-                          typeof val === 'number' ? val.toFixed(2) : val;
+                  // Calcular estatus global basado en el promedio de TODAS las calificaciones
+                  const allVals = sg.map(gradeValue).filter((v): v is number => v !== null);
+                  const promedio = allVals.length > 0 ? allVals.reduce((a, b) => a + b, 0) / allVals.length : null;
+                  const estatus: EstatusType =
+                    sg.length === 0 ? 'no_presento'
+                    : allVals.length === 0 ? 'no_presento'
+                    : allVals.length < sg.filter(g => (g.course_name ?? g.name) !== 'Curso desconocido').length ? 'alerta'
+                    : promedio! >= 60 ? 'aprobado'
+                    : 'reprobado';
+
+                  return (
+                    <tr
+                      key={student.id}
+                      className={`border-b transition-colors hover:bg-muted/30 ${rowIdx % 2 === 0 ? '' : 'bg-muted/10'}`}
+                    >
+                      {/* Nombre */}
+                      <td className="px-3 py-2 font-medium whitespace-nowrap border-r sticky left-0 bg-background z-[4]">
+                        {student.firstname} {student.lastname}
+                      </td>
+
+                      {/* Matrícula */}
+                      <td className="px-3 py-2 text-xs text-muted-foreground border-r whitespace-nowrap">
+                        {student.matricula || student.id || '—'}
+                      </td>
+
+                      {/* Celda por columna: actividad individual o curso */}
+                      {matrixColumns.map((col) => {
+                        // Buscar el Grade del curso correspondiente
+                        const g = gradeByColId.get(col.courseId);
+
+                        if (col.isActivity) {
+                          // Buscar la actividad por nombre dentro del curso
+                          const act = g?.activities?.find((a) => a.name === col.name);
+                          if (!act) {
+                            return (
+                              <td key={col.id} className="px-2 py-2 border-r text-center">
+                                <CalCell value={null} isEmpty />
+                              </td>
+                            );
+                          }
+                          const actVal = act.rawgrade !== null && act.rawgrade !== undefined
+                            ? act.rawgrade
+                            : act.grade && act.grade !== '-' && act.grade !== 'N/A'
+                              ? parseFloat(act.grade)
+                              : null;
+                          return (
+                            <td key={col.id} className="px-2 py-2 border-r text-center">
+                              <CalCell value={isNaN(actVal as number) ? null : actVal} />
+                            </td>
+                          );
+                        }
+
+                        // Columna de curso sin actividades
+                        if (!g) {
+                          return (
+                            <td key={col.id} className="px-2 py-2 border-r text-center">
+                              <CalCell value={null} isEmpty />
+                            </td>
+                          );
+                        }
                         return (
-                          <div
-                            key={idx}
-                            className="flex justify-between items-center py-3 px-4 border rounded-lg bg-card"
-                          >
-                            <span className="text-sm font-medium truncate mr-4">
-                              {name}
-                            </span>
-                            <span className="px-3 py-1 text-sm rounded-md font-bold border bg-background">
-                              {displayVal}
-                            </span>
-                          </div>
+                          <td key={col.id} className="px-2 py-2 border-r text-center">
+                            <CalCell value={gradeValue(g)} />
+                          </td>
                         );
                       })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground border-b pb-8">
-                      Sin notas disponibles.
-                    </div>
-                  );
-                })()}
 
-                
-              </CardContent>
-            </Card>
-          )}
+                      {/* Estatus global */}
+                      <td className="px-3 py-2 border-r text-center">
+                        <EstatusBadge estatus={estatus} />
+                      </td>
+
+                      {/* Botones de acción */}
+                      <td className="px-3 py-2">
+                        <div className="flex gap-1 justify-center">
+                          <button
+                            onClick={() => handleCopy(student)}
+                            title="Copiar mensaje"
+                            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleSend(student)}
+                            title="Enviar WhatsApp"
+                            className="p-1.5 rounded hover:bg-[#25D366]/10 transition-colors text-[#25D366]"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
+  );
+}
+
+/* ─── Componentes auxiliares ─────────────────────────────────────────────── */
+
+function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
+  const colorMap: Record<string, string> = {
+    slate:   'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    amber:   'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    red:     'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-medium ${colorMap[color] || ''}`}>
+      <span className="text-lg font-bold leading-none">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </span>
+  );
+}
+
+function CalCell({
+  value,
+  isEmpty,
+}: {
+  value: number | null;
+  isEmpty?: boolean;
+}) {
+  if (isEmpty || value === null) {
+    return (
+      <span className="inline-flex items-center justify-center w-11 h-7 rounded text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200 dark:bg-slate-800 dark:text-slate-500">
+        —
+      </span>
+    );
+  }
+
+  const n = Number(value);
+  const cls =
+    n >= 60
+      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400'
+      : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400';
+
+  return (
+    <span className={`inline-flex items-center justify-center w-11 h-7 rounded text-[11px] font-bold border ${cls}`}>
+      {n % 1 === 0 ? n : n.toFixed(1)}
+    </span>
   );
 }
