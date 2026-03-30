@@ -101,6 +101,18 @@ function gradeValue(g: Grade): number | null {
   return isNaN(n) ? null : n;
 }
 
+/** Convierte el nombre de una actividad/materia en un nombre de variable válido.
+ *  Ej: "Acción Indirecta 1" → "accion_indirecta_1"
+ */
+function toVarName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // quitar acentos
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')     // reemplazar caracteres no válidos con _
+    .replace(/^_+|_+$/g, '');         // trim de _
+}
+
 type EstatusType = 'aprobado' | 'reprobado' | 'alerta' | 'no_presento' | 'pendiente';
 
 function calcEstatus(cal1: number | null, cal2: number | null): EstatusType {
@@ -114,11 +126,11 @@ function calcEstatus(cal1: number | null, cal2: number | null): EstatusType {
 
 const EstatusBadge = ({ estatus }: { estatus: EstatusType }) => {
   const map: Record<EstatusType, { label: string; cls: string; icon: React.ReactNode }> = {
-    aprobado:    { label: 'Aprobado',      cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400',  icon: <CheckCircle2 className="w-3 h-3" /> },
-    reprobado:   { label: 'Reprobado',     cls: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400',                      icon: <XCircle className="w-3 h-3" /> },
-    alerta:      { label: '⚠ Sin datos',   cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400',             icon: <AlertTriangle className="w-3 h-3" /> },
-    no_presento: { label: 'No presentó',   cls: 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400',               icon: <XCircle className="w-3 h-3" /> },
-    pendiente:   { label: 'Pendiente',     cls: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400',                  icon: <Clock className="w-3 h-3" /> },
+    aprobado: { label: 'Aprobado', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400', icon: <CheckCircle2 className="w-3 h-3" /> },
+    reprobado: { label: 'Reprobado', cls: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400', icon: <XCircle className="w-3 h-3" /> },
+    alerta: { label: '⚠ Sin datos', cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400', icon: <AlertTriangle className="w-3 h-3" /> },
+    no_presento: { label: 'No presentó', cls: 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400', icon: <XCircle className="w-3 h-3" /> },
+    pendiente: { label: 'Pendiente', cls: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400', icon: <Clock className="w-3 h-3" /> },
   };
   const { label, cls, icon } = map[estatus];
   return (
@@ -152,7 +164,7 @@ export default function CalificacionesPage() {
   const [messageDraft, setMessageDraft] = useState<string>('');
   const [syncingMoodle, setSyncingMoodle] = useState(false);
   const [isInitializedData, setIsInitializedData] = useState(false);
-  const [showWaPanel, setShowWaPanel] = useState(false);
+  const [showWaPanel, setShowWaPanel] = useState(true);
 
   const { user } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
@@ -171,7 +183,7 @@ export default function CalificacionesPage() {
 
     let plantelId = selectedPlantelId || localStorage.getItem('calificaciones_plantelId') || '';
     let periodoId = selectedPeriodoId || localStorage.getItem('calificaciones_periodoId') || '';
-    let grupoId   = selectedGrupoId   || localStorage.getItem('calificaciones_grupoId')   || '';
+    let grupoId = selectedGrupoId || localStorage.getItem('calificaciones_grupoId') || '';
 
     if (!plantelId) {
       if (activeCampus?.id) plantelId = activeCampus.id.toString();
@@ -186,7 +198,7 @@ export default function CalificacionesPage() {
 
     if (plantelId && plantelId !== selectedPlantelId) setSelectedPlantelId(plantelId);
     if (periodoId && periodoId !== selectedPeriodoId) setSelectedPeriodoId(periodoId);
-    if (grupoId   && grupoId   !== selectedGrupoId)   setSelectedGrupoId(grupoId);
+    if (grupoId && grupoId !== selectedGrupoId) setSelectedGrupoId(grupoId);
     if (plantelId && periodoId && !isInitializedData) setIsInitializedData(true);
   }, [isMounted, user, activeCampus, uiConfig, periodos]);
 
@@ -210,7 +222,7 @@ export default function CalificacionesPage() {
   useEffect(() => {
     const params: Record<string, any> = {};
     if (selectedPlantelId) params.plantel_id = selectedPlantelId;
-    if (selectedPeriodoId) params.period_id  = selectedPeriodoId;
+    if (selectedPeriodoId) params.period_id = selectedPeriodoId;
     getGrupos(params)
       .then((res) => { setGrupos(res.sort((a, b) => a.name.localeCompare(b.name))); setIsInitialized(true); })
       .catch(() => setIsInitialized(true));
@@ -219,7 +231,7 @@ export default function CalificacionesPage() {
   /* ── Persistir selecciones ───────────────────────────────────────────── */
   useEffect(() => { if (typeof window !== 'undefined') localStorage.setItem('calificaciones_plantelId', selectedPlantelId); }, [selectedPlantelId]);
   useEffect(() => { if (typeof window !== 'undefined') localStorage.setItem('calificaciones_periodoId', selectedPeriodoId); }, [selectedPeriodoId]);
-  useEffect(() => { if (typeof window !== 'undefined') localStorage.setItem('calificaciones_grupoId',   selectedGrupoId);   }, [selectedGrupoId]);
+  useEffect(() => { if (typeof window !== 'undefined') localStorage.setItem('calificaciones_grupoId', selectedGrupoId); }, [selectedGrupoId]);
 
   /* ── Validar selecciones contra datos disponibles ────────────────────── */
   useEffect(() => {
@@ -314,8 +326,8 @@ export default function CalificacionesPage() {
     if (hasActivities) {
       // Expandir actividades: { id: courseId+actName, courseId, courseName, activityName }
       type ActivityCol = { id: string; courseId: string; courseName: string; name: string; isActivity: true };
-      type CourseCol   = { id: string; courseId: string; courseName: string; name: string; isActivity: false };
-      type MatrixCol   = ActivityCol | CourseCol;
+      type CourseCol = { id: string; courseId: string; courseName: string; name: string; isActivity: false };
+      type MatrixCol = ActivityCol | CourseCol;
 
       const seen = new Map<string, MatrixCol>();
       Object.values(grades).forEach((sg) =>
@@ -377,7 +389,7 @@ export default function CalificacionesPage() {
         String(s.matricula || s.id).toLowerCase().includes(q)
       );
     }),
-  [students, searchQuery]);
+    [students, searchQuery]);
 
   /* Stats del grupo */
   const stats = useMemo(() => {
@@ -389,9 +401,9 @@ export default function CalificacionesPage() {
       const cal1 = vals[0] ?? null;
       const cal2 = vals[1] ?? null;
       const est = calcEstatus(cal1, cal2);
-      if (est === 'aprobado')    aprobados++;
-      if (est === 'reprobado')   reprobados++;
-      if (est === 'alerta')      alertas++;
+      if (est === 'aprobado') aprobados++;
+      if (est === 'reprobado') reprobados++;
+      if (est === 'alerta') alertas++;
       if (est === 'no_presento') noPresentaron++;
     });
     return { aprobados, reprobados, alertas, noPresentaron, total: students.length };
@@ -401,34 +413,55 @@ export default function CalificacionesPage() {
   const generateMessage = (student: Student) => {
     const sg = grades[student.id] || [];
 
-    const lines: string[] = [];
+    // Construir mapa de variable → valor para este alumno
+    const vars: Record<string, string> = {};
+
     sg.forEach((g) => {
       const courseName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
       if (courseName === 'Curso desconocido') return;
       const v = gradeValue(g);
 
       if (g.activities && g.activities.length > 0) {
-        // Mostrar actividades detalladas
-        lines.push(`\n*${courseName}*`);
+        // Variable por actividad individual
+        g.activities.forEach((act) => {
+          const actVal = act.rawgrade !== null && act.rawgrade !== undefined
+            ? Number(act.rawgrade).toFixed(2)
+            : act.grade && act.grade !== '-' && act.grade !== 'N/A' ? act.grade : 'No presentó';
+          vars[toVarName(act.name)] = actVal;
+        });
+        // Variable resumen del curso
+        vars[toVarName(courseName)] = v !== null ? Number(v).toFixed(2) : 'No presentó';
+      } else {
+        vars[toVarName(courseName)] = v !== null ? Number(v).toFixed(2) : 'No presentó';
+      }
+    });
+
+    // Variable especial {{nombre}}
+    vars['nombre'] = `${student.firstname} ${student.lastname}`.trim();
+
+    // Variable legacy {{calificaciones}} — mantener compatibilidad
+    const lines: string[] = [];
+    sg.forEach((g) => {
+      const courseName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+      if (courseName === 'Curso desconocido') return;
+      const v = gradeValue(g);
+      if (g.activities && g.activities.length > 0) {
+        lines.push(`*${courseName}*`);
         g.activities.forEach((act) => {
           const actVal = act.rawgrade !== null && act.rawgrade !== undefined
             ? Number(act.rawgrade).toFixed(2)
             : act.grade && act.grade !== '-' ? act.grade : 'No presentó';
           lines.push(`  - ${act.name}: ${actVal}`);
         });
-        if (v !== null) lines.push(`  → Promedio curso: ${Number(v).toFixed(2)}`);
+        if (v !== null) lines.push(`  → Promedio: ${Number(v).toFixed(2)}`);
       } else {
-        const valStr = v !== null ? Number(v).toFixed(2) : 'No presentó';
-        lines.push(`- ${courseName}: ${valStr}`);
+        lines.push(`- ${courseName}: ${v !== null ? Number(v).toFixed(2) : 'No presentó'}`);
       }
     });
+    vars['calificaciones'] = lines.join('\n') || 'Sin calificaciones registradas.';
 
-    const calText = lines.length ? lines.join('\n') : 'Sin calificaciones registradas.';
-
-    return messageDraft
-      .replace(/\{\{nombre\}\}/g, `${student.firstname} ${student.lastname}`.trim())
-      .replace(/\{\{calificaciones\}\}/g, calText)
-      .trim();
+    // Reemplazar todas las variables {{var}} en el draft
+    return messageDraft.replace(/\{\{([^}]+)\}\}/g, (_, key) => vars[key.trim()] ?? `{{${key}}}`);
   };
 
   const handleCopy = async (student: Student) => {
@@ -441,9 +474,9 @@ export default function CalificacionesPage() {
   };
 
   const handleSend = (student: Student) => {
-    const msg   = generateMessage(student);
+    const msg = generateMessage(student);
     const phone = student.phone ? student.phone.replace(/\D/g, '') : '';
-    const num   = phone.length === 10 ? `52${phone}` : phone;
+    const num = phone.length === 10 ? `52${phone}` : phone;
     window.open(
       num
         ? `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(msg)}`
@@ -541,11 +574,10 @@ export default function CalificacionesPage() {
         {selectedGrupoId && Object.keys(grades).length > 0 && (
           <button
             onClick={() => setShowWaPanel((v) => !v)}
-            className={`ml-auto flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-              showWaPanel
-                ? 'bg-[#25D366] text-white border-[#25D366]'
-                : 'border-border hover:border-[#25D366] hover:text-[#25D366]'
-            }`}
+            className={`ml-auto flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${showWaPanel
+              ? 'bg-[#25D366] text-white border-[#25D366]'
+              : 'border-border hover:border-[#25D366] hover:text-[#25D366]'
+              }`}
           >
             <MessageCircle className="w-3.5 h-3.5" />
             WhatsApp masivo
@@ -568,17 +600,37 @@ export default function CalificacionesPage() {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground mt-2">
-              Variables: <code className="bg-muted px-1 rounded">{'{{nombre}}'}</code>,{' '}
-              <code className="bg-muted px-1 rounded">{'{{calificaciones}}'}</code>
-            </p>
+
+            {/* Variables disponibles */}
+            <div className="mt-2 space-y-1">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Variables disponibles</p>
+
+              {/* Variables fijas */}
+              <VarChip name="nombre" desc="Nombre completo" onInsert={(v) => setMessageDraft((d) => d + v)} />
+              <VarChip name="calificaciones" desc="Todas (resumen)" onInsert={(v) => setMessageDraft((d) => d + v)} />
+
+              {/* Variables por actividad/curso */}
+              {matrixColumns.length > 0 && (
+                <>
+                  <p className="text-[10px] text-muted-foreground mt-1 pt-1 border-t">Por actividad:</p>
+                  {matrixColumns.map((col) => (
+                    <VarChip
+                      key={col.id}
+                      name={toVarName(col.name)}
+                      desc={col.name}
+                      onInsert={(v) => setMessageDraft((d) => d + v)}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
           </div>
           <div className="w-full lg:flex-1">
             <p className="text-xs font-medium mb-1 text-muted-foreground">Borrador del mensaje</p>
             <Textarea
               value={messageDraft}
               onChange={(e) => setMessageDraft(e.target.value)}
-              className="min-h-[72px] text-sm resize-none bg-background"
+              className="min-h-[250px] text-sm resize-y bg-background"
             />
           </div>
         </div>
@@ -588,11 +640,11 @@ export default function CalificacionesPage() {
       {stats && (
         <div className="px-4 py-2 border-b flex gap-6 text-xs flex-wrap">
           {/* Urgentes primero */}
-          <StatPill label="No presentó"  value={stats.noPresentaron} color="slate"   />
-          <StatPill label="⚠ Sin datos"  value={stats.alertas}       color="amber"   />
-          <StatPill label="Reprobados"   value={stats.reprobados}     color="red"     />
+          <StatPill label="No presentó" value={stats.noPresentaron} color="slate" />
+          <StatPill label="⚠ Sin datos" value={stats.alertas} color="amber" />
+          <StatPill label="Reprobados" value={stats.reprobados} color="red" />
           {/* Acabadas junto a urgentes */}
-          <StatPill label="Aprobados"    value={stats.aprobados}      color="emerald" />
+          <StatPill label="Aprobados" value={stats.aprobados} color="emerald" />
           <span className="ml-auto text-muted-foreground">
             <BarChart3 className="inline w-3.5 h-3.5 mr-1" />
             {stats.total} alumnos totales
@@ -695,10 +747,10 @@ export default function CalificacionesPage() {
                   const promedio = allVals.length > 0 ? allVals.reduce((a, b) => a + b, 0) / allVals.length : null;
                   const estatus: EstatusType =
                     sg.length === 0 ? 'no_presento'
-                    : allVals.length === 0 ? 'no_presento'
-                    : allVals.length < sg.filter(g => (g.course_name ?? g.name) !== 'Curso desconocido').length ? 'alerta'
-                    : promedio! >= 60 ? 'aprobado'
-                    : 'reprobado';
+                      : allVals.length === 0 ? 'no_presento'
+                        : allVals.length < sg.filter(g => (g.course_name ?? g.name) !== 'Curso desconocido').length ? 'alerta'
+                          : promedio! >= 60 ? 'aprobado'
+                            : 'reprobado';
 
                   return (
                     <tr
@@ -797,9 +849,9 @@ export default function CalificacionesPage() {
 
 function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
   const colorMap: Record<string, string> = {
-    slate:   'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
-    amber:   'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    red:     'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    slate: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    red: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   };
   return (
@@ -835,5 +887,33 @@ function CalCell({
     <span className={`inline-flex items-center justify-center w-11 h-7 rounded text-[11px] font-bold border ${cls}`}>
       {n % 1 === 0 ? n : n.toFixed(1)}
     </span>
+  );
+}
+
+/** Chip de variable insertable: muestra {{var}} y un botón para insertar en el draft */
+function VarChip({
+  name,
+  desc,
+  onInsert,
+}: {
+  name: string;
+  desc?: string;
+  onInsert: (v: string) => void;
+}) {
+  const varStr = `{{${name}}}`;
+  return (
+    <button
+      type="button"
+      onClick={() => onInsert(varStr)}
+      title={`Insertar ${varStr}${desc ? ` — ${desc}` : ''}`}
+      className="group flex items-center gap-1.5 w-full text-left hover:bg-muted/60 rounded px-1 py-0.5 transition-colors"
+    >
+      <code className="text-[10px] bg-muted text-primary px-1.5 py-0.5 rounded font-mono group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+        {varStr}
+      </code>
+      {desc && (
+        <span className="text-[10px] text-muted-foreground truncate">{desc}</span>
+      )}
+    </button>
   );
 }
