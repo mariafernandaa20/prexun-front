@@ -324,7 +324,17 @@ export default function CalificacionesPage() {
     );
 
     if (hasActivities) {
-      // Expandir actividades: { id: courseId+actName, courseId, courseName, activityName }
+      // ─ Paso 1: qué cursos tienen actividades en CUALQUIER alumno
+      const courseIdsWithActivities = new Set<string>();
+      Object.values(grades).forEach((sg) =>
+        sg.forEach((g) => {
+          if (g.activities && g.activities.length > 0) {
+            courseIdsWithActivities.add(String(g.course_id ?? g.course_name ?? g.name ?? ''));
+          }
+        })
+      );
+
+      // ─ Paso 2: construir columnas
       type ActivityCol = { id: string; courseId: string; courseName: string; name: string; isActivity: true };
       type CourseCol = { id: string; courseId: string; courseName: string; name: string; isActivity: false };
       type MatrixCol = ActivityCol | CourseCol;
@@ -343,8 +353,8 @@ export default function CalificacionesPage() {
                 seen.set(colId, { id: colId, courseId, courseName, name: act.name, isActivity: true });
               }
             });
-          } else if (!seen.has(courseId)) {
-            // Curso sin actividades: columna de curso normal
+          } else if (!courseIdsWithActivities.has(courseId) && !seen.has(courseId)) {
+            // Solo añadir columna de curso si ese curso NO tiene actividades en ningún alumno
             seen.set(courseId, { id: courseId, courseId, courseName, name: courseName, isActivity: false });
           }
         })
@@ -587,7 +597,7 @@ export default function CalificacionesPage() {
 
       {/* ══ Panel de WhatsApp (colapsable, bajo barra) ═══════════════════════ */}
       {showWaPanel && selectedGrupoId && (
-        <div className="border-b bg-muted/30 px-4 py-3 flex flex-col lg:flex-row gap-4">
+        <div className="border-b bg-muted/30 dark:bg-muted/10 px-4 py-3 flex flex-col lg:flex-row gap-4">
           <div className="w-full lg:w-1/4">
             <p className="text-xs font-medium mb-1 text-muted-foreground">Plantilla</p>
             <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
@@ -684,10 +694,10 @@ export default function CalificacionesPage() {
             <thead className="sticky top-0 z-[5] bg-background border-b">
               {/* Fila 1: identificadores + grupos de cursos */}
               <tr className="border-b border-muted">
-                <th rowSpan={2} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap border-r bg-muted/60 sticky left-0 z-10 min-w-[160px]">
+                <th rowSpan={2} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap border-r bg-muted/60 dark:bg-muted/30 sticky left-0 z-10 min-w-[160px]">
                   Alumno
                 </th>
-                <th rowSpan={2} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap border-r bg-muted/60 w-24">
+                <th rowSpan={2} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap border-r bg-muted/60 dark:bg-muted/30 w-24">
                   Matrícula
                 </th>
 
@@ -703,10 +713,10 @@ export default function CalificacionesPage() {
                   </th>
                 ))}
 
-                <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap border-r min-w-[110px] bg-muted/60">
+                <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap border-r min-w-[110px] bg-muted/60 dark:bg-muted/30">
                   Estatus
                 </th>
-                <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap min-w-[80px] bg-muted/60">
+                <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap min-w-[80px] bg-muted/60 dark:bg-muted/30">
                   Enviar
                 </th>
               </tr>
@@ -871,7 +881,7 @@ function CalCell({
 }) {
   if (isEmpty || value === null) {
     return (
-      <span className="inline-flex items-center justify-center w-11 h-7 rounded text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200 dark:bg-slate-800 dark:text-slate-500">
+      <span className="inline-flex items-center justify-center w-11 h-7 rounded text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200 dark:bg-slate-800/60 dark:text-slate-500 dark:border-slate-700">
         —
       </span>
     );
