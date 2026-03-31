@@ -110,13 +110,26 @@ export default function StudentLogs({ studentId }: Props) {
     fetchData();
   }, [studentId]);
 
-  const formatValue = (field: string, value: any) => {
+  const formatValue = (field: string, value: any): string => {
     if (value === null || value === undefined || value === '') return '—';
 
     // Helper to find name safely
     const findName = (list: any[], id: any) => {
       const item = list.find((i) => String(i.id) === String(id));
-      return item ? item.name : value; // Fallback to ID if not found
+      return item ? item.name : String(id);
+    };
+
+    // Helper: serializa cualquier valor complejo a string legible
+    const serialize = (v: any): string => {
+      if (v === null || v === undefined) return '—';
+      if (typeof v === 'boolean') return v ? 'Sí' : 'No';
+      if (typeof v === 'string' || typeof v === 'number') return String(v);
+      try {
+        const json = JSON.stringify(v, null, 0);
+        return json.length > 120 ? json.slice(0, 117) + '…' : json;
+      } catch {
+        return '[Objeto]';
+      }
     };
 
     switch (field) {
@@ -140,10 +153,16 @@ export default function StudentLogs({ studentId }: Props) {
         return findName(facultades, value);
       case 'prepa_id':
         return findName(prepas, value);
-      case 'status':
-        return value;
+      case 'grades': {
+        // Mostrar resumen de calificaciones: "7 materias"
+        const count = Array.isArray(value) ? value.length : '?';
+        return `${count} materia(s) en registro`;
+      }
+      case 'is_active':
+      case 'book_delivered':
+        return value ? 'Sí' : 'No';
       default:
-        return value;
+        return serialize(value);
     }
   };
 
@@ -184,11 +203,11 @@ export default function StudentLogs({ studentId }: Props) {
                         {log.changed_fields.map((field) => (
                           <li key={field}>
                             <span className="font-semibold">{field}:</span>{' '}
-                            <span className="text-red-600">
+                            <span className="text-red-500 dark:text-red-400">
                               {formatValue(field, log.data_before?.[field])}
                             </span>{' '}
                             <span className="mx-1">→</span>
-                            <span className="text-green-600">
+                            <span className="text-green-600 dark:text-green-400">
                               {formatValue(field, log.data_after?.[field])}
                             </span>
                           </li>
