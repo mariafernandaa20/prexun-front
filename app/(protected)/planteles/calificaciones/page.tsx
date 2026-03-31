@@ -324,17 +324,7 @@ export default function CalificacionesPage() {
     );
 
     if (hasActivities) {
-      // ─ Paso 1: qué cursos tienen actividades en CUALQUIER alumno
-      const courseIdsWithActivities = new Set<string>();
-      Object.values(grades).forEach((sg) =>
-        sg.forEach((g) => {
-          if (g.activities && g.activities.length > 0) {
-            courseIdsWithActivities.add(String(g.course_id ?? g.course_name ?? g.name ?? ''));
-          }
-        })
-      );
-
-      // ─ Paso 2: construir columnas
+      // Expandir actividades: { id: courseId+actName, courseId, courseName, activityName }
       type ActivityCol = { id: string; courseId: string; courseName: string; name: string; isActivity: true };
       type CourseCol = { id: string; courseId: string; courseName: string; name: string; isActivity: false };
       type MatrixCol = ActivityCol | CourseCol;
@@ -353,8 +343,8 @@ export default function CalificacionesPage() {
                 seen.set(colId, { id: colId, courseId, courseName, name: act.name, isActivity: true });
               }
             });
-          } else if (!courseIdsWithActivities.has(courseId) && !seen.has(courseId)) {
-            // Solo añadir columna de curso si ese curso NO tiene actividades en ningún alumno
+          } else if (!seen.has(courseId)) {
+            // Curso sin actividades: columna de curso normal
             seen.set(courseId, { id: courseId, courseId, courseName, name: courseName, isActivity: false });
           }
         })
@@ -918,7 +908,7 @@ function VarChip({
       title={`Insertar ${varStr}${desc ? ` — ${desc}` : ''}`}
       className="group flex items-center gap-1.5 w-full text-left hover:bg-muted/60 rounded px-1 py-0.5 transition-colors"
     >
-      <code className="text-[10px] bg-muted text-primary px-1.5 py-0.5 rounded font-mono group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+      <code className="text-[10px] bg-muted text-primary px-1.5 py-0.5 rounded font-mono group-hover:bg-primary group-hover:text-primary-foreground transition-colors dark:text-white">
         {varStr}
       </code>
       {desc && (
