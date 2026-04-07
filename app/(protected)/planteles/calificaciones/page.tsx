@@ -23,6 +23,7 @@ import {
   XCircle,
   Clock,
   BarChart3,
+  RefreshCw,
 } from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { getGrupos, getCampuses, getPeriods } from '@/lib/api';
@@ -569,12 +570,29 @@ export default function CalificacionesPage() {
           </div>
         )}
 
-        {/* Estado Moodle */}
-        {syncingMoodle && (
-          <span className="flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full animate-pulse">
-            <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
-            Sincronizando…
-          </span>
+        {/* Acciones de sincronización */}
+        {selectedGrupoId && (
+          <div className="flex items-center gap-2">
+            {syncingMoodle ? (
+              <span className="flex items-center text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1.5 rounded-full animate-pulse border">
+                <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                Sincronizando…
+              </span>
+            ) : (
+              <button
+                onClick={() => {
+                  if (typeof (window as any).syncMoodleGrades === 'function') {
+                    (window as any).syncMoodleGrades();
+                  }
+                }}
+                className="flex items-center text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted px-2.5 py-1.5 rounded-full border transition-colors"
+                title="Sincronizar con Moodle (Forzar actualización)"
+              >
+                <RefreshCw className="w-3 h-3 mr-1.5" />
+                Sincronizar
+              </button>
+            )}
+          </div>
         )}
 
         {/* Botón panel WA */}
