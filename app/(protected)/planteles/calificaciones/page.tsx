@@ -308,7 +308,14 @@ export default function CalificacionesPage() {
       const matchPlantel =
         (g.plantel_id ? String(g.plantel_id) === String(selectedPlantelId) : false) ||
         (Array.isArray(g.campuses) ? g.campuses.some((c) => String(c.id) === String(selectedPlantelId)) : false);
-      return matchPlantel && matchPeriodo && (g.active_assignments_count || 0) > 0;
+      
+      const groupType = String(g.type || '').toLowerCase();
+      const isOnlineGroup =
+        groupType.includes('linea') ||
+        groupType.includes('línea') ||
+        groupType.includes('online');
+
+      return (matchPlantel || isOnlineGroup) && matchPeriodo && (g.active_assignments_count || 0) > 0;
     });
   }, [selectedPlantelId, selectedPeriodoId, grupos]);
 
