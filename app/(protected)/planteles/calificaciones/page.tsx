@@ -326,13 +326,21 @@ export default function CalificacionesPage() {
    * - Si no hay actividades → una columna por curso (comportamiento anterior).
    */
   const matrixColumns = useMemo(() => {
-    // Verificar si algún alumno tiene actividades cargadas
-    const hasActivities = Object.values(grades).some((sg) =>
-      sg.some((g) => g.activities && g.activities.length > 0)
+    // ─ Paso 1: qué cursos tienen actividades en CUALQUIER alumno, por nombre
+    const courseNamesWithActivities = new Set<string>();
+    Object.values(grades).forEach((sg) =>
+      sg.forEach((g) => {
+        if (g.activities && g.activities.length > 0) {
+          const courseName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+          courseNamesWithActivities.add(courseName);
+        }
+      })
     );
 
+    // Verificar si algún alumno tiene actividades cargadas (usando el tamaño del Set)
+    const hasActivities = courseNamesWithActivities.size > 0;
+
     if (hasActivities) {
-      // Expandir actividades: { id: courseId+actName, courseId, courseName, activityName }
       type ActivityCol = { id: string; courseId: string; courseName: string; name: string; isActivity: true };
       type CourseCol = { id: string; courseId: string; courseName: string; name: string; isActivity: false };
       type MatrixCol = ActivityCol | CourseCol;
@@ -340,34 +348,33 @@ export default function CalificacionesPage() {
       const seen = new Map<string, MatrixCol>();
       Object.values(grades).forEach((sg) =>
         sg.forEach((g) => {
-          const courseId = String(g.course_id ?? g.course_name ?? g.name ?? '');
           const courseName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
           if (courseName === 'Curso desconocido') return;
 
           if (g.activities && g.activities.length > 0) {
             g.activities.forEach((act) => {
-              const colId = `${courseId}::${act.name}`;
+              const colId = `${courseName}::${act.name}`;
               if (!seen.has(colId)) {
-                seen.set(colId, { id: colId, courseId, courseName, name: act.name, isActivity: true });
+                // Usamos courseName como el 'id' lógico del curso dentro del col
+                seen.set(colId, { id: colId, courseId: courseName, courseName, name: act.name, isActivity: true });
               }
             });
-          } else if (!seen.has(courseId)) {
-            // Curso sin actividades: columna de curso normal
-            seen.set(courseId, { id: courseId, courseId, courseName, name: courseName, isActivity: false });
+          } else if (!courseNamesWithActivities.has(courseName) && !seen.has(courseName)) {
+            // Solo añadir columna genérica si ESTE nombre de curso no tiene ninguna actividad reportada
+            seen.set(courseName, { id: courseName, courseId: courseName, courseName, name: courseName, isActivity: false });
           }
         })
       );
       return Array.from(seen.values());
     }
 
-    // Sin actividades: columnas por curso
+    // Sin actividades en absoluto en el grado: columnas por curso normal (usando el nombre)
     const seen = new Map<string, { id: string; courseId: string; courseName: string; name: string; isActivity: false }>();
     Object.values(grades).forEach((sg) =>
       sg.forEach((g) => {
-        const id = String(g.course_id ?? g.course_name ?? g.name ?? '');
         const name = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
-        if (name !== 'Curso desconocido' && !seen.has(id)) {
-          seen.set(id, { id, courseId: id, courseName: name, name, isActivity: false });
+        if (name !== 'Curso desconocido' && !seen.has(name)) {
+          seen.set(name, { id: name, courseId: name, courseName: name, name, isActivity: false });
         }
       })
     );
@@ -760,11 +767,14 @@ export default function CalificacionesPage() {
                 filteredStudents.map((student, rowIdx) => {
                   const sg = grades[student.id] || [];
 
-                  // Mapear calificaciones del estudiante por column id
-                  const gradeByColId = new Map<string, Grade>();
+                  // Mapear calificaciones del estudiante por NOMBRE de curso para agrupar visualmente
+                  const gradeByCourseName = new Map<string, Grade>();
                   sg.forEach((g) => {
-                    const id = String(g.course_id ?? g.course_name ?? g.name ?? '');
-                    gradeByColId.set(id, g);
+                    const cName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+                    // Si ya existe, preferir el que tenga actividades o mayor rawgrade
+                    if (!gradeByCourseName.has(cName) || (g.activities && g.activities.length > 0)) {
+                      gradeByCourseName.set(cName, g);
+                    }
                   });
 
                   // Calcular estatus global basado en el promedio de TODAS las calificaciones
@@ -794,8 +804,8 @@ export default function CalificacionesPage() {
 
                       {/* Celda por columna: actividad individual o curso */}
                       {matrixColumns.map((col) => {
-                        // Buscar el Grade del curso correspondiente
-                        const g = gradeByColId.get(col.courseId);
+                        // Buscar el Grade del curso correspondiente usando el nombre del curso
+                        const g = gradeByCourseName.get(col.courseName);
 
                         if (col.isActivity) {
                           // Buscar la actividad por nombre dentro del curso
