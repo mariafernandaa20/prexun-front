@@ -502,7 +502,7 @@ export default function CalificacionesPage() {
 
   /* ─── Render ─────────────────────────────────────────────────────────── */
   return (
-    <div className="w-full flex-1 min-w-0 flex flex-col h-full">
+    <div className="w-full flex-1 min-w-0 flex flex-col h-full overflow-hidden">
 
       {/* ══ Barra superior: Título + filtros en una sola línea ══════════════ */}
       <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex flex-wrap items-center gap-3">
@@ -711,7 +711,7 @@ export default function CalificacionesPage() {
 
       {/* ══ MATRIZ DE CALIFICACIONES ════════════════════════════════════════ */}
       {selectedGrupoId && !loadingEstudiantes && students.length > 0 && (
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto relative border rounded-md min-h-0 max-h-[calc(100vh-180px)] scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent">
           <table className="w-full text-sm border-collapse">
             <thead className="sticky top-0 z-[5] bg-background border-b">
               {/* Fila 1: identificadores + grupos de cursos */}
