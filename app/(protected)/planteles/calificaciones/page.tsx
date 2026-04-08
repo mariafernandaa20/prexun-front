@@ -735,9 +735,7 @@ export default function CalificacionesPage() {
                   </th>
                 ))}
 
-                <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap border-r min-w-[110px] bg-muted/60 dark:bg-muted/30">
-                  Estatus
-                </th>
+
                 <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap min-w-[80px] bg-muted/60 dark:bg-muted/30">
                   Enviar
                 </th>
@@ -759,7 +757,7 @@ export default function CalificacionesPage() {
             <tbody>
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={matrixColumns.length + 4} className="text-center py-12 text-muted-foreground">
+                  <td colSpan={matrixColumns.length + 3} className="text-center py-12 text-muted-foreground">
                     No se encontraron resultados para &ldquo;{searchQuery}&rdquo;
                   </td>
                 </tr>
@@ -844,10 +842,7 @@ export default function CalificacionesPage() {
                         );
                       })}
 
-                      {/* Estatus global */}
-                      <td className="px-3 py-2 border-r text-center">
-                        <EstatusBadge estatus={estatus} />
-                      </td>
+
 
                       {/* Botones de acción */}
                       <td className="px-3 py-2">
