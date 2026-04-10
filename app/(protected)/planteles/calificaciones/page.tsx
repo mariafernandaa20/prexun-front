@@ -41,6 +41,8 @@ interface Student {
   email: string;
   matricula: string | null;
   phone?: string;
+  transferred?: boolean;
+  transferred_grades?: Grade[];
 }
 
 interface Activity {
@@ -155,6 +157,7 @@ export default function CalificacionesPage() {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [selectedGrupoId, setSelectedGrupoId] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
+  const [transferredStudents, setTransferredStudents] = useState<Student[]>([]);
   const [grades, setGrades] = useState<Record<string | number, Grade[]>>({});
   const [loadingPlanteles, setLoadingPlanteles] = useState(true);
   const [loadingPeriodos, setLoadingPeriodos] = useState(true);
@@ -273,7 +276,7 @@ export default function CalificacionesPage() {
 
     const fetchStudents = async () => {
       setLoadingEstudiantes(true);
-      setStudents([]); setGrades({});
+      setStudents([]); setGrades({}); setTransferredStudents([]);
       try {
         const res = await axiosInstance.get(`/student-assignments/students-by-period/${selectedPeriodoId}`, {
           params: { campus_id: selectedPlantelId, grupo: selectedGrupoId || undefined, perPage: 1000 },
@@ -284,6 +287,24 @@ export default function CalificacionesPage() {
         else if (res.data?.data) data = res.data.data;
         else if (res.data?.students) data = res.data.students;
         setStudents(data);
+
+        // Alumnos transferidos (ya no en el grupo pero con calificaciones)
+        const transferred: Student[] = res.data?.transferred_students ?? [];
+        setTransferredStudents(transferred);
+
+        // Pre-cargar calificaciones de transferidos desde el JSONB ya incluido
+        if (transferred.length > 0) {
+          const preloadedGrades: Record<string | number, Grade[]> = {};
+          transferred.forEach((s) => {
+            if (s.transferred_grades && s.transferred_grades.length > 0) {
+              preloadedGrades[s.id] = s.transferred_grades;
+            }
+          });
+          if (Object.keys(preloadedGrades).length > 0) {
+            setGrades((prev) => ({ ...prev, ...preloadedGrades }));
+          }
+        }
+
         if (data.length > 0) {
           fetchGradesInBackground(data, false).finally(() => { if (active) fetchGradesInBackground(data, true); });
         }
@@ -405,6 +426,16 @@ export default function CalificacionesPage() {
       );
     }),
     [students, searchQuery]);
+
+  const filteredTransferred = useMemo(() =>
+    transferredStudents.filter((s) => {
+      const q = searchQuery.toLowerCase();
+      return (
+        `${s.firstname} ${s.lastname}`.toLowerCase().includes(q) ||
+        String(s.matricula || s.id).toLowerCase().includes(q)
+      );
+    }),
+    [transferredStudents, searchQuery]);
 
   /* Stats del grupo */
   const stats = useMemo(() => {
@@ -755,117 +786,221 @@ export default function CalificacionesPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredStudents.length === 0 ? (
+              {filteredStudents.length === 0 && filteredTransferred.length === 0 ? (
                 <tr>
                   <td colSpan={matrixColumns.length + 3} className="text-center py-12 text-muted-foreground">
                     No se encontraron resultados para &ldquo;{searchQuery}&rdquo;
                   </td>
                 </tr>
               ) : (
-                filteredStudents.map((student, rowIdx) => {
-                  const sg = grades[student.id] || [];
+                <>
+                  {filteredStudents.map((student, rowIdx) => {
+                    const sg = grades[student.id] || [];
 
-                  // Mapear calificaciones del estudiante por NOMBRE de curso para agrupar visualmente
-                  const gradeByCourseName = new Map<string, Grade>();
-                  sg.forEach((g) => {
-                    const cName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
-                    // Si ya existe, preferir el que tenga actividades o mayor rawgrade
-                    if (!gradeByCourseName.has(cName) || (g.activities && g.activities.length > 0)) {
-                      gradeByCourseName.set(cName, g);
-                    }
-                  });
+                    // Mapear calificaciones del estudiante por NOMBRE de curso para agrupar visualmente
+                    const gradeByCourseName = new Map<string, Grade>();
+                    sg.forEach((g) => {
+                      const cName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+                      if (!gradeByCourseName.has(cName) || (g.activities && g.activities.length > 0)) {
+                        gradeByCourseName.set(cName, g);
+                      }
+                    });
 
-                  // Calcular estatus global basado en el promedio de TODAS las calificaciones
-                  const allVals = sg.map(gradeValue).filter((v): v is number => v !== null);
-                  const promedio = allVals.length > 0 ? allVals.reduce((a, b) => a + b, 0) / allVals.length : null;
-                  const estatus: EstatusType =
-                    sg.length === 0 ? 'no_presento'
-                      : allVals.length === 0 ? 'no_presento'
-                        : allVals.length < sg.filter(g => (g.course_name ?? g.name) !== 'Curso desconocido').length ? 'alerta'
-                          : promedio! >= 60 ? 'aprobado'
-                            : 'reprobado';
+                    // Calcular estatus global basado en el promedio de TODAS las calificaciones
+                    const allVals = sg.map(gradeValue).filter((v): v is number => v !== null);
+                    const promedio = allVals.length > 0 ? allVals.reduce((a, b) => a + b, 0) / allVals.length : null;
+                    const estatus: EstatusType =
+                      sg.length === 0 ? 'no_presento'
+                        : allVals.length === 0 ? 'no_presento'
+                          : allVals.length < sg.filter(g => (g.course_name ?? g.name) !== 'Curso desconocido').length ? 'alerta'
+                            : promedio! >= 60 ? 'aprobado'
+                              : 'reprobado';
 
-                  return (
-                    <tr
-                      key={student.id}
-                      className={`border-b transition-colors hover:bg-muted/30 ${rowIdx % 2 === 0 ? '' : 'bg-muted/10'}`}
-                    >
-                      {/* Nombre */}
-                      <td className="px-3 py-2 font-medium whitespace-nowrap border-r sticky left-0 bg-background z-[4]">
-                        {student.firstname} {student.lastname}
-                      </td>
+                    return (
+                      <tr
+                        key={student.id}
+                        className={`border-b transition-colors hover:bg-muted/30 ${rowIdx % 2 === 0 ? '' : 'bg-muted/10'}`}
+                      >
+                        {/* Nombre */}
+                        <td className="px-3 py-2 font-medium whitespace-nowrap border-r sticky left-0 bg-background z-[4]">
+                          {student.firstname} {student.lastname}
+                        </td>
 
-                      {/* Matrícula */}
-                      <td className="px-3 py-2 text-xs text-muted-foreground border-r whitespace-nowrap">
-                        {student.matricula || student.id || '—'}
-                      </td>
+                        {/* Matrícula */}
+                        <td className="px-3 py-2 text-xs text-muted-foreground border-r whitespace-nowrap">
+                          {student.matricula || student.id || '—'}
+                        </td>
 
-                      {/* Celda por columna: actividad individual o curso */}
-                      {matrixColumns.map((col) => {
-                        // Buscar el Grade del curso correspondiente usando el nombre del curso
-                        const g = gradeByCourseName.get(col.courseName);
+                        {/* Celda por columna */}
+                        {matrixColumns.map((col) => {
+                          const g = gradeByCourseName.get(col.courseName);
 
-                        if (col.isActivity) {
-                          // Buscar la actividad por nombre dentro del curso
-                          const act = g?.activities?.find((a) => a.name === col.name);
-                          if (!act) {
+                          if (col.isActivity) {
+                            const act = g?.activities?.find((a) => a.name === col.name);
+                            if (!act) {
+                              return (
+                                <td key={col.id} className="px-2 py-2 border-r text-center">
+                                  <CalCell value={null} isEmpty />
+                                </td>
+                              );
+                            }
+                            const actVal = act.rawgrade !== null && act.rawgrade !== undefined
+                              ? act.rawgrade
+                              : act.grade && act.grade !== '-' && act.grade !== 'N/A'
+                                ? parseFloat(act.grade)
+                                : null;
+                            return (
+                              <td key={col.id} className="px-2 py-2 border-r text-center">
+                                <CalCell value={isNaN(actVal as number) ? null : actVal} />
+                              </td>
+                            );
+                          }
+
+                          if (!g) {
                             return (
                               <td key={col.id} className="px-2 py-2 border-r text-center">
                                 <CalCell value={null} isEmpty />
                               </td>
                             );
                           }
-                          const actVal = act.rawgrade !== null && act.rawgrade !== undefined
-                            ? act.rawgrade
-                            : act.grade && act.grade !== '-' && act.grade !== 'N/A'
-                              ? parseFloat(act.grade)
-                              : null;
                           return (
                             <td key={col.id} className="px-2 py-2 border-r text-center">
-                              <CalCell value={isNaN(actVal as number) ? null : actVal} />
+                              <CalCell value={gradeValue(g)} />
                             </td>
                           );
-                        }
+                        })}
 
-                        // Columna de curso sin actividades
-                        if (!g) {
-                          return (
-                            <td key={col.id} className="px-2 py-2 border-r text-center">
-                              <CalCell value={null} isEmpty />
-                            </td>
-                          );
-                        }
-                        return (
-                          <td key={col.id} className="px-2 py-2 border-r text-center">
-                            <CalCell value={gradeValue(g)} />
-                          </td>
-                        );
-                      })}
+                        {/* Botones de acción */}
+                        <td className="px-3 py-2">
+                          <div className="flex gap-1 justify-center">
+                            <button
+                              onClick={() => handleCopy(student)}
+                              title="Copiar mensaje"
+                              className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleSend(student)}
+                              title="Enviar WhatsApp"
+                              className="p-1.5 rounded hover:bg-[#25D366]/10 transition-colors text-[#25D366]"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
 
-
-
-                      {/* Botones de acción */}
-                      <td className="px-3 py-2">
-                        <div className="flex gap-1 justify-center">
-                          <button
-                            onClick={() => handleCopy(student)}
-                            title="Copiar mensaje"
-                            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleSend(student)}
-                            title="Enviar WhatsApp"
-                            className="p-1.5 rounded hover:bg-[#25D366]/10 transition-colors text-[#25D366]"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                  {/* ── Separador de alumnos transferidos ── */}
+                  {filteredTransferred.length > 0 && (
+                    <tr className="border-b border-red-300 dark:border-red-800">
+                      <td
+                        colSpan={matrixColumns.length + 3}
+                        className="px-3 py-1.5 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-xs font-semibold"
+                      >
+                        <span className="inline-flex items-center gap-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          Alumnos que ya no están en este grupo — {filteredTransferred.length} {filteredTransferred.length === 1 ? 'alumno' : 'alumnos'}
+                        </span>
                       </td>
                     </tr>
-                  );
-                })
+                  )}
+
+                  {filteredTransferred.map((student) => {
+                    const sg = grades[student.id] || student.transferred_grades || [];
+
+                    const gradeByCourseName = new Map<string, Grade>();
+                    sg.forEach((g) => {
+                      const cName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+                      if (!gradeByCourseName.has(cName) || (g.activities && g.activities.length > 0)) {
+                        gradeByCourseName.set(cName, g);
+                      }
+                    });
+
+                    return (
+                      <tr
+                        key={`transferred-${student.id}`}
+                        className="border-b border-red-200 dark:border-red-900 bg-red-50/70 dark:bg-red-950/30 hover:bg-red-100/70 dark:hover:bg-red-950/50 transition-colors"
+                      >
+                        {/* Nombre con badge */}
+                        <td className="px-3 py-2 font-medium whitespace-nowrap border-r sticky left-0 bg-red-50 dark:bg-red-950/40 z-[4]">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-red-900 dark:text-red-200">{student.firstname} {student.lastname}</span>
+                            <span className="text-[10px] font-normal text-red-500 dark:text-red-400 flex items-center gap-1">
+                              <XCircle className="w-3 h-3" /> Ya no está en este grupo
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Matrícula */}
+                        <td className="px-3 py-2 text-xs text-red-400 dark:text-red-500 border-r whitespace-nowrap">
+                          {student.matricula || student.id || '—'}
+                        </td>
+
+                        {/* Celdas de calificación */}
+                        {matrixColumns.map((col) => {
+                          const g = gradeByCourseName.get(col.courseName);
+
+                          if (col.isActivity) {
+                            const act = g?.activities?.find((a) => a.name === col.name);
+                            if (!act) {
+                              return (
+                                <td key={col.id} className="px-2 py-2 border-r text-center">
+                                  <CalCell value={null} isEmpty />
+                                </td>
+                              );
+                            }
+                            const actVal = act.rawgrade !== null && act.rawgrade !== undefined
+                              ? act.rawgrade
+                              : act.grade && act.grade !== '-' && act.grade !== 'N/A'
+                                ? parseFloat(act.grade)
+                                : null;
+                            return (
+                              <td key={col.id} className="px-2 py-2 border-r text-center">
+                                <CalCell value={isNaN(actVal as number) ? null : actVal} />
+                              </td>
+                            );
+                          }
+
+                          if (!g) {
+                            return (
+                              <td key={col.id} className="px-2 py-2 border-r text-center">
+                                <CalCell value={null} isEmpty />
+                              </td>
+                            );
+                          }
+                          return (
+                            <td key={col.id} className="px-2 py-2 border-r text-center">
+                              <CalCell value={gradeValue(g)} />
+                            </td>
+                          );
+                        })}
+
+                        {/* Botones de acción */}
+                        <td className="px-3 py-2">
+                          <div className="flex gap-1 justify-center">
+                            <button
+                              onClick={() => handleCopy(student)}
+                              title="Copiar mensaje"
+                              className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-red-400 dark:text-red-500"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleSend(student)}
+                              title="Enviar WhatsApp"
+                              className="p-1.5 rounded hover:bg-[#25D366]/10 transition-colors text-[#25D366]"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </>
               )}
             </tbody>
           </table>
