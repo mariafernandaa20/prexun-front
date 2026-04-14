@@ -12,9 +12,10 @@ import { useUIConfig } from '@/hooks/useUIConfig';
 import GoogleAuth from './google/GoogleAuth';
 import CajaActiva from './caja/CajaActiva';
 import { CajaProvider } from './caja/CajaContext';
+import { MaintenanceBanner } from '@/components/layout/MaintenanceBanner';
 
 export default function Page({ children }: { children: React.ReactNode }) {
-  useUIConfig();
+  const { config, refreshConfig } = useUIConfig();
   useAppInit();
   return (
     <SidebarProvider>
@@ -34,6 +35,11 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             </header>
+            <MaintenanceBanner
+              maintenanceMode={config?.maintenance_mode ?? false}
+              maintenanceMessage={config?.maintenance_message ?? ''}
+              onRefresh={refreshConfig}
+            />
             <div className="flex flex-1 flex-col p-4">{children}</div>
           </div>
         </SidebarInset>

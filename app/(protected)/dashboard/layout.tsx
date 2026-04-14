@@ -7,10 +7,13 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { useAppInit } from '@/hooks/use-app-init';
+import { useUIConfig } from '@/hooks/useUIConfig';
+import { MaintenanceBanner } from '@/components/layout/MaintenanceBanner';
 
 export default function Page({ children }: { children: React.ReactNode }) {
   // Usar el hook personalizado para inicialización
   useAppInit();
+  const { config, refreshConfig } = useUIConfig();
 
   return (
     <SidebarProvider>
@@ -22,6 +25,11 @@ export default function Page({ children }: { children: React.ReactNode }) {
             <Separator orientation="vertical" className="mr-2 h-4" />
           </div>
         </header>
+        <MaintenanceBanner
+          maintenanceMode={config?.maintenance_mode ?? false}
+          maintenanceMessage={config?.maintenance_message ?? ''}
+          onRefresh={refreshConfig}
+        />
         <div className="flex-1 min-w-0">{children}</div>
       </SidebarInset>
     </SidebarProvider>

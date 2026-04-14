@@ -866,6 +866,35 @@ export const getUIConfig = async () => {
   return response.data;
 };
 
+/**
+ * Obtiene el setting de mantenimiento por key para obtener su ID.
+ * Luego actualiza el valor.
+ */
+export const setMaintenanceMode = async (enabled: boolean, message?: string) => {
+  // Obtener todos los settings del grupo sistema para encontrar los IDs
+  const allSettingsRes = await axiosInstance.get('/site-settings/group/sistema');
+  const settings: any[] = allSettingsRes.data?.data ?? [];
+
+  const modeSetting = settings.find((s: any) => s.key === 'maintenance_mode');
+  const msgSetting = settings.find((s: any) => s.key === 'maintenance_message');
+
+  const updates: Array<{ id: number; value: string }> = [];
+
+  if (modeSetting) {
+    updates.push({ id: modeSetting.id, value: enabled ? 'true' : 'false' });
+  }
+
+  if (message !== undefined && msgSetting) {
+    updates.push({ id: msgSetting.id, value: message });
+  }
+
+  if (updates.length > 0) {
+    const response = await axiosInstance.post('/site-settings/update-multiple', { settings: updates });
+    return response.data;
+  }
+};
+
+
 export const getStudentsByAssignedPeriod = async (periodId: string, params: any) => {
   const response = await axiosInstance.get(`${API_ENDPOINTS.STUDENTS_BY_ASSIGNED_PERIOD}/${periodId}`, { params });
   return response.data;

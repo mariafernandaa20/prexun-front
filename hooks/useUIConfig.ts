@@ -7,6 +7,8 @@ interface UIConfig {
   default_theme: string;
   payment_methods_enabled: string[];
   default_payment_method: string;
+  maintenance_mode: boolean;
+  maintenance_message: string;
 }
 
 // Cache global para evitar múltiples llamadas
@@ -36,7 +38,9 @@ const loadConfig = async (): Promise<UIConfig> => {
         default_items_per_page: 10,
         default_theme: 'light',
         payment_methods_enabled: ['cash'],
-        default_payment_method: 'cash'
+        default_payment_method: 'cash',
+        maintenance_mode: false,
+        maintenance_message: 'El sistema se encuentra en mantenimiento.',
       };
       configCache = defaultConfig;
       return defaultConfig;
