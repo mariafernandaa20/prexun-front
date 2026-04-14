@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import {
   Select,
   SelectContent,
@@ -24,6 +25,12 @@ import {
   Clock,
   BarChart3,
   RefreshCw,
+  Download,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  FileSpreadsheet,
+  X,
 } from 'lucide-react';
 import axiosInstance from '@/lib/api/axiosConfig';
 import { getGrupos, getCampuses, getPeriods } from '@/lib/api';
@@ -169,6 +176,26 @@ export default function CalificacionesPage() {
   const [syncingMoodle, setSyncingMoodle] = useState(false);
   const [isInitializedData, setIsInitializedData] = useState(false);
   const [showWaPanel, setShowWaPanel] = useState(true);
+
+  // ── Sort ────────────────────────────────────────────────────────────────
+  type SortKey = 'lastname' | 'firstname' | 'matricula' | string; // string = colId
+  const [sortKey, setSortKey] = useState<SortKey>('lastname');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = useCallback((key: SortKey) => {
+    setSortKey((prev) => {
+      if (prev === key) {
+        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+        return key;
+      }
+      setSortDir('asc');
+      return key;
+    });
+  }, []);
+
+  // ── Export modal ─────────────────────────────────────────────────────────
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedExportCols, setSelectedExportCols] = useState<Set<string>>(new Set());
 
   const { user } = useAuthStore();
   const { activeCampus } = useActiveCampusStore();
@@ -417,25 +444,60 @@ export default function CalificacionesPage() {
     return groups;
   }, [matrixColumns]);
 
-  const filteredStudents = useMemo(() =>
-    students.filter((s) => {
-      const q = searchQuery.toLowerCase();
-      return (
-        `${s.firstname} ${s.lastname}`.toLowerCase().includes(q) ||
-        String(s.matricula || s.id).toLowerCase().includes(q)
-      );
-    }),
-    [students, searchQuery]);
+  const filteredStudents = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    const filtered = students.filter((s) =>
+      `${s.firstname} ${s.lastname}`.toLowerCase().includes(q) ||
+      String(s.matricula || s.id).toLowerCase().includes(q)
+    );
 
-  const filteredTransferred = useMemo(() =>
-    transferredStudents.filter((s) => {
-      const q = searchQuery.toLowerCase();
-      return (
-        `${s.firstname} ${s.lastname}`.toLowerCase().includes(q) ||
-        String(s.matricula || s.id).toLowerCase().includes(q)
-      );
-    }),
-    [transferredStudents, searchQuery]);
+    return [...filtered].sort((a, b) => {
+      let valA = '';
+      let valB = '';
+      if (sortKey === 'lastname') { valA = a.lastname; valB = b.lastname; }
+      else if (sortKey === 'firstname') { valA = a.firstname; valB = b.firstname; }
+      else if (sortKey === 'matricula') { valA = String(a.matricula || a.id); valB = String(b.matricula || b.id); }
+      else {
+        // columna de calificación: comparar por valor numérico
+        const col = matrixColumns.find((c) => c.id === sortKey);
+        if (col) {
+          const getVal = (s: Student): number => {
+            const sg = grades[s.id] || [];
+            const gradeByCourseName = new Map<string, Grade>();
+            sg.forEach((g) => {
+              const cName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+              if (!gradeByCourseName.has(cName) || (g.activities && g.activities.length > 0)) gradeByCourseName.set(cName, g);
+            });
+            const g = gradeByCourseName.get(col.courseName);
+            if (col.isActivity) {
+              const act = g?.activities?.find((a) => a.name === col.name);
+              if (!act) return -Infinity;
+              const v = act.rawgrade !== null && act.rawgrade !== undefined ? act.rawgrade : parseFloat(act.grade);
+              return isNaN(v) ? -Infinity : v;
+            }
+            return g ? (gradeValue(g) ?? -Infinity) : -Infinity;
+          };
+          const diff = getVal(a) - getVal(b);
+          return sortDir === 'asc' ? diff : -diff;
+        }
+      }
+      const cmp = valA.localeCompare(valB, 'es', { sensitivity: 'base' });
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [students, searchQuery, sortKey, sortDir, grades, matrixColumns]);
+
+  const filteredTransferred = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    const filtered = transferredStudents.filter((s) =>
+      `${s.firstname} ${s.lastname}`.toLowerCase().includes(q) ||
+      String(s.matricula || s.id).toLowerCase().includes(q)
+    );
+    return [...filtered].sort((a, b) => {
+      if (sortKey === 'lastname') return sortDir === 'asc' ? a.lastname.localeCompare(b.lastname, 'es') : b.lastname.localeCompare(a.lastname, 'es');
+      if (sortKey === 'firstname') return sortDir === 'asc' ? a.firstname.localeCompare(b.firstname, 'es') : b.firstname.localeCompare(a.firstname, 'es');
+      return 0;
+    });
+  }, [transferredStudents, searchQuery, sortKey, sortDir]);
 
   /* Stats del grupo */
   const stats = useMemo(() => {
@@ -454,6 +516,60 @@ export default function CalificacionesPage() {
     });
     return { aprobados, reprobados, alertas, noPresentaron, total: students.length };
   }, [students, grades]);
+
+  /* ── Export helpers ─────────────────────────────────────────────────── */
+
+  /** Devuelve el valor de una celda para un alumno y una columna de la matriz */
+  const getCellValue = useCallback((student: Student, col: typeof matrixColumns[0]): number | null => {
+    const sg = grades[student.id] || [];
+    const gradeByCourseName = new Map<string, Grade>();
+    sg.forEach((g) => {
+      const cName = g.course_name ?? g.course_fullname ?? g.name ?? 'Materia';
+      if (!gradeByCourseName.has(cName) || (g.activities && g.activities.length > 0)) gradeByCourseName.set(cName, g);
+    });
+    const g = gradeByCourseName.get(col.courseName);
+    if (col.isActivity) {
+      const act = g?.activities?.find((a) => a.name === col.name);
+      if (!act) return null;
+      const v = act.rawgrade !== null && act.rawgrade !== undefined ? act.rawgrade : parseFloat(act.grade);
+      return isNaN(v) ? null : v;
+    }
+    return g ? gradeValue(g) : null;
+  }, [grades]);
+
+  const exportToExcel = useCallback(() => {
+    const colsToExport = matrixColumns.filter((col) =>
+      selectedExportCols.size === 0 || selectedExportCols.has(col.id)
+    );
+
+    const allStudents = [
+      ...filteredStudents,
+      ...filteredTransferred.map((s) => ({ ...s, _transferred: true })),
+    ] as (Student & { _transferred?: boolean })[];
+
+    const rows = allStudents.map((student) => {
+      const row: Record<string, string | number> = {
+        Apellido: student.lastname,
+        Nombre: student.firstname,
+        Matrícula: student.matricula || String(student.id),
+      };
+      if ((student as any)._transferred) row['Estado'] = 'Ya no está en el grupo';
+      colsToExport.forEach((col) => {
+        const colLabel = col.isActivity ? `${col.courseName} — ${col.name}` : col.courseName;
+        const val = getCellValue(student, col);
+        row[colLabel] = val !== null ? val : '';
+      });
+      return row;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    const grupoNombre = grupos.find((g) => g.id.toString() === selectedGrupoId)?.name || 'grupo';
+    XLSX.utils.book_append_sheet(wb, ws, grupoNombre.substring(0, 31));
+    XLSX.writeFile(wb, `calificaciones_${grupoNombre}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    setShowExportModal(false);
+    toast({ title: 'Exportado', description: `${rows.length} alumnos exportados a Excel.` });
+  }, [matrixColumns, selectedExportCols, filteredStudents, filteredTransferred, getCellValue, grupos, selectedGrupoId, toast]);
 
   /* ── WhatsApp helpers ────────────────────────────────────────────────── */
   const generateMessage = (student: Student) => {
@@ -633,18 +749,36 @@ export default function CalificacionesPage() {
           </div>
         )}
 
-        {/* Botón panel WA */}
+        {/* Botones panel WA + exportar */}
         {selectedGrupoId && Object.keys(grades).length > 0 && (
-          <button
-            onClick={() => setShowWaPanel((v) => !v)}
-            className={`ml-auto flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${showWaPanel
-              ? 'bg-[#25D366] text-white border-[#25D366]'
-              : 'border-border hover:border-[#25D366] hover:text-[#25D366]'
-              }`}
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            WhatsApp masivo
-          </button>
+          <div className="ml-auto flex items-center gap-2">
+            {/* Exportar Excel */}
+            <button
+              onClick={() => {
+                // Pre-seleccionar todas las columnas si no hay selección
+                if (selectedExportCols.size === 0) {
+                  setSelectedExportCols(new Set(matrixColumns.map((c) => c.id)));
+                }
+                setShowExportModal(true);
+              }}
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-900/20 transition-colors"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              Exportar Excel
+            </button>
+
+            {/* WhatsApp masivo */}
+            <button
+              onClick={() => setShowWaPanel((v) => !v)}
+              className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${showWaPanel
+                ? 'bg-[#25D366] text-white border-[#25D366]'
+                : 'border-border hover:border-[#25D366] hover:text-[#25D366]'
+                }`}
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              WhatsApp masivo
+            </button>
+          </div>
         )}
       </div>
 
@@ -740,6 +874,74 @@ export default function CalificacionesPage() {
         </div>
       )}
 
+      {/* ══ Modal de exportación ══════════════════════════════════════════════ */}
+      {showExportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-background border rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                <h2 className="text-base font-semibold">Exportar a Excel</h2>
+              </div>
+              <button onClick={() => setShowExportModal(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground mb-3">Selecciona las columnas que quieres incluir en el archivo. El alumno, nombre y matrícula siempre se incluyen.</p>
+
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={() => setSelectedExportCols(new Set(matrixColumns.map((c) => c.id)))}
+                className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
+              >Seleccionar todo</button>
+              <button
+                onClick={() => setSelectedExportCols(new Set())}
+                className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
+              >Deseleccionar todo</button>
+            </div>
+
+            <div className="max-h-64 overflow-y-auto border rounded-lg divide-y">
+              {matrixColumns.map((col) => (
+                <label key={col.id} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50 cursor-pointer transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={selectedExportCols.has(col.id)}
+                    onChange={(e) => {
+                      setSelectedExportCols((prev) => {
+                        const next = new Set(prev);
+                        if (e.target.checked) next.add(col.id);
+                        else next.delete(col.id);
+                        return next;
+                      });
+                    }}
+                    className="rounded"
+                  />
+                  <span className="text-xs flex flex-col">
+                    <span className="font-medium">{col.isActivity ? col.name : col.courseName}</span>
+                    {col.isActivity && <span className="text-muted-foreground">{col.courseName}</span>}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex gap-2 mt-4 justify-end">
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="px-4 py-2 text-sm rounded-lg border hover:bg-muted transition-colors"
+              >Cancelar</button>
+              <button
+                onClick={exportToExcel}
+                className="px-4 py-2 text-sm rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Exportar ({selectedExportCols.size === 0 ? matrixColumns.length : selectedExportCols.size} columnas)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ══ MATRIZ DE CALIFICACIONES ════════════════════════════════════════ */}
       {selectedGrupoId && !loadingEstudiantes && students.length > 0 && (
         <div className="flex-1 overflow-auto relative border rounded-md min-h-0 max-h-[calc(100vh-180px)] scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent">
@@ -747,11 +949,39 @@ export default function CalificacionesPage() {
             <thead className="sticky top-0 z-[5] bg-background border-b">
               {/* Fila 1: identificadores + grupos de cursos */}
               <tr className="border-b border-muted">
+                {/* Columna Alumno: sorteable por apellido / nombre */}
                 <th rowSpan={2} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap border-r bg-muted/60 dark:bg-muted/30 sticky left-0 z-10 min-w-[160px]">
-                  Alumno
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      onClick={() => handleSort('lastname')}
+                      className="flex items-center gap-1 text-xs hover:text-foreground transition-colors"
+                    >
+                      Apellido
+                      {sortKey === 'lastname'
+                        ? (sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
+                        : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
+                    </button>
+                    <button
+                      onClick={() => handleSort('firstname')}
+                      className="flex items-center gap-1 text-xs hover:text-foreground transition-colors"
+                    >
+                      Nombre
+                      {sortKey === 'firstname'
+                        ? (sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
+                        : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
+                    </button>
+                  </div>
                 </th>
                 <th rowSpan={2} className="px-3 py-2 text-left font-semibold text-muted-foreground whitespace-nowrap border-r bg-muted/60 dark:bg-muted/30 w-24">
-                  Matrícula
+                  <button
+                    onClick={() => handleSort('matricula')}
+                    className="flex items-center gap-1 text-xs hover:text-foreground transition-colors"
+                  >
+                    Matrícula
+                    {sortKey === 'matricula'
+                      ? (sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)
+                      : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
+                  </button>
                 </th>
 
                 {/* Grupos de cursos (colspan por cuantas actividades tiene) */}
@@ -766,21 +996,26 @@ export default function CalificacionesPage() {
                   </th>
                 ))}
 
-
                 <th rowSpan={2} className="px-3 py-2 text-center font-semibold text-muted-foreground whitespace-nowrap min-w-[80px] bg-muted/60 dark:bg-muted/30">
                   Enviar
                 </th>
               </tr>
 
-              {/* Fila 2: nombre de cada actividad */}
+              {/* Fila 2: nombre de cada actividad (sorteable) */}
               <tr>
                 {matrixColumns.map((col) => (
                   <th
                     key={col.id}
-                    className="px-2 py-1.5 text-center text-[10px] font-medium text-muted-foreground border-r min-w-[80px] bg-muted/20"
-                    title={col.name}
+                    className="px-2 py-1.5 text-center text-[10px] font-medium text-muted-foreground border-r min-w-[80px] bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors select-none"
+                    title={`Ordenar por ${col.name}`}
+                    onClick={() => handleSort(col.id)}
                   >
-                    <span className="block truncate max-w-[100px] mx-auto">{col.name}</span>
+                    <span className="flex items-center justify-center gap-0.5">
+                      <span className="block truncate max-w-[90px]">{col.name}</span>
+                      {sortKey === col.id
+                        ? (sortDir === 'asc' ? <ChevronUp className="w-3 h-3 shrink-0" /> : <ChevronDown className="w-3 h-3 shrink-0" />)
+                        : <ChevronsUpDown className="w-3 h-3 shrink-0 opacity-30" />}
+                    </span>
                   </th>
                 ))}
               </tr>
