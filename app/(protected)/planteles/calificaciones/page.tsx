@@ -824,10 +824,9 @@ export default function CalificacionesPage() {
           </div>
           <div className="w-full lg:flex-1">
             <p className="text-xs font-medium mb-1 text-muted-foreground">Borrador del mensaje</p>
-            <Textarea
+            <HighlightedTextarea
               value={messageDraft}
-              onChange={(e) => setMessageDraft(e.target.value)}
-              className="min-h-[250px] text-sm resize-y bg-background"
+              onChange={setMessageDraft}
             />
           </div>
         </div>
@@ -1290,7 +1289,7 @@ function CalCell({
   );
 }
 
-/** Chip de variable insertable: muestra {{var}} y un botón para insertar en el draft */
+/** Chip de variable insertable: layout vertical con {{var}} arriba y descripción abajo */
 function VarChip({
   name,
   desc,
@@ -1306,14 +1305,103 @@ function VarChip({
       type="button"
       onClick={() => onInsert(varStr)}
       title={`Insertar ${varStr}${desc ? ` — ${desc}` : ''}`}
-      className="group flex items-center gap-1.5 w-full text-left hover:bg-muted/60 rounded px-1 py-0.5 transition-colors"
+      className="group flex flex-col items-start w-full text-left hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-md px-2 py-1.5 transition-colors border border-transparent hover:border-violet-200 dark:hover:border-violet-800"
     >
-      <code className="text-[10px] bg-muted text-primary px-1.5 py-0.5 rounded font-mono group-hover:bg-primary group-hover:text-primary-foreground transition-colors dark:text-white">
+      <code className="text-[11px] bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 px-1.5 py-0.5 rounded font-mono group-hover:bg-violet-200 dark:group-hover:bg-violet-800/60 transition-colors">
         {varStr}
       </code>
       {desc && (
-        <span className="text-[10px] text-muted-foreground truncate">{desc}</span>
+        <span className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{desc}</span>
       )}
     </button>
+  );
+}
+
+/**
+ * Textarea con resaltado de variables {{...}}.
+ * Usa un div de preview (semitransparente) superpuesto y un textarea transparente encima
+ * para mantener edición nativa mientras se ven los highlights.
+ */
+function HighlightedTextarea({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  /** Convierte el texto plano en HTML con <mark> alrededor de {{...}} */
+  const toHtml = (text: string) => {
+    // Escapar HTML básico primero
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    // Resaltar variables
+    const highlighted = escaped.replace(
+      /\{\{([^}]+)\}\}/g,
+      '<mark class="var-highlight">{{$1}}</mark>'
+    );
+    // Preservar saltos de línea
+    return highlighted.replace(/\n/g, '<br />');
+  };
+
+  return (
+    <>
+      <style>{`
+        .wa-highlighted mark.var-highlight {
+          background: rgba(139, 92, 246, 0.15);
+          color: #7c3aed;
+          border-radius: 3px;
+          padding: 0 2px;
+          font-weight: 600;
+          font-family: ui-monospace, monospace;
+          font-size: 0.8em;
+        }
+        .dark .wa-highlighted mark.var-highlight {
+          background: rgba(167, 139, 250, 0.2);
+          color: #a78bfa;
+        }
+        .wa-highlighted {
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+      `}</style>
+      <div className="relative">
+        {/* Capa de preview con highlights — no interactuable */}
+        <div
+          aria-hidden
+          className="wa-highlighted pointer-events-none absolute inset-0 px-3 py-2 text-sm text-transparent overflow-hidden rounded-md border border-transparent"
+          style={{ fontFamily: 'inherit', lineHeight: '1.5rem', minHeight: '250px' }}
+          dangerouslySetInnerHTML={{ __html: toHtml(value) + '&nbsp;' }}
+        />
+        {/* Textarea real encima — texto invisible pero cursor y selección visibles */}
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          spellCheck={false}
+          className="relative w-full bg-background border rounded-md px-3 py-2 text-sm resize-y text-foreground caret-foreground focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 dark:focus:ring-violet-600/40 dark:focus:border-violet-600 transition-colors"
+          style={{
+            minHeight: '250px',
+            fontFamily: 'inherit',
+            lineHeight: '1.5rem',
+            color: 'transparent',
+            caretColor: 'var(--foreground)',
+            WebkitTextFillColor: 'transparent',
+          }}
+        />
+        {/* Capa de texto visible real (tercera capa) para que el texto sea legible */}
+        <div
+          aria-hidden
+          className="wa-highlighted pointer-events-none absolute inset-0 px-3 py-2 text-sm overflow-hidden rounded-md"
+          style={{ fontFamily: 'inherit', lineHeight: '1.5rem', minHeight: '250px', zIndex: 1 }}
+          dangerouslySetInnerHTML={{ __html: toHtml(value) + '&nbsp;' }}
+        />
+        {/* El textarea va por encima de todo con z-index mayor, pero texto transparente */}
+        <style>{`
+          .wa-highlighted + textarea { position: absolute; inset: 0; z-index: 2; }
+        `}</style>
+      </div>
+    </>
   );
 }
