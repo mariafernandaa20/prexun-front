@@ -183,15 +183,15 @@ export default function CalificacionesPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const handleSort = useCallback((key: SortKey) => {
-    setSortKey((prev) => {
-      if (prev === key) {
-        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-        return key;
-      }
+    if (sortKey === key) {
+      // Misma columna → invertir dirección
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      // Nueva columna → ascendente por defecto
+      setSortKey(key);
       setSortDir('asc');
-      return key;
-    });
-  }, []);
+    }
+  }, [sortKey]);
 
   // ── Export modal ─────────────────────────────────────────────────────────
   const [showExportModal, setShowExportModal] = useState(false);
@@ -357,7 +357,7 @@ export default function CalificacionesPage() {
       const matchPlantel =
         (g.plantel_id ? String(g.plantel_id) === String(selectedPlantelId) : false) ||
         (Array.isArray(g.campuses) ? g.campuses.some((c) => String(c.id) === String(selectedPlantelId)) : false);
-      
+
       const groupType = String(g.type || '').toLowerCase();
       const isOnlineGroup =
         groupType.includes('linea') ||
@@ -835,12 +835,7 @@ export default function CalificacionesPage() {
       {/* ══ Estadísticas rápidas ═══════════════════════════════════════════ */}
       {stats && (
         <div className="px-4 py-2 border-b flex gap-6 text-xs flex-wrap">
-          {/* Urgentes primero */}
-          <StatPill label="No presentó" value={stats.noPresentaron} color="slate" />
-          <StatPill label="⚠ Sin datos" value={stats.alertas} color="amber" />
-          <StatPill label="Reprobados" value={stats.reprobados} color="red" />
-          {/* Acabadas junto a urgentes */}
-          <StatPill label="Aprobados" value={stats.aprobados} color="emerald" />
+
           <span className="ml-auto text-muted-foreground">
             <BarChart3 className="inline w-3.5 h-3.5 mr-1" />
             {stats.total} alumnos totales
@@ -1057,7 +1052,7 @@ export default function CalificacionesPage() {
                       >
                         {/* Nombre */}
                         <td className="px-3 py-2 font-medium whitespace-nowrap border-r sticky left-0 bg-background z-[4]">
-                          {student.firstname} {student.lastname}
+                          {student.lastname} {student.firstname}
                         </td>
 
                         {/* Matrícula */}
@@ -1161,7 +1156,7 @@ export default function CalificacionesPage() {
                         {/* Nombre con badge */}
                         <td className="px-3 py-2 font-medium whitespace-nowrap border-r sticky left-0 bg-red-50 dark:bg-red-950/40 z-[4]">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-red-900 dark:text-red-200">{student.firstname} {student.lastname}</span>
+                            <span className="text-red-900 dark:text-red-200">{student.lastname} {student.firstname}</span>
                             <span className="text-[10px] font-normal text-red-500 dark:text-red-400 flex items-center gap-1">
                               <XCircle className="w-3 h-3" /> Ya no está en este grupo
                             </span>
