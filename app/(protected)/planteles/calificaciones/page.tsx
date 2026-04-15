@@ -826,25 +826,32 @@ export default function CalificacionesPage() {
                     </p>
                     <div className="max-h-56 overflow-y-auto space-y-2 pr-0.5 scrollbar-thin scrollbar-thumb-violet-200 dark:scrollbar-thumb-violet-800">
                       {Array.from(groups.entries()).map(([courseName, cols]) => (
-                        <div key={courseName}>
-                          {/* Promedio de la materia — si hay actividades */}
-                          {cols.some((c) => c.isActivity) && (
-                            <VarChip
-                              name={toVarName(courseName)}
-                              desc={`Promedio — ${courseName}`}
-                              onInsert={(v) => setMessageDraft((d) => d + v)}
-                            />
-                          )}
-                          {/* Actividades individuales */}
-                          <div className={cols.some((c) => c.isActivity) ? 'ml-2 space-y-0.5 mt-0.5' : 'space-y-0.5'}>
-                            {cols.map((col) => (
+                        <div key={courseName} className="rounded-md border border-muted overflow-hidden">
+                          {/* ── Cabecera de la materia ── */}
+                          <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/60 dark:bg-muted/30 border-b border-muted">
+                            <span className="text-[10px] font-bold text-foreground/80 truncate leading-tight">{courseName}</span>
+                          </div>
+
+                          <div className="p-1 space-y-0.5">
+                            {/* Promedio de la materia (si tiene actividades) */}
+                            {cols.some((c) => c.isActivity) && (
                               <VarChip
-                                key={col.id}
-                                name={toVarName(col.name)}
-                                desc={col.isActivity ? col.name : col.courseName}
+                                name={toVarName(courseName)}
+                                desc="Promedio de la materia"
                                 onInsert={(v) => setMessageDraft((d) => d + v)}
                               />
-                            ))}
+                            )}
+                            {/* Actividades individuales (con indent visual) */}
+                            <div className={cols.some((c) => c.isActivity) ? 'ml-1.5 border-l-2 border-violet-200 dark:border-violet-800 pl-1.5 space-y-0.5' : 'space-y-0.5'}>
+                              {cols.map((col) => (
+                                <VarChip
+                                  key={col.id}
+                                  name={toVarName(col.name)}
+                                  desc={col.name}
+                                  onInsert={(v) => setMessageDraft((d) => d + v)}
+                                />
+                              ))}
+                            </div>
                           </div>
                         </div>
                       ))}
