@@ -1328,14 +1328,14 @@ function HighlightedTextarea({
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
-    const highlighted = escaped.replace(
-      /\{\{([^}]+)\}\}/g,
-      '<mark class="wa-var">{{$1}}</mark>'
-    );
-    return highlighted.replace(/\n/g, '<br />');
+    return escaped
+      .replace(/\{\{([^}]+)\}\}/g, '<mark class="wa-var">{{$1}}</mark>')
+      .replace(/\n/g, '<br />');
   };
 
-  const sharedStyle: React.CSSProperties = {
+  // Estilos compartidos para alinear pixel-perfect div y textarea
+  const shared: React.CSSProperties = {
+    gridArea: '1 / 1',          // Misma celda del grid → se superponen
     fontFamily: 'inherit',
     fontSize: '0.875rem',
     lineHeight: '1.5rem',
@@ -1344,13 +1344,16 @@ function HighlightedTextarea({
     wordBreak: 'break-word',
     overflowWrap: 'break-word',
     minHeight: '250px',
+    border: 'none',
+    margin: 0,
+    borderRadius: '0.375rem',
   };
 
   return (
     <>
       <style>{`
         .wa-var {
-          background: rgba(139, 92, 246, 0.15);
+          background: rgba(139, 92, 246, 0.18);
           color: #7c3aed;
           border-radius: 3px;
           padding: 0 3px;
@@ -1360,36 +1363,47 @@ function HighlightedTextarea({
           letter-spacing: -0.01em;
         }
         .dark .wa-var {
-          background: rgba(167, 139, 250, 0.22);
+          background: rgba(167, 139, 250, 0.25);
           color: #a78bfa;
         }
+        .wa-textarea-grid {
+          display: grid;
+        }
+        .wa-textarea-grid textarea::selection {
+          background: rgba(139, 92, 246, 0.25);
+        }
       `}</style>
-      <div
-        className="relative rounded-md border bg-background focus-within:ring-2 focus-within:ring-violet-400/50 focus-within:border-violet-400 dark:focus-within:ring-violet-600/40 dark:focus-within:border-violet-600 transition-colors"
-        style={{ minHeight: '250px' }}
-      >
-        {/* Capa 1 (detrás): div con texto coloreado y highlights */}
+
+      {/* Wrapper con borde y ring de foco */}
+      <div className="wa-textarea-grid rounded-md border bg-background focus-within:ring-2 focus-within:ring-violet-400/50 focus-within:border-violet-400 dark:focus-within:ring-violet-600/40 dark:focus-within:border-violet-600 transition-colors overflow-hidden">
+
+        {/* Capa 1 — div de highlight (detrás, z-index menor) */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden rounded-md"
-          style={sharedStyle}
+          style={{ ...shared, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}
           dangerouslySetInnerHTML={{ __html: toHtml(value) + '&nbsp;' }}
         />
-        {/* Capa 2 (encima): textarea editable con texto y fondo transparente */}
+
+        {/* Capa 2 — textarea real (encima, texto transparente, caret visible) */}
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           spellCheck={false}
-          className="absolute inset-0 w-full h-full resize-none focus:outline-none rounded-md"
           style={{
-            ...sharedStyle,
+            ...shared,
+            zIndex: 1,
             background: 'transparent',
             color: 'transparent',
-            caretColor: 'currentColor',
+            // caretColor EXPLÍCITO — no heredar 'transparent'
+            caretColor: '#8b5cf6',
             WebkitTextFillColor: 'transparent',
+            resize: 'vertical',
+            outline: 'none',
+            overflow: 'auto',
           }}
         />
       </div>
     </>
   );
 }
+
