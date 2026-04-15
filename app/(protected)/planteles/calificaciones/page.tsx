@@ -799,27 +799,59 @@ export default function CalificacionesPage() {
             </Select>
 
             {/* Variables disponibles */}
-            <div className="mt-2 space-y-1">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Variables disponibles</p>
+            <div className="mt-3">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Variables disponibles
+              </p>
 
-              {/* Variables fijas */}
-              <VarChip name="nombre" desc="Nombre completo" onInsert={(v) => setMessageDraft((d) => d + v)} />
-              <VarChip name="calificaciones" desc="Todas (resumen)" onInsert={(v) => setMessageDraft((d) => d + v)} />
+              {/* Fijas */}
+              <div className="space-y-1 mb-2">
+                <VarChip name="nombre" desc="Nombre completo" onInsert={(v) => setMessageDraft((d) => d + v)} />
+                <VarChip name="calificaciones" desc="Resumen completo" onInsert={(v) => setMessageDraft((d) => d + v)} />
+              </div>
 
-              {/* Variables por actividad/curso */}
-              {matrixColumns.length > 0 && (
-                <>
-                  <p className="text-[10px] text-muted-foreground mt-1 pt-1 border-t">Por actividad:</p>
-                  {matrixColumns.map((col) => (
-                    <VarChip
-                      key={col.id}
-                      name={toVarName(col.name)}
-                      desc={col.name}
-                      onInsert={(v) => setMessageDraft((d) => d + v)}
-                    />
-                  ))}
-                </>
-              )}
+              {/* Por materia / actividad — agrupadas y con scroll */}
+              {matrixColumns.length > 0 && (() => {
+                // Agrupar columnas por materia
+                const groups = new Map<string, typeof matrixColumns>();
+                matrixColumns.forEach((col) => {
+                  if (!groups.has(col.courseName)) groups.set(col.courseName, []);
+                  groups.get(col.courseName)!.push(col);
+                });
+
+                return (
+                  <div className="border-t pt-2">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                      Por materia y actividad
+                    </p>
+                    <div className="max-h-56 overflow-y-auto space-y-2 pr-0.5 scrollbar-thin scrollbar-thumb-violet-200 dark:scrollbar-thumb-violet-800">
+                      {Array.from(groups.entries()).map(([courseName, cols]) => (
+                        <div key={courseName}>
+                          {/* Promedio de la materia — si hay actividades */}
+                          {cols.some((c) => c.isActivity) && (
+                            <VarChip
+                              name={toVarName(courseName)}
+                              desc={`Promedio — ${courseName}`}
+                              onInsert={(v) => setMessageDraft((d) => d + v)}
+                            />
+                          )}
+                          {/* Actividades individuales */}
+                          <div className={cols.some((c) => c.isActivity) ? 'ml-2 space-y-0.5 mt-0.5' : 'space-y-0.5'}>
+                            {cols.map((col) => (
+                              <VarChip
+                                key={col.id}
+                                name={toVarName(col.name)}
+                                desc={col.isActivity ? col.name : col.courseName}
+                                onInsert={(v) => setMessageDraft((d) => d + v)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           <div className="w-full lg:flex-1">
