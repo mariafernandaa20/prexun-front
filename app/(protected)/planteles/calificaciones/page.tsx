@@ -1319,8 +1319,7 @@ function VarChip({
 
 /**
  * Textarea con resaltado de variables {{...}}.
- * Usa un div de preview (semitransparente) superpuesto y un textarea transparente encima
- * para mantener edición nativa mientras se ven los highlights.
+ * Patrón de dos capas: div highlight visible (abajo) + textarea transparente (encima, editable).
  */
 function HighlightedTextarea({
   value,
@@ -1329,78 +1328,72 @@ function HighlightedTextarea({
   value: string;
   onChange: (v: string) => void;
 }) {
-  /** Convierte el texto plano en HTML con <mark> alrededor de {{...}} */
   const toHtml = (text: string) => {
-    // Escapar HTML básico primero
     const escaped = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
-    // Resaltar variables
     const highlighted = escaped.replace(
       /\{\{([^}]+)\}\}/g,
-      '<mark class="var-highlight">{{$1}}</mark>'
+      '<mark class="wa-var">{{$1}}</mark>'
     );
-    // Preservar saltos de línea
     return highlighted.replace(/\n/g, '<br />');
+  };
+
+  const sharedStyle: React.CSSProperties = {
+    fontFamily: 'inherit',
+    fontSize: '0.875rem',
+    lineHeight: '1.5rem',
+    padding: '0.5rem 0.75rem',
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
+    minHeight: '250px',
   };
 
   return (
     <>
       <style>{`
-        .wa-highlighted mark.var-highlight {
+        .wa-var {
           background: rgba(139, 92, 246, 0.15);
           color: #7c3aed;
           border-radius: 3px;
-          padding: 0 2px;
-          font-weight: 600;
-          font-family: ui-monospace, monospace;
-          font-size: 0.8em;
+          padding: 0 3px;
+          font-weight: 700;
+          font-family: ui-monospace, SFMono-Regular, monospace;
+          font-size: 0.82em;
+          letter-spacing: -0.01em;
         }
-        .dark .wa-highlighted mark.var-highlight {
-          background: rgba(167, 139, 250, 0.2);
+        .dark .wa-var {
+          background: rgba(167, 139, 250, 0.22);
           color: #a78bfa;
         }
-        .wa-highlighted {
-          white-space: pre-wrap;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-        }
       `}</style>
-      <div className="relative">
-        {/* Capa de preview con highlights — no interactuable */}
+      <div
+        className="relative rounded-md border bg-background focus-within:ring-2 focus-within:ring-violet-400/50 focus-within:border-violet-400 dark:focus-within:ring-violet-600/40 dark:focus-within:border-violet-600 transition-colors"
+        style={{ minHeight: '250px' }}
+      >
+        {/* Capa 1 (detrás): div con texto coloreado y highlights */}
         <div
           aria-hidden
-          className="wa-highlighted pointer-events-none absolute inset-0 px-3 py-2 text-sm text-transparent overflow-hidden rounded-md border border-transparent"
-          style={{ fontFamily: 'inherit', lineHeight: '1.5rem', minHeight: '250px' }}
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-md"
+          style={sharedStyle}
           dangerouslySetInnerHTML={{ __html: toHtml(value) + '&nbsp;' }}
         />
-        {/* Textarea real encima — texto invisible pero cursor y selección visibles */}
+        {/* Capa 2 (encima): textarea editable con texto y fondo transparente */}
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           spellCheck={false}
-          className="relative w-full bg-background border rounded-md px-3 py-2 text-sm resize-y text-foreground caret-foreground focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 dark:focus:ring-violet-600/40 dark:focus:border-violet-600 transition-colors"
+          className="absolute inset-0 w-full h-full resize-none focus:outline-none rounded-md"
           style={{
-            minHeight: '250px',
-            fontFamily: 'inherit',
-            lineHeight: '1.5rem',
+            ...sharedStyle,
+            background: 'transparent',
             color: 'transparent',
-            caretColor: 'var(--foreground)',
+            caretColor: 'currentColor',
             WebkitTextFillColor: 'transparent',
           }}
         />
-        {/* Capa de texto visible real (tercera capa) para que el texto sea legible */}
-        <div
-          aria-hidden
-          className="wa-highlighted pointer-events-none absolute inset-0 px-3 py-2 text-sm overflow-hidden rounded-md"
-          style={{ fontFamily: 'inherit', lineHeight: '1.5rem', minHeight: '250px', zIndex: 1 }}
-          dangerouslySetInnerHTML={{ __html: toHtml(value) + '&nbsp;' }}
-        />
-        {/* El textarea va por encima de todo con z-index mayor, pero texto transparente */}
-        <style>{`
-          .wa-highlighted + textarea { position: absolute; inset: 0; z-index: 2; }
-        `}</style>
       </div>
     </>
   );
