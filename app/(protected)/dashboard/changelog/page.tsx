@@ -28,8 +28,8 @@ const changelogGuidelines = [
 ];
 
 const changelogTemplate = `{
-  id: '2026-02-26-06',
-  date: '2026-02-26',
+  id: '2026-05-01-01',
+  date: '2026-05-01',
   type: 'fix',
   title: 'Título del cambio',
   description: 'Qué se ajustó y por qué.',
@@ -38,6 +38,381 @@ const changelogTemplate = `{
 }`;
 
 const changelogItems: ChangelogItem[] = [
+  // ── Abril 16, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-04-16-01',
+    date: '2026-04-16',
+    type: 'improvement',
+    title: 'Calificaciones redondeadas sin decimales',
+    description:
+      'Las calificaciones en la tabla, variables de mensaje y resumen {{calificaciones}} ahora muestran enteros (Math.round) en lugar de dos decimales, para una comunicación más clara con los alumnos.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-04-16-02',
+    date: '2026-04-16',
+    type: 'fix',
+    title: 'Fallback "No presentó" para variables de actividad sin datos',
+    description:
+      'Si un alumno no tiene una actividad sincronizada desde Moodle, las variables de plantilla ahora muestran "No presentó" en lugar de dejar la variable literal {{variable}} en el mensaje enviado.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-04-16-03',
+    date: '2026-04-16',
+    type: 'feat',
+    title: 'Variables de actividad prefijadas con nombre de materia',
+    description:
+      'Para evitar colisiones cuando dos materias tienen actividades del mismo nombre, las variables ahora incluyen el prefijo de la materia: {{matematicas_examen_parcial}} en lugar de {{examen_parcial}}.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+
+  // ── Abril 15, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-04-15-01',
+    date: '2026-04-15',
+    type: 'feat',
+    title: 'Panel de variables agrupado por materia con cabecera visual',
+    description:
+      'El panel de variables del WhatsApp agrupa actividades bajo la materia con tarjeta y cabecera, más indent con línea violeta para actividades individuales. El panel es scrolleable cuando hay muchas materias.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-04-15-02',
+    date: '2026-04-15',
+    type: 'feat',
+    title: 'Resaltado en tiempo real de variables {{...}} en borrador',
+    description:
+      'Al escribir el borrador del mensaje WhatsApp, las variables {{variable}} se resaltan en violeta en tiempo real mediante HighlightedTextarea (CSS Grid de dos capas). Cursor y selección son completamente funcionales.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-04-15-03',
+    date: '2026-04-15',
+    type: 'improvement',
+    title: 'Nombre de alumno con apellido primero y sort corregido',
+    description:
+      'La matriz muestra "Apellido Nombre". Sort por defecto: apellido ascendente. Se corrigió bug donde el toggle asc/desc no funcionaba por anidar setSortDir dentro del updater de setSortKey.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-04-15-04',
+    date: '2026-04-15',
+    type: 'fix',
+    title: 'Error SQL jsonb_array_length incompatible con MariaDB',
+    description:
+      'El endpoint de alumnos transferidos usaba sintaxis PostgreSQL (jsonb_array_length/::jsonb) causando SQLSTATE[42000] en MariaDB. Se reemplazó con JSON_LENGTH(), compatible con MySQL 5.7+ y MariaDB 10.2+.',
+    scope: 'general',
+    filesModified: ['app/Http/Controllers/Api/StudentAssignmentController.php'],
+  },
+  {
+    id: '2026-04-15-05',
+    date: '2026-04-15',
+    type: 'fix',
+    title: 'Actividades de Moodle no se cargaban para cursos sin promedio',
+    description:
+      'Las actividades solo se consultaban si rawgrade !== null. Se eliminó esa restricción y se añadieron campos rawgrade y max_grade a cada actividad para cálculos numéricos en el frontend.',
+    scope: 'general',
+    filesModified: ['app/Services/StudentGradesService.php'],
+  },
+
+  // ── Abril 13, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-04-13-01',
+    date: '2026-04-13',
+    type: 'feat',
+    title: 'Ordenamiento por columna y exportación a Excel en calificaciones',
+    description:
+      'Ordenamiento ascendente/descendente por Apellido, Nombre, Matrícula o cualquier columna de calificación. Exportación a Excel (.xlsx) con modal de selección de columnas usando SheetJS.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-04-13-02',
+    date: '2026-04-13',
+    type: 'feat',
+    title: 'Modo mantenimiento con banner configurable',
+    description:
+      'Los administradores pueden activar modo mantenimiento y editar el mensaje desde configuración. Un banner global (MaintenanceBanner) muestra el aviso a todos los usuarios activos.',
+    scope: 'general',
+    filesModified: [
+      'components/MaintenanceBanner.tsx',
+      'app/Http/Controllers/Api/SiteConfigController.php',
+    ],
+  },
+  {
+    id: '2026-04-13-03',
+    date: '2026-04-13',
+    type: 'feat',
+    title: 'Rebalanceo automático de cohortes Moodle al actualizar módulos',
+    description:
+      'Al cambiar los módulos de una carrera, el backend rebalancea automáticamente las cohortes de Moodle para los alumnos afectados.',
+    scope: 'general',
+    filesModified: ['app/Services/Moodle/MoodleService.php'],
+  },
+
+  // ── Abril 10, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-04-10-01',
+    date: '2026-04-10',
+    type: 'feat',
+    title: 'Alumnos transferidos visibles en la matriz de calificaciones',
+    description:
+      'Se muestran alumnos con asignaciones inactivas (transferidos/dados de baja) al fondo de la tabla con resaltado rojo y badge "Ya no está en este grupo". Sus calificaciones se precargan junto con los activos.',
+    scope: 'planteles',
+    filesModified: [
+      'app/(protected)/planteles/calificaciones/page.tsx',
+      'app/Http/Controllers/Api/StudentAssignmentController.php',
+    ],
+  },
+
+  // ── Abril 7, 2026 ───────────────────────────────────────────────────────
+  {
+    id: '2026-04-07-01',
+    date: '2026-04-07',
+    type: 'feat',
+    title: 'Botón de sincronización manual con Moodle en calificaciones',
+    description:
+      'Botón "Sincronizar" en la barra superior de la matriz para forzar actualización de notas desde Moodle en tiempo real, con indicador de carga y toast de confirmación.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-04-07-02',
+    date: '2026-04-07',
+    type: 'fix',
+    title: 'Duplicados en calificaciones al sincronizar con Moodle',
+    description:
+      'Al mezclar calificaciones de BD y Moodle se generaban registros duplicados por course_id. Se implementó un mapa indexado para garantizar unicidad en el merge.',
+    scope: 'general',
+    filesModified: ['app/Services/StudentGradesService.php'],
+  },
+  {
+    id: '2026-04-07-03',
+    date: '2026-04-07',
+    type: 'improvement',
+    title: 'Grupos en línea siempre incluidos en filtro de calificaciones',
+    description:
+      'Los grupos de modalidad en línea ahora aparecen en el selector independientemente del plantel seleccionado, ya que son globales por naturaleza.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+
+  // ── Marzo 31, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-03-31-01',
+    date: '2026-03-31',
+    type: 'improvement',
+    title: 'Optimización de generación de columnas de actividades',
+    description:
+      'Se simplificó la lógica de generación de columnas usando nombres de curso como identificadores primarios y se optimizó la deduplicación de columnas.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-03-31-02',
+    date: '2026-03-31',
+    type: 'improvement',
+    title: 'Formateo de valores en logs de estudiante',
+    description:
+      'StudentLogs ahora serializa correctamente valores complejos (objetos, arrays) en el historial de cambios, con mejor manejo de campos nulos.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/estudiantes/[...slug]/StudentLogs.tsx'],
+  },
+
+  // ── Marzo 30, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-03-30-01',
+    date: '2026-03-30',
+    type: 'feat',
+    title: 'Reemplazo dinámico de variables en plantillas WhatsApp',
+    description:
+      'El panel de WhatsApp soporta variables dinámicas como {{nombre}}, {{calificaciones}} y {{materia_actividad}} que se reemplazan con datos reales del alumno al copiar o enviar.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-03-30-02',
+    date: '2026-03-30',
+    type: 'improvement',
+    title: 'Refactorización del módulo de calificaciones',
+    description:
+      'Se modularizó CalificacionesPage extrayendo helpers, badges de estado y gestión de estado optimizada para mejorar mantenibilidad.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-03-30-03',
+    date: '2026-03-30',
+    type: 'fix',
+    title: 'Actividades incluidas correctamente en sync a Moodle',
+    description:
+      'Al llamar getBatchGrades con syncMoodle=true, las actividades y su conteo ahora se incluyen en el merge, evitando que se perdieran en sincronizaciones subsecuentes.',
+    scope: 'general',
+    filesModified: ['app/Services/StudentGradesService.php'],
+  },
+
+  // ── Marzo 28, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-03-28-01',
+    date: '2026-03-28',
+    type: 'feat',
+    title: 'Almacenamiento persistente de calificaciones (JSONB)',
+    description:
+      'Las calificaciones sincronizadas desde Moodle se guardan en grades de StudentAssignment (JSONB), reduciendo llamadas a Moodle en cargas subsecuentes.',
+    scope: 'general',
+    filesModified: [
+      'app/Http/Controllers/Api/StudentAssignmentController.php',
+      'app/Services/StudentGradesService.php',
+    ],
+  },
+  {
+    id: '2026-03-28-02',
+    date: '2026-03-28',
+    type: 'fix',
+    title: 'Cancelación de fetch al desmontar componente de calificaciones',
+    description:
+      'Se agregó verificación de componente activo para prevenir actualizaciones de estado después del desmontaje al navegar fuera de la pantalla.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+
+  // ── Marzo 27, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-03-27-01',
+    date: '2026-03-27',
+    type: 'feat',
+    title: 'Panel WhatsApp con generación y envío de mensajes desde calificaciones',
+    description:
+      'Panel con plantillas configurables, generación de mensaje por alumno y botones para copiar o abrir en WhatsApp directamente desde la matriz de calificaciones.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-03-27-02',
+    date: '2026-03-27',
+    type: 'feat',
+    title: 'Último acceso a Moodle visible en perfil del alumno',
+    description:
+      'Se agregó endpoint dedicado en backend y visualización de la última actividad del alumno en Moodle dentro de su ficha de perfil.',
+    scope: 'planteles',
+    filesModified: [
+      'app/(protected)/planteles/estudiantes/[...slug]/page.tsx',
+      'app/Http/Controllers/Api/StudentAssignmentController.php',
+    ],
+  },
+
+  // ── Marzo 24, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-03-24-01',
+    date: '2026-03-24',
+    type: 'feat',
+    title: 'Gestión de plantillas WhatsApp y etiquetas de alumnos',
+    description:
+      'CRUD completo de plantillas WhatsApp y selector de tags para segmentar envíos por tipo de alumno.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/calificaciones/page.tsx'],
+  },
+  {
+    id: '2026-03-24-02',
+    date: '2026-03-24',
+    type: 'feat',
+    title: 'Endpoint de calificaciones batch sin actividades',
+    description:
+      'Endpoint para cargar calificaciones en lote con opción de excluir actividades, acelerando la carga inicial de la matriz cuando solo se necesitan promedios.',
+    scope: 'general',
+    filesModified: ['app/Http/Controllers/Api/StudentGradesController.php'],
+  },
+
+  // ── Marzo 18, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-03-18-01',
+    date: '2026-03-18',
+    type: 'fix',
+    title: 'Validación de Moodle ID antes de actualizar cohortes',
+    description:
+      'Se verifica moodle_id del alumno antes de operaciones de cohorte, previniendo errores 500 silenciosos en sincronización.',
+    scope: 'general',
+    filesModified: ['app/Http/Controllers/Api/StudentAssignmentController.php'],
+  },
+  {
+    id: '2026-03-18-02',
+    date: '2026-03-18',
+    type: 'fix',
+    title: 'Campo carrera_id corregido en validaciones de asignaciones',
+    description:
+      'Se corrigieron errores tipográficos en carrera_id en validaciones y consultas, y se normalizó la carga útil de carrera.',
+    scope: 'general',
+    filesModified: ['app/Http/Controllers/Api/StudentAssignmentController.php'],
+  },
+  {
+    id: '2026-03-18-03',
+    date: '2026-03-18',
+    type: 'fix',
+    title: 'Valor nulo de carrera en formulario de asignación',
+    description:
+      'Mejor manejo de valor nulo para el campo de carrera en el formulario de asignación, previniendo errores de validación.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/estudiantes/student-form.tsx'],
+  },
+
+  // ── Marzo 13, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-03-13-01',
+    date: '2026-03-13',
+    type: 'feat',
+    title: 'Re-sincronización de asignaciones individuales con Moodle',
+    description:
+      'Endpoint para forzar re-sincronización de una asignación específica con Moodle, útil para corregir inconsistencias sin afectar a todos los alumnos.',
+    scope: 'general',
+    filesModified: ['app/Http/Controllers/Api/StudentAssignmentController.php'],
+  },
+  {
+    id: '2026-03-13-02',
+    date: '2026-03-13',
+    type: 'improvement',
+    title: 'Renombrado de StudentPeriod a StudentAssignment',
+    description:
+      'Se renombró el componente StudentPeriod a StudentAssignment para mayor claridad semántica, eliminando el archivo legacy.',
+    scope: 'planteles',
+    filesModified: ['app/(protected)/planteles/estudiantes/[...slug]/StudentAssignment.tsx'],
+  },
+
+  // ── Marzo 11, 2026 ──────────────────────────────────────────────────────
+  {
+    id: '2026-03-11-01',
+    date: '2026-03-11',
+    type: 'feat',
+    title: 'Integración con Google Contacts',
+    description:
+      'Sincronización de contactos con Google Contacts mediante OAuth. La lógica de API se movió al backend para seguridad; el frontend maneja solo la UI de autenticación.',
+    scope: 'general',
+    filesModified: [
+      'app/Http/Controllers/Api/GoogleContactsController.php',
+      'app/(protected)/dashboard/google-contacts/page.tsx',
+    ],
+  },
+  {
+    id: '2026-03-11-02',
+    date: '2026-03-11',
+    type: 'fix',
+    title: 'Manejo de errores en sesión múltiple de Google y URL dinámica',
+    description:
+      'Corrección de errores al sincronizar con múltiples cuentas Google y URL de redirección dinámica según entorno (local/producción).',
+    scope: 'general',
+    filesModified: [
+      'app/Http/Controllers/Api/GoogleContactsController.php',
+      'config/services.php',
+    ],
+  },
+
+  // ── Marzo 6, 2026 (entradas previas conservadas) ─────────────────────────
   {
     id: '2026-03-06-01',
     date: '2026-03-06',
@@ -74,7 +449,7 @@ const changelogItems: ChangelogItem[] = [
     type: 'fix',
     title: 'Corrección de comentarios cuando la asistencia es recién creada',
     description:
-      'El guardado de asistencia ahora devuelve IDs procesados por alumno y el frontend sincroniza `attendanceIds`, corrigiendo el error de “asistencia no encontrada” al editar notas.',
+      'El guardado de asistencia ahora devuelve IDs procesados por alumno y el frontend sincroniza attendanceIds, corrigiendo el error de "asistencia no encontrada" al editar notas.',
     scope: 'planteles',
     filesModified: [
       'app/Http/Controllers/Api/TeacherAttendanceController.php',
@@ -87,7 +462,7 @@ const changelogItems: ChangelogItem[] = [
     type: 'fix',
     title: 'Corrección de fecha desplazada en calendario de asistencias',
     description:
-      'Se ajustó el parseo de fechas para evitar corrimiento al día anterior por conversiones UTC cuando los registros llegan como `YYYY-MM-DD` o con sufijo de zona horaria.',
+      'Se ajustó el parseo de fechas para evitar corrimiento al día anterior por conversiones UTC cuando los registros llegan como YYYY-MM-DD o con sufijo de zona horaria.',
     scope: 'planteles',
     filesModified: [
       'app/(protected)/planteles/estudiantes/[...slug]/AttendanceCalendar.tsx',
@@ -102,299 +477,6 @@ const changelogItems: ChangelogItem[] = [
       'Se reemplazaron colores grises fijos por tokens de tema en el modal de edición de asistencia para mantener contraste correcto en modo oscuro.',
     scope: 'planteles',
     filesModified: ['components/EditAttendanceModal.tsx'],
-  },
-  {
-    id: '2026-03-05-01',
-    date: '2026-03-05',
-    type: 'improvement',
-    title: 'Filtros de ingresos con labels descriptivos',
-    description:
-      'Se añadieron etiquetas visibles sobre los controles de búsqueda, fechas, orden, método y columnas para mejorar legibilidad de filtros en ingresos.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/ingresos/page.tsx'],
-  },
-  {
-    id: '2026-03-05-02',
-    date: '2026-03-05',
-    type: 'feat',
-    title: 'Agrupación visual de ingresos por mes con encabezado',
-    description:
-      'Al activar agrupación por mes, la tabla separa bloques mensuales y muestra encabezado con mes/año y total de folios del bloque.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/ingresos/page.tsx'],
-  },
-  {
-    id: '2026-03-05-03',
-    date: '2026-03-05',
-    type: 'fix',
-    title: 'Orden de folios por mes de pago y presets de rango',
-    description:
-      'En ingresos se estabilizó el orden por folio dentro del mes de `payment_date`, se agregaron rangos rápidos (mes actual, 3 meses, últimos 100 folios) y fallback de prefijo para evitar `null` en folio.',
-    scope: 'general',
-    filesModified: [
-      'app/Http/Controllers/Api/TransactionController.php',
-      'lib/api.ts',
-      'app/(protected)/planteles/ingresos/page.tsx',
-    ],
-  },
-  {
-    id: '2026-03-03-06',
-    date: '2026-03-03',
-    type: 'improvement',
-    title: 'Persistencia en lista de asistencia por query params',
-    description:
-      'Se agregó persistencia de periodo, grupos y día en URL (`p`, `g`, `d`) para recuperar contexto al recargar la página y evitar pérdida de navegación.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
-  },
-  {
-    id: '2026-03-03-07',
-    date: '2026-03-03',
-    type: 'fix',
-    title: 'Corrección de bucle infinito en lista de asistencia',
-    description:
-      'Se volvió idempotente la limpieza de estado cuando no hay grupos filtrados para eliminar el error “Maximum update depth exceeded”.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
-  },
-  {
-    id: '2026-03-03-08',
-    date: '2026-03-03',
-    type: 'feat',
-    title: 'Asistencia pública por WhatsApp con modal embebible',
-    description:
-      'Se habilitó flujo público para registrar asistencia por WhatsApp/teléfono mediante modal embebible y página pública dedicada.',
-    scope: 'general',
-    filesModified: [
-      'app/asistencia-publica/page.tsx',
-      'public/prexun-attendance-embed.js',
-      'app/Http/Controllers/Api/PublicAttendanceController.php',
-      'routes/api.php',
-    ],
-  },
-  {
-    id: '2026-03-03-09',
-    date: '2026-03-03',
-    type: 'fix',
-    title: 'Conectividad del modal de asistencia y compatibilidad iframe',
-    description:
-      'Se corrigieron problemas de conexión (`http/https`, mixed content) y se ajustaron headers para permitir embed de `/asistencia-publica` en admin/localhost.',
-    scope: 'general',
-    filesModified: [
-      'app/(protected)/dashboard/tests/page.tsx',
-      'app/asistencia-publica/page.tsx',
-      'next.config.js',
-    ],
-  },
-  {
-    id: '2026-03-03-10',
-    date: '2026-03-03',
-    type: 'fix',
-    title: 'Normalización de teléfonos para búsqueda de asistencia',
-    description:
-      'Se estandarizó almacenamiento y búsqueda por últimos 10 dígitos en backend, y en frontend se restringió captura de teléfono/tutor a números.',
-    scope: 'general',
-    filesModified: [
-      'app/Models/Student.php',
-      'app/Http/Controllers/StudentController.php',
-      'app/Http/Controllers/Api/PublicAttendanceController.php',
-      'app/(protected)/planteles/estudiantes/student-form.tsx',
-      'app/(protected)/planteles/estudiantes/Filters.tsx',
-    ],
-  },
-  {
-    id: '2026-03-03-01',
-    date: '2026-03-03',
-    type: 'improvement',
-    title: 'Lista de asistencia mixta ordenada global por apellido',
-    description:
-      'En selección múltiple de grupos, se eliminó la segregación por aulas y se ordena el listado completo de alumnos por apellido A-Z.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
-  },
-  {
-    id: '2026-03-03-02',
-    date: '2026-03-03',
-    type: 'fix',
-    title: 'Ingresos con orden de folio descendente funcional',
-    description:
-      'Se corrigió la lógica de ordenamiento para folios usando orden numérico real y fallback consistente entre folio, folio_cash, folio_transfer y folio_card.',
-    scope: 'general',
-    filesModified: ['app/Http/Controllers/Api/TransactionController.php'],
-  },
-  {
-    id: '2026-03-03-03',
-    date: '2026-03-03',
-    type: 'fix',
-    title: 'Filtro de grupos en ingresos por plantel/contexto activo',
-    description:
-      'El selector de grupos en ingresos ahora muestra solo grupos del plantel activo y envía el filtro al backend para restringir resultados.',
-    scope: 'planteles',
-    filesModified: [
-      'app/(protected)/planteles/ingresos/page.tsx',
-      'lib/api.ts',
-      'app/Http/Controllers/Api/TransactionController.php',
-    ],
-  },
-  {
-    id: '2026-03-03-04',
-    date: '2026-03-03',
-    type: 'fix',
-    title: 'Normalización de fechas a zona horaria CDMX en asistencia',
-    description:
-      'Se eliminó la dependencia de toISOString para fechas de asistencia y se estandarizó America/Mexico_City para evitar desfases de día.',
-    scope: 'planteles',
-    filesModified: [
-      'app/(protected)/planteles/lista-asistencia/page.tsx',
-      'app/(protected)/planteles/tomar-asistencia/page.tsx',
-      'app/(protected)/planteles/reportes-asistencia/page.tsx',
-    ],
-  },
-  {
-    id: '2026-03-03-05',
-    date: '2026-03-03',
-    type: 'improvement',
-    title: 'Limpieza de visualización de alumnos en reportes',
-    description:
-      'Se depuró el listado de alumnos en reportes: deduplicado, filtrado básico de registros inválidos y orden por apellido para reducir ruido visual.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/reportes-asistencia/page.tsx'],
-  },
-  {
-    id: '2026-02-28-01',
-    date: '2026-02-28',
-    type: 'fix',
-    title: 'Autosave al cambiar día en asistencias',
-    description:
-      'En lista de asistencias, ahora se guarda automáticamente antes de cambiar de fecha. Si falla el guardado, no cambia de día para evitar pérdida de datos.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
-  },
-  {
-    id: '2026-02-28-02',
-    date: '2026-02-28',
-    type: 'feat',
-    title: 'Selección de cámara en escáner QR',
-    description:
-      'En tomar asistencia se agregó selector de cámara frontal/trasera y selección por dispositivo (deviceId), con cierre seguro de stream al cambiar.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/tomar-asistencia/page.tsx'],
-  },
-  {
-    id: '2026-02-28-03',
-    date: '2026-02-28',
-    type: 'feat',
-    title: 'Mensajes WhatsApp en modo masivo',
-    description:
-      'En calificaciones del estudiante se agregó modo para generar/copiar mensajes de todos los cursos en un solo bloque, además del modo individual.',
-    scope: 'planteles',
-    filesModified: ['components/students/StudentGrades.tsx'],
-  },
-  {
-    id: '2026-02-28-04',
-    date: '2026-02-28',
-    type: 'improvement',
-    title: 'Plantillas WhatsApp sin texto de relleno',
-    description:
-      'Cuando un curso no tiene actividades, se omite el bloque de actividades en el mensaje para evitar frases como “Sin actividad”.',
-    scope: 'planteles',
-    filesModified: ['components/students/StudentGrades.tsx'],
-  },
-  {
-    id: '2026-02-27-01',
-    date: '2026-02-27',
-    type: 'fix',
-    title: 'Grupos filtrados por asignación (método nuevo)',
-    description:
-      'Se centralizó el filtrado para usar asignaciones vigentes por plantel/periodo y limitar grupos globales a modalidad en línea.',
-    scope: 'planteles',
-    filesModified: ['lib/store/auth-store.ts'],
-  },
-  {
-    id: '2026-02-27-02',
-    date: '2026-02-27',
-    type: 'fix',
-    title: 'Periodo por defecto desde configuración global',
-    description:
-      'Asistencias y reportes ahora inicializan periodo con default_period_id de configuración global, con fallback al periodo actual por fechas.',
-    scope: 'planteles',
-    filesModified: [
-      'app/(protected)/planteles/lista-asistencia/page.tsx',
-      'app/(protected)/planteles/reportes-asistencia/page.tsx',
-    ],
-  },
-  {
-    id: '2026-02-27-03',
-    date: '2026-02-27',
-    type: 'fix',
-    title: 'Endpoint de alumnos por grupo solo con asignaciones',
-    description:
-      'En backend, getStudents de grupos quedó únicamente con student_assignments activas (sin fallback legacy por grupo_id directo).',
-    scope: 'general',
-    filesModified: ['app/Http/Controllers/Api/GrupoController.php'],
-  },
-  {
-    id: '2026-02-27-04',
-    date: '2026-02-27',
-    type: 'improvement',
-    title: 'Asistencias con autosave por grupo y periodo',
-    description:
-      'Al cambiar grupo o periodo se guarda automáticamente la captura pendiente antes de navegar, evitando pérdida de cambios por omisión del botón Guardar.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
-  },
-  {
-    id: '2026-02-26-01',
-    date: '2026-02-26',
-    type: 'improvement',
-    title: 'Vista lateral para grupos en planteles',
-    description:
-      'Se cambió la vista de grupos a lista vertical izquierda con panel de detalle a la derecha para facilitar lectura rápida.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/grupos/page.tsx'],
-  },
-  {
-    id: '2026-02-26-02',
-    date: '2026-02-26',
-    type: 'feat',
-    title: 'Ordenamiento de grupos',
-    description:
-      'Se agregó ordenamiento por alfabético (default), cupo disponible, capacidad e inscritos en la lista de grupos.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/grupos/page.tsx'],
-  },
-  {
-    id: '2026-02-26-03',
-    date: '2026-02-26',
-    type: 'fix',
-    title: 'Conteo de inscritos y cupo calculado en frontend',
-    description:
-      'El total de inscritos y disponibles se calcula con alumnos reales por grupo para evitar inconsistencias del backend.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/grupos/page.tsx'],
-  },
-  {
-    id: '2026-02-26-04',
-    date: '2026-02-26',
-    type: 'fix',
-    title: 'Filtrado de grupos por plantel y periodo actual',
-    description:
-      'La vista de grupos ahora muestra solo grupos del plantel activo y del periodo actual; los globales solo si son en línea.',
-    scope: 'planteles',
-    filesModified: [
-      'app/(protected)/planteles/grupos/page.tsx',
-      'lib/store/auth-store.ts',
-    ],
-  },
-  {
-    id: '2026-02-26-05',
-    date: '2026-02-26',
-    type: 'fix',
-    title: 'Estabilidad en lista de asistencias',
-    description:
-      'Se unificó el flujo de carga de alumnos y asistencia para evitar estados pisados y errores por efectos duplicados.',
-    scope: 'planteles',
-    filesModified: ['app/(protected)/planteles/lista-asistencia/page.tsx'],
   },
 ];
 
