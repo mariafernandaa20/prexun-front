@@ -624,6 +624,18 @@ export default function CalificacionesPage() {
     });
     vars['calificaciones'] = lines.join('\n') || 'Sin calificaciones registradas.';
 
+    // Fallback: cualquier variable del panel que no esté en las notas de ESTE alumno
+    // (p.ej. sus actividades aún no sincronizadas) → "No presentó" en vez de {{variable}}
+    matrixColumns.forEach((col) => {
+      if (col.isActivity) {
+        const key = `${toVarName(col.courseName)}_${toVarName(col.name)}`;
+        if (!(key in vars)) vars[key] = 'No presentó';
+      } else {
+        const key = toVarName(col.courseName);
+        if (!(key in vars)) vars[key] = 'No presentó';
+      }
+    });
+
     // Reemplazar todas las variables {{var}} en el draft
     return messageDraft.replace(/\{\{([^}]+)\}\}/g, (_, key) => vars[key.trim()] ?? `{{${key}}}`);
   };
