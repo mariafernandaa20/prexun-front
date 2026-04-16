@@ -589,14 +589,14 @@ export default function CalificacionesPage() {
         const courseKey = toVarName(courseName);
         g.activities.forEach((act) => {
           const actVal = act.rawgrade !== null && act.rawgrade !== undefined
-            ? Number(act.rawgrade).toFixed(2)
+            ? String(Math.round(Number(act.rawgrade)))
             : act.grade && act.grade !== '-' && act.grade !== 'N/A' ? act.grade : 'No presentó';
           vars[`${courseKey}_${toVarName(act.name)}`] = actVal;
         });
         // Variable resumen del curso (sin prefix, es única por materia)
-        vars[courseKey] = v !== null ? Number(v).toFixed(2) : 'No presentó';
+        vars[courseKey] = v !== null ? String(Math.round(v)) : 'No presentó';
       } else {
-        vars[toVarName(courseName)] = v !== null ? Number(v).toFixed(2) : 'No presentó';
+        vars[toVarName(courseName)] = v !== null ? String(Math.round(v)) : 'No presentó';
       }
     });
 
@@ -613,13 +613,13 @@ export default function CalificacionesPage() {
         lines.push(`*${courseName}*`);
         g.activities.forEach((act) => {
           const actVal = act.rawgrade !== null && act.rawgrade !== undefined
-            ? Number(act.rawgrade).toFixed(2)
+            ? String(Math.round(Number(act.rawgrade)))
             : act.grade && act.grade !== '-' ? act.grade : 'No presentó';
           lines.push(`  - ${act.name}: ${actVal}`);
         });
-        if (v !== null) lines.push(`  → Promedio: ${Number(v).toFixed(2)}`);
+        if (v !== null) lines.push(`  → Promedio: ${Math.round(v)}`);
       } else {
-        lines.push(`- ${courseName}: ${v !== null ? Number(v).toFixed(2) : 'No presentó'}`);
+        lines.push(`- ${courseName}: ${v !== null ? Math.round(v) : 'No presentó'}`);
       }
     });
     vars['calificaciones'] = lines.join('\n') || 'Sin calificaciones registradas.';
@@ -1335,7 +1335,7 @@ function CalCell({
 
   return (
     <span className={`inline-flex items-center justify-center w-11 h-7 rounded text-[11px] font-bold border ${cls}`}>
-      {n % 1 === 0 ? n : n.toFixed(1)}
+      {Math.round(n)}
     </span>
   );
 }
