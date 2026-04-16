@@ -584,15 +584,17 @@ export default function CalificacionesPage() {
       const v = gradeValue(g);
 
       if (g.activities && g.activities.length > 0) {
-        // Variable por actividad individual
+        // Variable por actividad individual: prefixada con la materia para evitar colisiones
+        // Ej: "Examen Parcial" en "Matemáticas" → {{matematicas_examen_parcial}}
+        const courseKey = toVarName(courseName);
         g.activities.forEach((act) => {
           const actVal = act.rawgrade !== null && act.rawgrade !== undefined
             ? Number(act.rawgrade).toFixed(2)
             : act.grade && act.grade !== '-' && act.grade !== 'N/A' ? act.grade : 'No presentó';
-          vars[toVarName(act.name)] = actVal;
+          vars[`${courseKey}_${toVarName(act.name)}`] = actVal;
         });
-        // Variable resumen del curso
-        vars[toVarName(courseName)] = v !== null ? Number(v).toFixed(2) : 'No presentó';
+        // Variable resumen del curso (sin prefix, es única por materia)
+        vars[courseKey] = v !== null ? Number(v).toFixed(2) : 'No presentó';
       } else {
         vars[toVarName(courseName)] = v !== null ? Number(v).toFixed(2) : 'No presentó';
       }
@@ -841,12 +843,15 @@ export default function CalificacionesPage() {
                                 onInsert={(v) => setMessageDraft((d) => d + v)}
                               />
                             )}
-                            {/* Actividades individuales (con indent visual) */}
+                            {/* Actividades individuales: variable = materia_actividad */}
                             <div className={cols.some((c) => c.isActivity) ? 'ml-1.5 border-l-2 border-violet-200 dark:border-violet-800 pl-1.5 space-y-0.5' : 'space-y-0.5'}>
                               {cols.map((col) => (
                                 <VarChip
                                   key={col.id}
-                                  name={toVarName(col.name)}
+                                  name={col.isActivity
+                                    ? `${toVarName(col.courseName)}_${toVarName(col.name)}`
+                                    : toVarName(col.name)
+                                  }
                                   desc={col.name}
                                   onInsert={(v) => setMessageDraft((d) => d + v)}
                                 />
