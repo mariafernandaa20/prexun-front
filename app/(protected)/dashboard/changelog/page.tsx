@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Copy, Check } from 'lucide-react';
 
 type ChangeType = 'feat' | 'fix' | 'improvement';
 
@@ -486,6 +487,60 @@ const typeLabel: Record<ChangeType, string> = {
   improvement: 'Mejora',
 };
 
+const typeEmoji: Record<ChangeType, string> = {
+  feat: '✨',
+  fix: '🔧',
+  improvement: '💪',
+};
+
+/** Convierte una entrada en texto WhatsApp-Markdown (*negrita* = un asterisco) */
+function itemToMarkdown(item: ChangelogItem): string {
+  const emoji = typeEmoji[item.type];
+  const label = typeLabel[item.type];
+  return [
+    `${emoji} *${label}* _${item.scope}_`,
+    `*${item.title}*`,
+    item.description,
+  ].join('\n');
+}
+
+/** Convierte todas las entradas de un día en un bloque WhatsApp-Markdown */
+function dayToMarkdown(date: string, items: ChangelogItem[]): string {
+  const header = `*📅 ${date}*`;
+  const body = items.map(itemToMarkdown).join('\n\n');
+  return `${header}\n\n${body}`;
+}
+
+/** Botón de copiar con feedback visual temporal */
+function CopyButton({ getText, label = 'Copiar' }: { getText: () => string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(getText());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback silencioso
+    }
+  }, [getText]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded border transition-colors ${
+        copied
+          ? 'border-emerald-500 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30'
+          : 'border-muted-foreground/30 text-muted-foreground hover:border-primary hover:text-primary'
+      }`}
+    >
+      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+      {copied ? 'Copiado' : label}
+    </button>
+  );
+}
+
 export default function AdminChangelogPage() {
   const itemsSorted = useMemo(() => {
     return [...changelogItems].sort((a, b) => b.date.localeCompare(a.date));
@@ -538,7 +593,13 @@ export default function AdminChangelogPage() {
       {dateKeys.map((dateKey) => (
         <Card key={dateKey}>
           <CardHeader>
-            <CardTitle className="text-base">{dateKey}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">{dateKey}</CardTitle>
+              <CopyButton
+                label="Copiar día"
+                getText={() => dayToMarkdown(dateKey, groupedByDate[dateKey])}
+              />
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {groupedByDate[dateKey].map((item) => (
@@ -546,9 +607,12 @@ export default function AdminChangelogPage() {
                 key={item.id}
                 className="border rounded-md px-3 py-2 flex flex-col gap-1"
               >
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{typeLabel[item.type]}</Badge>
-                  <Badge variant="secondary">{item.scope}</Badge>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{typeLabel[item.type]}</Badge>
+                    <Badge variant="secondary">{item.scope}</Badge>
+                  </div>
+                  <CopyButton getText={() => itemToMarkdown(item)} />
                 </div>
                 <p className="text-sm font-medium">{item.title}</p>
                 <p className="text-sm text-muted-foreground">
