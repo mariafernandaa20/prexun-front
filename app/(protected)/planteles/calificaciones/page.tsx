@@ -176,6 +176,30 @@ export default function CalificacionesPage() {
   const [syncingMoodle, setSyncingMoodle] = useState(false);
   const [isInitializedData, setIsInitializedData] = useState(false);
   const [showWaPanel, setShowWaPanel] = useState(true);
+  const textareaRefForInsert = React.useRef<HTMLTextAreaElement | null>(null);
+
+  const handleInsertVariable = (variable: string) => {
+    const el = textareaRefForInsert.current;
+    if (!el) {
+      setMessageDraft((prev) => prev + variable);
+      return;
+    }
+
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const text = messageDraft;
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+    const newValue = before + variable + after;
+
+    setMessageDraft(newValue);
+
+    // Reposicionar cursor después de insertar
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start + variable.length, start + variable.length);
+    }, 0);
+  };
 
   // ── Sort ────────────────────────────────────────────────────────────────
   type SortKey = 'lastname' | 'firstname' | 'matricula' | string; // string = colId
@@ -820,8 +844,8 @@ export default function CalificacionesPage() {
 
               {/* Fijas */}
               <div className="space-y-1 mb-2">
-                <VarChip name="nombre" desc="Nombre completo" onInsert={(v) => setMessageDraft((d) => d + v)} />
-                <VarChip name="calificaciones" desc="Resumen completo" onInsert={(v) => setMessageDraft((d) => d + v)} />
+                <VarChip name="nombre" desc="Nombre completo" onInsert={handleInsertVariable} />
+                <VarChip name="calificaciones" desc="Resumen completo" onInsert={handleInsertVariable} />
               </div>
 
               {/* Por materia / actividad — agrupadas y con scroll */}
@@ -1375,34 +1399,57 @@ function VarChip({
 function HighlightedTextarea({
   value,
   onChange,
+  onRef,
 }: {
   value: string;
   onChange: (v: string) => void;
+  onRef?: (ref: HTMLTextAreaElement | null) => void;
 }) {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const highlightRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (onRef) onRef(textareaRef.current);
+  }, [onRef]);
+
   const toHtml = (text: string) => {
+    // Escapar HTML básico
     const escaped = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
-    return escaped
-      .replace(/\{\{([^}]+)\}\}/g, '<mark class="wa-var">{{$1}}</mark>')
-      .replace(/\n/g, '<br />');
+    
+    // Resaltar variables {{...}}
+    // IMPORTANTE: No reemplazamos \n por <br /> porque pre-wrap ya lo hace correctamente
+    // y evita desincronización con el textarea.
+    return escaped.replace(/\{\{([^}]+)\}\}/g, '<mark class="wa-var">{{$1}}</mark>');
+  };
+
+  // Sincronizar scroll
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    if (highlightRef.current) {
+      highlightRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
   };
 
   // Estilos compartidos para alinear pixel-perfect div y textarea
   const shared: React.CSSProperties = {
     gridArea: '1 / 1',          // Misma celda del grid → se superponen
-    fontFamily: 'inherit',
+    // Usamos una fuente monoespaciada para asegurar que el ancho de cada letra sea IDÉNTICO
+    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
     fontSize: '0.875rem',
     lineHeight: '1.5rem',
     padding: '0.5rem 0.75rem',
     whiteSpace: 'pre-wrap',
-    wordBreak: 'break-word',
+    wordBreak: 'break-all',    // break-all es más predecible con mono
     overflowWrap: 'break-word',
     minHeight: '250px',
     border: 'none',
     margin: 0,
     borderRadius: '0.375rem',
+    boxSizing: 'border-box',
+    width: '100%',
+    letterSpacing: 'normal',   // Evitar ajustes de tracking del sistema
   };
 
   return (
@@ -1412,11 +1459,7 @@ function HighlightedTextarea({
           background: rgba(139, 92, 246, 0.18);
           color: #7c3aed;
           border-radius: 3px;
-          padding: 0 3px;
           font-weight: 700;
-          font-family: ui-monospace, SFMono-Regular, monospace;
-          font-size: 0.82em;
-          letter-spacing: -0.01em;
         }
         .dark .wa-var {
           background: rgba(167, 139, 250, 0.25);
@@ -1430,29 +1473,34 @@ function HighlightedTextarea({
         }
       `}</style>
 
-      {/* Wrapper con borde y ring de foco */}
       <div className="wa-textarea-grid rounded-md border bg-background focus-within:ring-2 focus-within:ring-violet-400/50 focus-within:border-violet-400 dark:focus-within:ring-violet-600/40 dark:focus-within:border-violet-600 transition-colors overflow-hidden">
-
-        {/* Capa 1 — div de highlight (detrás, z-index menor) */}
         <div
+          ref={highlightRef}
           aria-hidden
-          style={{ ...shared, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}
-          dangerouslySetInnerHTML={{ __html: toHtml(value) + '&nbsp;' }}
+          style={{ 
+            ...shared, 
+            zIndex: 0, 
+            overflow: 'hidden', 
+            pointerEvents: 'none',
+            // El texto ahora es visible aquí para mostrar los colores originales
+          }}
+          dangerouslySetInnerHTML={{ __html: toHtml(value) }}
         />
 
-        {/* Capa 2 — textarea real (encima, texto transparente, caret visible) */}
         <textarea
+          ref={textareaRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onScroll={handleScroll}
           spellCheck={false}
           style={{
             ...shared,
             zIndex: 1,
             background: 'transparent',
+            // Volvemos a hacer el texto transparente para ver los colores de la capa inferior
             color: 'transparent',
-            // caretColor EXPLÍCITO — no heredar 'transparent'
-            caretColor: '#8b5cf6',
             WebkitTextFillColor: 'transparent',
+            caretColor: '#8b5cf6',
             resize: 'vertical',
             outline: 'none',
             overflow: 'auto',
