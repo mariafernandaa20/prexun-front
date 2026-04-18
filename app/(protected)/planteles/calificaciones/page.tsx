@@ -1155,8 +1155,8 @@ export default function CalificacionesPage() {
                             }
                             const actVal = act.rawgrade !== null && act.rawgrade !== undefined
                               ? act.rawgrade
-                              : act.grade && act.grade !== '-' && act.grade !== 'N/A'
-                                ? parseFloat(act.grade)
+                              : act.grade !== null && act.grade !== undefined && act.grade !== '-' && act.grade !== 'N/A' && act.grade !== ''
+                                ? parseFloat(String(act.grade))
                                 : null;
                             return (
                               <td key={col.id} className="px-2 py-2 border-r text-center">
@@ -1263,8 +1263,8 @@ export default function CalificacionesPage() {
                             }
                             const actVal = act.rawgrade !== null && act.rawgrade !== undefined
                               ? act.rawgrade
-                              : act.grade && act.grade !== '-' && act.grade !== 'N/A'
-                                ? parseFloat(act.grade)
+                              : act.grade !== null && act.grade !== undefined && act.grade !== '-' && act.grade !== 'N/A' && act.grade !== ''
+                                ? parseFloat(String(act.grade))
                                 : null;
                             return (
                               <td key={col.id} className="px-2 py-2 border-r text-center">
@@ -1343,7 +1343,7 @@ function CalCell({
   value: number | null;
   isEmpty?: boolean;
 }) {
-  if (isEmpty || value === null) {
+  if (isEmpty || value === null || value === undefined) {
     return (
       <span className="inline-flex items-center justify-center w-11 h-7 rounded text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200 dark:bg-slate-800/60 dark:text-slate-500 dark:border-slate-700">
         —
