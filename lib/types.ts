@@ -195,6 +195,7 @@ export interface Grupo {
   students_count?: number;
   moodle_id: number | null;
   active_assignments_count?: number;
+  contacto_prefijo: boolean;
 }
 export interface Gasto {
   id?: number;
@@ -395,3 +396,5 @@ export interface SiteSettingFormData {
   group: string;
   sort_order?: number;
 }
+
+

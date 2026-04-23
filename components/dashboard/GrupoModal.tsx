@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Campus, Grupo, Period } from '@/lib/types';
 import { useState, useEffect } from 'react';
@@ -52,6 +53,7 @@ export default function GrupoModal({
     end_date: null,
     campuses: [],
     moodle_id: null,
+    contacto_prefijo: false,
   });
 
   useEffect(() => {
@@ -59,16 +61,17 @@ export default function GrupoModal({
       const frequency = Array.isArray(grupo.frequency) ? grupo.frequency : [];
       const campusIds = grupo.campuses
         ? grupo.campuses
-            .map((campus) =>
-              typeof campus === 'string' ? campus : campus.id?.toString() || ''
-            )
-            .filter((id) => id !== '')
+          .map((campus) =>
+            typeof campus === 'string' ? campus : campus.id?.toString() || ''
+          )
+          .filter((id) => id !== '')
         : [];
 
       setFormData({
         ...grupo,
         frequency,
         campuses: campusIds,
+        contacto_prefijo: Boolean(grupo.contacto_prefijo),
       });
     } else {
       setFormData({
@@ -84,6 +87,7 @@ export default function GrupoModal({
         end_date: null,
         campuses: [],
         moodle_id: null,
+        contacto_prefijo: false,
       });
     }
   }, [grupo, isOpen]);
@@ -176,13 +180,17 @@ export default function GrupoModal({
           <DialogTitle>
             {grupo ? 'Editar Grupo' : 'Crear Nuevo Grupo'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Administra la información de los grupos, incluyendo periodos, planteles y horarios.
+          </DialogDescription>
         </DialogHeader>
         <div className="text-neutral-700 dark:text-neutral-300">
           <span className="text-red-500">*</span> Campos requeridos
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-2">
-            <div>
+          <div className="grid grid-cols-2 gap-4"> {/* Grid de 2 columnas */}
+            {/* COLUMNA IZQUIERDA */}
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="period_id">
                   <span className="text-red-500">*</span> Periodo
@@ -217,7 +225,7 @@ export default function GrupoModal({
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label>
                   <span className="text-red-500">*</span> Planteles
                 </Label>
@@ -234,6 +242,7 @@ export default function GrupoModal({
                   emptyMessage="No se encontraron planteles"
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="type">
                   <span className="text-red-500">*</span> Tipo
@@ -248,8 +257,30 @@ export default function GrupoModal({
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* AQUÍ ESTÁ TU NUEVO CHECKBOX */}
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox
+                  id="contacto_prefijo"
+                  checked={Boolean(formData.contacto_prefijo)}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      contacto_prefijo: checked === true,
+                    }))
+                  }
+                />
+                <Label
+                  htmlFor="contacto_prefijo"
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  contacto prefijo
+                </Label>
+              </div>
             </div>
-            <div>
+
+            {/* COLUMNA DERECHA */}
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="capacity">
                   <span className="text-red-500">*</span> Capacidad
@@ -269,7 +300,7 @@ export default function GrupoModal({
                   id="start_date"
                   name="start_date"
                   type="date"
-                  value={formData.start_date}
+                  value={formData.start_date || ''}
                   onChange={handleInputChange}
                 />
               </div>
@@ -279,7 +310,7 @@ export default function GrupoModal({
                   id="end_date"
                   name="end_date"
                   type="date"
-                  value={formData.end_date}
+                  value={formData.end_date || ''}
                   onChange={handleInputChange}
                 />
               </div>
@@ -289,7 +320,7 @@ export default function GrupoModal({
                   id="start_time"
                   name="start_time"
                   type="time"
-                  value={formData.start_time}
+                  value={formData.start_time || ''}
                   onChange={handleInputChange}
                 />
               </div>
@@ -299,14 +330,14 @@ export default function GrupoModal({
                   id="end_time"
                   name="end_time"
                   type="time"
-                  value={formData.end_time}
+                  value={formData.end_time || ''}
                   onChange={handleInputChange}
                 />
               </div>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 pt-4">
             <Label>Frecuencia</Label>
             <div className="flex flex-wrap gap-2">
               {days.map((day) => (
@@ -322,7 +353,7 @@ export default function GrupoModal({
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
